@@ -1,0 +1,9 @@
+<linker>
+  <assembly fullname="PokerEngine.Core" preserve="all" />
+  <assembly fullname="PokerEngine.Abilities" preserve="all" />
+  <assembly fullname="PokerEngine.Scoring" preserve="all" />
+  <assembly fullname="PokerEngine.Holdem" preserve="all" />
+  <assembly fullname="PokerEngine.Draw" preserve="all" />
+  <assembly fullname="PokerEngine.Runs" preserve="all" />
+  <assembly fullname="PokerEngine.Composition" preserve="all" />
+</linker>

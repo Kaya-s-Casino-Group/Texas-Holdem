@@ -1,0 +1,1 @@
+{"name":"CardArt.Tests.Editor","references":["CardArt.Runtime","CardArt.Editor"],"includePlatforms":["Editor"],"optionalUnityReferences":["TestAssemblies"]}

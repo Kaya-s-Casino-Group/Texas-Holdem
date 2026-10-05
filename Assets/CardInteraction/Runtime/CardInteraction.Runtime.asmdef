@@ -1,0 +1,5 @@
+{
+  "name": "CardInteraction.Runtime",
+  "rootNamespace": "CardInteraction",
+  "references": ["CardPresentation.Runtime", "CardArt.Runtime", "PokerEngine.Core", "Unity.ugui"]
+}

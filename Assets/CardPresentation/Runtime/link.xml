@@ -1,0 +1,3 @@
+<linker>
+  <assembly fullname="CardPresentation.Runtime" preserve="all" />
+</linker>

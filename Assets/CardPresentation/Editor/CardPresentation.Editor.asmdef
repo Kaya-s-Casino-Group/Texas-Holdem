@@ -1,0 +1,6 @@
+{
+  "name": "CardPresentation.Editor",
+  "rootNamespace": "CardPresentation.Editor",
+  "references": ["CardPresentation.Runtime", "CardInteraction.Runtime", "CardArt.Runtime", "PokerEngine.Core", "Poker.EditorTools"],
+  "includePlatforms": ["Editor"]
+}

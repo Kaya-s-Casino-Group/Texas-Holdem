@@ -1,0 +1,6 @@
+{
+  "name": "Poker.EditorTools.Tests",
+  "references": ["Poker.EditorTools"],
+  "includePlatforms": ["Editor"],
+  "optionalUnityReferences": ["TestAssemblies"]
+}

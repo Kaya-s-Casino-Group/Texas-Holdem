@@ -1,0 +1,5 @@
+{
+  "name": "CardPresentation.Tests.Support",
+  "references": ["CardPresentation.Runtime"],
+  "optionalUnityReferences": ["TestAssemblies"]
+}

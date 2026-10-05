@@ -1,0 +1,7 @@
+{
+  "name": "CardPresentation.Runtime",
+  "rootNamespace": "CardPresentation",
+  "references": ["PokerEngine.Core", "CardArt.Runtime"],
+  "overrideReferences": true,
+  "precompiledReferences": ["DOTween.dll"]
+}

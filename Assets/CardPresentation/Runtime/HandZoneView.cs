@@ -1,0 +1,197 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using PokerEngine;
+using UnityEngine;
+
+namespace CardPresentation
+{
+    /// <summary>Hand-specific deal/discard flights, selection lift and audio on the shared zone renderer.</summary>
+    [AddComponentMenu("Cards/Hand Zone View")]
+    public partial class HandZoneView : CardZoneView
+    {
+        [SerializeField] private Vector3 raisedOffset = new Vector3(0, 0, 0.02f);
+        [SerializeField] private Vector3 hoveredOffset = new Vector3(0, 0, 0.01f);
+        [SerializeField] private CardZoneLiftSettings liftSettings = CardZoneLiftSettings.Default;
+        [SerializeField] private CardZoneTransitionSettings transitionSettings = CardZoneTransitionSettings.Default;
+        [SerializeField] private Vector3 deckLocalPosition = new Vector3(0.38f, 0.035f, 0);
+        [SerializeField] private Transform deckAnchor;
+        private double nextDealTime;
+        public override string DefaultZoneKind => CardZoneKinds.Hand;
+        public Vector3 RaisedOffset => raisedOffset;
+        public Vector3 SelectedOffset => raisedOffset;
+        public Vector3 HoveredOffset => hoveredOffset;
+        public CardZoneLiftSettings LiftSettings => liftSettings;
+        public CardZoneTransitionSettings TransitionSettings => transitionSettings;
+        public Vector3 DeckLocalPosition => deckLocalPosition;
+        public Transform DeckAnchor => deckAnchor;
+        public Vector3 DeckWorldPosition => deckAnchor != null ? deckAnchor.position : transform.TransformPoint(deckLocalPosition);
+        public override bool IsTransitioning => departing.Count > 0 || base.IsTransitioning;
+
+        protected override void ValidatePresentationSettings()
+        {
+            ValidateOffset(raisedOffset); ValidateOffset(hoveredOffset); ValidateOffset(deckLocalPosition);
+            liftSettings.Validate(); transitionSettings.Validate(); discardSettings.Validate();
+        }
+
+        public override void Present(CardZoneViewData data, bool animate = true) => base.Present(data, animate);
+
+        /// <summary>Explicit removal cause; ordinary list deletions remain immediate.</summary>
+        public void Present(CardZoneViewData data, IEnumerable<string> discardedViewIds, bool animate = true) =>
+            ApplyPresentation(data, () => new HandPresentationUpdate(this, data, animate, discardedViewIds));
+
+        public void Present(CardZoneViewData data, bool animate, IEnumerable<string> discardedIds) =>
+            ApplyPresentation(data, () => new HandPresentationUpdate(this, data, animate, discardedIds));
+
+        public void Present(CardZone zone, Func<CardInstanceId, CardVisualData> project, bool animate,
+            IEnumerable<string> discardedViewIds) => Present(CardZoneViewData.FromZone(zone, project), animate, discardedViewIds);
+
+        protected override PresentationUpdate CreatePresentationUpdate(CardZoneViewData data, bool animate) =>
+            new HandPresentationUpdate(this, data, animate, null);
+
+        private sealed class HandPresentationUpdate : PresentationUpdate
+        {
+            private readonly HandZoneView hand;
+            private readonly CardZoneViewData data;
+            private readonly bool animateInteraction, animate, reuse;
+            private readonly bool[] selections, arrivals;
+            private readonly float[] delays;
+            private readonly HashSet<string> discards;
+            private readonly Vector3 source, discardDestination;
+            private readonly List<CardInstanceView> immediateDiscards = new List<CardInstanceView>();
+            private double queue;
+            private float discardDelay;
+
+            public HandPresentationUpdate(HandZoneView hand, CardZoneViewData data, bool requestedAnimation, IEnumerable<string> discardedViewIds)
+            {
+                this.hand = hand; this.data = data;
+                discards = hand.ValidateDiscards(data, discardedViewIds);
+                discardDestination = hand.transform.InverseTransformPoint(hand.DiscardWorldPosition);
+                ValidateOffset(discardDestination);
+                if (!CardZoneRowLayout.Finite(discards.Count * hand.discardSettings.Interval + hand.discardSettings.FlightSeconds))
+                    throw new ArgumentException("Discard queue exceeds finite animation time.");
+                animateInteraction = requestedAnimation && hand.isActiveAndEnabled;
+                animate = animateInteraction && hand.transitionSettings.Enabled;
+                reuse = hand.Data != null && hand.Data.ZoneId == data.ZoneId;
+                var previouslyUnselected = animateInteraction && reuse ? new HashSet<string>(
+                    hand.Data.Cards.Where(card => !card.Interaction.IsSelected).Select(card => card.ViewId), StringComparer.Ordinal) : null;
+                selections = new bool[data.Cards.Count]; arrivals = new bool[data.Cards.Count]; delays = new float[data.Cards.Count];
+                queue = reuse ? hand.nextDealTime : hand.AnimationTime;
+                source = hand.transform.InverseTransformPoint(hand.DeckWorldPosition);
+                ValidateOffset(source);
+                for (int i = 0; i < data.Cards.Count; i++)
+                {
+                    selections[i] = previouslyUnselected != null && data.Cards[i].Interaction.IsSelected &&
+                        previouslyUnselected.Contains(data.Cards[i].ViewId);
+                    arrivals[i] = !reuse || !hand.ContainsViewIdentity(data.Cards[i].ViewId);
+                    if (!animate || !arrivals[i]) continue;
+                    queue = Math.Max(queue, hand.AnimationTime); delays[i] = (float)(queue - hand.AnimationTime);
+                    if (!CardZoneRowLayout.Finite(delays[i] + hand.transitionSettings.FlightSeconds + hand.transitionSettings.SettleSeconds))
+                        throw new ArgumentException("Deal queue exceeds finite animation time.");
+                    queue += hand.transitionSettings.DealInterval;
+                }
+            }
+
+            public override void BeforeApply() => hand.PrepareDepartures(data, animate, reuse);
+            public override void PresentCard(CardInstanceView view, CardVisualData card, CardShaderAppearance appearance,
+                CardZoneCardPose pose, int index, bool created)
+            {
+                view.Present(card, hand.hoveredOffset, hand.raisedOffset, appearance, hand.liftSettings, animateInteraction);
+                // Lost visuals for an existing identity are restored without replaying the deal.
+                view.SetPose(pose, hand.transitionSettings, animate && (arrivals[index] || !created), arrivals[index], source, delays[index]);
+            }
+            public override void RemoveCard(CardInstanceView previous)
+            {
+                if (animate && discards.Contains(previous.ViewId) && previous.IsTransitionVisible)
+                {
+                    previous.BeginDiscard(discardDestination, discardDelay, hand.discardSettings);
+                    hand.departing.Add(previous); discardDelay += hand.discardSettings.Interval;
+                }
+                else if (animateInteraction && !animate && discards.Contains(previous.ViewId)) immediateDiscards.Add(previous);
+                else Release(previous);
+            }
+            public override void AfterCommit()
+            {
+                var committed = hand.ordered;
+                hand.nextDealTime = animate && committed.Length > 0 ? queue : hand.AnimationTime;
+                hand.ConsumeDealSounds(); hand.ConsumeDiscardSounds();
+                if (animateInteraction && !animate)
+                    for (int i = 0; i < committed.Length; i++) if (arrivals[i])
+                    { hand.NotifyDealStarted(committed[i]); hand.NotifyCardEnteredZone(committed[i]); }
+                foreach (var previous in immediateDiscards) hand.NotifyDiscardStarted(previous);
+                for (int i = 0; i < committed.Length; i++)
+                {
+                    var selected = committed[i];
+                    if (selections[i] && selected != null && selected.Data.Interaction.IsSelected &&
+                        hand.TryGetView(selected.ViewId, out var current) && current == selected) hand.NotifyCardSelected(selected);
+                }
+            }
+            public override void Dispose() { foreach (var previous in immediateDiscards) Release(previous); }
+        }
+
+        protected override void ApplyLayoutPose(CardInstanceView view, CardZoneCardPose pose, bool animate)
+        {
+            view.SetPose(pose, transitionSettings, animate && transitionSettings.Enabled && isActiveAndEnabled);
+            view.ApplyInteractionOffset(hoveredOffset, raisedOffset, liftSettings, animate);
+        }
+
+        public void SetTransitionSettings(CardZoneTransitionSettings settings)
+        {
+            settings.Validate(); transitionSettings = settings;
+            if (!settings.Enabled) CompleteTransitions();
+        }
+
+        public void SetLiftSettings(CardZoneLiftSettings settings)
+        {
+            settings.Validate(); liftSettings = settings;
+            foreach (var view in ordered) if (view != null) view.ApplyInteractionOffset(hoveredOffset, raisedOffset, liftSettings);
+        }
+
+        /// <summary>Fallback deck source in zone-local coordinates; an optional scene anchor takes precedence.</summary>
+        public void SetDeckSource(Vector3 localPosition, Transform anchor = null)
+        {
+            ValidateOffset(localPosition); deckLocalPosition = localPosition; deckAnchor = anchor;
+        }
+
+        /// <summary>Legacy convenience for giving hover and selection the same zone-local offset.</summary>
+        public void SetRaisedOffset(Vector3 offset) => SetInteractionOffsets(offset, offset);
+
+        /// <summary>Independent zone-local offsets. Selection takes precedence over hover, without adding them.</summary>
+        public void SetInteractionOffsets(Vector3 hovered, Vector3 selected)
+        {
+            ValidateOffset(hovered); ValidateOffset(selected);
+            hoveredOffset = hovered; raisedOffset = selected;
+            foreach (var view in ordered) if (view != null) view.ApplyInteractionOffset(hoveredOffset, raisedOffset, liftSettings);
+        }
+
+        public override void CompleteTransitions()
+        {
+            ClearDepartures(); base.CompleteTransitions(); nextDealTime = AnimationTime;
+        }
+        protected override void OnMotionAdvanced(float deltaTime)
+        {
+            AdvanceDepartures(deltaTime); ConsumeDealSounds();
+        }
+        public override void Clear()
+        {
+            ClearDepartures(); base.Clear(); nextDealTime = 0; StopCardAudio();
+        }
+        protected override void OnDisable() { base.OnDisable(); StopCardAudio(); }
+        protected override void OnDestroy() { base.OnDestroy(); ReleaseCardAudio(); }
+        protected override void OnDrawGizmosSelected()
+        {
+            base.OnDrawGizmosSelected();
+            var oldMatrix = Gizmos.matrix; var oldColor = Gizmos.color;
+            Gizmos.matrix = transform.localToWorldMatrix;
+            var deck = transform.InverseTransformPoint(DeckWorldPosition);
+            Gizmos.color = new Color(1, 0.7f, 0.2f);
+            Gizmos.DrawWireCube(deck, new Vector3(0.064f, 0.006f, 0.096f));
+            Gizmos.DrawLine(deck, new Vector3(Layout.Size.x / 2, 0, 0));
+            var discard = transform.InverseTransformPoint(DiscardWorldPosition);
+            Gizmos.color = new Color(0.9f, 0.35f, 0.45f);
+            Gizmos.DrawWireCube(discard, new Vector3(0.064f, 0.006f, 0.096f));
+            Gizmos.DrawLine(new Vector3(-Layout.Size.x / 2, 0, 0), discard);
+            Gizmos.matrix = oldMatrix; Gizmos.color = oldColor;
+        }
+    }
+}

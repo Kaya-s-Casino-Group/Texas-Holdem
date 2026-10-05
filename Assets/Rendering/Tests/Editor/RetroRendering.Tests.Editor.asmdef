@@ -1,0 +1,6 @@
+{
+  "name": "RetroRendering.Tests.Editor",
+  "references": ["RetroRendering.Runtime", "Unity.RenderPipelines.Universal.Runtime", "Unity.RenderPipelines.Core.Runtime"],
+  "includePlatforms": ["Editor"],
+  "optionalUnityReferences": ["TestAssemblies"]
+}

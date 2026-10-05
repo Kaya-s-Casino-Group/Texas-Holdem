@@ -1,0 +1,791 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3b9632e6073d74c6797c6e20e854c7fb, type: 3}
+  m_Name: FourBeastsAtlas
+  m_EditorClassIdentifier: 
+  texture: {fileID: 2800000, guid: be58a14f84d534cc096ef4fff3865392, type: 3}
+  atlasSize: {x: 2048, y: 2048}
+  cardSize: {x: 128, y: 192}
+  columns: 10
+  rows: 6
+  padding: 4
+  cards:
+  - id: card_back
+    index: 0
+    pixels:
+      x: 6
+      y: 1753
+      width: 193
+      height: 289
+    clipped: 0
+    visiblePixels:
+      x: 6
+      y: 1753
+      width: 193
+      height: 289
+    uv: {x: 0.0029411765, y: 0.85588235, z: 0.09411765, w: 0.14117648}
+  - id: spades_a
+    index: 1
+    pixels:
+      x: 211
+      y: 1753
+      width: 193
+      height: 289
+    clipped: 0
+    visiblePixels:
+      x: 211
+      y: 1753
+      width: 193
+      height: 289
+    uv: {x: 0.10294118, y: 0.85588235, z: 0.09411765, w: 0.14117648}
+  - id: spades_02
+    index: 2
+    pixels:
+      x: 416
+      y: 1753
+      width: 192
+      height: 289
+    clipped: 0
+    visiblePixels:
+      x: 416
+      y: 1753
+      width: 192
+      height: 289
+    uv: {x: 0.20294118, y: 0.85588235, z: 0.09411765, w: 0.14117648}
+  - id: spades_03
+    index: 3
+    pixels:
+      x: 620
+      y: 1753
+      width: 193
+      height: 289
+    clipped: 0
+    visiblePixels:
+      x: 620
+      y: 1753
+      width: 193
+      height: 289
+    uv: {x: 0.3029412, y: 0.85588235, z: 0.09411765, w: 0.14117648}
+  - id: spades_04
+    index: 4
+    pixels:
+      x: 825
+      y: 1753
+      width: 193
+      height: 289
+    clipped: 0
+    visiblePixels:
+      x: 825
+      y: 1753
+      width: 193
+      height: 289
+    uv: {x: 0.4029412, y: 0.85588235, z: 0.09411765, w: 0.14117648}
+  - id: spades_05
+    index: 5
+    pixels:
+      x: 1030
+      y: 1753
+      width: 193
+      height: 289
+    clipped: 0
+    visiblePixels:
+      x: 1030
+      y: 1753
+      width: 193
+      height: 289
+    uv: {x: 0.5029412, y: 0.85588235, z: 0.09411765, w: 0.14117648}
+  - id: spades_06
+    index: 6
+    pixels:
+      x: 1235
+      y: 1753
+      width: 193
+      height: 289
+    clipped: 0
+    visiblePixels:
+      x: 1235
+      y: 1753
+      width: 193
+      height: 289
+    uv: {x: 0.6029412, y: 0.85588235, z: 0.09411765, w: 0.14117648}
+  - id: spades_07
+    index: 7
+    pixels:
+      x: 1440
+      y: 1753
+      width: 192
+      height: 289
+    clipped: 0
+    visiblePixels:
+      x: 1440
+      y: 1753
+      width: 192
+      height: 289
+    uv: {x: 0.7029412, y: 0.85588235, z: 0.09411765, w: 0.14117648}
+  - id: spades_08
+    index: 8
+    pixels:
+      x: 1644
+      y: 1753
+      width: 193
+      height: 289
+    clipped: 0
+    visiblePixels:
+      x: 1644
+      y: 1753
+      width: 193
+      height: 289
+    uv: {x: 0.8029412, y: 0.85588235, z: 0.09411765, w: 0.14117648}
+  - id: spades_09
+    index: 9
+    pixels:
+      x: 1849
+      y: 1753
+      width: 193
+      height: 289
+    clipped: 0
+    visiblePixels:
+      x: 1849
+      y: 1753
+      width: 193
+      height: 289
+    uv: {x: 0.9029412, y: 0.85588235, z: 0.09411765, w: 0.14117648}
+  - id: spades_10
+    index: 10
+    pixels:
+      x: 6
+      y: 1452
+      width: 193
+      height: 289
+    clipped: 0
+    visiblePixels:
+      x: 6
+      y: 1452
+      width: 193
+      height: 289
+    uv: {x: 0.0029411765, y: 0.70882356, z: 0.09411765, w: 0.14117648}
+  - id: spades_j
+    index: 11
+    pixels:
+      x: 211
+      y: 1452
+      width: 193
+      height: 289
+    clipped: 0
+    visiblePixels:
+      x: 211
+      y: 1452
+      width: 193
+      height: 289
+    uv: {x: 0.10294118, y: 0.70882356, z: 0.09411765, w: 0.14117648}
+  - id: spades_q
+    index: 12
+    pixels:
+      x: 416
+      y: 1452
+      width: 192
+      height: 289
+    clipped: 0
+    visiblePixels:
+      x: 416
+      y: 1452
+      width: 192
+      height: 289
+    uv: {x: 0.20294118, y: 0.70882356, z: 0.09411765, w: 0.14117648}
+  - id: spades_k
+    index: 13
+    pixels:
+      x: 620
+      y: 1452
+      width: 193
+      height: 289
+    clipped: 0
+    visiblePixels:
+      x: 620
+      y: 1452
+      width: 193
+      height: 289
+    uv: {x: 0.3029412, y: 0.70882356, z: 0.09411765, w: 0.14117648}
+  - id: hearts_a
+    index: 14
+    pixels:
+      x: 825
+      y: 1452
+      width: 193
+      height: 289
+    clipped: 0
+    visiblePixels:
+      x: 825
+      y: 1452
+      width: 193
+      height: 289
+    uv: {x: 0.4029412, y: 0.70882356, z: 0.09411765, w: 0.14117648}
+  - id: hearts_02
+    index: 15
+    pixels:
+      x: 1030
+      y: 1452
+      width: 193
+      height: 289
+    clipped: 0
+    visiblePixels:
+      x: 1030
+      y: 1452
+      width: 193
+      height: 289
+    uv: {x: 0.5029412, y: 0.70882356, z: 0.09411765, w: 0.14117648}
+  - id: hearts_03
+    index: 16
+    pixels:
+      x: 1235
+      y: 1452
+      width: 193
+      height: 289
+    clipped: 0
+    visiblePixels:
+      x: 1235
+      y: 1452
+      width: 193
+      height: 289
+    uv: {x: 0.6029412, y: 0.70882356, z: 0.09411765, w: 0.14117648}
+  - id: hearts_04
+    index: 17
+    pixels:
+      x: 1440
+      y: 1452
+      width: 192
+      height: 289
+    clipped: 0
+    visiblePixels:
+      x: 1440
+      y: 1452
+      width: 192
+      height: 289
+    uv: {x: 0.7029412, y: 0.70882356, z: 0.09411765, w: 0.14117648}
+  - id: hearts_05
+    index: 18
+    pixels:
+      x: 1644
+      y: 1452
+      width: 193
+      height: 289
+    clipped: 0
+    visiblePixels:
+      x: 1644
+      y: 1452
+      width: 193
+      height: 289
+    uv: {x: 0.8029412, y: 0.70882356, z: 0.09411765, w: 0.14117648}
+  - id: hearts_06
+    index: 19
+    pixels:
+      x: 1849
+      y: 1452
+      width: 193
+      height: 289
+    clipped: 0
+    visiblePixels:
+      x: 1849
+      y: 1452
+      width: 193
+      height: 289
+    uv: {x: 0.9029412, y: 0.70882356, z: 0.09411765, w: 0.14117648}
+  - id: hearts_07
+    index: 20
+    pixels:
+      x: 6
+      y: 1150
+      width: 193
+      height: 290
+    clipped: 0
+    visiblePixels:
+      x: 6
+      y: 1150
+      width: 193
+      height: 290
+    uv: {x: 0.0029411765, y: 0.5617647, z: 0.09411765, w: 0.14117648}
+  - id: hearts_08
+    index: 21
+    pixels:
+      x: 211
+      y: 1150
+      width: 193
+      height: 290
+    clipped: 0
+    visiblePixels:
+      x: 211
+      y: 1150
+      width: 193
+      height: 290
+    uv: {x: 0.10294118, y: 0.5617647, z: 0.09411765, w: 0.14117648}
+  - id: hearts_09
+    index: 22
+    pixels:
+      x: 416
+      y: 1150
+      width: 192
+      height: 290
+    clipped: 0
+    visiblePixels:
+      x: 416
+      y: 1150
+      width: 192
+      height: 290
+    uv: {x: 0.20294118, y: 0.5617647, z: 0.09411765, w: 0.14117648}
+  - id: hearts_10
+    index: 23
+    pixels:
+      x: 620
+      y: 1150
+      width: 193
+      height: 290
+    clipped: 0
+    visiblePixels:
+      x: 620
+      y: 1150
+      width: 193
+      height: 290
+    uv: {x: 0.3029412, y: 0.5617647, z: 0.09411765, w: 0.14117648}
+  - id: hearts_j
+    index: 24
+    pixels:
+      x: 825
+      y: 1150
+      width: 193
+      height: 290
+    clipped: 0
+    visiblePixels:
+      x: 825
+      y: 1150
+      width: 193
+      height: 290
+    uv: {x: 0.4029412, y: 0.5617647, z: 0.09411765, w: 0.14117648}
+  - id: hearts_q
+    index: 25
+    pixels:
+      x: 1030
+      y: 1150
+      width: 193
+      height: 290
+    clipped: 0
+    visiblePixels:
+      x: 1030
+      y: 1150
+      width: 193
+      height: 290
+    uv: {x: 0.5029412, y: 0.5617647, z: 0.09411765, w: 0.14117648}
+  - id: hearts_k
+    index: 26
+    pixels:
+      x: 1235
+      y: 1150
+      width: 193
+      height: 290
+    clipped: 0
+    visiblePixels:
+      x: 1235
+      y: 1150
+      width: 193
+      height: 290
+    uv: {x: 0.6029412, y: 0.5617647, z: 0.09411765, w: 0.14117648}
+  - id: clubs_a
+    index: 27
+    pixels:
+      x: 1440
+      y: 1150
+      width: 192
+      height: 290
+    clipped: 0
+    visiblePixels:
+      x: 1440
+      y: 1150
+      width: 192
+      height: 290
+    uv: {x: 0.7029412, y: 0.5617647, z: 0.09411765, w: 0.14117648}
+  - id: clubs_02
+    index: 28
+    pixels:
+      x: 1644
+      y: 1150
+      width: 193
+      height: 290
+    clipped: 0
+    visiblePixels:
+      x: 1644
+      y: 1150
+      width: 193
+      height: 290
+    uv: {x: 0.8029412, y: 0.5617647, z: 0.09411765, w: 0.14117648}
+  - id: clubs_03
+    index: 29
+    pixels:
+      x: 1849
+      y: 1150
+      width: 193
+      height: 290
+    clipped: 0
+    visiblePixels:
+      x: 1849
+      y: 1150
+      width: 193
+      height: 290
+    uv: {x: 0.9029412, y: 0.5617647, z: 0.09411765, w: 0.14117648}
+  - id: clubs_04
+    index: 30
+    pixels:
+      x: 6
+      y: 849
+      width: 193
+      height: 289
+    clipped: 0
+    visiblePixels:
+      x: 6
+      y: 849
+      width: 193
+      height: 289
+    uv: {x: 0.0029411765, y: 0.41470587, z: 0.09411765, w: 0.14117648}
+  - id: clubs_05
+    index: 31
+    pixels:
+      x: 211
+      y: 849
+      width: 193
+      height: 289
+    clipped: 0
+    visiblePixels:
+      x: 211
+      y: 849
+      width: 193
+      height: 289
+    uv: {x: 0.10294118, y: 0.41470587, z: 0.09411765, w: 0.14117648}
+  - id: clubs_06
+    index: 32
+    pixels:
+      x: 416
+      y: 849
+      width: 192
+      height: 289
+    clipped: 0
+    visiblePixels:
+      x: 416
+      y: 849
+      width: 192
+      height: 289
+    uv: {x: 0.20294118, y: 0.41470587, z: 0.09411765, w: 0.14117648}
+  - id: clubs_07
+    index: 33
+    pixels:
+      x: 620
+      y: 849
+      width: 193
+      height: 289
+    clipped: 0
+    visiblePixels:
+      x: 620
+      y: 849
+      width: 193
+      height: 289
+    uv: {x: 0.3029412, y: 0.41470587, z: 0.09411765, w: 0.14117648}
+  - id: clubs_08
+    index: 34
+    pixels:
+      x: 825
+      y: 849
+      width: 193
+      height: 289
+    clipped: 0
+    visiblePixels:
+      x: 825
+      y: 849
+      width: 193
+      height: 289
+    uv: {x: 0.4029412, y: 0.41470587, z: 0.09411765, w: 0.14117648}
+  - id: clubs_09
+    index: 35
+    pixels:
+      x: 1030
+      y: 849
+      width: 193
+      height: 289
+    clipped: 0
+    visiblePixels:
+      x: 1030
+      y: 849
+      width: 193
+      height: 289
+    uv: {x: 0.5029412, y: 0.41470587, z: 0.09411765, w: 0.14117648}
+  - id: clubs_10
+    index: 36
+    pixels:
+      x: 1235
+      y: 849
+      width: 193
+      height: 289
+    clipped: 0
+    visiblePixels:
+      x: 1235
+      y: 849
+      width: 193
+      height: 289
+    uv: {x: 0.6029412, y: 0.41470587, z: 0.09411765, w: 0.14117648}
+  - id: clubs_j
+    index: 37
+    pixels:
+      x: 1440
+      y: 849
+      width: 192
+      height: 289
+    clipped: 0
+    visiblePixels:
+      x: 1440
+      y: 849
+      width: 192
+      height: 289
+    uv: {x: 0.7029412, y: 0.41470587, z: 0.09411765, w: 0.14117648}
+  - id: clubs_q
+    index: 38
+    pixels:
+      x: 1644
+      y: 849
+      width: 193
+      height: 289
+    clipped: 0
+    visiblePixels:
+      x: 1644
+      y: 849
+      width: 193
+      height: 289
+    uv: {x: 0.8029412, y: 0.41470587, z: 0.09411765, w: 0.14117648}
+  - id: clubs_k
+    index: 39
+    pixels:
+      x: 1849
+      y: 849
+      width: 193
+      height: 289
+    clipped: 0
+    visiblePixels:
+      x: 1849
+      y: 849
+      width: 193
+      height: 289
+    uv: {x: 0.9029412, y: 0.41470587, z: 0.09411765, w: 0.14117648}
+  - id: diamonds_a
+    index: 40
+    pixels:
+      x: 6
+      y: 548
+      width: 193
+      height: 289
+    clipped: 0
+    visiblePixels:
+      x: 6
+      y: 548
+      width: 193
+      height: 289
+    uv: {x: 0.0029411765, y: 0.26764706, z: 0.09411765, w: 0.14117648}
+  - id: diamonds_02
+    index: 41
+    pixels:
+      x: 211
+      y: 548
+      width: 193
+      height: 289
+    clipped: 0
+    visiblePixels:
+      x: 211
+      y: 548
+      width: 193
+      height: 289
+    uv: {x: 0.10294118, y: 0.26764706, z: 0.09411765, w: 0.14117648}
+  - id: diamonds_03
+    index: 42
+    pixels:
+      x: 416
+      y: 548
+      width: 192
+      height: 289
+    clipped: 0
+    visiblePixels:
+      x: 416
+      y: 548
+      width: 192
+      height: 289
+    uv: {x: 0.20294118, y: 0.26764706, z: 0.09411765, w: 0.14117648}
+  - id: diamonds_04
+    index: 43
+    pixels:
+      x: 620
+      y: 548
+      width: 193
+      height: 289
+    clipped: 0
+    visiblePixels:
+      x: 620
+      y: 548
+      width: 193
+      height: 289
+    uv: {x: 0.3029412, y: 0.26764706, z: 0.09411765, w: 0.14117648}
+  - id: diamonds_05
+    index: 44
+    pixels:
+      x: 825
+      y: 548
+      width: 193
+      height: 289
+    clipped: 0
+    visiblePixels:
+      x: 825
+      y: 548
+      width: 193
+      height: 289
+    uv: {x: 0.4029412, y: 0.26764706, z: 0.09411765, w: 0.14117648}
+  - id: diamonds_06
+    index: 45
+    pixels:
+      x: 1030
+      y: 548
+      width: 193
+      height: 289
+    clipped: 0
+    visiblePixels:
+      x: 1030
+      y: 548
+      width: 193
+      height: 289
+    uv: {x: 0.5029412, y: 0.26764706, z: 0.09411765, w: 0.14117648}
+  - id: diamonds_07
+    index: 46
+    pixels:
+      x: 1235
+      y: 548
+      width: 193
+      height: 289
+    clipped: 0
+    visiblePixels:
+      x: 1235
+      y: 548
+      width: 193
+      height: 289
+    uv: {x: 0.6029412, y: 0.26764706, z: 0.09411765, w: 0.14117648}
+  - id: diamonds_08
+    index: 47
+    pixels:
+      x: 1440
+      y: 548
+      width: 192
+      height: 289
+    clipped: 0
+    visiblePixels:
+      x: 1440
+      y: 548
+      width: 192
+      height: 289
+    uv: {x: 0.7029412, y: 0.26764706, z: 0.09411765, w: 0.14117648}
+  - id: diamonds_09
+    index: 48
+    pixels:
+      x: 1644
+      y: 548
+      width: 193
+      height: 289
+    clipped: 0
+    visiblePixels:
+      x: 1644
+      y: 548
+      width: 193
+      height: 289
+    uv: {x: 0.8029412, y: 0.26764706, z: 0.09411765, w: 0.14117648}
+  - id: diamonds_10
+    index: 49
+    pixels:
+      x: 1849
+      y: 548
+      width: 193
+      height: 289
+    clipped: 0
+    visiblePixels:
+      x: 1849
+      y: 548
+      width: 193
+      height: 289
+    uv: {x: 0.9029412, y: 0.26764706, z: 0.09411765, w: 0.14117648}
+  - id: diamonds_j
+    index: 50
+    pixels:
+      x: 6
+      y: 247
+      width: 193
+      height: 289
+    clipped: 0
+    visiblePixels:
+      x: 6
+      y: 247
+      width: 193
+      height: 289
+    uv: {x: 0.0029411765, y: 0.12058822, z: 0.09411765, w: 0.14117648}
+  - id: diamonds_q
+    index: 51
+    pixels:
+      x: 211
+      y: 247
+      width: 193
+      height: 289
+    clipped: 0
+    visiblePixels:
+      x: 211
+      y: 247
+      width: 193
+      height: 289
+    uv: {x: 0.10294118, y: 0.12058822, z: 0.09411765, w: 0.14117648}
+  - id: diamonds_k
+    index: 52
+    pixels:
+      x: 416
+      y: 247
+      width: 192
+      height: 289
+    clipped: 0
+    visiblePixels:
+      x: 416
+      y: 247
+      width: 192
+      height: 289
+    uv: {x: 0.20294118, y: 0.12058822, z: 0.09411765, w: 0.14117648}
+  - id: joker_big
+    index: 53
+    pixels:
+      x: 620
+      y: 247
+      width: 193
+      height: 289
+    clipped: 0
+    visiblePixels:
+      x: 620
+      y: 247
+      width: 193
+      height: 289
+    uv: {x: 0.3029412, y: 0.12058822, z: 0.09411765, w: 0.14117648}
+  - id: joker_small
+    index: 54
+    pixels:
+      x: 825
+      y: 247
+      width: 193
+      height: 289
+    clipped: 0
+    visiblePixels:
+      x: 825
+      y: 247
+      width: 193
+      height: 289
+    uv: {x: 0.4029412, y: 0.12058822, z: 0.09411765, w: 0.14117648}

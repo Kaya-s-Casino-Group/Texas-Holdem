@@ -1,0 +1,22 @@
+{
+  "name": "CardPresentation.Tests.Editor",
+  "references": [
+    "CardPresentation.Runtime",
+    "CardInteraction.Runtime",
+    "CardPresentation.Editor",
+    "CardArt.Runtime",
+    "PokerEngine.Core",
+    "CardPresentation.Tests.Support"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "overrideReferences": true,
+  "precompiledReferences": [
+    "nunit.framework.dll",
+    "DOTween.dll"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ]
+}
