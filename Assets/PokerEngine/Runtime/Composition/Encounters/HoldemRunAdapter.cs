@@ -46,6 +46,19 @@ namespace PokerEngine
         public HoldemRunAdapter(AbilityRuntime runtime, HoldemEncounterSettings settings = null)
         { this.runtime = runtime ?? throw new ArgumentNullException(nameof(runtime)); this.settings = settings ?? new HoldemEncounterSettings(); }
         private MatchDefinition Definition(RunEncounterContext c) => AbilityHoldem.Definition(c.Content.CardsAndAbilities.Version, 2, settings.SmallBlind, settings.BigBlind);
+        /// <summary>Shared encounter description plus the concrete table rules; controllers remain host-owned.</summary>
+        public EncounterSetup<MatchDefinition> Describe(RunEncounterContext c)
+        {
+            if (c.PlayerId == OpponentId) throw new ArgumentException("Player identity conflicts with opponent.");
+            var definition = new EncounterDefinition(c.Node.Id, c.Content.Definition.Version, Kind, RulesVersion,
+                new EncounterObjectiveDefinition(EncounterObjectiveKind.ReachScore, c.Stage.TargetScore), c.Stage.RoundLimit, new[] {
+                    new EncounterParticipantDefinition("player", "player", new ResourceState(new Chips(settings.PlayerChips), c.Stage.Energy)),
+                    new EncounterParticipantDefinition("opponent", "opponent", new ResourceState(new Chips(settings.OpponentChips), c.Stage.Energy))
+                });
+            return new EncounterSetup<MatchDefinition>(new EncounterContext(c.EncounterId, definition, new[] {
+                    new EncounterParticipantBinding("player", c.PlayerId), new EncounterParticipantBinding("opponent", OpponentId)
+                }, new EncounterRunBinding(c.RunId, c.Floor.Id, c.Node.Id)), Definition(c));
+        }
         private HoldemMatchEngine Engine(RunEncounterContext c) => new HoldemMatchEngine(c.Content.CardsAndAbilities, abilityRuntime: runtime,
             deckEntries: c.Deck.Select(card => new DeckEntry(card.Id, card.DefinitionId)));
         public RunEncounterTransition<HoldemEncounterState, MatchEvent> Create(RunEncounterContext c)

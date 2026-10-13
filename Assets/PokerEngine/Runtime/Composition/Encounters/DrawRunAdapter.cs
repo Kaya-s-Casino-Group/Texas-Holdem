@@ -27,10 +27,21 @@ namespace PokerEngine
         public int MinimumDeckSize => settings.HandSize;
         public DrawRunAdapter(AbilityRuntime runtime, DrawEncounterSettings settings = null)
         { this.runtime = runtime ?? throw new ArgumentNullException(nameof(runtime)); this.settings = settings ?? new DrawEncounterSettings(); }
-        public DrawEngine Engine(RunEncounterContext c) => new DrawEngine(c.Content.CardsAndAbilities,
+        private DrawDefinition Definition(RunEncounterContext c) =>
             new DrawDefinition(RulesVersion, c.Stage.TargetScore, settings.HandSize, c.Stage.RoundLimit, settings.Discards, settings.MaxSelection,
                 c.Content.Definition.Scoring, c.Jokers.Select(j => new DrawJoker(new ScoringJoker(j.Id, j.Level, j.Growth, c.Content.Joker(j.DefinitionId).ScoreEffects))),
-                c.HandLevels.Select(l => new DrawHandLevel(l.Category, l.Level))), runtime);
+                c.HandLevels.Select(l => new DrawHandLevel(l.Category, l.Level)));
+        public DrawEngine Engine(RunEncounterContext c) => new DrawEngine(c.Content.CardsAndAbilities, Definition(c), runtime);
+        /// <summary>Shared encounter description plus the concrete rules used by this adapter.</summary>
+        public EncounterSetup<DrawDefinition> Describe(RunEncounterContext c)
+        {
+            var definition = new EncounterDefinition(c.Node.Id, c.Content.Definition.Version, Kind, RulesVersion,
+                new EncounterObjectiveDefinition(EncounterObjectiveKind.ReachScore, c.Stage.TargetScore), c.Stage.RoundLimit,
+                new[] { new EncounterParticipantDefinition("player", "player", new ResourceState(Chips.Zero, c.Stage.Energy)) });
+            return new EncounterSetup<DrawDefinition>(new EncounterContext(c.EncounterId, definition,
+                new[] { new EncounterParticipantBinding("player", c.PlayerId) },
+                new EncounterRunBinding(c.RunId, c.Floor.Id, c.Node.Id)), Definition(c));
+        }
         public RunEncounterTransition<DrawState, DrawEvent> Create(RunEncounterContext c)
         {
             var cards = c.Deck.Select((card, i) => new DrawCard(new CardInstance(new CardInstanceId(c.EncounterId + "/card/" + i), card.DefinitionId, card.Id),

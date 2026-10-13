@@ -5,6 +5,7 @@ using System.Runtime.Serialization;
 
 namespace PokerEngine
 {
+    /// <summary>Resource bundle used by the existing Draw/Holdem ability flows; not a mandatory combatant contract.</summary>
     [DataContract]
     public sealed class ResourceState
     {
