@@ -10,15 +10,16 @@ if [[ ! -f "$nunit" ]]; then
 fi
 test_dir="$(mktemp -d "${TMPDIR:-/tmp}/poker-engine-tests.XXXXXX")"
 trap 'rm -rf "$test_dir"' EXIT
-modules=(Core Abilities Scoring Holdem Draw Runs Composition)
+modules=(Core Abilities Scoring Holdem Draw Runs Progression Composition)
 all_refs=()
 for module in "${modules[@]}"; do
   dependencies=""
   case "$module" in
     Abilities|Scoring) dependencies="Core" ;;
+    Progression) dependencies="Core" ;;
     Holdem) dependencies="Core Abilities" ;;
     Draw|Runs) dependencies="Core Abilities Scoring" ;;
-    Composition) dependencies="Core Abilities Scoring Holdem Draw Runs" ;;
+    Composition) dependencies="Core Abilities Scoring Holdem Draw Runs Progression" ;;
   esac
   references=(-r:System.Runtime.Serialization)
   for dependency in $dependencies; do references+=("-r:$test_dir/PokerEngine.$dependency.dll"); done

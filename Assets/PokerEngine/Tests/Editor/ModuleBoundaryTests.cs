@@ -13,14 +13,15 @@ namespace PokerEngine.Tests
             { "Core", new string[0] }, { "Abilities", new[] { "Core" } }, { "Scoring", new[] { "Core" } },
             { "Holdem", new[] { "Core", "Abilities" } }, { "Draw", new[] { "Core", "Abilities", "Scoring" } },
             { "Runs", new[] { "Core", "Abilities", "Scoring" } },
-            { "Composition", new[] { "Core", "Abilities", "Scoring", "Holdem", "Draw", "Runs" } }
+            { "Progression", new[] { "Core" } },
+            { "Composition", new[] { "Core", "Abilities", "Scoring", "Holdem", "Draw", "Runs", "Progression" } }
         };
         private static readonly Type[] Roots = { typeof(CardInstance), typeof(AbilityExecutor), typeof(ScoreEngine),
-            typeof(HoldemMatchEngine), typeof(DrawEngine), typeof(RunEngine<,,>), typeof(HoldemRunAdapter) };
+            typeof(HoldemMatchEngine), typeof(DrawEngine), typeof(RunEngine<,,>), typeof(HoldemRunAdapter), typeof(PlayerProgressionState) };
         [Test] public void ModulesLiveInSeparateAssemblies()
         {
             var assemblies = Roots.Select(t => t.Assembly.GetName().Name).ToArray();
-            Assert.That(assemblies.Distinct().Count(), Is.EqualTo(7));
+            Assert.That(assemblies.Distinct().Count(), Is.EqualTo(8));
             Assert.That(assemblies, Is.EquivalentTo(Allowed.Keys.Select(m => "PokerEngine." + m)));
         }
         [Test] public void DependencyDirectionIsEnforcedInCompiledAssemblies()

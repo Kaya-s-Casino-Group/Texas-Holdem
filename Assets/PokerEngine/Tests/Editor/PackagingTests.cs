@@ -15,7 +15,7 @@ namespace PokerEngine.Tests
         public void PlayerCompilationIncludesRuntimeAndExcludesEditorTests()
         {
             var playerAssemblies = CompilationPipeline.GetAssemblies(AssembliesType.Player).Select(a => a.name).ToArray();
-            foreach (var module in new[] { "Core", "Abilities", "Scoring", "Holdem", "Draw", "Runs", "Composition" })
+            foreach (var module in new[] { "Core", "Abilities", "Scoring", "Holdem", "Draw", "Runs", "Progression", "Composition" })
                 Assert.That(playerAssemblies, Does.Contain("PokerEngine." + module));
             Assert.That(playerAssemblies, Does.Not.Contain("PokerEngine.Tests.Editor"));
         }
@@ -24,7 +24,7 @@ namespace PokerEngine.Tests
         public void LinkerPreservesTheBasePlayerDataContracts()
         {
             var document = XDocument.Load("Assets/PokerEngine/Runtime/link.xml");
-            foreach (var module in new[] { "Core", "Abilities", "Scoring", "Holdem", "Draw", "Runs", "Composition" })
+            foreach (var module in new[] { "Core", "Abilities", "Scoring", "Holdem", "Draw", "Runs", "Progression", "Composition" })
                 Assert.That(document.Root.Elements("assembly").Any(a =>
                     (string)a.Attribute("fullname") == "PokerEngine." + module && (string)a.Attribute("preserve") == "all"), Is.True);
         }

@@ -7,7 +7,8 @@
     "PokerEngine.Scoring",
     "PokerEngine.Holdem",
     "PokerEngine.Draw",
-    "PokerEngine.Runs"
+    "PokerEngine.Runs",
+    "PokerEngine.Progression"
   ],
   "includePlatforms": [],
   "excludePlatforms": [],

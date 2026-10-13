@@ -6,4 +6,5 @@
   <assembly fullname="PokerEngine.Draw" preserve="all" />
   <assembly fullname="PokerEngine.Runs" preserve="all" />
   <assembly fullname="PokerEngine.Composition" preserve="all" />
+  <assembly fullname="PokerEngine.Progression" preserve="all" />
 </linker>
