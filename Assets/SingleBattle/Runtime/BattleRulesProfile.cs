@@ -1,4 +1,5 @@
 using PokerEngine;
+using Poker.Scoring;
 using UnityEngine;
 
 namespace Poker.SingleBattle
@@ -8,7 +9,12 @@ namespace Poker.SingleBattle
     {
         [SerializeField, InspectorName("规则版本")] private string version = "team-battle.demo.1";
         [SerializeField, Range(1, 1000), InspectorName("回合上限")] private int roundLimit = 8;
-        [SerializeField, Min(1), InspectorName("每点伤害所需分数")] private int pointsPerDamage = 5;
-        public BattleRules BuildRules() => new BattleRules(version, new ScoreDamagePolicy(pointsPerDamage), roundLimit);
+        [SerializeField, InspectorName("出牌伤害配置")] private ScoredHandDamageProfile damage;
+        public ScoredHandDamageProfile Damage => damage;
+        public void ConfigureDamage(ScoredHandDamageProfile profile) => damage = profile != null ? profile : throw new System.ArgumentNullException(nameof(profile));
+        [SerializeField, InspectorName("牌型计分配置")] private PokerScoreProfile scoring;
+        public PokerScoreProfile Scoring => scoring;
+        public ScoreProfile BuildScoring() => scoring != null ? scoring.Build() : ScoreProfile.Default;
+        public BattleRules BuildRules() => new BattleRules(version, damage != null ? damage.BuildRule() : throw new System.InvalidOperationException("请先绑定独立的出牌伤害配置。"), roundLimit);
     }
 }

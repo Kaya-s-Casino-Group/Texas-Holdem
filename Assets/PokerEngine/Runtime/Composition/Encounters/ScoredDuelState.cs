@@ -7,18 +7,6 @@ using System.Security.Cryptography;
 
 namespace PokerEngine
 {
-    /// <summary>Example integer balancing rule. Poker scoring stays outside the common damage resolver.</summary>
-    public sealed class ScoreDamagePolicy
-    {
-        public long PointsPerDamage { get; }
-        public ScoreDamagePolicy(long pointsPerDamage)
-        {
-            if (pointsPerDamage <= 0) throw new ArgumentOutOfRangeException(nameof(pointsPerDamage));
-            PointsPerDamage = pointsPerDamage;
-        }
-        public long Calculate(ScoreResult score) { ScoreEngine.Validate(score); return score.Total / PointsPerDamage; }
-    }
-
     /// <summary>Minimal duel rules, not a character base class or a complete Draw/Run configuration.</summary>
     public sealed class ScoredDuelDefinition
     {

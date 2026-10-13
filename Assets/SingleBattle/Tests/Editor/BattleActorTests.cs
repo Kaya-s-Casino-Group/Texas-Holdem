@@ -44,7 +44,9 @@ namespace Poker.SingleBattle.Tests
                     panel.PlayButton.GetComponentInChildren<TMP_Text>(), panel.DiscardButton.GetComponentInChildren<TMP_Text>(), panel.RankSortButton.GetComponentInChildren<TMP_Text>(), panel.SuitSortButton.GetComponentInChildren<TMP_Text>());
                 Actions = ui.GetComponent<HandActionPresenter>() ?? ui.AddComponent<HandActionPresenter>(); Actions.Configure(Hand, panel, route);
                 Host = root.AddComponent<SingleBattleHost>(); Host.Configure(Match, Actions, null, null);
-                var rules = ScriptableObject.CreateInstance<BattleRulesProfile>(); profiles.Add(rules); Host.ConfigureRules(rules);
+                var rules = ScriptableObject.CreateInstance<BattleRulesProfile>(); profiles.Add(rules);
+                var damage = ScriptableObject.CreateInstance<ScoreDamageProfile>(); profiles.Add(damage); rules.ConfigureDamage(damage);
+                Host.ConfigureRules(rules);
                 Player = New("Player").AddComponent<PlayerBattleActor>(); Enemy = New("Enemy").AddComponent<EnemyBattleActor>();
                 var visual = New("Enemy Visual").transform; visual.SetParent(Enemy.transform, false);
                 visual.localScale = new Vector3(1, 2, 3); Player.Configure(Host); Enemy.Configure(Host, visual);
@@ -76,6 +78,101 @@ namespace Poker.SingleBattle.Tests
                 Hand.StopSession(); Played.StopSession(); EditorSceneManager.ClosePreviewScene(Scene);
                 foreach (var profile in profiles) UnityEngine.Object.DestroyImmediate(profile);
             }
+        }
+        [Test] public void ScoreAssetDrivesBattleAndHoverWithoutMutatingAnExistingSnapshot()
+        {
+            var profile = ScriptableObject.CreateInstance<Poker.Scoring.PokerScoreProfile>();
+            try
+            {
+                var config = new SerializedObject(profile);
+                var ranks = config.FindProperty("ranks");
+                for (int i = 0; i < ranks.arraySize; i++) ranks.GetArrayElementAtIndex(i).FindPropertyRelative("chips").longValue = 42;
+                config.ApplyModifiedPropertiesWithoutUndo();
+                using (var f = new Fixture(start: false, playerCount: 2))
+                {
+                    var rules = new SerializedObject(f.Host.RulesProfile);
+                    rules.FindProperty("scoring").objectReferenceValue = profile; rules.ApplyModifiedPropertiesWithoutUndo();
+                    f.Host.StartBattle(); f.Select();
+                    var card = f.Hand.Cards[0].Card.Id;
+                    Assert.IsTrue(f.Player.TryGetCardBasePoints(card, out var points)); Assert.AreEqual(42, points);
+                    var otherCard = f.Host.State.Zone(CardZoneKinds.Hand, f.Host.Players[1].ParticipantId).Cards[0];
+                    Assert.IsFalse(f.Player.TryGetCardBasePoints(otherCard, out _));
+                    f.Hand.SetInteraction(card.Value, new CardInteractionState(isHovered: true, isSelected: true));
+                    f.Hand.Publish(); f.HandView.CompleteTransitions();
+                    Assert.IsTrue(f.Hand.TryGetHoveredCard(out var hover)); Assert.AreEqual(42, hover.ChipPoints);
+                    // Asset edits affect the next battle only, including hover queries.
+                    for (int i = 0; i < ranks.arraySize; i++) ranks.GetArrayElementAtIndex(i).FindPropertyRelative("chips").longValue = 99;
+                    config.ApplyModifiedPropertiesWithoutUndo();
+                    Assert.IsTrue(f.Player.TryGetCardBasePoints(card, out points)); Assert.AreEqual(42, points);
+                    Assert.AreEqual(1, f.Hand.PlaySelected(f.Played, f.Actions.PlayRoute, false));
+                    Assert.AreEqual(47, f.Host.State.Duel.Scores.Single().Total);
+                    Assert.AreEqual(75 - 47, f.Enemy.Unit.Health);
+                    f.Host.StartBattle(); card = f.Hand.Cards[0].Card.Id;
+                    Assert.IsTrue(f.Player.TryGetCardBasePoints(card, out points)); Assert.AreEqual(99, points);
+                }
+            }
+            finally { UnityEngine.Object.DestroyImmediate(profile); }
+        }
+        [Test] public void DemoRulesReferenceTheIndependentDefaultScoreAsset()
+        {
+            var asset = AssetDatabase.LoadAssetAtPath<Poker.Scoring.PokerScoreProfile>("Assets/PokerScoring/Profiles/DefaultPokerScore.asset");
+            var rules = AssetDatabase.LoadAssetAtPath<BattleRulesProfile>("Assets/SingleBattle/Profiles/DemoBattleRules.asset");
+            Assert.IsNotNull(asset); Assert.AreSame(asset, rules.Scoring);
+            var built = rules.BuildScoring(); var defaults = ScoreProfile.Default;
+            foreach (HandCategory category in Enum.GetValues(typeof(HandCategory)))
+            {
+                var actual = built.Rule(category); var expected = defaults.Rule(category);
+                Assert.AreEqual(expected.BasePoints, actual.BasePoints);
+                Assert.AreEqual(expected.BaseMultiplier, actual.BaseMultiplier);
+                Assert.AreEqual(expected.PointsPerLevel, actual.PointsPerLevel);
+                Assert.AreEqual(expected.MultiplierPerLevel, actual.MultiplierPerLevel);
+            }
+            foreach (var card in StandardDeck.Cards())
+                Assert.AreEqual(CardScoreRules.GetBasePoints(card), built.CardPoints.GetBasePoints(new CardFace(card.Rank, card.Suit)));
+            var serialized = new SerializedObject(asset);
+            Assert.AreEqual(13, serialized.FindProperty("ranks").arraySize);
+            Assert.AreEqual(10, serialized.FindProperty("hands").arraySize);
+        }
+        [Test] public void DamagePreviewMatchesRecordedPlayAndNeverPublishesOrChangesTheLiveBattle()
+        {
+            using (var f = new Fixture(start: false))
+            {
+                var profile = (ScoreDamageProfile)f.Host.RulesProfile.Damage;
+                var config = new SerializedObject(profile); config.FindProperty("version").stringValue = "equal.test.1";
+                config.ApplyModifiedPropertiesWithoutUndo(); f.Host.StartBattle(); f.Select();
+                int changed = 0, attacks = 0; f.Host.StateChanged += () => changed++; f.Player.ActionPresented += () => attacks++;
+                var state = f.Host.State; var table = f.Match.State; var selected = f.Hand.Cards.Where(card => card.Interaction.IsSelected).Select(card => card.Id).ToArray();
+                var preview = f.Host.PreviewSelectedPlay();
+                Assert.IsTrue(preview.Accepted); Assert.AreEqual(preview.Score.Total, preview.Damage.Requests.Single().Amount);
+                Assert.AreSame(state, f.Host.State); Assert.AreSame(table, f.Match.State); Assert.AreEqual(0, changed); Assert.AreEqual(0, attacks);
+                Assert.IsNull(f.Host.LastPlayResolution);
+                CollectionAssert.AreEqual(selected, f.Hand.Cards.Where(card => card.Interaction.IsSelected).Select(card => card.Id));
+                config.FindProperty("version").stringValue = "equal.test.2"; config.ApplyModifiedPropertiesWithoutUndo();
+                Assert.AreEqual(preview.Damage.Requests.Single().Amount, f.Host.PreviewSelectedPlay().Damage.Requests.Single().Amount);
+                Assert.AreEqual("equal.test.1", f.Host.PreviewSelectedPlay().Damage.RuleVersion);
+                Assert.AreEqual(1, f.Hand.PlaySelected(f.Played, f.Actions.PlayRoute, false));
+                var actual = f.Host.LastPlayResolution;
+                Assert.AreEqual(f.Player.ParticipantId, f.Host.LastPlayedBy);
+                Assert.AreEqual(preview.Score.Total, actual.Score.Total); Assert.AreEqual(preview.Damage.Explanation, actual.Damage.Explanation);
+                Assert.AreEqual(preview.Events.Single().HealthLost, actual.Events.Single().HealthLost); Assert.AreEqual(1, attacks);
+                f.Host.StartBattle(); Assert.IsNull(f.Host.LastPlayResolution); f.Select();
+                Assert.AreEqual("equal.test.2", f.Host.PreviewSelectedPlay().Damage.RuleVersion);
+            }
+        }
+        [Test] public void DamageConfigurationIsIndependentAndRejectsInvalidSetup()
+        {
+            var rules = ScriptableObject.CreateInstance<BattleRulesProfile>();
+            var damage = ScriptableObject.CreateInstance<ScoreDamageProfile>();
+            try
+            {
+                Assert.Throws<InvalidOperationException>(() => rules.BuildRules()); rules.ConfigureDamage(damage);
+                Assert.IsInstanceOf<EqualScoreDamageRule>(rules.BuildRules().DamagePolicy);
+                var serialized = new SerializedObject(damage); serialized.FindProperty("version").stringValue = "";
+                serialized.ApplyModifiedPropertiesWithoutUndo(); Assert.Throws<ArgumentException>(() => rules.BuildRules());
+                var demo = AssetDatabase.LoadAssetAtPath<BattleRulesProfile>("Assets/SingleBattle/Profiles/DemoBattleRules.asset");
+                Assert.AreSame(AssetDatabase.LoadAssetAtPath<ScoreDamageProfile>("Assets/SingleBattle/Profiles/DemoScoreDamage.asset"), demo.Damage);
+            }
+            finally { UnityEngine.Object.DestroyImmediate(rules); UnityEngine.Object.DestroyImmediate(damage); }
         }
         [Test] public void DerivedActorsBindDistinctSlotsAndOnlyPlayerOwnsCardCommands()
         {

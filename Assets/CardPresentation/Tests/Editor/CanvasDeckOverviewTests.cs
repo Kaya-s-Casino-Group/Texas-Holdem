@@ -294,6 +294,38 @@ namespace CardPresentation.Tests
             }
         }
 
+        private sealed class ScoreAuthority : ICardMatchCommands, ICardScoreSource
+        {
+            public bool Allow = true;
+            public CardInstanceId Queried;
+            public bool CanInteract => false;
+            public bool CanPlay(CardZonePlayHost hand) => false;
+            public bool CanDiscard(CardZonePlayHost hand) => false;
+            public int Play(CardZonePlayHost hand, CardZonePlayHost destination, CardZoneTransferPresenter route, bool animate) => 0;
+            public int Discard(CardZonePlayHost hand, bool animate) => 0;
+            public bool TryGetCardBasePoints(CardInstanceId card, out long points) { Queried = card; points = 123; return Allow; }
+        }
+        [Test] public void OverviewQueriesGameplayByCardIdentityAndDoesNotReplaceDeniedValuesWithDefaults()
+        {
+            using (var f = new Fixture())
+            {
+                var root = new GameObject("Match"); SceneManager.MoveGameObjectToScene(root, f.Scene);
+                var match = root.AddComponent<CardMatchHost>(); match.ConfigureRuntimeManaged();
+                var card = Card("actual-card", Suit.Spades, Rank.Ace, "spades_a");
+                var seed = new CardTableState(new MatchId("overview"), new[] { card.Card }, new[] {
+                    new CardZone(new ZoneId("deck"), CardZoneKinds.Deck, null, new[] { card.Card.Id }) });
+                var source = new ScoreAuthority(); match.StartExternalMatch(source, seed, new[] { card });
+                var presenter = f.View.gameObject.AddComponent<DeckOverviewPresenter>();
+                presenter.Configure(match, f.View, new ZoneId("deck"), new[] { card.Card.Id }); presenter.Open(false);
+                // View identity may differ from the authoritative card identity.
+                f.View.Present(new DeckOverviewData(new[] { new DeckOverviewCard(
+                    new CardVisualData("different-view", "spades_a", card.Card.Id), Definition(Suit.Spades, Rank.Ace), true) }));
+                f.View.Cards.Single().SetHovered(true, false);
+                Assert.IsTrue(presenter.TryGetHoveredCard(out var target));
+                Assert.AreEqual(123, target.ChipPoints); Assert.AreEqual(card.Card.Id, source.Queried);
+                source.Allow = false; Assert.IsFalse(presenter.TryGetHoveredCard(out _));
+            }
+        }
         [Test] public void PresenterReadsSharedMatchAndExplicitRosterWithoutChangingZoneOrderOrHandHover()
         {
             using (var f = new Fixture())

@@ -33,8 +33,8 @@ namespace PokerEngine.Tests
             var input = submitted.Select(c => new ScoringCard(c.Id.Value, new CardFace(c.Rank, c.Suit), c.Rank == Rank.Ace ? 10000 : 0)).ToArray();
             var pattern = PokerHandClassifier.Classify(submitted);
             var score = ScoreEngine.EvaluatePattern("score", ScoreProfile.Default, pattern, 1, input, new ScoringJoker[0]);
-            Assert.AreEqual(48, score.Total); Assert.AreEqual(2, score.Steps.Count); Assert.IsFalse(score.Steps.Any(s => s.CardId == "a"));
-            Assert.AreEqual(10, ScoreEngine.Evaluate("empty", ScoreProfile.Default, HandCategory.HighCard, 1, new ScoringCard[0], new ScoringJoker[0]).Total);
+            Assert.AreEqual(28, score.Total); Assert.AreEqual(2, score.Steps.Count); Assert.IsFalse(score.Steps.Any(s => s.CardId == "a"));
+            Assert.AreEqual(5, ScoreEngine.Evaluate("empty", ScoreProfile.Default, HandCategory.HighCard, 1, new ScoringCard[0], new ScoringJoker[0]).Total);
             Assert.Throws<ArgumentException>(() => ScoreEngine.EvaluatePattern("bad", ScoreProfile.Default, pattern, 1, input.Take(2), new ScoringJoker[0]));
         }
         [Test] public void DrawPlayScoresAndStopsAtCheckpointUntilExplicitContinue()

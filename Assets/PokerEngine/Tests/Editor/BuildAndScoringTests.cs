@@ -226,22 +226,22 @@ namespace PokerEngine.Tests
             var times = new ScoringJoker("times", 1, 0, new[] { new ScoreEffect(ScoreTiming.AfterCards, ScoreOperation.MultiplyMultiplier, 2) });
             var a = ScoreEngine.Evaluate("a", ScoreProfile.Default, HandCategory.HighCard, 1, Cards(), new[] { plus, times });
             var b = ScoreEngine.Evaluate("b", ScoreProfile.Default, HandCategory.HighCard, 1, Cards(), new[] { times, plus });
-            Assert.That(a.Total, Is.EqualTo(310)); Assert.That(b.Total, Is.EqualTo(186));
-            Assert.That(a.Steps.Last().SourceId, Is.EqualTo("times")); Assert.That(a.Points, Is.EqualTo(31));
+            Assert.That(a.Total, Is.EqualTo(260)); Assert.That(b.Total, Is.EqualTo(156));
+            Assert.That(a.Steps.Last().SourceId, Is.EqualTo("times")); Assert.That(a.Points, Is.EqualTo(26));
         }
         [Test] public void CardRetriggersAndJokerGrowthAppearInScoreTrace()
         {
             var cards = Cards(); cards[0] = new ScoringCard("c0", cards[0].Face, bonusPoints: 3, retriggers: 1);
             var joker = new ScoringJoker("growing", 2, 3, new[] { new ScoreEffect(ScoreTiming.AfterCards, ScoreOperation.AddPoints, 5, perLevel: 2, perGrowth: 4) });
             var result = ScoreEngine.Evaluate("score", ScoreProfile.Default, HandCategory.HighCard, 2, cards, new[] { joker });
-            Assert.That(result.Points, Is.EqualTo(68)); Assert.That(result.Multiplier, Is.EqualTo(2)); Assert.That(result.Total, Is.EqualTo(136));
+            Assert.That(result.Points, Is.EqualTo(63)); Assert.That(result.Multiplier, Is.EqualTo(2)); Assert.That(result.Total, Is.EqualTo(126));
             Assert.That(result.Steps.Count(s => s.CardId == "c0"), Is.EqualTo(2));
         }
         [Test] public void ScoreUsesDecimalAndFloorsOnlyFinalTotal()
         {
             var joker = new ScoringJoker("fraction", 1, 0, new[] { new ScoreEffect(ScoreTiming.AfterCards, ScoreOperation.MultiplyMultiplier, 1.5m) });
             var score = ScoreEngine.Evaluate("fraction", ScoreProfile.Default, HandCategory.HighCard, 1, Cards(), new[] { joker });
-            Assert.That(score.Total, Is.EqualTo(46)); Assert.That(score.Multiplier, Is.EqualTo(1.5m));
+            Assert.That(score.Total, Is.EqualTo(39)); Assert.That(score.Multiplier, Is.EqualTo(1.5m));
             Assert.Throws<OverflowException>(() => ScoreEngine.Evaluate("overflow", ScoreProfile.Default, HandCategory.HighCard, 1, Cards(),
                 new[] { new ScoringJoker("huge", 1, 0, new[] { new ScoreEffect(ScoreTiming.AfterCards, ScoreOperation.MultiplyMultiplier, decimal.MaxValue) }) }));
         }

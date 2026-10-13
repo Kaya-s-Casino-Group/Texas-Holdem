@@ -10,11 +10,43 @@ Host 不再保存生命、攻击、能量、牌数等数值，仅持有玩家/�
 | --- | --- | --- |
 | PlayerBattleActor → 玩家配置 | 单位 ID、最大生命、初始格挡、能量上限/初始值、出牌/弃牌费用、手牌上限、弃牌次数、两种补牌时机 | `Assets/SingleBattle/Profiles/DemoPlayer.asset` |
 | EnemyBattleActor → 怪物配置 | 单位 ID、最大生命、初始格挡、基础攻击伤害；没有能量或牌组字段 | `Assets/SingleBattle/Profiles/DemoEnemy.asset` |
-| SingleBattleHost → 公共战局规则 | 规则版本、回合上限、分数到伤害换算 | `Assets/SingleBattle/Profiles/DemoBattleRules.asset` |
+| SingleBattleHost → 公共战局规则 | 规则版本、回合上限、独立牌型计分与出牌伤害资产引用 | `Assets/SingleBattle/Profiles/DemoBattleRules.asset` |
 
 使用 Assets/Create/玩法/战局 创建不同角色/怪物的配置，分别拖到对应 Actor。多个 Actor 可复用同一模板，但需要不同数值时应复制或另建配置再绑定。共享资产不是角色当前状态：开战时转成不可变的 BattlePlayerSetup / BattleEnemySetup / BattlePlayerRules，当前 HP、格挡、能量、手牌仅由战局状态持有；修改配置应用于下一场战斗。
 
 已迁移原场景数值，Demo 公共配置的回合上限保留原值 **445**，没有重置为代码默认的 8。Player 40 HP、怪物 75 HP/攻击 7、默认 3 能量，出牌和弃牌各耗 1。初始能量独立设置，允许超过上限；后续回合恢复到该玩家的上限。
+
+## 牌型计分
+
+`Tools/Poker/牌型计分/打开默认配置` 编辑默认筹码与倍率。DemoBattleRules 的「牌型计分配置」引用此独立资产，开战后使用不可变快照。支持牌型基础值/等级成长、单牌点数筹码与指定牌面覆盖；手牌、牌库悬停读取当前战局相同配置。默认参考小丑牌，示例一对 K（带不计分的 A）为 `(10 + 10 + 10) × 2 = 60` 分，默认等额产生 60 点基础伤害。新战局仍固定 1 级牌型；玩家成长接线另行扩展。详见 `Assets/PokerScoring/README.md`。
+
+## 出牌伤害与只读验算
+
+- `DemoBattleRules.asset` →「出牌伤害配置」引用独立 `DemoScoreDamage.asset`。入口 `Tools/Poker/战局/打开默认伤害配置`；默认使用 `EqualScoreDamageRule`，最终得分等额作为每个已选目标的基础伤害，不再设置除数。新建公共规则资产必须绑定伤害配置，缺失时明确报错。
+- `ScoredHandDamageProfile.BuildRule()` 在开战时构建纯 C#、不可变的 `IScoredHandDamageRule`。新增策略通过实现接口与派生配置资产接入；公共战局配置、Host 和牌区不维护转换参数。
+- `ScoredHandDamageContext` 包含计分结果、攻击者、由目标策略验证后的目标列表、只读 CombatState 和正式出牌生成的 HandAttackInfo。`DamagePlan` 返回每个目标的 `DamageRequest` 及说明。当前协议要求每个已选目标按顺序恰好一条请求，不允许偷换来源/目标/规则版本；异常输出会原子拒绝本次出牌。
+- 边界为：牌型计分 → 构建基础伤害 → 攻击修正 → 目标承伤修正 → 格挡与生命。卡牌/Joker 对筹码倍率的影响属于计分层，不再在伤害阶段重复计算。
+- `BattleRules` 构造时可注入 `IAttackDamageModifier` / `IIncomingDamageModifier`，默认分别为原值通过的 Identity 实现。当前只留纯 C# 接口，尚不提供 Buff/抗性配置表或 Inspector 参数。上下文包含只读 CombatState、目标、该阶段输入伤害，以及共用的 `AttackContext`（攻击者、来源类型、基础伤害和出牌快照）。`Amount` 是该阶段输入，`Attack.BaseDamage` 始终是原始基础伤害；返回 `DamageModification`，记录版本、说明、输入与输出及可选触发原因，只能改变数值，不能偷换来源快照、目标或修改状态。
+- 攻击修正在 TeamBattleEngine 构建各目标请求时执行，读取本次攻击开始时的状态；目标承伤修正在 `CombatEngine.Resolve` 内、格挡前执行，读取同一原子批次前序效果结算后的状态。无效输出或数值溢出会拒绝整个动作，已计算的中间结果不写回。
+- 只有 `CombatEngine.Resolve` 扣格挡/生命并生成掉血、溢出、死亡事件。怪物普通攻击直接产生 DamageRequest，不经过牌型计分，但仍经过攻击与承伤两个修正接口。
+- 旧 standalone `ScoredDuelEngine`/快照保留 ScoreDamagePolicy 的兼容入口。当前 Demo 使用等额规则与新修正接口，不修改旧存档格式；显式注入旧 ScoreDamagePolicy 的兼容调用仍保留除法行为。
+
+出牌信息只在 `CardDuelEngine` 正式判型/计分后、移牌前生成一次。`HandAttackInfo.Pattern` 是同一个判型结果；`AttackCardSnapshot` 保存实例 ID、定义/Run 来源 ID、当时有效点数与花色、效果和禁用状态，不引用 Unity、美术或实时牌区。
+
+- `SubmittedCards`：全部实际提交牌，包括杂牌和失效牌。
+- `PatternCards`：判型结果选出的组成牌，包括失效牌。
+- `ScoringCards`：组成牌中允许逐牌计分的牌，排除失效牌；筹码为 0 不代表没参加计分。现阶段仍采用“仅组成牌计分”的正式规则，不在伤害层重判牌型。
+- 花色条件由扩展实现明确使用 `Attack.Hand.Cards(AttackCardScope.Submitted/Pattern/Scoring)`，没有隐式默认范围。各目标共用同一份 HandAttackInfo；每个目标的攻击修正和承伤修正接收同一个 AttackContext 对象，卡牌移动后仍读取原始快照。
+- 怪物普通攻击标记 `EnemyAttack`，Hand 为空。原始 CombatEffect 和只提交分数的旧 TeamBattle 调用标记 `Other`，不会根据 ScoreResult 伪造牌面；需要牌条件的实现必须先确认有出牌快照。
+- `DamageModification.Triggers` 是实际修正实现返回的 `DamageTriggerReason` 列表，包含来源 ID、说明、检查范围与关联实例牌 ID。引擎校验关联牌属于声明范围，错误记录原子拒绝。没有触发时列表为空；记录结构本身不实现条件、叠加顺序或能力公式。本次未添加生产用花色增伤、牌型减伤或能力配置。
+
+`Tools/Poker/战局/出牌伤害验算` 为 Editor 专用中文只读窗口。在 Play 模式游戏中选择手牌，面板自动读取当前观察玩家，展示攻击来源、提交牌/牌型组成牌/实际计分牌、筹码倍率步骤、总分、基础伤害、攻击修正、目标承伤修正（含规则版本、说明、触发来源/原因、检查范围和关联牌）、格挡前伤害以及各目标格挡、实际掉血、溢出和死亡。多个场景宿主可通过「观察战局」手动选择。面板不负责选目标，使用与当前出牌相同的目标策略。
+
+「当前选牌预计结果」通过 `Host.PreviewSelectedPlay → CardDuelEngine.PreviewPlay → Execute` 走完整正式出牌入口，包括合法性、计分、伤害、CombatEngine 和补牌；只保留返回值供显示，绝不将返回状态写入 Host，不触发 UI/表现/回合提交。反复读取不改变当前牌区、能量或随机状态。注入的攻击构建、攻击/承伤修正、选目标和发牌策略必须保持纯函数约定，不读取外部随机数或产生副作用。
+
+「最近一次实际出牌」读取 Host 缓存的已提交 CardDuelTransition，包含当时的牌型、分数、DamagePlan 和 CombatEvent；不重新计算历史结果。重新开局清空记录。不可行动或演出中不展示过时预览。当前工具不提供独立造牌/修改生命/编辑配置或提交出牌按钮。
+
+测试入口 `Tools/测试面板` →「攻击来源与触发依据」「出牌伤害与只读验算」，场景接入/配置快照测试在「角色与表现协议」。
 
 ## 回合与牌组
 
@@ -24,7 +56,7 @@ Host 不再保存生命、攻击、能量、牌数等数值，仅持有玩家/�
 4. 全部怪物完成后算一整轮。仍在战斗时，所有存活玩家恢复各自能量并按各自策略补牌。死亡玩家不再参与行动/等待条件，也不恢复能量或补牌。
 5. 怪物全灭胜利、玩家全灭失败；达到回合上限在完整怪物阶段后判负。部分队友/怪物死亡不提前终止整场。
 
-选择 1–5 张真实手牌，由 PokerHandClassifier / ScoreEngine 计算牌型，总分经公共 ScoreDamagePolicy 转为伤害，CombatEngine 处理格挡与 HP。默认出牌延迟至下一玩家阶段补满，弃牌立即补满；每位玩家可单独配置。抽牌堆不足只洗回该玩家的弃牌堆。
+选择 1–5 张真实手牌，由 PokerHandClassifier / ScoreEngine 计算牌型，总分默认由 EqualScoreDamageRule 等额生成基础伤害，经过攻击修正后交给 CombatEngine 处理目标承伤、格挡与 HP。默认出牌延迟至下一玩家阶段补满，弃牌立即补满；每位玩家可单独配置。抽牌堆不足只洗回该玩家的弃牌堆。
 
 本地 Demo 用一套 CardZone/UI 观察当前玩家，点击“切换玩家”或 Tab 切换。结束后自动转到仍可行动的队友。切换只重新绑定观察者牌区和命令接收者，不移动逻辑卡牌、不重开战局；牌库总览也仅包含当前玩家的完整构筑。表现/发牌过程中禁止切换与重复输入。
 

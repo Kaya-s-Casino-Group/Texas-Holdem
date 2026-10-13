@@ -8,35 +8,6 @@ namespace PokerEngine
     public enum ScoreTiming { BeforeCards = 1, PerCard, AfterCards }
     public enum ScoreOperation { AddPoints = 1, AddMultiplier, MultiplyMultiplier }
 
-    public sealed class HandScoreRule
-    {
-        public HandCategory Category { get; }
-        public long BasePoints { get; }
-        public decimal BaseMultiplier { get; }
-        public long PointsPerLevel { get; }
-        public decimal MultiplierPerLevel { get; }
-        public HandScoreRule(HandCategory category, long points, decimal multiplier, long pointsPerLevel = 10, decimal multiplierPerLevel = 1)
-        {
-            if (!Enum.IsDefined(typeof(HandCategory), category) || points < 0 || multiplier < 0 || pointsPerLevel < 0 || multiplierPerLevel < 0)
-                throw new ArgumentException("Invalid hand score rule.");
-            Category = category; BasePoints = points; BaseMultiplier = multiplier; PointsPerLevel = pointsPerLevel; MultiplierPerLevel = multiplierPerLevel;
-        }
-    }
-    public sealed class ScoreProfile
-    {
-        private readonly Dictionary<HandCategory, HandScoreRule> rules;
-        public string Version { get; }
-        public ScoreProfile(string version, IEnumerable<HandScoreRule> rules)
-        {
-            Version = Guard.Text(version, nameof(version)); this.rules = Guard.Copy(rules, nameof(rules)).ToDictionary(r => r.Category);
-            if (Enum.GetValues(typeof(HandCategory)).Cast<HandCategory>().Any(c => !this.rules.ContainsKey(c)))
-                throw new ArgumentException("A rule is required for every hand category.");
-        }
-        public HandScoreRule Rule(HandCategory category) => rules[category];
-        // Example balancing values; content can replace the complete versioned profile.
-        public static ScoreProfile Default => new ScoreProfile("score.example.1", Enum.GetValues(typeof(HandCategory)).Cast<HandCategory>()
-            .Select((c, i) => new HandScoreRule(c, 10L * (i + 1), i + 1, 10, 1)));
-    }
     public sealed class ScoreEffect
     {
         public ScoreTiming Timing { get; }
@@ -93,8 +64,10 @@ namespace PokerEngine
     {
         public string Id { get; }
         public CardFace Face { get; }
-        /// <summary>Base points for the supplied (possibly effective) face; unaffected by enhancements or scoring eligibility.</summary>
-        public long BasePoints => CardScoreRules.GetBasePoints(Face.Rank);
+        /// <summary>Default-profile value. Use GetBasePoints with the active profile for gameplay/UI queries.</summary>
+        public long BasePoints => GetBasePoints(CardPointProfile.Default);
+        public long GetBasePoints(CardPointProfile profile) => (profile ?? throw new ArgumentNullException(nameof(profile))).GetBasePoints(Face);
+        public long GetPointsPerTrigger(CardPointProfile profile) => checked(GetBasePoints(profile) + BonusPoints);
         public long BonusPoints { get; }
         /// <summary>Nominal points for one trigger: base + bonus. Excludes multipliers, retriggers, jokers and hand points.
         /// Check CanScore and the hand's scoring subset before applying; ineffective cards still expose their original value.</summary>
@@ -159,7 +132,7 @@ namespace PokerEngine
             // Skip their entire per-card contribution, including enhancements, retriggers and per-card joker effects.
             foreach (var card in cards.Where(c => c.CanScore))
             {
-                long pointsPerTrigger = card.PointsPerTrigger;
+                long pointsPerTrigger = card.GetPointsPerTrigger(profile.CardPoints);
                 for (int repeat = 0; repeat <= card.Retriggers; repeat++)
                 {
                     apply(card.Id, card.Id, ScoreOperation.AddPoints, pointsPerTrigger);

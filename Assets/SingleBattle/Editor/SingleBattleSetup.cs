@@ -60,7 +60,7 @@ namespace Poker.SingleBattle.Editor
             var intent = Label(middle, "Intent", "敌人意图：攻击 7", 17, new Vector2(12, -82), new Vector2(476, 30), new Color32(237, 156, 129, 255), true);
             var info = Panel(go.transform, "Battle Info", new Vector2(.5f, 1), new Vector2(0, -162), new Vector2(700, 100));
             var message = Label(info, "Message", "选择 1–5 张牌组成牌型 · 能量用尽或手动结束回合", 20, new Vector2(12, -8), new Vector2(676, 32), Paper, true);
-            var score = Label(info, "Score", "牌型得分 ÷ 5 = 伤害（向下取整）", 16, new Vector2(12, -40), new Vector2(676, 26), new Color32(233, 193, 112, 255), true);
+            var score = Label(info, "Score", "牌型得分 = 基础伤害", 16, new Vector2(12, -40), new Vector2(676, 26), new Color32(233, 193, 112, 255), true);
             var counts = Label(info, "Counts", "抽牌堆 44  ·  弃牌堆 0  ·  剩余弃牌 3", 16, new Vector2(12, -68), new Vector2(676, 26), Paper, true);
             var endTurnRoot = Panel(go.transform, "End Turn", new Vector2(0, 1), new Vector2(24, -192), new Vector2(245, 44));
             var endTurn = MakeButton(endTurnRoot, "结束回合");

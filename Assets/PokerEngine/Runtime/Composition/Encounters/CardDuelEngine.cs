@@ -5,7 +5,7 @@ using System.Linq;
 namespace PokerEngine
 {
     public enum CardDuelAction { Play = 1, Discard, EnemyAction, EndTurn, CollectPlayed, Start }
-    public enum CardDuelError { None, StaleRevision, InvalidPhase, InvalidSelection, NoDiscards, InsufficientEnergy, Overflow, InvalidTarget, InvalidState }
+    public enum CardDuelError { None, StaleRevision, InvalidPhase, InvalidSelection, NoDiscards, InsufficientEnergy, Overflow, InvalidTarget, InvalidState, InvalidDamagePlan, InvalidDamageModifier }
     public enum CardDuelRefillTiming { NextPlayerTurn = 0, AfterAction = 1 }
     public enum CardDuelDealTrigger { OpeningTurn, AfterPlay, AfterDiscard, PlayerTurnStart }
 
@@ -68,10 +68,12 @@ namespace PokerEngine
         public CardDuelError Error { get; }
         public bool Accepted => Error == CardDuelError.None;
         public ScoreResult Score { get; }
+        public PokerHandClassification Pattern { get; }
+        public DamagePlan Damage { get; }
         public IReadOnlyList<CombatEvent> Events { get; }
         internal CardDuelTransition(CardDuelState state, CardDuelError error = CardDuelError.None,
-            ScoreResult score = null, IEnumerable<CombatEvent> events = null)
-        { State = state; Error = error; Score = score; Events = Guard.View(Guard.Copy(events ?? new CombatEvent[0], nameof(events))); }
+            ScoreResult score = null, IEnumerable<CombatEvent> events = null, PokerHandClassification pattern = null, DamagePlan damage = null)
+        { State = state; Error = error; Score = score; Pattern = pattern; Damage = damage; Events = Guard.View(Guard.Copy(events ?? new CombatEvent[0], nameof(events))); }
     }
 
     /// <summary>
@@ -137,6 +139,12 @@ namespace PokerEngine
             }
             return new CardDuelState(new CardTableState(new MatchId(id), cards, zones), duel, random, roster.ToDictionary(x => x.Id, x => x.Rules.Discards), false);
         }
+        /// <summary>Runs the exact command pipeline against immutable input. The caller must not commit the returned state.
+        /// Injected target, damage, attack/incoming modifiers and draw policies must be pure, just as for authoritative execution.</summary>
+        public CardDuelTransition PreviewPlay(CardDuelState state, long expectedRevision, ParticipantId actor,
+            IEnumerable<CardInstanceId> selected, IEnumerable<ParticipantId> targets = null) =>
+            Execute(state, expectedRevision, actor, CardDuelAction.Play, selected, targets);
+
         // Compatibility overload: first player, or the next enemy. Multiplayer commands always identify their actor.
         public CardDuelTransition Execute(CardDuelState state, long expectedRevision, CardDuelAction action, IEnumerable<CardInstanceId> selected = null) =>
             Execute(state, expectedRevision, action == CardDuelAction.EnemyAction ? state.Duel.NextEnemy : state.Duel.PlayerId, action, selected);
@@ -169,7 +177,7 @@ namespace PokerEngine
             try
             {
                 var zones = state.Table.Zones.ToArray(); var random = state.Random; var duel = state.Duel;
-                var discards = state.Duel.Players.ToDictionary(x => x.Id, x => state.DiscardsFor(x.Id)); ScoreResult score = null; IReadOnlyList<CombatEvent> events = new CombatEvent[0];
+                var discards = state.Duel.Players.ToDictionary(x => x.Id, x => state.DiscardsFor(x.Id)); ScoreResult score = null; PokerHandClassification pattern = null; DamagePlan damage = null; IReadOnlyList<CombatEvent> events = new CombatEvent[0];
                 if (action == CardDuelAction.Start)
                 {
                     foreach (var player in duel.Players) Deal(state.Table, zones, player.Id, player.Rules, CardDuelDealTrigger.OpeningTurn, ref random);
@@ -178,12 +186,14 @@ namespace PokerEngine
                 {
                     // Authority determines both submitted membership and score, never accepting a UI-provided numeric score.
                     var ordered = state.Zone(CardZoneKinds.Hand, actor).Cards.Where(ids.Contains).Select(state.Table.GetCard).ToArray();
-                    var pattern = PokerHandClassifier.Classify(ordered.Select(card => new EffectiveCard(card.Id, Face(card).Rank, Face(card).Suit)));
+                    pattern = PokerHandClassifier.Classify(ordered.Select(card => new EffectiveCard(card.Id, Face(card).Rank, Face(card).Suit)));
                     score = ScoreEngine.EvaluatePattern(Duel.NextScoreId(duel), Scoring, pattern, 1,
                         ordered.Select(card => new ScoringCard(card.Id.Value, new CardFace(Face(card).Rank, Face(card).Suit), effects: card.Effects)), new ScoringJoker[0]);
-                    var hit = Duel.Execute(duel, duel.Revision, actor, ScoredDuelActionKind.ScoredHand, score, targets);
+                    var hand = new HandAttackInfo(pattern, ordered.Select(card => new AttackCardSnapshot(card,
+                        new EffectiveCard(card.Id, Face(card).Rank, Face(card).Suit))));
+                    var hit = Duel.Execute(duel, duel.Revision, actor, ScoredDuelActionKind.ScoredHand, score, targets, hand);
                     if (!hit.Accepted) return new CardDuelTransition(state, hit.Error);
-                    duel = hit.State; events = hit.Events; Move(zones, actor, CardZoneKinds.Hand, CardZoneKinds.Played, ordered.Select(card => card.Id));
+                    duel = hit.State; events = hit.Events; damage = hit.Damage; Move(zones, actor, CardZoneKinds.Hand, CardZoneKinds.Played, ordered.Select(card => card.Id));
                     if (!duel.IsFinished) Deal(state.Table, zones, actor, duel.Player(actor).Rules, CardDuelDealTrigger.AfterPlay, ref random);
                 }
                 else if (action == CardDuelAction.Discard)
@@ -217,7 +227,7 @@ namespace PokerEngine
                     }
                 }
                 var table = new CardTableState(state.Table.MatchId, state.Table.Cards, zones, checked(state.Revision + 1));
-                return new CardDuelTransition(new CardDuelState(table, duel, random, discards, true), score: score, events: events);
+                return new CardDuelTransition(new CardDuelState(table, duel, random, discards, true), score: score, events: events, pattern: pattern, damage: damage);
             }
             catch (OverflowException) { return new CardDuelTransition(state, CardDuelError.Overflow); }
         }

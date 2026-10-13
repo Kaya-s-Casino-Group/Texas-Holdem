@@ -1,5 +1,17 @@
 {
   "name": "Poker.SingleBattle.Runtime",
   "rootNamespace": "Poker.SingleBattle",
-  "references": ["PokerEngine.Core", "PokerEngine.Scoring", "PokerEngine.Combat", "PokerEngine.Composition", "PokerEngine.Encounters", "CardInteraction.Runtime", "CardPresentation.Runtime", "RetroRendering.Runtime", "Unity.TextMeshPro", "Unity.ugui"]
+  "references": [
+    "PokerEngine.Core",
+    "PokerEngine.Scoring",
+    "PokerEngine.Combat",
+    "PokerEngine.Composition",
+    "PokerEngine.Encounters",
+    "CardInteraction.Runtime",
+    "CardPresentation.Runtime",
+    "RetroRendering.Runtime",
+    "Unity.TextMeshPro",
+    "Unity.ugui",
+    "Poker.Scoring.Runtime"
+  ]
 }

@@ -5,7 +5,7 @@ using System.Linq;
 namespace PokerEngine
 {
     public enum CombatEffectKind { Damage = 1, Heal, GainBlock, ClearBlock }
-    public enum CombatError { None, InvalidState, StaleRevision, InvalidEffect, Overflow }
+    public enum CombatError { None, InvalidState, StaleRevision, InvalidEffect, Overflow, InvalidDamageModifier }
 
     /// <summary>Authority-resolved effect, not a player command. The mode validates action costs, targets and amounts first.</summary>
     public sealed class CombatEffect
@@ -14,11 +14,20 @@ namespace PokerEngine
         public ParticipantId Source { get; }
         public ParticipantId Target { get; }
         public long Amount { get; }
-        public CombatEffect(CombatEffectKind kind, ParticipantId source, ParticipantId target, long amount = 0)
+        public DamageModification AttackModification { get; }
+        public AttackContext Attack { get; }
+        public CombatEffect(CombatEffectKind kind, ParticipantId source, ParticipantId target, long amount = 0, DamageModification attackModification = null, AttackContext attack = null)
         {
             if (!Enum.IsDefined(typeof(CombatEffectKind), kind) || !source.IsValid || !target.IsValid || amount < 0 || kind == CombatEffectKind.ClearBlock && amount != 0)
                 throw new ArgumentException("Invalid combat effect.");
-            Kind = kind; Source = source; Target = target; Amount = amount;
+            if (attackModification != null && (kind != CombatEffectKind.Damage || attackModification.OutputAmount != amount))
+                throw new ArgumentException("Attack report must match the outgoing damage.");
+            if (kind != CombatEffectKind.Damage && attack != null) throw new ArgumentException("Only damage effects carry attack facts.");
+            Attack = kind == CombatEffectKind.Damage ? attack ?? new AttackContext(source, AttackOrigin.Other, attackModification?.InputAmount ?? amount) : null;
+            if (Attack != null && (Attack.Source != source || Attack.BaseDamage != (attackModification?.InputAmount ?? amount)))
+                throw new ArgumentException("Attack facts must match the original damage request.");
+            if (attackModification != null) DamageModification.Validate(attackModification, Attack.BaseDamage, Attack);
+            Kind = kind; Source = source; Target = target; Amount = amount; AttackModification = attackModification;
         }
     }
     public sealed class CombatEvent
@@ -30,12 +39,14 @@ namespace PokerEngine
         public int HealthLost { get; }
         public int HealthRestored { get; }
         public long Overkill { get; }
+        public DamageModification IncomingModification { get; }
+        public long SettledDamage => IncomingModification?.OutputAmount ?? (Effect.Kind == CombatEffectKind.Damage ? Effect.Amount : 0);
         public CombatantState Before { get; }
         public CombatantState After { get; }
         public bool Died => Before.IsAlive && !After.IsAlive;
-        internal CombatEvent(long revision, int index, CombatEffect effect, CombatantState before, CombatantState after, int absorbed, long overkill)
+        internal CombatEvent(long revision, int index, CombatEffect effect, CombatantState before, CombatantState after, int absorbed, long overkill, DamageModification incomingModification = null)
         {
-            Revision = revision; Index = index; Effect = effect; Before = before; After = after; BlockAbsorbed = absorbed; Overkill = overkill;
+            IncomingModification = incomingModification; Revision = revision; Index = index; Effect = effect; Before = before; After = after; BlockAbsorbed = absorbed; Overkill = overkill;
             HealthLost = Math.Max(0, before.Health - after.Health); HealthRestored = Math.Max(0, after.Health - before.Health);
         }
     }
@@ -53,11 +64,12 @@ namespace PokerEngine
     public static class CombatEngine
     {
         public const string RulesVersion = "combat.2";
-        public static CombatTransition Resolve(CombatState state, long expectedRevision, IEnumerable<CombatEffect> effects)
+        public static CombatTransition Resolve(CombatState state, long expectedRevision, IEnumerable<CombatEffect> effects, IIncomingDamageModifier incomingDamage = null)
         {
             if (state == null || effects == null) throw new ArgumentNullException();
             try { Validate(state); } catch (ArgumentException) { return new CombatTransition(state, CombatError.InvalidState); }
             if (state.Revision != expectedRevision) return new CombatTransition(state, CombatError.StaleRevision);
+            incomingDamage = incomingDamage ?? new IdentityIncomingDamageModifier();
             try
             {
                 var batch = Guard.Copy(effects, nameof(effects));
@@ -69,11 +81,20 @@ namespace PokerEngine
                     if (effect == null || !units.ContainsKey(effect.Source) || !units.ContainsKey(effect.Target) ||
                         !units[effect.Source].IsAlive || !units[effect.Target].IsAlive) throw new ArgumentException("Effects require living known units.");
                     var before = units[effect.Target]; int health = before.Health, block = before.Block, absorbed = 0; long overkill = 0;
+                    DamageModification incoming = null;
                     switch (effect.Kind)
                     {
                         case CombatEffectKind.Damage:
-                            absorbed = (int)Math.Min(effect.Amount, block); block -= absorbed;
-                            long remaining = effect.Amount - absorbed; int lost = (int)Math.Min(remaining, health);
+                            try
+                            {
+                                // Earlier effects in this atomic batch are visible to the next target-side modifier.
+                                var current = new CombatState(state.Id, state.Revision, state.Combatants.Select(unit => units[unit.Id]), state.Statuses);
+                                incoming = DamageModification.Validate(incomingDamage.Modify(
+                                    new DamageModifierContext(current, effect.Source, effect.Target, effect.Amount, effect.Attack)), effect.Amount, effect.Attack);
+                            }
+                            catch (ArgumentException) { return new CombatTransition(state, CombatError.InvalidDamageModifier); }
+                            absorbed = (int)Math.Min(incoming.OutputAmount, block); block -= absorbed;
+                            long remaining = incoming.OutputAmount - absorbed; int lost = (int)Math.Min(remaining, health);
                             health -= lost; overkill = remaining - lost; break;
                         case CombatEffectKind.Heal: health += (int)Math.Min(effect.Amount, before.MaxHealth - health); break;
                         case CombatEffectKind.GainBlock: block = checked(block + checked((int)effect.Amount)); break;
@@ -81,7 +102,7 @@ namespace PokerEngine
                         default: throw new ArgumentException("Unknown combat effect.");
                     }
                     var after = before.WithVitals(health, block); units[after.Id] = after;
-                    events.Add(new CombatEvent(revision, events.Count, effect, before, after, absorbed, overkill));
+                    events.Add(new CombatEvent(revision, events.Count, effect, before, after, absorbed, overkill, incoming));
                 }
                 return new CombatTransition(new CombatState(state.Id, revision, state.Combatants.Select(unit => units[unit.Id]), state.Statuses), events: events);
             }

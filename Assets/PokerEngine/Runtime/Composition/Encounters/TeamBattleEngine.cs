@@ -8,13 +8,18 @@ namespace PokerEngine
     public sealed class BattleRules
     {
         public string Version { get; }
-        public ScoreDamagePolicy DamagePolicy { get; }
+        public IScoredHandDamageRule DamagePolicy { get; }
         public int RoundLimit { get; }
-        public BattleRules(string version, ScoreDamagePolicy damagePolicy, int roundLimit)
+        public IAttackDamageModifier AttackDamage { get; }
+        public IIncomingDamageModifier IncomingDamage { get; }
+        public BattleRules(string version, IScoredHandDamageRule damagePolicy, int roundLimit,
+            IAttackDamageModifier attackDamage = null, IIncomingDamageModifier incomingDamage = null)
         {
             Version = Guard.Text(version, nameof(version)); DamagePolicy = damagePolicy ?? throw new ArgumentNullException(nameof(damagePolicy));
             if (roundLimit < 1 || roundLimit > 1000) throw new ArgumentOutOfRangeException(nameof(roundLimit));
             RoundLimit = roundLimit;
+            AttackDamage = attackDamage ?? new IdentityAttackDamageModifier();
+            IncomingDamage = incomingDamage ?? new IdentityIncomingDamageModifier();
         }
     }
     /// <summary>Immutable player-specific card and action budget, captured when entering the encounter.</summary>
@@ -146,8 +151,9 @@ namespace PokerEngine
         public CardDuelError Error { get; }
         public bool Accepted => Error == CardDuelError.None;
         public IReadOnlyList<CombatEvent> Events { get; }
-        internal TeamBattleTransition(TeamBattleState state, CardDuelError error = CardDuelError.None, IEnumerable<CombatEvent> events = null)
-        { State = state; Error = error; Events = Guard.View((events ?? new CombatEvent[0]).ToArray()); }
+        public DamagePlan Damage { get; }
+        internal TeamBattleTransition(TeamBattleState state, CardDuelError error = CardDuelError.None, IEnumerable<CombatEvent> events = null, DamagePlan damage = null)
+        { State = state; Error = error; Damage = damage; Events = Guard.View((events ?? new CombatEvent[0]).ToArray()); }
     }
     /// <summary>Combat and round authority. Cards/scoring legality belong to CardDuelEngine; animations belong to the host.
     /// Commands serialize by revision even though players share one phase.</summary>
@@ -181,11 +187,13 @@ namespace PokerEngine
             return Guard.View(targets);
         }
         public TeamBattleTransition Execute(TeamBattleState state, long revision, ParticipantId actor, ScoredDuelActionKind action,
-            ScoreResult score = null, IEnumerable<ParticipantId> requestedTargets = null)
+            ScoreResult score = null, IEnumerable<ParticipantId> requestedTargets = null, HandAttackInfo hand = null)
         {
             if (state == null) throw new ArgumentNullException(nameof(state));
             if (!ReferenceEquals(state.Rules, Definition)) return new TeamBattleTransition(state, CardDuelError.InvalidState);
             if (revision != state.Revision) return new TeamBattleTransition(state, CardDuelError.StaleRevision);
+            if (hand != null && (action != ScoredDuelActionKind.ScoredHand || score == null || hand.Pattern.Category != score.Category))
+                return new TeamBattleTransition(state, CardDuelError.InvalidDamagePlan);
             bool enemy = action == ScoredDuelActionKind.EnemyAction;
             if (state.IsFinished || !Enum.IsDefined(typeof(ScoredDuelActionKind), action) || (enemy
                 ? state.Phase != ScoredDuelPhase.AwaitingEnemyAction || actor != state.NextEnemy : !state.CanAct(actor)))
@@ -195,7 +203,7 @@ namespace PokerEngine
             try
             {
                 var combat = state.Combat; var players = state.Players.ToArray(); var scores = state.Scores.ToArray();
-                IReadOnlyList<CombatEvent> events = new CombatEvent[0];
+                IReadOnlyList<CombatEvent> events = new CombatEvent[0]; DamagePlan damagePlan = null;
                 if (action == ScoredDuelActionKind.ScoredHand || enemy)
                 {
                     if (!enemy)
@@ -206,9 +214,37 @@ namespace PokerEngine
                         scores = scores.Concat(new[] { score }).ToArray();
                     }
                     var targets = Targets(state, actor, requestedTargets);
-                    long damage = enemy ? state.Enemies.Single(x => x.Id == actor).Damage : Definition.DamagePolicy.Calculate(score);
-                    var hit = CombatEngine.Resolve(combat, combat.Revision, targets.Select(target => new CombatEffect(CombatEffectKind.Damage, actor, target, damage)));
-                    if (!hit.Accepted) return new TeamBattleTransition(state, hit.Error == CombatError.Overflow ? CardDuelError.Overflow : CardDuelError.InvalidTarget);
+                    IEnumerable<DamageRequest> requests;
+                    if (enemy) requests = targets.Select(target => new DamageRequest(actor, target, state.Enemies.Single(x => x.Id == actor).Damage));
+                    else
+                    {
+                        var context = new ScoredHandDamageContext(combat, actor, score, targets, hand);
+                        try
+                        {
+                            damagePlan = Definition.DamagePolicy.Resolve(context);
+                            if (damagePlan == null) return new TeamBattleTransition(state, CardDuelError.InvalidDamagePlan);
+                            damagePlan.Validate(context, Definition.DamagePolicy.Version);
+                        }
+                        catch (ArgumentException) { return new TeamBattleTransition(state, CardDuelError.InvalidDamagePlan); }
+                        requests = damagePlan.Requests;
+                    }
+                    var effects = new List<CombatEffect>();
+                    try
+                    {
+                        foreach (var request in requests)
+                        {
+                            // Attach authority-owned facts here; a damage rule cannot replace or drop the hand snapshot.
+                            var attack = new AttackContext(actor, enemy ? AttackOrigin.EnemyAttack : hand != null ? AttackOrigin.ScoredHand : AttackOrigin.Other,
+                                request.Amount, hand);
+                            var adjusted = DamageModification.Validate(Definition.AttackDamage.Modify(
+                                new DamageModifierContext(combat, request.Source, request.Target, request.Amount, attack)), request.Amount, attack);
+                            effects.Add(new CombatEffect(CombatEffectKind.Damage, request.Source, request.Target, adjusted.OutputAmount, adjusted, attack));
+                        }
+                    }
+                    catch (ArgumentException) { return new TeamBattleTransition(state, CardDuelError.InvalidDamageModifier); }
+                    var hit = CombatEngine.Resolve(combat, combat.Revision, effects, Definition.IncomingDamage);
+                    if (!hit.Accepted) return new TeamBattleTransition(state, hit.Error == CombatError.Overflow ? CardDuelError.Overflow :
+                        hit.Error == CombatError.InvalidDamageModifier ? CardDuelError.InvalidDamageModifier : CardDuelError.InvalidTarget);
                     combat = hit.State; events = hit.Events;
                 }
                 if (!enemy)
@@ -237,7 +273,7 @@ namespace PokerEngine
                 }
                 if (phase == ScoredDuelPhase.Won || phase == ScoredDuelPhase.Lost) pending = new ParticipantId[0];
                 return new TeamBattleTransition(new TeamBattleState(Definition, combat, players, state.Enemies, phase, pending,
-                    checked(state.Revision + 1), rounds, scores, state.Actions.Concat(new[] { new BattleActionRecord(actor, action, action == ScoredDuelActionKind.ScoredHand ? (int?)state.Scores.Count : null) })), events: events);
+                    checked(state.Revision + 1), rounds, scores, state.Actions.Concat(new[] { new BattleActionRecord(actor, action, action == ScoredDuelActionKind.ScoredHand ? (int?)state.Scores.Count : null) })), events: events, damage: damagePlan);
             }
             catch (OverflowException) { return new TeamBattleTransition(state, CardDuelError.Overflow); }
             catch (ArgumentException) { return new TeamBattleTransition(state, CardDuelError.InvalidTarget); }

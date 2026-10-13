@@ -9,7 +9,7 @@ namespace PokerEngine
         public static long GetBasePoints(Rank rank)
         {
             if (!Enum.IsDefined(typeof(Rank), rank)) throw new ArgumentOutOfRangeException(nameof(rank));
-            return rank == Rank.Ace ? 11 : Math.Min(10, (int)rank);
+            return CardPointProfile.Default.GetBasePoints(rank);
         }
 
         /// <summary>Printed-face value only; resolving temporary face changes belongs to the gameplay host.</summary>

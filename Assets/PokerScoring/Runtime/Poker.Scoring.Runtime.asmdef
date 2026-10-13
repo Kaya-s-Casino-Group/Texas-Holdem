@@ -1,0 +1,5 @@
+{
+  "name": "Poker.Scoring.Runtime",
+  "rootNamespace": "Poker.Scoring",
+  "references": ["PokerEngine.Core", "PokerEngine.Scoring"]
+}

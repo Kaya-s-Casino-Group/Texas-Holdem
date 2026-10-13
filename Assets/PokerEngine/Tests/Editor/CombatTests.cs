@@ -87,6 +87,45 @@ namespace PokerEngine.Tests
                 EntityRef.Participant(new ParticipantId("absent")), 1, status.Duration);
             Assert.Throws<ArgumentException>(() => new CombatState("combat", 0, state.Combatants, new[] { foreign }));
         }
+        private sealed class ReadCurrentHealth : IIncomingDamageModifier
+        {
+            private readonly bool rejectAfterDamage;
+            public ReadCurrentHealth(bool rejectAfterDamage = false) { this.rejectAfterDamage = rejectAfterDamage; }
+            public DamageModification Modify(DamageModifierContext c)
+            {
+                long health = c.Combat.Get(c.Target).Health;
+                if (rejectAfterDamage && health < 10) return null;
+                return new DamageModification("current-health.1", "按当前生命承伤", c.Amount, health / 2);
+            }
+        }
+        private sealed class ZeroIncoming : IIncomingDamageModifier
+        {
+            public DamageModification Modify(DamageModifierContext c) => new DamageModification("immune.1", "免疫", c.Amount, 0);
+        }
+        [Test] public void IncomingModifierReadsStateAfterEarlierEffectsInTheSameBatch()
+        {
+            var state = Create(0);
+            var result = CombatEngine.Resolve(state, 0, new[] { Damage(100), Damage(100) }, new ReadCurrentHealth());
+            Assert.IsTrue(result.Accepted); Assert.AreEqual(5, result.Events[0].SettledDamage);
+            Assert.AreEqual(2, result.Events[1].SettledDamage); Assert.AreEqual(3, result.State.Get(Enemy).Health);
+            Assert.AreEqual(10, state.Get(Enemy).Health);
+        }
+        [Test] public void InvalidLaterIncomingModifierRollsBackEarlierDamage()
+        {
+            var state = Create(0);
+            var result = CombatEngine.Resolve(state, 0, new[] { Damage(100), Damage(100) }, new ReadCurrentHealth(true));
+            Assert.AreEqual(CombatError.InvalidDamageModifier, result.Error);
+            Assert.AreSame(state, result.State); Assert.IsEmpty(result.Events);
+        }
+        [Test] public void ZeroIncomingDoesNotConsumeBlockAndDoesNotModifyNonDamageEffects()
+        {
+            var result = CombatEngine.Resolve(Create(), 0, new[] { Damage(long.MaxValue),
+                new CombatEffect(CombatEffectKind.GainBlock, Enemy, Enemy, 2) }, new ZeroIncoming());
+            Assert.IsTrue(result.Accepted); Assert.AreEqual(0, result.Events[0].HealthLost);
+            Assert.AreEqual(0, result.Events[0].BlockAbsorbed); Assert.AreEqual(0, result.Events[0].Overkill);
+            Assert.AreEqual(5, result.State.Get(Enemy).Block); Assert.AreEqual(10, result.State.Get(Enemy).Health);
+            Assert.IsNull(result.Events[1].IncomingModification);
+        }
         [Test] public void ResolverSupportsAlliesAndMultipleOpponentsWithoutOwningTargetPolicy()
         {
             var ally = new ParticipantId("ally");

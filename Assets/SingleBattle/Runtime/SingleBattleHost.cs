@@ -64,6 +64,11 @@ namespace Poker.SingleBattle
         public string Message { get; private set; } = "选择 1–5 张牌组成牌型";
         public ScoreResult LastScore { get; private set; }
         public long LastDamage { get; private set; }
+        public CardDuelTransition LastPlayResolution { get; private set; }
+        public ParticipantId LastPlayedBy { get; private set; }
+        /// <summary>Read-only evaluation of the currently selected cards. Does not commit state or emit presentation events.</summary>
+        public CardDuelTransition PreviewSelectedPlay() => CanReceivePlayerInput
+            ? Engine.PreviewPlay(State, State.Revision, playerActor.ParticipantId, playerActor.SelectedCards()) : null;
         public event Action StateChanged;
         internal bool CanReceivePlayerInput => isActiveAndEnabled && State != null && State.HasStarted && !busy && match != null && match.IsRunning &&
             ReferenceEquals(match.Commands, playerActor) && State.Duel.Phase == ScoredDuelPhase.AwaitingPlayerHand &&
@@ -108,13 +113,13 @@ namespace Poker.SingleBattle
             if (playerActor == null) playerActor = Players[0];
             if (match.Commands != null && !ReferenceEquals(match.Commands, playerActor)) throw new InvalidOperationException("Another authority owns the card UI.");
             if (rulesProfile == null) throw new InvalidOperationException("Bind the shared battle rules first.");
-            var nextEngine = new CardDuelEngine(rulesProfile.BuildRules(), targetPolicy: targetPolicy);
+            var nextEngine = new CardDuelEngine(rulesProfile.BuildRules(), scoring: rulesProfile.BuildScoring(), targetPolicy: targetPolicy);
             string id = "battle/" + Guid.NewGuid().ToString("N");
             var nextState = nextEngine.Create(id, HmacDeckShuffler.CreateRandomState(),
                 Players.Select((actor, index) => actor.CreateSetup(new ParticipantId(index == 0 ? "player" : id + "/player/" + index))),
                 Enemies.Select((actor, index) => actor.CreateSetup(new ParticipantId(id + "/enemy/" + index))));
             Engine = nextEngine; State = nextState;
-            LastScore = null; LastDamage = 0; Message = "选择 1–5 张牌组成牌型 · 能量用尽或手动结束回合";
+            LastScore = null; LastDamage = 0; LastPlayResolution = null; LastPlayedBy = default; Message = "选择 1–5 张牌组成牌型 · 能量用尽或手动结束回合";
             // Bind the empty table before the first turn deals, so opening cards use the normal draw presentation.
             BindActors(); Bind();
             var opening = Engine.Execute(State, State.Revision, CardDuelAction.Start);
@@ -153,6 +158,7 @@ namespace Poker.SingleBattle
             if (actor != playerActor || !playerActor.CanPlay(hand) || destination != actions.Played || route != actions.PlayRoute || route.IsTransferring) return 0;
             var ids = playerActor.SelectedCards(); var frame = match.PrepareExternalPlay(playerActor, hand.Zone.Id, destination.Zone.Id, ids, PlayedZoneView.SlotCount);
             var result = Engine.Execute(State, State.Revision, actor.ParticipantId, CardDuelAction.Play, ids); if (!result.Accepted) return 0;
+            LastPlayResolution = result; LastPlayedBy = actor.ParticipantId;
             State = result.State; busy = true;
             try
             {

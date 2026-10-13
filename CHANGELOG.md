@@ -4,6 +4,34 @@
 
 ## [Unreleased]
 
+### 2026-10-13 — 攻击来源快照与触发依据
+
+- 正式出牌生成不可变 HandAttackInfo / AttackCardSnapshot，明确提交牌、牌型组成牌、实际计分牌三个范围，失效牌不参与逐牌计分但仍可组成牌型。
+- AttackContext 由权威流程附加，贯穿攻击修正、目标承伤和 CombatEvent；各阶段共用同一份来源，保留初始伤害，怪物普通攻击不携带出牌快照。Combat 不新增 Scoring/Unity 依赖。
+- DamageModification 可携带 DamageTriggerReason（来源、原因、检查范围、关联牌），错误范围引用原子拒绝；中文只读验算面板使用原始快照与实际触发记录，不查当前牌区或另行判型。未实现具体花色/牌型能力。
+- 增加来源一致性、失效/杂牌边界、多目标、预览/提交一致性、移牌后快照、记录不可变性与非法引用的定向测试及中文测试入口。
+
+### 2026-10-13 — 得分等额攻击与分阶段伤害修正
+
+- 默认 ScoreDamageProfile 改为 EqualScoreDamageRule，移除除数配置，保留最终得分作为基础伤害；原有 ScoreDamagePolicy 仅保留显式兼容调用。
+- BattleRules 可注入 IAttackDamageModifier 与 IIncomingDamageModifier，默认原值通过，玩家与怪物共用。前者在攻击构建后执行，后者在 CombatEngine 内格挡前执行；筹码倍率仍独立属于计分层。
+- CombatEvent 携带各阶段真实修正记录，中文只读验算面板展示基础伤害、攻击修正、承伤修正、格挡前伤害及最终生命损失。继续复用正式入口，保留异常/溢出原子拒绝。
+- 同步默认资产、Inspector、HUD 提示和定向测试；怪物生命数值未在本次接口调整中重新平衡。
+
+### 2026-10-13 — 出牌伤害接口、独立配置与只读验算
+
+- 新增 IScoredHandDamageRule / ScoredHandDamageContext / DamagePlan，目标策略先给出合法目标，转换仅生成伤害请求；玩家和怪物统一经 CombatEngine 扣格挡与生命。
+- 公共战局规则引用独立 ScoredHandDamageProfile，默认 DemoScoreDamage 迁移原有换算参数；开战时生成不可变策略。Host/HUD 不再读取具体转换参数。
+- CardDuelTransition 携带正式牌型、计分、伤害转换及 CombatEvent。中文「出牌伤害验算」窗口直接复用 Execute 的纯返回结果，或读取最近真实结算记录，不维护另一套计算公式、不写回战局。
+- 定向覆盖多目标转换、异常请求原子拒绝、预览/提交一致性、补牌洗牌随机状态不变及配置快照隔离。
+
+### 2026-10-13 — 独立牌型筹码与倍率配置
+
+- 保留现有牌型识别，将计分配置从 ScoreEngine 拆为纯 C# ScoreProfile / CardPointProfile，默认采用小丑牌基础筹码、倍率与每级成长，计分版本更新为 score.balatro.1。
+- 独立 PokerScoring 模块提供中文配置 Inspector 与 Tools 入口，可设置各点数单牌筹码及指定花色/点数覆盖；不把计分筹码放进单位资源或卡牌美术。
+- 战局公共规则引用计分资产，开战时冻结配置；实际出牌及手牌/牌库悬停共用权威配置。保留失效牌、杂牌不计分、逐牌加成和重触发语义。
+- 保留现有五条兼容项，不新增特殊牌型；新战局等级/Joker 接入范围不变。新增默认表、配置覆盖、溢出、快照隔离与 UI 接入定向测试。
+
 ### 多单位战局与配置边界
 
 - 单场战斗支持多玩家对多怪物：共享玩家阶段、个人结束标记、按序怪物队列和整队胜负。

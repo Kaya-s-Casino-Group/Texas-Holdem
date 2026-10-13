@@ -12,7 +12,8 @@
     "CardPresentation.Runtime",
     "RetroRendering.Runtime",
     "Unity.TextMeshPro",
-    "Unity.ugui"
+    "Unity.ugui",
+    "Poker.Scoring.Runtime"
   ],
   "includePlatforms": [
     "Editor"

@@ -61,6 +61,10 @@ graph TD
 | Progression | 跨 Run 解锁、货币、升级等级、幂等结算、统计和存档 | 解锁条件、奖励公式、升级效果、开局内容过滤 |
 | 表现/网络 | 类型化命令和确定性结果 | 宿主认证、玩家视图、动画、I/O、请求收据 |
 
+多人战局的出牌转换位于 Composition：`IScoredHandDamageRule.Resolve(ScoredHandDamageContext)` 接收得分、来源和目标策略选出的目标，返回不可变 `DamagePlan`。默认 `EqualScoreDamageRule` 将得分等额作为每个目标的基础伤害。引擎验证来源、目标及规则版本后，调用 `IAttackDamageModifier`，再交给 `CombatEngine` 进行 `IIncomingDamageModifier`、格挡与生命结算；两个修正接口默认原值通过。`DamageModification` 与 CombatEvent 保留各阶段真实输入、输出、版本和说明。攻击修正读取攻击开始时的状态，目标承伤读取该原子批次的当前状态；怪物直接产生基础伤害请求并共用两个修正接口。`CardDuelEngine.PreviewPlay` 复用正式 `Execute`，调用方只读取返回结果而不提交新状态；所有注入策略须遵守纯函数约定。Unity 独立配置与中文只读验算面板见 `Assets/SingleBattle/README.md`。
+
+攻击来源边界：`AttackContext` 携带原始基础伤害、来源类型和可选 `HandAttackInfo`；正式 CardDuel 出牌复用权威分类结果，并在移牌前捕获有效牌面与卡牌效果。SubmittedCards 包含所有提交牌，PatternCards 保留组成牌，ScoringCards 排除其中失效牌。Combat 不反向依赖 Scoring，也不重新识别牌型。攻击与承伤修正共用同一个 AttackContext，各目标共用同一份牌快照；它与实时 CombatState 分开，后者仍按原有阶段时机读取。`DamageModification.Triggers` 仅存储实际返回的触发来源/原因/卡牌范围与引用，不定义具体能力规则。旧无牌来源的数值调用明确标记 Other，不伪造出牌快照。
+
 ## 通用基础层
 
 `CardDefinition` 为静态定义；`CardInstance` 为当前对局实体，`OriginId` 关联 Run 中的持久牌。复制牌产生新持久 ID 并继承强化，下一关重新创建实例牌。`StandardDeck` 提供标准 52 张牌，不依赖德州模块。
@@ -396,3 +400,10 @@ Core 的 `CardTableState` 保存 MatchId、Revision、完整 CardInstance 注册
 Unity 的 CardMatchHost 消费此基础层，运行时及编辑器围绕同一对局数据读取/操作；编辑器调试 API 使用 UNITY_EDITOR 宏，不进入 Player。新增 Core 类型沿现有 Core asmdef/link.xml 进入首包。
 
 所有项目测试 asmdef 限定 Editor 并关闭 autoReferenced；可挂载的 CardPresentation.Tests.Support 通过 UNITY_EDITOR 编译约束隔离，避免 Unity 将辅助 MonoBehaviour 识别为不可挂载的编辑器脚本；Player 编译列表检查不包含任何项目测试程序集。测试面板及实战验证逻辑均留在 Tests/Editor。Tools 的旧离线辅助脚本位于 Unity Assets 之外，不参与游戏构建，也不作为编辑器面板的入口；日常改动只运行对应专项。
+
+
+## 可配置筹码计分
+
+`PokerEngine.Scoring` 保留纯 C# 边界：`ScoreProfile` 提供牌型基础筹码/倍率和每级成长，`CardPointProfile` 提供 13 点数基础筹码及可选的花色+点数覆盖。`ScoreEngine` 只计算明确提交的计分子集，不选择目标、不移牌、不处理生命。
+
+默认计分版本为 `score.balatro.1`，采用小丑牌基础数值；不改变现有德州牌型识别或加入新牌型。新旧计分版本不能作为同版存档互换。Unity 资产与中文配置界面位于独立的 `Assets/PokerScoring` 模块，详见其 README。Run 和对局都可以接收同一资产 Build 出的纯配置快照；牌型等级仍属于各自运行状态。

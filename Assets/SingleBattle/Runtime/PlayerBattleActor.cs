@@ -9,7 +9,7 @@ using PokerEngine;
 namespace Poker.SingleBattle
 {
     /// <summary>Player-only input/energy access. Submits requests to the battle owner, never resolves damage itself.</summary>
-    public sealed class PlayerBattleActor : BattleActor, ICardMatchCommands
+    public sealed class PlayerBattleActor : BattleActor, ICardMatchCommands, ICardScoreSource
     {
         [SerializeField, InspectorName("玩家配置")] private PlayerBattleProfile profile;
         public PlayerBattleProfile Profile => profile;
@@ -29,6 +29,14 @@ namespace Poker.SingleBattle
             var ids = SelectedCards();
             return ids.Length >= 1 && ids.Length <= Rules.MaxSelection && ids.All(id => Battle.State.Zone(CardZoneKinds.Hand, ParticipantId).Cards.Contains(id) &&
                 (discard ? Battle.State.Table.GetCard(id).CanDiscard : Battle.State.Table.GetCard(id).CanPlay));
+        }
+        public bool TryGetCardBasePoints(CardInstanceId card, out long points)
+        {
+            points = 0;
+            if (!IsBound || !Battle.State.Table.Zones.Any(zone => zone.ControllerId == ParticipantId && zone.Cards.Contains(card))) return false;
+            var face = Battle.Engine.Face(Battle.State.Table.GetCard(card));
+            points = Battle.Engine.Scoring.CardPoints.GetBasePoints(new CardFace(face.Rank, face.Suit));
+            return true;
         }
         public bool CanPlay(CardZonePlayHost hand) => CanSubmit(hand, false);
         public bool CanDiscard(CardZonePlayHost hand) => CanSubmit(hand, true);

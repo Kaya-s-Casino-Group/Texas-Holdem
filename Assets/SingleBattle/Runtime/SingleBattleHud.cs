@@ -77,7 +77,7 @@ namespace Poker.SingleBattle
             message.text = host.Message;
             counts.text = "抽牌堆 " + host.PlayerZone(CardZoneKinds.Deck).Cards.Count + "  ·  弃牌堆 " + host.PlayerZone(CardZoneKinds.Discard).Cards.Count +
                 "  ·  剩余弃牌 " + host.PlayerDiscards;
-            score.text = host.LastScore == null ? "牌型得分 ÷ " + rules.DamagePolicy.PointsPerDamage + " = 伤害（向下取整）" :
+            score.text = host.LastScore == null ? "得分 = 基础伤害 → 攻击与承伤修正 → 格挡与生命" :
                 "上次：" + HandName(host.LastScore.Category) + "  " + host.LastScore.Total + " 分 / " + host.LastDamage + " 伤害";
             bool showResult = duel.IsFinished && !host.IsPresenting;
             resultPanel.SetActive(showResult); restart.interactable = !host.IsPresenting; resultRestart.interactable = !host.IsPresenting;

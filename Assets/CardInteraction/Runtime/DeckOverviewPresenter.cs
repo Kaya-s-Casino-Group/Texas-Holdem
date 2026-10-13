@@ -48,7 +48,10 @@ namespace CardInteraction
                 if (item == null || !item.isActiveAndEnabled || item.Card == null || !item.Card.FaceUp || !item.Interaction.IsHovered) continue;
                 var entry = view.Data.Cards.FirstOrDefault(card => card.Visual.ViewId == item.Card.ViewId);
                 if (entry == null || !entry.Visual.FaceUp || !entry.Suit.HasValue || !entry.Rank.HasValue) continue;
-                target = new CardHoverTarget(item,entry.Suit.Value,entry.Rank.Value,CardScoreRules.GetBasePoints(entry.Rank.Value));
+                long points = CardScoreRules.GetBasePoints(entry.Rank.Value);
+                if (match != null && match.Commands is ICardScoreSource source &&
+                    (!entry.Visual.CardId.HasValue || !source.TryGetCardBasePoints(entry.Visual.CardId.Value, out points))) continue;
+                target = new CardHoverTarget(item, entry.Suit.Value, entry.Rank.Value, points);
                 return true;
             }
             return false;
