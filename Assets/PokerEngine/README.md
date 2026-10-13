@@ -12,13 +12,16 @@ Assets/PokerEngine/Runtime/
 ├── Holdem/        PokerEngine.Holdem：座位、盲注、下注街、摊牌、底池、德州存档
 ├── Draw/          PokerEngine.Draw：抽牌、选牌、出牌/弃牌、积分目标、独立存档
 ├── Runs/          PokerEngine.Runs：持久构筑、关卡、奖励、商店、泛型 Run 存档
+├── Progression/   PokerEngine.Progression：跨 Run 解锁、局外货币、永久升级、结算与存档
 ├── Composition/   PokerEngine.Composition：玩法适配器与可执行示例内容
-└── link.xml       首包保留上述七个程序集
+└── link.xml       首包保留上述八个程序集
 ```
 
 ```mermaid
 graph TD
     Composition --> Runs
+    Composition --> Progression
+    Progression --> Core
     Composition --> Holdem
     Composition --> Draw
     Runs --> Abilities
@@ -44,6 +47,7 @@ graph TD
 | 能力 | 条件、费用、效果、替换、选择、暂停恢复、预算 | 时机/动作键、参与者执行顺序、资源与牌区限制 |
 | 计分 | 有序 Points/Multiplier 变换和明细 | 计分牌子集、何时计分、分数与胜负的关系 |
 | Run | 构筑、金币、商品、成长、关卡和账本 | 具体关卡对局、合法行动、玩法存档校验 |
+| Progression | 跨 Run 解锁、货币、升级等级、幂等结算、统计和存档 | 解锁条件、奖励公式、升级效果、开局内容过滤 |
 | 表现/网络 | 类型化命令和确定性结果 | 宿主认证、玩家视图、动画、I/O、请求收据 |
 
 ## 通用基础层
@@ -189,11 +193,107 @@ ScoreEngine 不知道下注、底池、胜者、商店或关卡。输入由模�
 
 点数分 2–10 按点数、J/Q/K 为 10、A 为 11。`31 × (1+4) × 2 = 310` 与 `31 × (1×2+4) = 186` 不同，故小丑顺序属于持久构筑。每步保存来源、操作量及操作后值，供动画解释。`ScoreEngine.Validate` 重算 trace 验证存档内部一致性，不证明历史行为真实性。
 
+### 单牌点数查询与悬停数据
+
+`Scoring/CardScoreRules.cs` 提供纯 C# `GetBasePoints(Rank)` / `GetBasePoints(CardDefinition)`：2–10 按点数、J/Q/K 为 10、A 为 11。非法 Rank 或空定义直接拒绝。定义重载查询印刷牌面；如果能力改变了牌面，宿主应先解析有效 CardFace，再使用 `ScoringCard` 查询。规则归属 Scoring，通用 Core/CardInstance 不反向依赖计分模块。
+
+`ScoringCard` 补充只读派生属性，UI 与 ScoreEngine 使用相同规则，无需先结算一手：
+
+| 查询 | 含义 |
+| --- | --- |
+| `BasePoints` | 当前传入 CardFace 的基础点数 |
+| `BonusPoints` | 已有的单牌额外点数 |
+| `PointsPerTrigger` | 基础 + 额外点数，一次触发的名义点数，checked long 加法 |
+| `CanScore` | 是否被失效状态禁止逐牌计分；不代表必然属于本手计分子集 |
+| `BonusMultiplier / MultiplierFactor / Retriggers` | 已有倍率修正和额外重触发次数，可单独展示 |
+
+失效牌仍返回原基础/额外/单次点数，CanScore 为 false。PointsPerTrigger 不含倍率、重复触发、小丑、牌型基础分，也不是“这张牌本次最终贡献”；实际贡献以 `ScoreResult.Steps` 为准。禁用控制能否提交，失效控制逐牌计分，两者继续分离。强化/塑封标记本身不产生隐含数值。PointsPerTrigger 溢出会抛出 OverflowException，BasePoints 与 BonusPoints 仍可单独读取；引擎保留先过滤失效、再计算数值的行为。
+
+```csharp
+long printedPoints = CardScoreRules.GetBasePoints(definition);
+
+// drawCard 保存该牌的计分修正；effectiveFace 由玩法规则解析。
+ScoringCard info = drawCard.WithFace(effectiveFace);
+long basePoints = info.BasePoints;          // 例如 A = 11
+long bonusPoints = info.BonusPoints;        // 例如 +20
+long pointsPerTrigger = info.PointsPerTrigger; // 31，不含倍率或重触发
+bool canScore = info.CanScore;              // 失效时 false，仍可显示 11 和 +20
+```
+
+未来悬停 UI 由宿主按 CardId 获取该牌及观察者获准查看的数据，构造/读取 ScoringCard；CardView 不计算分数，也不通过图集 ID 反推规则。当前补齐的是查询接口，未添加悬停面板或计分动画。ScoringCard 的派生属性不写入存档，既有 ScoreProfile、快照 schema 和计分结果语义不变；运行时文件与 .meta 继续归入 PokerEngine.Scoring 首包程序集。
+
 是否只有德州获奖者计分、弃牌获胜给多少分，现放在 **HoldemEncounterSettings**。ScoreProfile 已移除 WinnersOnly/FoldWinPoints。默认示例值可以替换，改变语义必须升级对应版本。
 
 ## Run 与玩法组装
 
-Run 只负责牌组、小丑槽位/副本数、等级/成长、牌型等级、金币、奖励、商店及线性关卡。状态、命令和事件通过泛型保持强类型，运行时不 switch 玩法，也不保存任意 JSON/object 代替状态。
+Run 负责牌组、小丑槽位/副本数、等级/成长、牌型等级、金币，以及楼层序列、每层统一节点与分支路线。状态、命令和事件通过泛型保持强类型，运行时不 switch 玩法，也不保存任意 JSON/object 代替状态。
+
+### 完整 Run 与多楼层
+
+Unity 策划工具位于独立 `Assets/RunFlow` 模块，菜单 `Poker > Run Flow Editor`。流程保存为 ScriptableObject `RunFlowAsset`，经 `BuildDefinition` / `BuildContent` 转换为本节纯 C# 模型后初始化一次 Run；GameCore 不引用 Unity 或编辑器，Run v4 进度快照与策划资产分开保存。编辑操作与初始化示例见 [RunFlow README](../RunFlow/README.md)。
+
+一次完整肉鸽由有序 `RunDefinition.Floors` 组成，每个 `RunFloorDefinition` 独立保存 Id、Kind（Normal/Boss）和自己的 NodeTree。例如“三层 + Boss 层”对应四棵独立节点树：
+
+```text
+Run
+├─ 第 1 层：NodeTree 1（普通 / 精英 / 奖励 / 商店分支）
+├─ 第 2 层：NodeTree 2（独立分支）
+├─ 第 3 层：NodeTree 3（独立分支）
+└─ Boss 层：NodeTree 4（Boss 及最终奖励）
+```
+
+楼层按配置顺序推进；完成当前树中选定路线的终点后，保存该层路径和完成记录，再自动进入下一层的入口节点。只有最后一层终点完成后 Run 才变成 Completed；任意战斗失败立即变成 Failed，未来层保持未访问状态。层数可配置为 1–32，不写死四层。每层内部允许分支与汇合，NextNodeIds 只能指向同一层中的节点，跨层推进由 RunEngine 统一管理。
+
+```csharp
+var definition = new RunDefinition("run.floors.1", ScoreProfile.Default,
+    new[] {
+        new RunFloorDefinition("floor-1", firstTree),
+        new RunFloorDefinition("floor-2", secondTree),
+        new RunFloorDefinition("floor-3", thirdTree),
+        new RunFloorDefinition("boss-floor", bossTree, RunFloorKind.Boss)
+    }, shopPool, rewardPool);
+// 可执行示例（两种玩法）：ExampleRunContent.CreateFourFloors(drawMode: true/false)
+```
+
+`state.FloorIndex` 是当前层的零基索引；`state.Floors` 保存所有层的 FloorId、Kind、Nodes 和 IsCompleted，`state.Nodes` 是当前层节点进度的便捷访问。之前的层必须全部完成，未来层必须未访问；存档会校验每一层的身份、图版本及指纹，未来层也提前固定。每层可重复使用相同节点 Id、Stage.Id，身份按楼层区分，计分仍使用跨层唯一的战斗索引。
+
+金币、牌组、小丑、等级、成长和积分历史属于整局 Run，换层不重置；只有进入新的战斗节点才重置该战斗的分数、回合预算和模式状态。下一层若从商店或奖励开始，上一场冻结对局会继续保留，直到新战斗启动。`RunEncounterContext.Floor/FloorIndex` 指向当前或最近那场战斗所属的层，因此在跨层后的非战斗节点中可能不同于 `state.FloorIndex`。
+
+旧的 stages 或单 NodeTree 构造仍可用，会包装为一个默认楼层。`RunDefinition.NodeTree` 仅用于单层配置，多层配置必须访问 `definition.Floors[index].NodeTree`；对多层配置读取该兼容属性会拒绝。
+
+### 统一节点与 Node Tree
+
+`RunNodeDefinition` 是所有节点的共同基类，保存 Id、Kind 与有序 NextNodeIds。节点配置不可变；一次完整肉鸽的共享构筑和当前节点进度由 RunState 持有。
+
+| 节点配置 | 内容 |
+| --- | --- |
+| RunEncounterNodeDefinition | RunStageDefinition（目标分数、回合上限、通关金币、能量）；Kind 为 Encounter / Elite / Boss |
+| RunRewardNodeDefinition | 选择一个奖励或跳过；可配置独立 OfferPool |
+| RunShopNodeDefinition | 购买、出售、升级、刷新、排序和离开；可配置独立 OfferPool |
+
+`RunNodeTree(version, entryNodeId, nodes)` 支持多后继分支和路径汇合，是有唯一入口的有向无环图。每层最多 500 个节点、100 个战斗节点；拒绝层内重复身份、重复连接、未知后继、自连接、循环和不可达节点。节点可以任意组合，奖励或商店可作为入口或终点；终点成功完成后结束本层，战斗失败则立即结束整局为 Failed。无需在未选择的分支中完成战斗。
+
+完成节点后：无后继 → 下一层入口（最后一层则 Completed）；一个后继 → 自动进入；多个后继 → NodeChoice，等待玩家提交 ChooseNextNode。战斗只在完整计分检查点判定成功或失败；奖励选择/跳过即完成，商店通过 CompleteNode 离开。进入节点时只生成该节点的对局或报价，未选择的分支不消耗随机数、不发奖励、不记分。
+
+```csharp
+var tree = new RunNodeTree("route.1", "reward", new RunNodeDefinition[] {
+    new RunRewardNodeDefinition("reward", new[] { "normal", "elite" }),
+    new RunEncounterNodeDefinition("normal", new RunStageDefinition("normal", 200, 6), new[] { "shop" }),
+    new RunEncounterNodeDefinition("elite", new RunStageDefinition("elite", 500, 6, clearGold: 10),
+        new[] { "shop" }, RunNodeKind.Elite),
+    new RunShopNodeDefinition("shop", new[] { "boss" }),
+    new RunEncounterNodeDefinition("boss", new RunStageDefinition("boss", 1000, 8), kind: RunNodeKind.Boss)
+});
+var definition = new RunDefinition("run.route.1", ScoreProfile.Default, tree, shopPool, rewardPool);
+```
+
+`RunAction.StartRun` 由宿主通过 ExecuteSystem 启动入口节点；玩家在奖励节点提交 ChooseReward / SkipReward，在商店节点提交 CompleteNode，在 NodeChoice 中通过 `new RunCommand<DrawCommand>(id, state.Revision, RunAction.ChooseNextNode, nextNodeId: "elite")` 选择下一节点。`engine.GetAvailableNextNodes(state)` 返回当前可选的后继定义，非 NodeChoice 时返回空列表。所有玩家路线命令校验 Revision、认证身份、阶段和实际连接，拒绝时保持原状态与随机数。
+
+每层的 Nodes 保存 TreeVersion、TreeFingerprint、CurrentNodeId、Path 与 CompletedNodeIds。Path 是该层实际进入顺序，CompletedNodeIds 是其中已完成的连续前缀；NodeChoice 中当前节点已经完成。`StageIndex` 是最近进入的战斗在全局内容列表中的位置（按楼层顺序拼接所有 EncounterNodes），不是路线深度，层内可能向较小索引移动；尚未进入任何战斗时为 -1。计分账本按各层实际访问的战斗校验，奖励/商店保留上一场冻结对局，后续构筑变化不重算历史分数。
+
+`RunEncounterContext.Node` 将战斗节点身份、Kind、配置与后继传给模式适配器。普通、精英、Boss 目前共用对局机制，可以配置不同目标、预算和奖励；特殊 Boss 技能与策略需要在内容/适配器中继续实现。
+
+旧的 `RunDefinition(... stages, ...)` 自动生成“战斗 → 奖励 → 商店 → 下一场战斗”的节点图，最后一个奖励为终点。原 StartEncounter 的初次启动及商店单一战斗后继路径继续可用；有分支的商店使用 CompleteNode 和 ChooseNextNode。`ExampleRunContent.CreateBranching(drawMode: true/false)` 提供普通/精英分支、精英专属奖励、商店汇合和最终 Boss 的两种模式组装示例。
 
 ```csharp
 var content = ExampleRunContent.Create();
@@ -228,33 +328,52 @@ RunAction.PlayerEncounter/SystemEncounter 包装具体命令；玩家/系统权�
 下注筹码、商店金币和关卡积分独立。默认德州每关重新提供 1,000/1,000 筹码和配置能量，10/20 盲注；Run 不包含这些德州字段。能力 portable Memory 只迁移 Encounter counters，实体 marks 不跨对局。`build.level/build.growth` 从 RunJoker 的唯一事实注入，不当作另一份可迁移构筑存档。
 
 ```text
-Preparing → Encounter → Reward → Shop → 下一关 Encounter
-                ↓          └→ 最终关 Completed
-              Failed
+Preparing → 入口节点 → 完成 → 单后继：下一节点
+                        ├→ 多后继：NodeChoice → 选择下一节点
+                        └→ 无后继：下一层入口 / 最后层 Completed
+            战斗失败 → Failed
 ```
 
 只有未完成效果/选择全部关闭的 checkpoint 才能记分或离开关卡。达到积分目标发奖励金币，耗尽轮数或对局无法继续则失败。历史得分在进入奖励前冻结；商店卖小丑、改牌和后续成长不会重算旧得分。
 
-RunSnapshotCodec<TState> schema **v2** 将构筑、当前具体玩法状态、报价、随机和积分账本一起保存，固定内容/Run/计分/起始牌组及玩法身份、规则和存档版本。16 MiB/500,000 对象上限；旧 Run v1 明确拒绝，无迁移器。反序列化后同时执行共享 Run 校验和注入 adapter 的模式校验。
+RunSnapshotCodec<TState> schema **v4** 将当前楼层、每层节点路线及完成记录、构筑、当前具体玩法状态、报价、随机和积分账本一起保存，固定内容/Run/计分/起始牌组及玩法身份、规则和存档版本，并保存所有楼层的节点图版本与配置指纹。16 MiB/500,000 对象上限；旧 Run v1–v3 明确拒绝，无迁移器。反序列化后同时校验楼层身份/顺序、图身份、路径连接、完成顺序、已访问战斗的积分及注入 adapter 的模式状态；修改楼层顺序、任一层图连接、节点顺序或战斗配置即使沿用同一个版本也不能读取旧路径。
 
-Run 外层 schema 本轮保持 v2；含旧 Match v4 / Draw v1 内层状态的 Run 存档也会被 EncounterSchemaVersion 校验拒绝。
+含旧 Match v4 / Draw v1 内层状态的 Run 存档也会被 EncounterSchemaVersion 校验拒绝。
 
 ## 宿主与未覆盖边界
 
-所有引擎是纯状态转换：一次命令成功返回新状态和递增 Revision，失败返回原引用及空事件。能力处理器和适配器属于受信任注册代码，不允许从客户端动态提供。
+所有引擎是纯状态转换：战斗与 Run 的一次命令成功返回新状态和递增 Revision，失败返回原引用及空事件。Progression 的结算/升级成功返回新状态，非法操作抛出异常且不修改原状态，同一结算重试返回已有状态。能力处理器和适配器属于受信任注册代码，不允许从客户端动态提供。
 
 本地宿主持有状态；PvP 服务端应为每个对局串行处理并映射认证身份。Revision 是前置条件，持久化仍需单写者或 CAS。CommandId 没有持久去重收据；网络重试若要求返回第一次响应，由宿主在同一事务提交快照、请求收据和待发送事件。Run 与内嵌对局必须原子保存。
 
-当前未实现完整 PlayerView、HTTP/WebSocket DTO、文件/数据库 I/O、网络投递、AI、场景交互或计分动画。卡牌渲染/动画应消费投影与事件，不反向驱动规则。地图分叉、Boss 策略、消耗品背包和账户永久解锁也不属于本轮模块拆分。
+当前未实现完整 PlayerView、HTTP/WebSocket DTO、文件/数据库 I/O、网络投递、AI、完整玩法的场景接入或计分动画。卡牌渲染/动画应消费投影与事件，不反向驱动规则。节点分支与局外成长数据/结算已具备；地图生成/选路界面、Boss 策略、消耗品背包和局外成长场景界面/开局效果接入尚未实现。
 
 结构合法不证明离线存档可信。schema/规则/内容版本的变化需要明确迁移策略，不能仅改版本号；本次升级没有尝试读取旧格式。
 
 ## 验证与首包
 
-`bash Tools/test-poker-engine.sh` 按 asmdef 的依赖图逐个独立编译七个 DLL（Mono C# 7.2，warnings-as-errors），然后执行同一套同步 NUnit 测试。`POKER_CSC`、`POKER_MONO`、`POKER_NUNIT` 可覆盖本机工具路径。
+`bash Tools/test-poker-engine.sh` 按 asmdef 的依赖图逐个独立编译八个 DLL（Mono C# 7.2，warnings-as-errors），然后执行同一套同步 NUnit 测试。`POKER_CSC`、`POKER_MONO`、`POKER_NUNIT` 可覆盖本机工具路径。
 
 ModuleBoundaryTests 检查真实程序集引用，防止基础层反向依赖、德州/Draw互相引用或 Run 引入具体模式。保留原德州规则/随机守恒/恢复测试，新增独立能力、牌型子集、Draw 存档/续执行、模式无关 Run 和跨玩法集成测试。
 
 Unity Test Runner 可正常运行 EditMode；若当前场景有未保存修改，可用 `Poker > Tests > Run Core In Current Scene` 在当前 Editor 场景逐项执行同步 NUnit 方法，结果写入 `Library/PokerEngineTests/status.json` 与 `results.xml`。该轻量运行器不保存或替换场景，不支持协程/参数化/setup/teardown；遇到这些测试会拒绝，需改用完整 Test Runner。
 
-PackagingTests 验证所有七个模块出现在 Player 编译列表、linker 保留和资源 GUID 唯一。具体本轮结果见根 CHANGELOG。本轮未进行完整 Player 或 IL2CPP 构建；目标平台仍须验证泛型 DataContract 序列化与 AOT 行为。
+PackagingTests 验证所有八个模块出现在 Player 编译列表、linker 保留和资源 GUID 唯一。具体本轮结果见根 CHANGELOG。本轮未进行完整 Player 或 IL2CPP 构建；目标平台仍须验证泛型 DataContract 序列化与 AOT 行为。
+
+## 跨 Run 局外成长
+
+`PlayerProgressionState` 是完整 Run 之外的玩家成长对象，包含玩家身份/Revision、成长规则版本/指纹、局外货币、类型化内容解锁、永久升级等级及幂等 Run 结算记录。统计由结算记录汇总，可按玩法查询；不保存本局卡牌或小丑实例。
+
+静态 `ProgressionDefinition` 与策划地图、单局 RunDefinition 分开。`ProgressionEngine.Settle` 接受宿主解析后的结果/奖励，按 RunId 去重；`PurchaseUpgrade` 校验解锁、等级与货币后扣费。Composition 的 `RunProgressionSettlement.Create` 从经校验的 Run 提取终局摘要，不自动转移 Run 金币或构筑。
+
+成长 JSON 为独立 `ProgressionSnapshotCodec` schema v1，Run 快照仍为 v4。宿主保存两者并原子处理终局结算/清除活动 Run；下一局由宿主解释升级效果及已解锁内容。完整数据图、代码和存档边界见 [Progression README](Runtime/Progression/README.md)。
+
+## 共享卡牌对局数据与存档
+
+Core 的 `CardTableState` 保存 MatchId、Revision、完整 CardInstance 注册表和所有有序 CardZone；全局身份不能重复，每张牌必须且只能属于一个已注册牌区。此层不包含德州下注或出牌计分回合规则，两种玩法通过各自引擎适配共享卡牌归属，不互相引用。
+
+`CardTableSession` 提供 PrepareDraw / PreparePlay / PrepareDiscard / PrepareReorder 及玩法集成用 PrepareZones。Prepare 计算新不可变状态，Commit 只接受本会话且 Before 仍为当前状态的更新，防止旧命令或另一个会话重复消耗同一堆。出/弃按源列表顺序提交，禁用拒绝整批，失效仍可转移并保留 CanScore 语义。容量、Zone Kind、身份归属在提交前校验；PrepareZones 用于玩法替换相关牌区/牌属性，移除无归属的已删除实例，保留未受影响牌区。
+
+`CardTableSnapshotCodec` 的独立 schema 1 保存完整卡牌状态，限制 16 MiB 严格 UTF-8，并在反序列化后验证所有归属和属性。存档可恢复为新的 Session 并继续命令；不包含 Unity 美术、观察者可见性、鼠标悬停或选中，也不改变原 Holdem/Draw/Run 存档格式。此快照包含隐藏牌，属于可信玩法/服务器存档，不能直接当作 PVP 观察者网络消息；网络仍需玩法层构建授权投影。
+
+Unity 的 CardMatchHost 消费此基础层，运行时及编辑器围绕同一对局数据读取/操作；编辑器调试 API 使用 UNITY_EDITOR 宏，不进入 Player。新增 Core 类型沿现有 Core asmdef/link.xml 进入首包。

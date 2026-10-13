@@ -4,6 +4,188 @@
 
 ## [Unreleased]
 
+### 2026-10-07 — 跨 Run 玩家成长结构与结算
+
+- 新增纯 C# PokerEngine.Progression，仅引用 Core。PlayerProgressionState 保存玩家身份/Revision、成长规则版本及指纹、局外货币、类型化解锁、永久升级等级和已结算 Run 记录；全局/分玩法统计由记录汇总。本局卡牌、小丑实例及地图继续由 Run/策划资产持有。
+- ProgressionDefinition 独立配置货币、解锁目录/默认解锁、升级费用/等级上限/解锁前置。ProgressionEngine 提供不可变创建、结算和购买升级；结算按 RunId 去重，同一结果重试不重复发奖励，冲突记录拒绝。身份、Revision、奖励 ID、等级、余额及溢出均校验，失败不修改输入状态。
+- Composition 新增 RunProgressionSettlement，从校验后的终局 Run 提取胜/败摘要，或显式记录放弃；奖励由宿主解析，不自动转换 Run 金币或构筑。宿主负责结算/清除活动 Run 的原子持久化、内容过滤及永久升级的下一局效果，未自动接入场景或 I/O。
+- 独立 ProgressionSnapshotCodec schema v1 JSON，读档核对规则指纹、结算唯一性、解锁、升级支出、余额和 Revision；Run v4 / Draw v2 / Match v5 不变。未提供规则迁移、结算归档或签名。新增 asmdef/linker 保留及 .meta，八程序集依赖测试、首包检查和离线编译脚本同步更新。
+- 验证：11 项新增回归；离线八程序集 warnings-as-errors 编译及测试 235/235 通过，Unity 当前场景同步测试 238/238 通过，编译 0 警告。更新根、引擎、RunFlow 及成长模块说明。未保存/替换场景，未执行完整 Player/IL2CPP 构建。
+
+### 2026-10-07 — 策划 Run 关卡流程编辑器
+
+- 独立 Assets/RunFlow 模块，RunFlowAsset 将整局规则、有序楼层、各层入口/节点/连接和画布位置保存为 Unity .asset（格式 v1）。BuildDefinition 复制为不可变 GameCore 模型，BuildContent 绑定真实内容目录及起始牌组；既有纯 C# 引擎不引入 Unity 依赖，Run 进度仍使用 schema v4 JSON。
+- Poker > Run Flow Editor 提供楼层增删/排序、五种节点、端口连接、节点拖动、参数面板、分支/汇合、自动排布、缩放/平移、撤销/重做与图校验。可保存未完成草稿，初始化时拒绝无效流程；资产编辑不会修改已编译的 Run。保存只写当前资产。
+- 提供三层 + Boss 层实际流程资产；新增 Runtime/Editor/Tests asmdef、link.xml 及资源 .meta。地图资产需由宿主引用或显式加载，玩家地图/选路 UI 与场景 Run 宿主尚待接入。
+- 8 项 Editor 回归覆盖资产往返、不可变编译、真实四层 Draw Run/逐步快照恢复、连线校验和撤销、楼层重排、布局及 Player 程序集边界。实际编辑窗口确认楼层切换、参数面板、自动排列、端口连线与撤销；未保存或替换场景，未执行完整 Player/IL2CPP 构建。
+- 验证：RunFlow 8/8、既有 GameCore 227/227 通过；Unity 编译 0 警告，控制台无错误。
+
+### 2026-10-07 — 完整肉鸽由多楼层节点树组成
+
+- RunDefinition 新增有序 Floors，每个 RunFloorDefinition 持有独立 NodeTree 和 Normal/Boss 标记；支持 1–32 层。完成当前树所选路线的终点后自动进入下一层入口，仅最后一层终点完成才结束整局。层内分支/汇合保持既有规则，跨层不接受节点连接或跳层命令。
+- RunState 保存 FloorIndex 与所有 RunFloorState（FloorId、Kind、Nodes、IsCompleted），Nodes 便捷属性读取当前层；保留已完成楼层的路径，未来楼层维持未访问状态并提前固定图身份。金币、牌组、小丑、等级、成长及历史积分贯穿整局；层间非战斗节点保留上一场冻结对局。
+- 战斗索引按楼层顺序拼接，层内允许重复使用其他层的节点 Id/Stage.Id，实例与积分保持跨层唯一；RunEncounterContext.Node/Floor/FloorIndex 指向当前或最近对局所属节点与楼层。旧 stages/单树构造包装为一个默认楼层，单树兼容 NodeTree 属性仅接受单层配置。
+- RunSnapshotCodec 升级 schema v4，新增楼层及每层进度为必填字段；读档校验楼层身份/顺序、完成前缀、当前层、未来未访问状态、所有树指纹和跨层账本。旧 Run v1–v3 明确拒绝，无自动迁移；Match v5 / Draw v2 保持不变。
+- Composition 新增 CreateFourFloors，提供三棵普通分支树 + 独立 Boss 层的德州/Draw 示例。新增楼层回归覆盖四层通关、跨层构筑/金币/成长、重复局部节点名、跨层事件、非战斗楼层、失败阻止继续、伪造/跳层/重排存档和未来图变更。更新根与引擎 README；地图生成及选路 UI 尚未接入。
+- 验证：离线七程序集独立编译及测试 224/224 通过；Unity 当前场景同步测试 227/227 通过，包含 10 项节点、9 项楼层和 3 项首包检查；编译 0 警告。未执行完整 Player/IL2CPP 构建，未保存或替换当前场景。
+
+### 2026-10-07 — 肉鸽统一节点与分支路线
+
+- 新增 RunNodeDefinition 共同基类与 RunNodeTree：普通/精英/Boss 使用战斗节点，奖励和商店使用各自节点；支持多后继分支与路径汇合，构造时拒绝循环、缺失连接、重复身份和不可达节点。每个战斗可配置目标、回合预算、能量和通关金币，奖励/商店可配置独立报价池。
+- RunEngine 按节点连接推进：单后继自动进入，多后继进入 NodeChoice 等待玩家 ChooseNextNode，无后继成功完成即结束 Run；StartRun 由系统启动，CompleteNode 由玩家离开商店。校验认证身份、Revision、阶段及后继连接，失败保留原状态和随机数；旧 stages 构造自动生成线性节点图，保留 StartEncounter 的原有线性接入。
+- RunState.Nodes 保存图版本/指纹、当前节点、实际进入路径和已完成前缀；积分账本改为按实际访问的战斗校验，允许绕过未选路线并汇合到较小 StageIndex。尚未进入战斗时 StageIndex 为 -1。每次对局转换及构筑同步均先校验模式状态，再允许自动进入后继；跨战斗命令的事件按各自来源状态过滤。
+- RunSnapshotCodec 升级 schema v3，读档同时验证图身份、路径、完成顺序、账本和模式状态；旧 Run v1/v2 明确拒绝，无自动迁移。Match v5、Draw v2 保持不变。公开 RunState 构造新增必填 RunNodeState；内容拓扑或战斗配置变化会使指纹变化。
+- Composition 新增 ExampleRunContent.CreateBranching，提供德州/Draw 共用的普通/精英分支、额外奖励、商店汇合及最终 Boss 示例。精英/Boss 类型通过 RunEncounterContext.Node 传给适配器；特殊 Boss 行为、地图生成与选路 UI 后续接入。更新根与引擎 README。
+- 新增节点回归，覆盖两路通关/汇合、独立报价池、读档后选路与构筑传递、逆序战斗索引、非法/越权/过期路线命令、伪造路径与未访问分数、图配置变更、无战斗节点、连续战斗事件和失败阻止推进。同步修复已有 CardScoreQueryTests 的 C# 7.2 局部变量重名编译错误。
+- 验证：离线七程序集独立编译及测试 215/215 通过；Unity 当前场景同步测试 218/218 通过（含 10 项节点测试和 3 项首包检查），编译 0 警告、控制台无错误。未执行完整 Player/IL2CPP 构建；未保存或替换当前场景。
+
+### 2026-10-07 — 牌堆悬停改为花色点数统计表
+
+- 新增 DeckSummary 原生 Canvas Prefab、DeckSummaryView、PixelPanelGraphic 与 Editor-only DeckSummarySetup。按参考排版：上方 A…2 十三列点数及剩余总数，下方四条花色颜色行显示 52 个交叉余量，左侧花色总数；0 压暗。使用 Fusion Pixel 字体与原生顶点阶梯边框，不新增纹理、相机或逐实例材质。初次准备生成独立 .meta，后续 Prepare 保留 GUID/布局，仅修复缺失 CanvasRenderer。
+- DrawPilePresenter 持有统计表 Prefab 及单个临时实例，在 icon 上方右侧对齐，Summary Gap 默认 14。悬停仅显示统计表、离开即收起；左键切换并保持原完整 DeckOverview 四行卡牌页，再点解除固定，返回关闭且不立即重开。统计表完全不接收射线，不创建第二份逻辑牌堆或写入卡牌悬停。
+- DeckOverviewData 增加 Remaining(rank) / Remaining(suit, rank)。DeckOverviewPresenter.ReadData 提供两处共用的只读观察者投影及缓存，完整页关闭时也可读取，完整页刷新比较实际投影而非仅 State，避免统计表先读取导致漏刷新。重复牌分别统计、抽出牌不计余量、禁用/失效仍计入，隐藏/未知只显示其他汇总。
+- 统计表沿用 DOTween：0.18 秒由下方 28 单位上移、0.94 倍放大回稳，0.12 秒缩小下移消失；中途移出/重入从当前姿态接续，数据刷新不重播。各组件仅拥有与清理自身 Tween，停用和销毁清理临时实例。原 UI Camera 分辨率、完整页与逐牌提示保持既有路径。
+- 新增统计回归并更新入口与 Play 动画验证，提供 Capture Deck Hover Summary In Play 捕获真实 Game 画面后恢复交互。项目/展示/交互/UI 文档同步，现有 Runtime/link.xml 与场景 Prefab 引用将新运行逻辑和资源纳入首包，无新存档字段。
+- 验证：展示/交互 185/185 通过，Unity 编译 0 警告；Play 统计表与完整页切换、离开收起、快速反向、完整页及单牌提示事件验证通过，实际 Game 截图确认彩色底板、阶梯边框、十三列/四行数字正常显示，控制台无错误/警告。两份运行程序集脱离 UNITY_EDITOR 编译通过；未注入系统鼠标、未执行完整 Player 构建，当前场景仅标记 dirty，未自动保存。
+
+### 2026-10-07 — 牌堆预览离开关闭与剩余数字
+
+- 悬停牌组预览只由牌堆 Icon 驱动：鼠标离开图标立即调用 Close 并开始既有 DOTween 收起，移入面板不续留；移除面板范围检测与延迟关闭 Tween。点击保持显示仍可在离开图标后继续查看，返回关闭。
+- DrawPileView 新增 RemainingCount 引用与 BindRemainingCount，消费既有 Match 抽牌堆余量，在图标 Deck/Remaining/Count 右下角用 Fusion Pixel 显示数字，含空堆 0。深色底与文字随牌堆缩放、不拦截射线；负数在更新文字/叠层前拒绝，不保存第二份牌堆。
+- Prepare 只补缺失数字节点与引用，保留现有图集、指定封面、厚度、位置、样式和 Prefab GUID。更新项目、展示、交互和 UI 文档，改写既有回归与 Play 事件验证，验证抽牌后数字/空堆/重启、离开即时收起与点击保持。沿用现有资源进入首包，未新增资产文件或存档字段。
+- 验证：展示/交互 184/184 通过，Unity 编译 0 警告，两份运行程序集脱离 UNITY_EDITOR 编译通过；Play 牌堆/UI 动画事件验证通过，真实 Game 画面确认右下角剩余 32 清晰显示，控制台无错误/警告。未注入系统鼠标、未执行完整 Player 构建，未自动保存当前场景。
+
+### 2026-10-07 — 图集牌堆入口与 DOTween 惯性显隐
+
+- DrawPileIcon 改为八层原生 CardUIGraphic，直接采样当前手牌 CardView.Atlas 的 card_back，以错位、逐层乘色和阴影形成厚度；余量控制叠层，空堆保留暗色单层。DrawPileView 提供 CoverCardId / SetCoverCard 指定顶层图集牌面，默认牌背；仅装饰封面，不读取隐藏的逻辑牌堆顶牌。图集与封面切换先验证后更新，继续共享 Canvas 材质。
+- 图标 Canvas 排序 300，并添加 GraphicRaycaster；固定 Icon 射线区域与 Deck 缩放节点分开，避免放大造成移入/移出闪烁。悬停 0.14 秒 OutBack 惯性放大至约 1.095 倍并预览牌组；鼠标移入面板保持预览，离开两处后延迟 0.12 秒关闭。点击保持打开，再次点击解除保持，返回关闭并避免仍悬停时立即重开；不发抽牌命令、不改变 Match 或存档。
+- DeckOverviewView 面板从下方 90 Canvas 单位用 0.22 秒 OutBack 上移回稳并渐显，退出 0.14 秒下移渐隐；关闭起点即释放射线与悬停作用域，动画结束才停用。快速关闭/重开从当前姿态接续。
+- 共用 CardHoverPresenter 为手牌 World Space 与牌组 Canvas 的同一花色/点数/筹码提示接入 DOTween：0.16 秒惯性放大出现、0.12 秒缩小消失。逐帧内容/位置刷新不重播动画，快速移入移出从当前倍率反向，保留既有字号、尺寸、红黑配色与左侧布局。各组件仅清理自己持有的 Tween，使用不受 TimeScale 影响的更新。
+- Prepare 迁移现有 DrawPileIcon 与 DeckOverview Prefab，保留 GUID、图集/材质及用户 SuitRows/统计板布局；Configure Deck Icon And Overview 接入同场景入口，编辑器辅助代码仍限定 UNITY_EDITOR。更新根、展示、交互与 UI README，运行逻辑沿现有程序集与资源引用进入首包，无新美术资源或存档字段。
+- 验证：展示/交互 184/184 通过，Unity 编译 0 警告；新增回归覆盖图集封面原子校验、叠层数量、稳定射线区域、动画反向/不重复播放、预览移入面板、点击保持、返回关闭与重复绑定。Play 的牌堆/UI 动画及牌组总览事件验证通过，真实 Game 捕获确认 UI 为 1920×1080 原生绘制、场景仍 960×540，控制台无错误/警告。两份运行程序集脱离 UNITY_EDITOR 编译通过；未注入系统鼠标、未执行完整 Player 构建，当前场景仅标记 dirty，未自动保存。
+
+### 2026-10-07 — 四行牌组总览复用左侧悬停信息
+
+- CardHoverTarget 扩展为场景 CardInstanceView / 原生 Canvas CardUIItemView 两种锚点；DeckOverviewPresenter 实现 ICardHoverSource，从只读投影提供规则花色、点数和 CardScoreRules 基础筹码。已抽出、禁用、失效牌仍可查看，隐藏/未知定义不提供信息；不解析美术 id、不写入 Match 或手牌交互。
+- 继续由场景 CardHoverPresenter 持有既有 CardSuitChipsTooltip Prefab 和唯一提示实例。Canvas 悬停将同一实例挂到页面 Canvas，依据实际牌面四角放在左侧、垂直居中，跟随缩放/摆动、边界限制及 UI Camera；Canvas Size Multiplier 默认 0.4、Canvas Gap 默认 8，均可在 Inspector 调整。切回手牌恢复原 World Space 父级、尺寸与排序，保留原红黑花色和筹码配色。
+- 新增可选 ICardHoverScope：打开总览时独占提示来源，防止背景手牌悬停串入；鼠标移出隐藏，关闭总览恢复普通来源。提示不接收射线。注册工具接收通用来源，Show Canvas Deck Overview 自动接入同场景共用提示，保留既有设置及 Prefab/字体/背景 GUID。
+- 展示/交互 181/181 通过，Unity 编译 0 警告；新增回归覆盖单实例跨 Canvas/World Space 复用、左侧位置/页面排序、红黑内容切换、背景来源隔离、隐藏牌/停用 Graphic 过滤和边界限制。Play 验证扩展至实际指针事件、数据内容及父级，另提供 Capture Canvas Deck Hover In Play 捕获真实画面并恢复测试悬停；均仅 Editor，不注入系统鼠标。
+- 更新交互/展示/UI 文档，CardInteraction 运行程序集脱离 UNITY_EDITOR 编译通过；复用现有资源与首包引用，无新存档字段或美术资源。未执行完整 Player 构建，未自动保存当前场景。
+
+### 2026-10-06 — Suit Row 纵向重叠、逐牌摆动与原生 UI 分辨率
+
+- DeckOverviewView 增加 VerticalOverlap / SetVerticalOverlap，默认 0.12、范围 0–0.3；四行在 SuitRows 区域内等高分布并轻微纵向重叠，0 恢复无重叠。保留父级大小/位置与现有美术调整，Prepare 只迁移行 anchors，不重建统计板或覆盖用户布局。悬停牌及其所在行置顶，移出后恢复花色顺序。
+- CardUIItemView 每张牌继续使用独立幅度/周期/相位的 local Y 摆动，并附加幅度 0.55 倍的轻微 local Z 摆角，使原生无光照 Canvas 上的自转可见；悬停仍持续摆动，不改变卡牌属性、Match 或逻辑 Zone。
+- 嵌入式 URP 增加 renderOverlayAtNativeResolution，UICameraStack 自动启用并保持 UI Camera 在 Stack 末尾。场景和普通 Overlay 先完成 540p 渲染、复古处理及 Point 放大，尾部 UI Overlay 直接加载输出颜色并按输出尺寸绘制，独立清除深度，不借用/改尺寸低分辨率附件。普通相机默认行为不变，XR 沿原有路径。
+- 实际 Play 捕获：1920 × 1080 输出下场景/复古输入保持 960 × 540，UI 颜色/深度目标为 1920 × 1080，UI 不再降分辨率或二次放大。回归检查 1280×720、1920×1080（含普通 Overlay）、800×450 的实际单像素条纹、背景保留和 UI 停用；另覆盖跨行悬停层级、父级缩放与逐牌摆动。
+- Unity 编译 0 警告，展示/交互 179/179 通过，Play 牌组总览验证通过；Rendering、CardPresentation、CardInteraction 三份运行程序集脱离 UNITY_EDITOR 编译通过。更新渲染/展示/UI 与项目文档，沿现有程序集/Prefab/URP 引用进入首包；未执行完整 Player 构建，未自动保存当前场景。
+
+### 2026-10-06 — SuitRows 共同布局父级
+
+- DeckOverview 的四个 Suit Row 移到 Frame/Panel/SuitRows 下，共同父级默认 680 × 528、位置 (164, -8)；四行横向拉伸、各占四分之一高度，原默认排列位置保持一致。修改父级 RectTransform 的位置、宽高或缩放即可整体调整牌区，统计板/点数列/标题仍独立。
+- DeckOverviewView 暴露 SuitRowsRoot / ConfigureRowsRoot / RefreshLayout，Editor 与 Play 在 Canvas 渲染前检测尺寸变化并自动重排；卡牌高度、弧高、边距随区域高度同比适配，窄区域额外容纳完整牌面。重排保留实例、材质、本页悬停及对局投影，不生成抽牌动画或提交 Match 命令；SetRowLayout 先验证适配后的完整布局再改变设置。
+- Prepare Canvas Deck Overview Prefab 自动迁移旧层级，保留已有行节点、Prefab GUID、美术与左侧布局，重复运行不覆盖用户调整；新模板直接生成共同父级。运行逻辑继续沿现有 Runtime/link.xml 进入首包，迁移代码仅 Editor，无新资产或存档字段。
+- 更新表现/UI 文档；Unity 编译 0 警告，展示/交互 177/177 通过。新增检查实际父级缩小/放大后四行尺寸、自动重排、实例/悬停保留、左侧独立及缩放后的布局校验；非 UNITY_EDITOR 运行程序集编译通过。未执行完整 Player 构建，未自动保存场景。
+
+### 2026-10-06 — 牌组总览固定弧形行与紧凑像素统计板
+
+- 总览四行固定 680 × 132，卡牌高度 120、弧高 5、边距 2；间距随牌数填满行宽，按原顺序重叠，空行/单牌保持边界。复用手牌 CardZoneRowLayout 的圆弧与完整旋转足迹约束，将 XZ 位置转为 Canvas XY，并修正正立牌面旋转；保留逐牌悬停置顶/放大和 idle local Y 摆动。暴露 Inspector 与 SetRowLayout 参数，布局错误在改变已有实例前拒绝。
+- 面板由 1200 × 642 缩至 1040 × 632，左侧参考小丑牌信息板，保留每花色数字/JQK/A/合计，新增 A/人头/数字总数及 A…2 余量。统计只读取剩余实例；禁用、失效不从牌组余量中扣除，隐藏/未知牌仅汇总。更新小字号和原生返回按钮射线设置。
+- 以内置 image_gen 生成三枚简单手绘像素分类图标，原始透明 PNG 导入 CardPresentation/UI/Icons，Sprite/Point、无 mipmap/无压缩；维护资源 .meta 及包含完整提示词的 README，不覆盖既有卡牌图集。
+- UI 图集映射改为与手牌相同的完整区域采样和边界半像素钳制，避免把整幅牌面压缩到内缩坐标。图集区域/效果参数全部保留于 UV 通道，几何法线只参与装饰方向，避免 Canvas 合批或旋转改变图集坐标；透明度沿用原生顶点 Alpha、保留 HDR Tint 和效果参数。开启 Canvas Pixel Perfect，继续共用手牌内部目标和 Point 放大。
+- 新增 Update Canvas Deck Overview Layout 明确升级菜单；Prepare 只迁移旧布局，重复准备保留新版布局与 Prefab GUID/共享材质。编辑器捕获先解除相机/活动纹理再释放预览资源。更新根、表现及 UI 文档，沿原 Runtime 程序集/link.xml 和 Prefab 资源链进入首包，未变更 Core/存档/对局命令。
+- 验证：Unity 编译 0 警告，展示/交互 176/176 通过，新增两项覆盖不同牌数的固定行宽、浅弧/重叠/正立与边界、原子布局校验、分类/点数统计及图标导入。Play 抽牌统计、复用、悬停事件和关闭重开通过并恢复原对局；实际 1920 × 1080 Game 捕获确认主相机和 UI 均为 960 × 540，Point 输出。运行程序集脱离 UNITY_EDITOR 编译通过；未执行完整 Player 构建，未自动保存当前场景。
+
+### 2026-10-06 — 原生 Canvas 牌组总览与图集卡牌
+
+- 新增 CardUIGraphic / CardUIItemView、DeckOverviewData / DeckOverviewView 及 DeckOverviewPresenter，原生 MaskableGraphic 直接采样现有 FourBeasts 图集，沿用 UI Camera Stack、Fusion Pixel 字体及 Canvas 批处理。四行按花色分组、点数降序，每个实例独立保留；左侧统计剩余数字牌、J/Q/K、A 与合计。
+- 新增 UI/Shaders/CardCanvas.shader、Art/Materials/Cards/FourBeastsCanvas.mat、CardUIItem.prefab 和 DeckOverview.prefab。逐牌 Tint、HDR 镭射、火漆、红叉及透明度通过顶点颜色/UV 通道传递，共享纹理与材质；支持 UI 透明混合、CanvasGroup、Stencil 与 RectMask2D，不使用 MeshRenderer 或运行时 RenderTexture。火漆采用固定装饰光照。
+- CardArt 新增 CardSurfaceCommon.hlsl，共享图集边界采样、镭射光谱与火漆坐标计算；Deferred Input 仅改为调用共享函数，保留场景卡牌渲染路径。图集 UV 半像素内缩防串牌。
+- 已抽出卡原位透明并去色，悬停用 DOTween 放大/回落、提高透明度并在本行置顶，idle 轻微绕 local Y 摆动。本页悬停投影独立于手牌交互，不提供选中/提交；关闭清理自身 Tween，刷新复用视觉身份，编辑器重载清理临时孤立实例。
+- Presenter 从明确牌组成员和绑定 DeckZone 构建只读投影，统计按 DefinitionId 解析，不从美术名推断、不改 Match 或 CardEffects；排除无关玩家卡牌，隐藏/非标准牌仅汇总。提供 Configure / SetRoster / Open / Close；新增准备、打开、样例捕获菜单，牌堆图标点击入口仍留待后续。
+- 新增文件、目录及资源维护独立 .meta，运行代码沿既有 Runtime asmdef/link.xml 和资源引用进入首包，编辑器工具/验证整文件限定 UNITY_EDITOR。更新根、表现、交互及 UI README；工具不自动保存场景。
+- 验证：Unity 编译 0 警告，展示/交互 174/174 通过；运行程序集移除 UNITY_EDITOR 定义及 UnityEditor 引用后编译通过。Play 验证悬停事件、抽牌统计、实例/材质复用和关闭重开，通过后恢复原对局；Game 画面已核验，控制台无错误/警告。鼠标验证使用 Unity Pointer 事件，未核验物理鼠标；未执行完整 Player 构建，当前场景未自动保存。
+
+### 2026-10-06 — 局内共享卡牌对局与编辑器宏隔离
+
+- Core 新增纯 C# CardTableState / CardTableSession / CardTableChange：全局实例注册表、有序牌区与 Revision，保证任一牌只有一个位置；抽牌、出牌、弃牌、重排使用 Prepare/Commit，校验 Zone Kind、权限、容量及身份，并拒绝过期/跨会话命令。能力/计分/德州/出牌玩法仍解耦，仅共享此归属基础。
+- 新增 CardTableSnapshotCodec schema 1，16 MiB 严格 UTF-8，上下文完整验证后恢复会话；不包含美术、观察者可见性或本地交互，不变更既有 Holdem/Draw/Run 存档。完整隐藏信息快照用于可信玩法存档，网络需另外构建授权投影。
+- 新增 CardInteraction/CardMatchHost，集中持有启动快照、运行会话与本地观察者投影；提供 Player 可用的 StartMatch(state, observerCards) 初始化/恢复，规则属性以 Core 为准。CardZonePlayHost 改为 Match/ZoneId 绑定及命令适配器，不再独立维护手牌/牌堆/弃牌堆。多个区域可共享同一个抽牌堆/弃牌堆，重复 BeginSession 或停用牌区不重置数据；RestartMatch 才统一重开。
+- View 增加提交回调，在准备/验证视觉后提交完整 Match，再通知表现；出牌继续使用原实例的交叉转移，抽/弃保留翻面、回稳和独立音效，排序保持落位后提交。坏牌面不消耗共享牌堆。
+- 验证窗口每次刷新/提交先读取绑定 Match，Edit 配置启动快照、Play 调试当前会话；撤销记录 Match，切换目标重新读对应牌堆，移除第二份 Play 卡牌缓存及进入 Play 前由旧缓存自动重写的行为。实验数据只作为缓冲/诊断。
+- CardPresentation/Editor 所有工具整文件标记 UNITY_EDITOR；运行目录的 CardMatchHost.Editor / CardZonePlayHost.Editor 整文件限定，Capture、ReplaceCardsAndDeck、ConfigureInitial、Debug 编辑、预览出牌与旧列表迁移不进入 Player。场景迁移菜单验证所有身份后统一创建 Match、清空旧 Host 列表，支持 Undo，只标记场景 dirty。
+- 所有新增脚本及测试带独立 .meta，运行类型沿已有 Runtime asmdef/link.xml 进入首包。更新根、引擎、交互、表现及 UI 文档。Core 207/207、展示/交互 166/166 通过；两个运行程序集移除 UNITY_EDITOR 定义与 UnityEditor 引用后编译通过，Unity 编译 0 警告，Play 四按钮事件验证通过、控制台无错误/警告。未执行完整 Player 构建，未自动保存场景。
+
+### 2026-10-06 — 玩家出牌按钮与右下角局内抽牌堆图标
+
+- 手牌面板改为出牌、弃牌、点数理牌、花色理牌；移除牌堆余量和“优先/落位后理牌”状态行，面板高度从 164 缩至 124，仍为左下角两行、0.75 缩放。原 Draw 节点改为 Play，使用 FormerlySerializedAs 迁移按钮/文字引用，保留 Prefab GUID、字体及颜色。
+- HandActionPresenter 去掉玩家主动抽牌入口和 Cards Per Draw/Hand Limit 配置，绑定现有 CardZoneTransferPresenter 路径，将选中牌经 PlaySelected 移入出牌区，继续复用交叉飞行、视觉身份和落位整理。出牌检查两区会话、路径、选择、禁用、可见视觉、飞行状态及剩余五张容量；无路径/无选择/超容量和过期按钮调用不提交，失效牌仍可出/弃。
+- 新增 Runtime/DrawPileView、CardInteraction/Runtime/DrawPilePresenter、Editor/DrawPileSetup 及 DrawPileIcon.prefab，全部带独立 .meta。右下角图标大小 64 × 96、边距 20，三层 RawImage 直接复用 FourBeasts 牌背，不复制资源或改动 CardArt 导入；有牌显示叠层，耗尽保留暗色单层，无 Button/GraphicRaycaster/文本，全部关闭 Raycast Target，点击逻辑留待后续。
+- 图标读取宿主的局内 DeckCards 副本，编辑器仅维护启动快照；实际 DrawCards 由玩法流程调用并消耗 Core DeckZone，不从 UI 发起。关闭验证窗口不影响数据和图标刷新。手牌固化/配置工具自动接入图标、同一 UI Camera 和既有出牌路径；新增 Update Player Hand UI 升级菜单，重复注册复用场景实例，未自动保存用户场景。新运行脚本沿现有程序集/link.xml 和场景/Prefab 资源引用进入首包。
+- 更新根、展示、交互及 UI 文档；调整原有按钮回归，新增 4 项测试覆盖出牌容量/失效、图标资源/输入边界、运行时消耗/重启与空堆表现。Unity 编译 0 警告，展示/交互 162/162 通过，Play 四按钮事件检查通过，Game 画面已核验左下角按钮与右下角图标，控制台无错误/警告；未执行完整 Player 构建。
+
+### 2026-10-06 — 左下角紧凑按钮与独立 UI Camera Stack
+
+- 手牌按钮 Prefab 改为 Screen Space Camera，左下角两行排列、边距 16、缩放 0.75；基准大小 316 × 164，保留 Fusion Pixel 字体、四按钮事件及原配色。新增 Use Compact Hand Action UI Camera 菜单，更新已有布局并接入当前场景，保留 Prefab GUID。
+- 新增 Rendering/Runtime/UICameraStack、CardPresentation/Editor/CardUICameraSetup 及独立 .meta。主相机排除 UI，子对象 UI Camera 只绘制 UI，并追加到现有 Base Camera Stack；注册复用、不清空其他 Overlay。编辑器和 Play 同步投影与视口，销毁移除自己的 Stack 引用。
+- 新增 Settings/UIRenderer.asset 及 .meta，独立 Forward Renderer，无自定义 Feature/PostProcessData、无不透明层绘制、关闭自身降采样及深度预处理；UI Camera 关闭阴影、后处理、额外深度/颜色纹理请求、HDR/MSAA、XR、动态分辨率与 Volume 自动更新。MainURP 追加 Renderer index 1，默认仍为主 Deferred Renderer。
+- CardHoverPresenter 增加 RenderingCamera / SetRenderingCamera：UI Camera 绘制 World Space 提示，场景相机继续负责几何投影和位置；编辑器注册自动匹配已有 Stack。主场景 RetroPostProcessFeature 改为 Base 执行、Overlay 跳过，避免主相机非最终解析者时丢失复古效果。
+- UI Stack 沿用主相机当前的 540p 渲染目标，最终共同 Point 放大；独立 Renderer 不额外降采样，UI 不经过场景复古调色。新增 Game 帧捕获菜单，实测 1920 × 1080 输出时场景/UI 均为 960 × 540，复古输入尺寸相同，左下角布局与场景效果已检查。
+- 更新根、展示、交互与 UI 文档，新增 Rendering README/.meta。新增 5 项回归；Unity 编译 0 警告，展示/交互 158/158 通过，Play 四按钮事件检查通过，实际 Stack 渲染无错误/警告。当前场景已接入并保留 dirty，未自动保存；未执行完整 Player 构建。
+
+### 2026-10-06 — Game 手牌抽牌、弃牌及两种理牌按钮
+
+- 新增 `CardPresentation/Prefabs/HandActionPanel.prefab` 与 `Runtime/HandActionPanelView`，四按钮为抽牌（默认每次 1 张）、弃牌（当前选中数）、点数理牌、花色理牌；当前使用 Fusion Pixel 字体和占位色块，显示余牌和当前排序选择。Overlay UI 默认位于当前手牌上方，仅四个按钮 Image 拦截鼠标，背景/文字不阻挡牌区。
+- 新增 `CardInteraction/Runtime/HandActionPresenter` 与 `CardZonePlayHost.Draw`。Presenter 持有手牌宿主/UI 引用和本地抽牌数/容量配置，按钮调用 Card 数据命令；牌堆不足/满手牌/无选中/禁用选择时阻止无效操作，失效牌仍可弃。抽牌使用 Core DrawTo 消耗牌顶原身份并原样进入手牌，View 消费变化播放既有飞入/翻面/惯性/音效；两种理牌保留最后选择、等待过渡结束后更新列表，不直接改 CardView 或 Transform。
+- 将验证窗口配置牌堆固化到场景启动快照，提供 InitialDeckCards / DeckCards / DeckZone 和 ReplaceCardsAndDeck；三组身份不允许重叠，坏牌面/重复身份/非法数量在消耗前拒绝。关闭窗口仍能抽牌，不自动补牌或回收弃牌；每次 Play 从初始数据复制。验证窗口在 Play 同步宿主牌堆，与 Game 按钮共用列表并一起提交；通用/出牌区不注入测试牌堆。Core、正式 Match 存档契约及 View Prefab 导出边界保持原状。
+- 新增 `Editor/HandActionPanelSetup`，Prepare Hand Action Panel Prefab 保留已有美术设置，Configure Hand Action Buttons 及固化手牌自动接入按钮；缺少活动 EventSystem 才创建 StandaloneInputModule。7 组新增脚本/Prefab 各带独立 .meta，沿现有运行程序集/link.xml 和普通场景资源引用进入首包。更新根、展示、交互及 UI 文档；当前场景已接入、只标记 dirty，未自动保存用户场景。
+- 新增 6 项回归，覆盖按钮事件到 Card 列表/增减动画、抽牌落位后整理、序列化/耗尽/重启、原子拒绝、禁用/失效、重复绑定/停用/容量与 Prefab 输入边界。新增测试菜单 Validate Hand Action Buttons In Play，检查真实 Play 反序列化后的四个按钮事件绑定，结束恢复启动数据。Unity 编译 0 警告，展示/交互 153/153 通过，Play 四按钮事件检查通过；布局与字体已在 Game 检查。自动鼠标输入未被 Game 接收，真实鼠标点击尚未完成核验；未执行完整 Player 构建。
+
+### 2026-10-06 — 抽牌落位后按当前选项整理手牌
+
+- 手牌默认选择点数排序；成功抽牌后先保留提交顺序，整批飞行和惯性回稳结束，再调用现有 Card 层 SortByRank / SortBySuit 并播放重排。两个原有按钮设置当前排序选择，飞行中点击只排队，采用最后一次选择；追加抽牌延后整理。牌顶/批量/指定牌面/任意抽取以及 Edit/Play 一致，手动移动、反转和打乱仍可使用。
+- 新增 CardInteraction/Runtime/CardZonePlayHost.Sort.cs 及独立 .meta；RequestSortAfterLanding / TryCompletePendingSort 由 Play LateUpdate 驱动，关闭验证窗口仍会完成，停止/停用/重启清理请求。运行时沿用首包程序集/link.xml，排序偏好随场景快照固化，不改 Core 排序/转移契约或权威存档。
+- 编辑器在预览过渡完成后更新卡牌列表，支持 Undo；诊断“手牌之后”同步重排顺序，Drawn 保留抽取顺序。排序保留身份、属性、可见性与交互，不重新飞入或补播抽牌提示；牌堆/出牌区不自动整理。更新根/展示/交互文档，新增 5 项时序回归覆盖两种排序的 Edit/运行时落位、飞入结束后的惯性等待、追加抽牌、复用、最新选择及生命周期清理。
+- 验证：Unity 编译 0 警告，展示/交互 147/147 通过；未改写或自动保存场景。
+
+### 2026-10-06 — 场景共用的卡牌悬停提示 Presenter
+
+- 新增 CardInteraction/Runtime 的 `CardHoverPresenter`、`ICardHoverSource` / `CardHoverTarget`、`CardZonePlayHost.Hover` 及独立 .meta。场景 Presenter 持有提示 Prefab 和一个复用实例，多个来源按配置顺序提供观察者可读的花色、点数、筹码和视觉锚点；CardZoneView/CardView 不持有 UI 引用，提示不修改卡牌或计算最终得分。
+- 验证宿主从运行副本的逐牌悬停状态及 DefinitionId 查询标准牌定义和 CardScoreRules 基础点数，不从美术 ID 推断；禁用/失效牌保留印刷点数，未知定义不提供提示。输入模块增加纯 C# Scoring 引用；正式玩法可通过接口提供能力解析后的牌面及名义筹码，观察者授权由来源处理。
+- Play 的 LateUpdate 将 World Space 提示放在实际卡牌上边缘，朝向共用场景相机；支持尺寸、间距、相机平面偏移、向相机偏移和视口边界。牌背、飞入/离场、无悬停或停用来源隐藏；UI 不拦截射线，停用/销毁释放临时实例，编辑模式不自动处理鼠标。
+- 新增 Editor/CardHoverPresenterSetup 及 .meta；固化手牌自动连接同场景/相机的 `Card Hover UI`，菜单 Configure Card Hover Tooltip 可接入已有固化手牌。工具支持 Undo，保留既有样式，只标记场景 dirty；当前验证场景已连接，未自动保存场景。运行时沿用首包程序集/link.xml，保存后的场景引用带入提示及其背景/字体资源。
+- 新增 6 项回归，覆盖鼠标控制器 → 卡牌状态 → UI、复用/排序、基础点数和红黑颜色恢复、隐藏牌/弃牌/飞入过滤、定义与美术解耦、禁用/失效、相机跟随/视口、多来源以及停用/重启清理。Unity 编译 0 警告，展示/交互 142/142 通过。已进行 Play 检查；原生鼠标触发提示未完成核验，未执行完整 Player 构建。更新根、展示、交互和 UI 文档。
+
+### 2026-10-06 — 提示上栏花色符号、文字和点数
+
+- 上栏统一显示“花色符号 + 花色文字 + 点数”，如 `♣ 梅花 J` / `♥ 红桃 J`；Fusion Pixel TMP 图集预填原生 `♠ ♥ ♣ ♦`，不使用花色 Sprite 或字体回退。
+- 新增 Runtime/CardTooltipView 及 .meta，绑定到现有提示 Prefab；`SetContent(suit, rank, chips)` 和 Inspector 预览共用刷新，红桃/方块整个上栏为红色，切回黑桃/梅花恢复深色，下栏蓝色数字及深色筹码保持独立。组件只消费调用方已解析的展示数据，实际悬停绑定留待后续 Presenter。
+- CardPresentation.Runtime 新增 UGUI/TMP 引用，沿用首包程序集和 link.xml；PokerEngine 不增加 UI 依赖。更新生成工具，在保留 Prefab GUID、布局与颜色设置的同时补充字形及展示组件；更新根/展示/UI/字体文档。
+- 验证：Unity 编译 0 警告，四种花色离屏渲染成功，检查上栏实际字形均来自 Fusion Pixel，已核验整行染红及红→黑颜色恢复；未修改或保存用户场景。
+
+### 2026-10-06 — 花色与筹码提示 World Space Prefab
+
+- 完整导入用户提供的 `card-suit-chips-background-v1.png` 至 `CardPresentation/UI/Textures/CardSuitChipsBackground.png`：RGBA、Sprite/FullRect、无压缩和 mipmap；保留透明边缘、上下底板及原比例。
+- 新建 `CardPresentation/Prefabs/CardSuitChipsTooltip.prefab`，World Space Canvas 使用 448 × 320 画布；上栏“梅花 J”，下栏蓝色“+10”与深色“筹码”，独立 TMP 文本节点。关闭所有鼠标射线拦截，未接入实际悬停、跟随或规则数据绑定。
+- 从 Fusion Pixel 12px 比例简体中文 TTF 生成 `Fonts/FusionPixelFont/TMP/FusionPixel12pxProportional.asset`，12px 位图/Point 采样，预填花色、筹码与 ASCII，动态补充字符；导入标准 TMP Essential Resources，提示显式引用像素字体。新增资源均保留 .meta，沿普通场景/Prefab 引用进入首包。
+- 新增 Editor/CardTooltipPrefabBuilder 及准备/离屏预览菜单；仅 Editor 程序集增加 UGUI/TMP 与渲染依赖，更新根/展示/字体 README 并新增 UI 资源说明。重复准备保留已有字体/Prefab 调整；预览使用独立 Preview Scene，不保存当前场景。
+- 验证：背景源文件与导入副本 SHA-256 相同；Unity 编译与 Prefab 结构检查通过，实际离屏渲染已检查两栏文字、颜色及对齐。未执行完整 Player 构建。
+
+### 2026-10-06 — 单牌基础点数与悬停查询接口
+
+- 新增纯 C# Scoring/CardScoreRules.GetBasePoints(Rank / CardDefinition)，统一当前 2–10、J/Q/K=10、A=11 的规则，并拒绝非法点数/空定义；ScoringCard 新增只读 BasePoints、PointsPerTrigger，复用既有 BonusPoints、倍率、重触发和 CanScore。
+- ScoreEngine 的逐牌点数改为消费同一个 PointsPerTrigger；查询保留失效牌原始数值，结算仍跳过其全部逐牌贡献。单次名义点数不等同最终得分，不包含倍率、小丑、牌型或重复触发；有效牌面由玩法宿主解析。checked 溢出策略与原有失效过滤顺序保持一致。
+- 新增 Runtime/Scoring/CardScoreRules.cs、Tests/Editor/CardScoreQueryTests.cs 及 .meta，沿用首包程序集和依赖边界；无 Core、存档 schema 或场景数据变更。更新根/引擎 README 的查询与未来悬停接入说明，本次未添加 UI 面板。
+- 新增 5 项回归覆盖全牌组查询、能力修改后的牌面与实际计分一致性、失效数值保留、非计分踢脚牌以及溢出处理。
+- 验证：Unity 编译 0 警告，PokerEngine 全模块 200/200 测试通过，控制台无错误；未执行完整 Player 构建。
+
+### 2026-10-06 — 悬停改为面积放大惯性动画
+
+- HandZoneView 悬停不再平移，改用独立 DOTween OutBack 将卡牌等比缩放至 √1.2（约 1.0954），目标面积增加 20%；移出鼠标惯性缩回。选中/取消选中仍沿原选中偏移上浮/回落，选中摆角同步归零，两种效果独立叠加、互不重播。
+- 新增 Runtime/CardInstanceView.Hover.cs 及 .meta，沿用首包程序集；Face 下增加 Hover 视觉节点，独立推进、反向、静默恢复及清理。普通牌区不应用悬停缩放；弃牌保留实际起飞大小，跨区转移继续捕获完整姿态。射线使用实际缩放几何。
+- 保留旧悬停偏移的序列化字段与接口兼容，旧值不再产生位移，HoveredOffset 返回零。验证工具移除悬停位移配置，显示面积 +20% 说明，共用现有时长和惯性设置；更新根、展示、交互 README。
+- 更新原有交互回归，新增旧偏移/牌背/重排/普通牌区隔离与放大边缘命中测试。Unity 编译 0 警告，展示/交互 136/136 通过，控制台无错误；未保存场景或改写美术 Prefab。
+
 ### 2026-10-05 — 验证窗口逐行编辑卡牌属性
 
 - 手牌与测试牌堆的每行直接提供牌面、正面、强化、塑封、失效、禁用、悬停、选中及乘色；移除下方单牌属性面板。移动到指定序号、上下移动、复制、清除效果、抽出和删除集中在行尾，序号悬停保留实例 ID。
