@@ -93,7 +93,12 @@ namespace PokerEngine
     {
         public string Id { get; }
         public CardFace Face { get; }
+        /// <summary>Base points for the supplied (possibly effective) face; unaffected by enhancements or scoring eligibility.</summary>
+        public long BasePoints => CardScoreRules.GetBasePoints(Face.Rank);
         public long BonusPoints { get; }
+        /// <summary>Nominal points for one trigger: base + bonus. Excludes multipliers, retriggers, jokers and hand points.
+        /// Check CanScore and the hand's scoring subset before applying; ineffective cards still expose their original value.</summary>
+        public long PointsPerTrigger => checked(BasePoints + BonusPoints);
         public decimal BonusMultiplier { get; }
         public decimal MultiplierFactor { get; }
         public int Retriggers { get; }
@@ -153,13 +158,15 @@ namespace PokerEngine
             // Ineffective cards still participate in classification and the hand's base score.
             // Skip their entire per-card contribution, including enhancements, retriggers and per-card joker effects.
             foreach (var card in cards.Where(c => c.CanScore))
-            for (int repeat = 0; repeat <= card.Retriggers; repeat++)
             {
-                long rankPoints = card.Face.Rank == Rank.Ace ? 11 : Math.Min(10, (int)card.Face.Rank);
-                apply(card.Id, card.Id, ScoreOperation.AddPoints, checked(rankPoints + card.BonusPoints));
-                if (card.BonusMultiplier != 0) apply(card.Id, card.Id, ScoreOperation.AddMultiplier, card.BonusMultiplier);
-                if (card.MultiplierFactor != 1) apply(card.Id, card.Id, ScoreOperation.MultiplyMultiplier, card.MultiplierFactor);
-                modifiers(ScoreTiming.PerCard, card);
+                long pointsPerTrigger = card.PointsPerTrigger;
+                for (int repeat = 0; repeat <= card.Retriggers; repeat++)
+                {
+                    apply(card.Id, card.Id, ScoreOperation.AddPoints, pointsPerTrigger);
+                    if (card.BonusMultiplier != 0) apply(card.Id, card.Id, ScoreOperation.AddMultiplier, card.BonusMultiplier);
+                    if (card.MultiplierFactor != 1) apply(card.Id, card.Id, ScoreOperation.MultiplyMultiplier, card.MultiplierFactor);
+                    modifiers(ScoreTiming.PerCard, card);
+                }
             }
             modifiers(ScoreTiming.AfterCards, null);
             return new ScoreResult(id, category, initialPoints, initialMultiplier, points, multiplier, steps);
