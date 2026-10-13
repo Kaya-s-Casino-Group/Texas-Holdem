@@ -1,0 +1,25 @@
+{
+  "name": "Poker.DrawBattle.Tests.Editor",
+  "references": [
+    "Poker.DrawBattle.Runtime",
+    "PokerEngine.Core",
+    "PokerEngine.Abilities",
+    "PokerEngine.Scoring",
+    "PokerEngine.Draw",
+    "CardInteraction.Runtime",
+    "CardPresentation.Runtime",
+    "Unity.TextMeshPro",
+    "Unity.ugui"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "overrideReferences": true,
+  "precompiledReferences": [
+    "nunit.framework.dll"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ],
+  "autoReferenced": false
+}

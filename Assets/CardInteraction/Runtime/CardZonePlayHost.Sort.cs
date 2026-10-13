@@ -33,7 +33,7 @@ namespace CardInteraction
         public bool TryCompletePendingSort()
         {
             if (!pendingSort || !IsRunning || !isActiveAndEnabled || !(view is HandZoneView hand) ||
-                !hand.isActiveAndEnabled || hand.IsTransitioning) return false;
+                !hand.isActiveAndEnabled || hand.IsTransitioning || (match.Commands != null && !match.Commands.CanInteract)) return false;
             var byId = Cards.ToDictionary(card => card.Card.Id);
             CardDefinition Resolve(CardInstanceId id) =>
                 standardDefinitions.TryGetValue(byId[id].Card.DefinitionId, out var definition) ? definition : null;
@@ -41,7 +41,7 @@ namespace CardInteraction
             var sorted = sortOrder == CardZoneSortOrder.SuitFirst ? zone.SortBySuit(Resolve) : zone.SortByRank(Resolve);
             if (!sorted.Cards.SequenceEqual(zone.Cards))
                 {
-                    var update = match.PrepareReorder(zone.Id, sorted.Cards);
+                    var update = match.PreparePresentationReorder(zone.Id, sorted.Cards);
                     view.PresentCommitted(update.Project(zone.Id), () => match.Commit(update)); match.Notify(update, this);
                 }
             pendingSort = false;

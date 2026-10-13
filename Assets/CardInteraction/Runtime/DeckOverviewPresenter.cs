@@ -22,6 +22,14 @@ namespace CardInteraction
         public DeckOverviewView View => view;
         public IReadOnlyList<string> RosterIds => rosterIds.AsReadOnly();
         public bool CapturesHover => view != null && view.IsOpen;
+#if UNITY_EDITOR
+        public void ClearAuthoringRoster()
+        {
+            if (Application.isPlaying) throw new InvalidOperationException("Authoring cleanup is editor-only.");
+            deckZoneId = null; rosterIds.Clear(); knownIds = null; lastState = null; data = null;
+            if (view != null) { view.Close(false); view.Clear(); }
+        }
+#endif
 
         public bool TryGetHoveredCard(out CardHoverTarget target)
         {

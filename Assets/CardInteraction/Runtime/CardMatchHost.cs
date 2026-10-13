@@ -30,6 +30,7 @@ namespace CardInteraction
         internal CardTableSession Session;
         internal Dictionary<string, CardZoneCardState> Presentation;
         internal bool Preview;
+        internal ICardMatchCommands Authority;
         public CardTableChange Change { get; internal set; }
         public CardZoneViewData Project(ZoneId zone) => new CardZoneViewData(zone,
             Change.After.GetZone(zone).Cards.Select(id => Presentation[id.Value].Project()));
@@ -40,6 +41,7 @@ namespace CardInteraction
     public sealed partial class CardMatchHost : MonoBehaviour
     {
         [SerializeField] private string matchId;
+        [SerializeField] private bool runtimeManaged;
         [SerializeField] private long initialRevision;
         [SerializeField] private List<CardMatchZoneSnapshot> initialZones = new List<CardMatchZoneSnapshot>();
         private CardTableSession session;
@@ -47,7 +49,10 @@ namespace CardInteraction
         private CardTableState runtimeSeed;
         private Dictionary<string, CardZoneCardState> runtimeSeedPresentation;
         public bool IsRunning { get; private set; }
-        public CardTableState InitialState => runtimeSeed ?? BuildInitial();
+        public bool IsRuntimeManaged => runtimeManaged;
+        public ICardMatchCommands Commands { get; private set; }
+        public CardTableState InitialState => runtimeSeed ?? (runtimeManaged ? new CardTableState(new MatchId("presentation/unbound"),
+            Array.Empty<CardInstance>(), Array.Empty<CardZone>()) : BuildInitial());
         public CardTableState State => IsRunning ? session.State : InitialState;
         public event Action Restarted;
         public event Action<CardTableChange, CardZonePlayHost[]> Changed;
@@ -58,6 +63,13 @@ namespace CardInteraction
         /// <summary>Start/restore a gameplay-owned table with this observer's presentation, without editor APIs.</summary>
         public void StartMatch(CardTableState state, IEnumerable<CardZoneCardState> observerCards)
         {
+            RequireLocalCommands();
+            var next = BuildObserverPresentation(state, observerCards);
+            runtimeSeed = state; runtimeSeedPresentation = next;
+            RestartMatch();
+        }
+        private static Dictionary<string, CardZoneCardState> BuildObserverPresentation(CardTableState state, IEnumerable<CardZoneCardState> observerCards)
+        {
             if (state == null || observerCards == null) throw new ArgumentNullException();
             state.Validate();
             var cards = observerCards.ToArray();
@@ -65,19 +77,45 @@ namespace CardInteraction
                 !new HashSet<string>(state.Cards.Select(card => card.Id.Value)).SetEquals(cards.Select(card => card.Id)))
                 throw new ArgumentException("Observer cards must match the table's identities exactly.");
             var styles = cards.ToDictionary(card => card.Id, card => card);
-            var next = state.Cards.ToDictionary(card => card.Id.Value, card => {
+            return state.Cards.ToDictionary(card => card.Id.Value, card => {
                 var style = styles[card.Id.Value];
                 return new CardZoneCardState(card, style.ArtId, style.FaceUp, style.Tint, style.Interaction.WithHovered(false));
             }, StringComparer.Ordinal);
-            runtimeSeed = state; runtimeSeedPresentation = next;
-            RestartMatch();
         }
         public void RestartMatch()
+        {
+            RequireLocalCommands();
+            ResetSession();
+        }
+        private void ResetSession()
         {
             var seed = InitialState; var next = InitialPresentation();
             session = new CardTableSession(seed); presentation = next; IsRunning = true; Restarted?.Invoke();
         }
-        public void StopMatch() { IsRunning = false; session = null; presentation = null; }
+        public void StopMatch() { IsRunning = false; session = null; presentation = null; Commands = null; }
+        public void StartExternalMatch(ICardMatchCommands authority, CardTableState state, IEnumerable<CardZoneCardState> observerCards)
+        {
+            if (authority == null) throw new ArgumentNullException(nameof(authority));
+            if (Commands != null && !ReferenceEquals(Commands, authority)) throw new InvalidOperationException("Another gameplay authority owns this mirror.");
+            var next = BuildObserverPresentation(state, observerCards);
+            runtimeSeed = state; runtimeSeedPresentation = next; Commands = authority; ResetSession();
+        }
+        private void RequireLocalCommands()
+        {
+            if (runtimeManaged || Commands != null) throw new InvalidOperationException("Submit commands to the gameplay authority; this table is a presentation mirror.");
+        }
+        private CardTableSession LocalSession { get { RequireLocalCommands(); return RunningSession; } }
+        public CardMatchUpdate PrepareExternalPlay(ICardMatchCommands authority, ZoneId hand, ZoneId played, IEnumerable<CardInstanceId> selected, int capacity) =>
+            External(authority, () => Wrap(RunningSession.PreparePlay(hand, played, selected, capacity), session, false, clearTransferredInput: true));
+        public CardMatchUpdate PrepareExternalDiscard(ICardMatchCommands authority, ZoneId hand, ZoneId discard, IEnumerable<CardInstanceId> selected) =>
+            External(authority, () => Wrap(RunningSession.PrepareDiscard(hand, discard, selected), session, false, clearTransferredInput: true));
+        public CardMatchUpdate PrepareExternalProjection(ICardMatchCommands authority, CardTableState state, IEnumerable<CardZoneCardState> styles) =>
+            External(authority, () => Wrap(RunningSession.PrepareZones(state.Zones, state.Cards), session, false, styles));
+        private CardMatchUpdate External(ICardMatchCommands authority, Func<CardMatchUpdate> prepare)
+        {
+            if (authority == null || !ReferenceEquals(Commands, authority)) throw new InvalidOperationException("Foreign gameplay authority.");
+            var update = prepare(); update.Authority = authority; return update;
+        }
         public bool ContainsZone(ZoneId id) => (runtimeSeed != null || !string.IsNullOrEmpty(matchId)) && State.Zones.Any(zone => zone.Id == id);
         public CardZone GetZone(ZoneId id, bool initial = false) => (initial ? InitialState : State).GetZone(id);
         public IReadOnlyList<CardZoneCardState> GetCards(ZoneId id, bool initial = false)
@@ -101,13 +139,13 @@ namespace CardInteraction
         private CardTableSession RunningSession => IsRunning ? session : throw new InvalidOperationException("Start the match before preparing commands.");
 
         public CardMatchUpdate PrepareDraw(ZoneId deck, ZoneId hand, int count, int capacity) =>
-            Wrap(RunningSession.PrepareDraw(deck, hand, count, capacity), session, false);
+            Wrap(LocalSession.PrepareDraw(deck, hand, count, capacity), session, false);
         public CardMatchUpdate PreparePlay(ZoneId hand, ZoneId played, IEnumerable<CardInstanceId> selected, int capacity) =>
-            Wrap(RunningSession.PreparePlay(hand, played, selected, capacity), session, false, clearTransferredInput: true);
+            Wrap(LocalSession.PreparePlay(hand, played, selected, capacity), session, false, clearTransferredInput: true);
         public CardMatchUpdate PrepareDiscard(ZoneId hand, ZoneId discard, IEnumerable<CardInstanceId> selected) =>
-            Wrap(RunningSession.PrepareDiscard(hand, discard, selected), session, false, clearTransferredInput: true);
+            Wrap(LocalSession.PrepareDiscard(hand, discard, selected), session, false, clearTransferredInput: true);
         public CardMatchUpdate PrepareReorder(ZoneId zone, IEnumerable<CardInstanceId> order) =>
-            Wrap(RunningSession.PrepareReorder(zone, order), session, false);
+            Wrap(LocalSession.PrepareReorder(zone, order), session, false);
         private CardMatchUpdate Wrap(CardTableChange change, CardTableSession owner, bool preview,
             IEnumerable<CardZoneCardState> updates = null, bool clearTransferredInput = false)
         {
@@ -126,6 +164,7 @@ namespace CardInteraction
         public void Commit(CardMatchUpdate update)
         {
             if (update == null || update.Host != this) throw new InvalidOperationException("Foreign match update.");
+            if (Commands != null && !ReferenceEquals(update.Authority, Commands)) throw new InvalidOperationException("Only the gameplay authority can update this mirror.");
             if (update.Preview)
             {
 #if UNITY_EDITOR
@@ -143,7 +182,12 @@ namespace CardInteraction
             }
         }
         public void Notify(CardMatchUpdate update, params CardZonePlayHost[] presented) => Changed?.Invoke(update.Change, presented);
-        private void OnEnable() { if (Application.isPlaying && (runtimeSeed != null || !string.IsNullOrEmpty(matchId))) StartMatch(); }
+        public CardMatchUpdate PreparePresentationReorder(ZoneId zone, IEnumerable<CardInstanceId> order)
+        {
+            if (Commands != null && !Commands.CanInteract) throw new InvalidOperationException("Wait for gameplay presentation to settle before sorting.");
+            var update = Wrap(RunningSession.PrepareReorder(zone, order), session, false); update.Authority = Commands; return update;
+        }
+        private void OnEnable() { if (Application.isPlaying && !runtimeManaged && (runtimeSeed != null || !string.IsNullOrEmpty(matchId))) StartMatch(); }
         private void OnDisable() => StopMatch();
     }
 }

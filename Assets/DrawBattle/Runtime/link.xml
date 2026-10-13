@@ -1,0 +1,3 @@
+<linker>
+  <assembly fullname="Poker.DrawBattle.Runtime" preserve="all" />
+</linker>

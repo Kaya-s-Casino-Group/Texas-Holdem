@@ -31,6 +31,13 @@ namespace CardInteraction
             hasSnapshot = hasDeckSnapshot = false; zoneKind = controllerId = null;
             initialCards.Clear(); initialDiscardedCards.Clear(); initialDeckCards.Clear();
         }
+        public void ConfigureRuntimeBinding(CardMatchHost owner)
+        {
+            if (Application.isPlaying || owner == null || !owner.IsRuntimeManaged || owner.gameObject.scene != gameObject.scene)
+                throw new InvalidOperationException("Configure a runtime-managed match in this scene in Edit mode.");
+            StopSession(); match = owner; zoneId = deckZoneId = discardZoneId = null; ClearLegacy();
+            GetComponent<CardZoneView>().Clear();
+        }
         public void Capture(CardZone zone, IEnumerable<CardZoneCardState> cards, Camera camera = null,
             IEnumerable<CardZoneCardState> discarded = null, IEnumerable<CardZoneCardState> deck = null, CardMatchHost owner = null)
         {

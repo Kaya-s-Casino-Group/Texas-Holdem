@@ -19,7 +19,7 @@ namespace CardInteraction
         public CardZonePlayHost Played => playRoute != null && playRoute.Destination != null ?
             playRoute.Destination.GetComponent<CardZonePlayHost>() : null;
         private bool Ready => isActiveAndEnabled && hand != null && hand.isActiveAndEnabled && hand.IsRunning &&
-            hand.GetComponent<HandZoneView>() is HandZoneView view && view.isActiveAndEnabled;
+            hand.GetComponent<HandZoneView>() is HandZoneView view && view.isActiveAndEnabled && (hand.Match.Commands == null || hand.Match.Commands.CanInteract);
         public bool CanPlay
         {
             get
@@ -30,12 +30,13 @@ namespace CardInteraction
                     !destination.isActiveAndEnabled || !playRoute.Destination.isActiveAndEnabled ||
                     playRoute.Source.CardPrefab != playRoute.Destination.CardPrefab) return false;
                 var selected = hand.Cards.Where(card => card.Interaction.IsSelected).ToArray();
+                if (hand.Match.Commands != null && !hand.Match.Commands.CanPlay(hand)) return false;
                 return selected.Length > 0 && selected.Length <= PlayedZoneView.SlotCount - destination.Cards.Count &&
                     selected.All(card => card.Card.CanPlay && playRoute.Source.TryGetView(card.Id, out var visual) &&
                         visual.isActiveAndEnabled && visual.Surface != null && visual.Surface.GetComponent<Renderer>() is Renderer renderer && renderer.enabled);
             }
         }
-        public bool CanDiscard => Ready && hand.Cards.Any(card => card.Interaction.IsSelected) &&
+        public bool CanDiscard => Ready && (hand.Match.Commands == null || hand.Match.Commands.CanDiscard(hand)) && hand.Cards.Any(card => card.Interaction.IsSelected) &&
             hand.Cards.Where(card => card.Interaction.IsSelected).All(card => card.Card.CanDiscard);
 
         public void Configure(CardZonePlayHost source, HandActionPanelView view, CardZoneTransferPresenter route = null)

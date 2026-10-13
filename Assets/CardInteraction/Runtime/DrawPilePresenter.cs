@@ -46,6 +46,8 @@ namespace CardInteraction
         private void Subscribe()
         {
             if (!isActiveAndEnabled) return;
+            // A host can configure us before OnEnable; subscribe once regardless of scene order.
+            Unsubscribe();
             subscribedView = view;
             if (subscribedView != null) { subscribedView.HoverChanged += HoverChanged; subscribedView.Clicked += TogglePinned; }
             subscribedOverview = overview != null ? overview.View : null;

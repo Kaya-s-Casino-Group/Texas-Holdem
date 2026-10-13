@@ -30,6 +30,7 @@ namespace CardInteraction
                 !route.Destination.Data.Cards.Select(card => card.ViewId).SequenceEqual(to.Select(card => card.Id)))
                 throw new InvalidOperationException("Refresh stale zone presentations before transfer.");
             var selected = from.Where(card => card.Interaction.IsSelected).Select(card => card.Card.Id);
+            if (!preview && match.Commands != null) return match.Commands.Play(this, destination, route, animate);
             CardMatchUpdate update;
 #if UNITY_EDITOR
             if (preview) update = match.PreparePreviewPlay(Zone.Id, destination.Zone.Id, selected, PlayedZoneView.SlotCount);

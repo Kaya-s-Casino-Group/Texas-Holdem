@@ -11,7 +11,7 @@ namespace CardInteraction
         public IReadOnlyList<CardZoneCardState> InitialDeckCards => Read(deckZoneId, true);
         public IReadOnlyList<CardZoneCardState> DeckCards => Read(deckZoneId, false);
         public CardZone DeckZone => match.GetZone(new ZoneId(deckZoneId));
-        public bool CanDraw(int count = 1) => IsRunning && isActiveAndEnabled && view is HandZoneView hand &&
+        public bool CanDraw(int count = 1) => IsRunning && match.Commands == null && isActiveAndEnabled && view is HandZoneView hand &&
             hand.isActiveAndEnabled && count > 0 && count <= DeckZone.Cards.Count &&
             (!hand.CardCapacity.HasValue || count <= hand.CardCapacity.Value - Zone.Cards.Count);
         public int DrawCards(int count = 1, bool animate = true)

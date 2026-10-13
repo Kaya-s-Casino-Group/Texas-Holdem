@@ -13,7 +13,7 @@ namespace CardPresentation.Tests
 {
     public static class DeckOverviewPlayValidation
     {
-        [MenuItem("Poker/Tests/Validate Deck Icon And UI Motion In Play")]
+
         public static void ValidateMotion()
         {
             if (!Application.isPlaying) throw new InvalidOperationException("Enter Play before validating deck UI motion.");
@@ -69,7 +69,6 @@ namespace CardPresentation.Tests
             }
         }
 
-        [MenuItem("Poker/Tests/Capture Deck Hover Summary In Play")]
         public static void CaptureSummary()
         {
             if (!Application.isPlaying) throw new InvalidOperationException("Enter Play first.");
@@ -91,7 +90,6 @@ namespace CardPresentation.Tests
             EditorApplication.update += Restore;
         }
 
-        [MenuItem("Poker/Tests/Capture Canvas Deck Hover In Play")]
         public static void CaptureHover()
         {
             if (!Application.isPlaying) throw new InvalidOperationException("Enter Play before capturing deck hover.");
@@ -120,7 +118,6 @@ namespace CardPresentation.Tests
             EditorApplication.update += Restore;
         }
 
-        [MenuItem("Poker/Tests/Validate Canvas Deck Overview In Play")]
         public static void Run()
         {
             if (!Application.isPlaying) throw new InvalidOperationException("Enter Play before validating Canvas deck interaction.");

@@ -10,8 +10,16 @@ namespace CardInteraction
 {
     public sealed partial class CardMatchHost
     {
+        /// <summary>Clear validation seeds and require an external gameplay authority to provide all zones/cards.</summary>
+        public void ConfigureRuntimeManaged()
+        {
+            if (Application.isPlaying) throw new InvalidOperationException("Runtime ownership configuration is editor-only.");
+            StopMatch(); runtimeManaged = true; matchId = null; initialRevision = 0; initialZones.Clear();
+            runtimeSeed = null; runtimeSeedPresentation = null;
+        }
         public void ConfigureInitial(IEnumerable<CardMatchZoneSnapshot> zones, string identity = null)
         {
+            RequireLocalCommands();
             if (Application.isPlaying) throw new InvalidOperationException("Initial match configuration is editor-only.");
             var snapshots = Guard.Copy(zones, nameof(zones));
             string nextId = identity ?? (string.IsNullOrEmpty(matchId) ? "match/" + Guid.NewGuid().ToString("N") : matchId);
@@ -28,6 +36,7 @@ namespace CardInteraction
         }
         public CardMatchUpdate PrepareDebugEdit(IEnumerable<CardMatchZoneSnapshot> zones, bool preview)
         {
+            RequireLocalCommands();
             var snapshots = Guard.Copy(zones, nameof(zones));
             var owner = preview ? new CardTableSession(InitialState) : session ?? throw new InvalidOperationException("Start the match.");
             var styles = snapshots.SelectMany(zone => zone.Cards).ToArray();
@@ -35,6 +44,7 @@ namespace CardInteraction
         }
         public CardMatchUpdate PreparePreviewPlay(ZoneId source, ZoneId destination, IEnumerable<CardInstanceId> selected, int capacity)
         {
+            RequireLocalCommands();
             if (Application.isPlaying) throw new InvalidOperationException("Preview commands are editor-only.");
             var owner = new CardTableSession(InitialState);
             return Wrap(owner.PreparePlay(source, destination, selected, capacity), owner, true, clearTransferredInput: true);

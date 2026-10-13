@@ -79,6 +79,7 @@ namespace CardInteraction
         public int DiscardSelected(bool animate = true)
         {
             if (!IsRunning || !(view is HandZoneView hand)) throw new InvalidOperationException("Start a hand zone before discarding.");
+            if (match.Commands != null) return match.Commands.Discard(this, animate);
             var update = match.PrepareDiscard(Zone.Id, DiscardZone.Id, Cards.Where(card => card.Interaction.IsSelected).Select(card => card.Card.Id));
             if (update.Change.Transferred.Count == 0) return 0;
             hand.PresentDiscardCommitted(update.Project(Zone.Id), update.Change.Transferred.Select(id => id.Value), () => match.Commit(update), animate);
@@ -87,7 +88,7 @@ namespace CardInteraction
         private CardZoneCardState Find(string id) => Cards.FirstOrDefault(card => card.Id == id);
         public bool TryGetInteraction(string viewId, out CardInteractionState state)
         { var card = Find(viewId); state = card == null ? default : card.Interaction; return card != null; }
-        public bool CanSelect(string viewId) { var card = Find(viewId); return card != null && card.Card.CanPlay; }
+        public bool CanSelect(string viewId) { var card = Find(viewId); return card != null && card.Card.CanPlay && (match.Commands == null || match.Commands.CanInteract); }
         public void SetInteraction(string viewId, CardInteractionState state)
         {
             var card = Find(viewId) ?? throw new ArgumentException("Card is outside this match zone.", nameof(viewId));

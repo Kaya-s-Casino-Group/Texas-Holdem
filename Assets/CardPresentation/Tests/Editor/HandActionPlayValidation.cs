@@ -12,7 +12,7 @@ namespace CardPresentation.Tests
     /// <summary>Smoke-check deserialized Play listeners without requiring OS mouse injection. Restores startup data.</summary>
     public static class HandActionPlayValidation
     {
-        [MenuItem("Poker/Tests/Validate Hand Action Buttons In Play")]
+
         public static void Run()
         {
             if (!Application.isPlaying) throw new InvalidOperationException("Enter Play before validating runtime button listeners.");
