@@ -17,7 +17,27 @@ namespace PokerEngine.Tests
             var playerAssemblies = CompilationPipeline.GetAssemblies(AssembliesType.Player).Select(a => a.name).ToArray();
             foreach (var module in new[] { "Core", "Abilities", "Scoring", "Holdem", "Draw", "Runs", "Progression", "Encounters", "Combat", "Composition" })
                 Assert.That(playerAssemblies, Does.Contain("PokerEngine." + module));
-            Assert.That(playerAssemblies, Does.Not.Contain("PokerEngine.Tests.Editor"));
+            var projectTests = Directory.GetFiles("Assets", "*.asmdef", SearchOption.AllDirectories)
+                .Where(path => path.Replace('\\', '/').Contains("/Tests/"))
+                .Select(path => UnityEngine.JsonUtility.FromJson<TestAssemblyDefinition>(File.ReadAllText(path)).name);
+            Assert.That(playerAssemblies.Intersect(projectTests), Is.Empty);
+        }
+        [Test]
+        public void EveryTestAssemblyExplicitlyTargetsEditorAndIsNotAutomaticallyReferenced()
+        {
+            foreach (var path in Directory.GetFiles("Assets", "*.asmdef", SearchOption.AllDirectories)
+                .Where(path => path.Replace('\\', '/').Contains("/Tests/")))
+            {
+                var definition = UnityEngine.JsonUtility.FromJson<TestAssemblyDefinition>(File.ReadAllText(path));
+                Assert.That(definition.includePlatforms, Is.EqualTo(new[] { "Editor" }), path);
+                Assert.That(definition.autoReferenced, Is.False, path);
+            }
+        }
+        [System.Serializable] private sealed class TestAssemblyDefinition
+        {
+            public string name = null;
+            public string[] includePlatforms = null;
+            public bool autoReferenced = true;
         }
 
         [Test]

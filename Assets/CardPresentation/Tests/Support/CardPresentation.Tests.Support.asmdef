@@ -1,5 +1,14 @@
 {
   "name": "CardPresentation.Tests.Support",
-  "references": ["CardPresentation.Runtime", "CardInteraction.Runtime"],
-  "optionalUnityReferences": ["TestAssemblies"]
+  "references": [
+    "CardPresentation.Runtime",
+    "CardInteraction.Runtime"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "autoReferenced": false
 }
