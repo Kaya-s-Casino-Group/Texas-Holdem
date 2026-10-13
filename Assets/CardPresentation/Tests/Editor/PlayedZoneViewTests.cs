@@ -122,11 +122,12 @@ namespace CardPresentation.Tests
                 Assert.Throws<ArgumentOutOfRangeException>(() => host.Capture(ZoneFor(six), six));
                 Assert.IsTrue(host.IsRunning); Assert.AreEqual(5, host.Cards.Count); Assert.AreEqual(5, host.InitialCards.Count);
                 Assert.AreSame(data, f.Zone.Data);
-                // Bad serialized startup state is rejected before tearing down an already running session.
+                // Legacy host fields no longer own startup cards or reset the running match.
                 var serialized = new SerializedObject(host); serialized.FindProperty("initialCards").arraySize = 6;
                 serialized.ApplyModifiedPropertiesWithoutUndo();
-                Assert.Throws<ArgumentOutOfRangeException>(() => host.BeginSession());
-                Assert.IsTrue(host.IsRunning); Assert.AreSame(data, f.Zone.Data); Assert.AreEqual(5, host.Cards.Count);
+                host.BeginSession();
+                Assert.IsTrue(host.IsRunning); Assert.AreEqual(5, host.Cards.Count);
+                Assert.AreEqual(5, host.Match.GetZone(host.Zone.Id).Cards.Count);
             }
         }
 

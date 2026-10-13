@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System.Collections.Generic;
 using System.Linq;
 using CardInteraction;
@@ -26,6 +27,7 @@ namespace CardPresentation.Editor
             if (Host == null || !Host.HasSnapshot) return;
             model.Load(Host.InitialCards);
             discardedCards = Host.InitialDiscardedCards.Select(card => card.Copy()).ToList();
+            if (Host.HasDeckSnapshot) CurrentExperiment.LoadDeck(Host.InitialDeckCards);
         }
 
         private void DiscardSelection()
@@ -39,6 +41,7 @@ namespace CardPresentation.Editor
                 });
                 return;
             }
+            SyncRuntimeState();
             CardZoneDiscardBatch batch = null;
             Run(() => {
                 var source = BuildPreviewZone();
@@ -82,3 +85,5 @@ namespace CardPresentation.Editor
         }
     }
 }
+
+#endif

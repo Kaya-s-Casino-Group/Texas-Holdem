@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,7 +31,8 @@ namespace CardPresentation.Editor
             if (next != null && ResolveTarget(next.gameObject) != next)
                 throw new ArgumentException("Select a scene CardZoneView or one of its subclasses.", nameof(next));
             Undo.RecordObject(this, "切换验证牌区");
-            target = next; playModel = null; drawExperimentContext = null;
+            target = next; drawExperimentContext = null;
+            pendingHandSort = false; requestHandSort = false;
             model = new CardZonePreviewModel(); discardedCards.Clear();
             inspectedCardId = null; scroll = Vector2.zero; error = status = null;
             previewZoneId = "editor/zone/" + Guid.NewGuid().ToString("N");
@@ -38,7 +40,7 @@ namespace CardPresentation.Editor
             if (!Application.isPlaying) LoadInitialSnapshot();
             else SyncRuntimeState();
             inspectedDeckId = null;
-            CurrentExperiment.EnsureDeck(ArtIds()); RememberTarget();
+            if (Host == null || !Host.HasSnapshot) CurrentExperiment.EnsureDeck(ArtIds()); RememberTarget();
             // Only restore a known card-layer source. An external view snapshot is insufficient to reconstruct hidden cards.
             if (!Application.isPlaying && Host != null && Host.HasSnapshot) RestorePreview();
             Repaint();
@@ -74,6 +76,11 @@ namespace CardPresentation.Editor
             EditorGUI.BeginChangeCheck();
             followSelection = EditorGUILayout.Toggle("跟随场景选择", followSelection);
             if (EditorGUI.EndChangeCheck() && followSelection) OnSelectionChanged();
+            if (Host != null && Host.Match != null)
+            {
+                using (new EditorGUI.DisabledScope(true)) EditorGUILayout.ObjectField("局内对局", Host.Match, typeof(CardMatchHost), true);
+                EditorGUILayout.LabelField("对局版本", Host.Match.State.Revision.ToString());
+            }
             if (target != null)
                 EditorGUILayout.LabelField("实际类型", target.GetType().Name + " · " + target.DefaultZoneKind);
             if (!hasEditableSnapshot)
@@ -112,3 +119,5 @@ namespace CardPresentation.Editor
         }
     }
 }
+
+#endif

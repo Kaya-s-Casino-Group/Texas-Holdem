@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System;
 using System.Linq;
 using CardInteraction;
@@ -139,7 +140,7 @@ namespace CardPresentation.Editor
             {
                 EnsureTransferPreviews(false);
                 Undo.IncrementCurrentGroup(); int group = Undo.GetCurrentGroup();
-                Undo.RecordObjects(new UnityEngine.Object[] { this, sourceHost, targetHost }, "打出选中卡牌");
+                Undo.RecordObjects(new UnityEngine.Object[] { this, sourceHost, targetHost, sourceHost.Match }, "打出选中卡牌");
                 try
                 {
                     int count = sourceHost.PlaySelectedPreview(targetHost, TransferRoute);
@@ -182,3 +183,5 @@ namespace CardPresentation.Editor
         }
     }
 }
+
+#endif

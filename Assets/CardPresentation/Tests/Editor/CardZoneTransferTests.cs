@@ -324,7 +324,7 @@ namespace CardPresentation.Tests
             {
                 f.Select("a", "b");
                 Undo.IncrementCurrentGroup(); int group = Undo.GetCurrentGroup();
-                Undo.RecordObjects(new Object[] { f.From, f.To }, "Test play transfer");
+                Undo.RecordObjects(new Object[] { f.From.Match, f.From, f.To }, "Test play transfer");
                 Assert.AreEqual(2, f.From.PlaySelectedPreview(f.To, f.Route));
                 Undo.FlushUndoRecordObjects(); Undo.CollapseUndoOperations(group);
                 Assert.AreEqual(2, f.From.InitialCards.Count); Assert.AreEqual(3, f.To.InitialCards.Count);
@@ -341,7 +341,7 @@ namespace CardPresentation.Tests
                 f.From.BeginSession(); f.To.BeginSession();
                 Assert.AreEqual(2, f.From.PlaySelected(f.To, f.Route, false));
                 Assert.AreEqual(4, f.From.InitialCards.Count); Assert.AreEqual(1, f.To.InitialCards.Count);
-                Undo.ClearUndo(f.From); Undo.ClearUndo(f.To);
+                Undo.ClearUndo(f.From.Match); Undo.ClearUndo(f.From); Undo.ClearUndo(f.To);
             }
         }
     }

@@ -1,5 +1,7 @@
+#if UNITY_EDITOR
 using System;
 using System.Linq;
+using CardInteraction;
 using PokerEngine;
 using UnityEditor;
 using UnityEngine;
@@ -45,10 +47,18 @@ namespace CardPresentation.Editor
             var display = new CardZonePreviewList(list, topFirst: deck);
             EditorGUILayout.LabelField((deck ? "测试牌堆" : Hand != null ? "手牌列表" : "卡牌列表") + " · " + list.Cards.Count + " 张", EditorStyles.boldLabel);
             if (deck) EditorGUILayout.LabelField("从牌顶到牌底显示：第一行是下一张；抽 N 张依次取前 N 行。", EditorStyles.miniLabel);
+            else if (Hand != null) EditorGUILayout.LabelField("落位后整理：" + (handSortOrder == CardZoneSortOrder.RankFirst ? "点数优先" : "花色优先") +
+                (pendingHandSort ? " · 等待落位" : ""), EditorStyles.miniLabel);
             using (new EditorGUILayout.HorizontalScope())
             {
-                if (GUILayout.Button("花色排序")) Mutate("花色排序", display.SortBySuit);
-                if (GUILayout.Button("点数排序")) Mutate("点数排序", display.SortByRank);
+                if (GUILayout.Button("花色排序")) Mutate("花色排序", () => {
+                    if (!deck && Hand != null) { handSortOrder = CardZoneSortOrder.SuitFirst; requestHandSort = true; }
+                    else display.SortBySuit();
+                });
+                if (GUILayout.Button("点数排序")) Mutate("点数排序", () => {
+                    if (!deck && Hand != null) { handSortOrder = CardZoneSortOrder.RankFirst; requestHandSort = true; }
+                    else display.SortByRank();
+                });
                 if (GUILayout.Button("反转")) Mutate("反转列表", list.Reverse);
                 if (GUILayout.Button("打乱")) Mutate("打乱列表", list.Shuffle);
             }
@@ -186,7 +196,29 @@ namespace CardPresentation.Editor
             int index = value < 0 || value >= count ? 0 : value + 1;
             return EditorGUILayout.Popup(label, index, options) - 1;
         }
-        private void InspectDrawnCard() { inspectedCardId = CurrentExperiment.Drawn.FirstOrDefault(); }
+        private void InspectDrawnCard()
+        {
+            inspectedCardId = CurrentExperiment.Drawn.FirstOrDefault();
+            requestHandSort = Hand != null;
+        }
+
+        private void TryCompleteHandSort()
+        {
+            if (!pendingHandSort || !CanEdit || Hand == null || !Hand.isActiveAndEnabled) return;
+            if (Application.isPlaying)
+            {
+                if (Host.HasPendingSort) return;
+                pendingHandSort = false; SyncRuntimeState(); CurrentExperiment.UpdateHandAfter(CurrentModel);
+                return;
+            }
+            if (EditorApplication.isPlayingOrWillChangePlaymode || Hand.IsTransitioning) return;
+            pendingHandSort = false;
+            Mutate("卡牌落位后排序", () => {
+                if (handSortOrder == CardZoneSortOrder.SuitFirst) CurrentModel.SortBySuit();
+                else CurrentModel.SortByRank();
+                CurrentExperiment.UpdateHandAfter(CurrentModel);
+            });
+        }
 
         private void DrawDiagnostics()
         {
@@ -216,3 +248,5 @@ namespace CardPresentation.Editor
         }
     }
 }
+
+#endif

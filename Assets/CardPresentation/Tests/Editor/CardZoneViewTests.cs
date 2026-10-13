@@ -248,18 +248,18 @@ namespace CardPresentation.Tests
                     f.Zone.Present(Data(new CardVisualData("slot", i % 2 == 0 ? "hearts_q" : null, interaction: states[i])));
                     var view = f.Zone.Views.Single();
                     if (kept == null) kept = view; else Assert.AreSame(kept, view);
-                    Assert.AreEqual(states[i].IsRaised ? offset : Vector3.zero, view.FaceRoot.localPosition);
+                    Assert.AreEqual(states[i].IsSelected ? offset : Vector3.zero, view.FaceRoot.localPosition);
                     var before = view.transform.localPosition;
                     f.Zone.RefreshLayout(); f.Zone.RefreshLayout();
                     Assert.AreEqual(before, view.transform.localPosition);
-                    Assert.AreEqual(states[i].IsRaised ? offset : Vector3.zero, view.FaceRoot.localPosition);
+                    Assert.AreEqual(states[i].IsSelected ? offset : Vector3.zero, view.FaceRoot.localPosition);
                 }
                 f.Zone.Present(Data(new CardVisualData("slot", "hearts_q", interaction: state.WithSelected(true))));
                 f.Zone.SetRaisedOffset(offset * 2); Assert.AreEqual(offset * 2, kept.FaceRoot.localPosition);
                 Assert.Throws<ArgumentException>(() => f.Zone.SetRaisedOffset(new Vector3(float.NaN, 0, 0)));
                 Assert.AreEqual(offset * 2, kept.FaceRoot.localPosition); Assert.AreEqual(offset * 2, f.Zone.RaisedOffset);
                 Assert.Throws<ArgumentException>(() => f.Zone.SetInteractionOffsets(Vector3.zero, new Vector3(0, float.NaN, 0)));
-                Assert.AreEqual(offset * 2, f.Zone.HoveredOffset); Assert.AreEqual(offset * 2, f.Zone.SelectedOffset);
+                Assert.AreEqual(Vector3.zero, f.Zone.HoveredOffset); Assert.AreEqual(offset * 2, f.Zone.SelectedOffset);
                 Assert.AreEqual(offset * 2, kept.FaceRoot.localPosition);
                 f.Zone.Clear(); Assert.IsTrue(kept == null);
             }

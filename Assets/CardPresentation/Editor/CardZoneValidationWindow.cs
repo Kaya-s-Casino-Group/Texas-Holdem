@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System;
 using System.Linq;
 using CardArt;
@@ -48,9 +49,11 @@ namespace CardPresentation.Editor
         private string error;
         private string status;
 
-        private CardZonePreviewModel playModel;
         private bool restoringUndo;
-        private CardZonePreviewModel CurrentModel => Application.isPlaying ? (playModel ?? (playModel = new CardZonePreviewModel())) : model;
+        [SerializeField] private CardZoneSortOrder handSortOrder = CardZoneSortOrder.RankFirst;
+        [SerializeField] private bool pendingHandSort;
+        private bool requestHandSort;
+        private CardZonePreviewModel CurrentModel => model;
         private CardZonePlayHost Host => target != null ? target.GetComponent<CardZonePlayHost>() : null;
         private HandZoneView Hand => target as HandZoneView;
         private int CurrentCapacity => Math.Min(CardZonePreviewModel.MaximumCards, target?.CardCapacity ?? CardZonePreviewModel.MaximumCards);
@@ -118,6 +121,7 @@ namespace CardPresentation.Editor
             appearanceSettings = target.AppearanceSettings; motionSettings = target.MotionSettings;
             faceCamera = target.FaceCamera; facingCamera = target.FacingCamera;
             if (Hand == null) return;
+            handSortOrder = Host != null ? Host.SortOrder : CardZoneSortOrder.RankFirst;
             raisedOffset = Hand.SelectedOffset; hoveredOffset = Hand.HoveredOffset; liftSettings = Hand.LiftSettings;
             transitionSettings = Hand.TransitionSettings; deckLocalPosition = Hand.DeckLocalPosition; deckAnchor = Hand.DeckAnchor;
             discardSettings = Hand.DiscardSettings; discardLocalPosition = Hand.DiscardLocalPosition; discardAnchor = Hand.DiscardAnchor;
@@ -140,7 +144,7 @@ namespace CardPresentation.Editor
         {
             if (target == null) target = RestoreTarget() ?? FindPreview();
             restoringUndo = true;
-            try { RestorePreview(); EnsureTransferPreviews(true); if (target == transferSource || target == transferDestination) LoadInitialSnapshot(); } finally { restoringUndo = false; }
+            try { SyncRuntimeState(); RestorePreview(); EnsureTransferPreviews(true); if (target == transferSource || target == transferDestination) LoadInitialSnapshot(); } finally { restoringUndo = false; }
             Repaint();
         }
         private void OnLostFocus() => windowChrome.Release();
@@ -150,17 +154,22 @@ namespace CardPresentation.Editor
         {
             if (state == PlayModeStateChange.ExitingEditMode)
             {
-                drawExperiments.BeginPlay(); playModel = null;
+                SyncRuntimeState();
                 RememberTarget();
-                if (target != null && hasEditableSnapshot) { BakeCurrentZone(); target.Clear(); }
+                if (target != null && hasEditableSnapshot) target.Clear();
                 ClearTransferPreviews();
             }
             if (state == PlayModeStateChange.EnteredPlayMode || state == PlayModeStateChange.EnteredEditMode)
             { if (target == null) target = RestoreTarget() ?? FindPreview(); ReadSettings(); }
-            if (state == PlayModeStateChange.EnteredPlayMode) SyncRuntimeState();
+            if (state == PlayModeStateChange.EnteredPlayMode)
+            {
+                SyncRuntimeState();
+                if (pendingHandSort && Host != null && Host.IsRunning) Host.RequestSortAfterLanding(handSortOrder);
+            }
             if (state == PlayModeStateChange.EnteredEditMode)
             {
-                drawExperiments.EndPlay(); playModel = null;
+                pendingHandSort = false; requestHandSort = false;
+                SyncRuntimeState();
                 LoadInitialSnapshot();
                 EditorApplication.delayCall += RestorePreview;
             }
@@ -168,7 +177,13 @@ namespace CardPresentation.Editor
         }
         private void SyncRuntimeState()
         {
-            if (Application.isPlaying && Host != null && Host.IsRunning) CurrentModel.Load(Host.Cards, clearHover: false);
+            if (Host != null && Host.HasSnapshot && (!Application.isPlaying || Host.IsRunning))
+            {
+                CurrentModel.Load(Application.isPlaying ? Host.Cards : Host.InitialCards, clearHover: false);
+                discardedCards = (Application.isPlaying ? Host.DiscardedCards : Host.InitialDiscardedCards).Select(card => card.Copy()).ToList();
+                if (Host.HasDeckSnapshot) CurrentExperiment.LoadDeck(Application.isPlaying ? Host.DeckCards : Host.InitialDeckCards);
+                handSortOrder = Host.SortOrder;
+            }
         }
         private void RestorePreview()
         {
@@ -186,6 +201,7 @@ namespace CardPresentation.Editor
                 if (previewMotion || target.FaceCamera) SceneView.RepaintAll();
             }
             AdvanceTransferPreviews(delta);
+            TryCompleteHandSort();
             if (now - lastAnimationRepaint > 0.1) { lastAnimationRepaint = now; Repaint(); }
         }
         private static CardZoneView FindPreview()
@@ -228,6 +244,7 @@ namespace CardPresentation.Editor
         }
         private void Apply(bool animate = true, string[] discardedViewIds = null)
         {
+            bool sortAfterLanding = requestHandSort; requestHandSort = false;
             if (target == null || !hasEditableSnapshot) return;
             target.ValidateCardCount(CurrentModel.Cards.Count);
             if (target.CardPrefab != prefab) { target.Clear(); target.Configure(prefab, layout); }
@@ -247,14 +264,24 @@ namespace CardPresentation.Editor
             if (Application.isPlaying)
             {
                 if (Host == null || !Host.IsRunning) throw new InvalidOperationException("没有运行中的测试牌区。");
-                Host.ReplaceCards(CurrentModel.Cards.Select(card => new CardZoneCardState(
-                    card.ToCard(), card.ArtId, card.FaceUp, card.Tint, card.Interaction)), animate);
+                Host.ReplaceCardsAndDeck(CurrentModel.Cards.Select(card => new CardZoneCardState(
+                    card.ToCard(), card.ArtId, card.FaceUp, card.Tint, card.Interaction)),
+                    Hand != null ? CurrentExperiment.DeckCards.Select(card => new CardZoneCardState(
+                    card.ToCard(), card.ArtId, card.FaceUp, card.Tint, card.Interaction)) : Host.DeckCards, animate);
+                if (Hand != null) Host.SetSortOrder(handSortOrder);
             }
             else
             {
-                if (Hand != null) Hand.Present(BuildPreviewZone(), model.Project, animate, discardedViewIds);
-                else target.Present(BuildPreviewZone(), model.Project, animate);
-                BakeCurrentZone(); EditorUtility.SetDirty(target);
+                var data = CardZoneViewData.FromZone(BuildPreviewZone(), model.Project);
+                if (Hand != null && discardedViewIds != null)
+                    Hand.PresentDiscardCommitted(data, discardedViewIds, BakeCurrentZone, animate);
+                else target.PresentCommitted(data, BakeCurrentZone, animate);
+                EditorUtility.SetDirty(target);
+            }
+            if (sortAfterLanding && Hand != null)
+            {
+                pendingHandSort = true;
+                if (Application.isPlaying) Host.RequestSortAfterLanding(handSortOrder);
             }
             SceneView.RepaintAll();
         }
@@ -268,11 +295,13 @@ namespace CardPresentation.Editor
         private void Mutate(string description, Action change, string[] discardedViewIds = null)
         {
             Run(() => {
+                SyncRuntimeState();
                 int undoGroup = -1;
                 if (!Application.isPlaying)
                 {
                     Undo.IncrementCurrentGroup(); undoGroup = Undo.GetCurrentGroup();
                     Undo.RecordObject(this, description);
+                    if (Host != null && Host.Match != null) Undo.RecordObject(Host.Match, description);
                     if (target != null) { Undo.RecordObject(target, description); Undo.RecordObject(target.transform, description); }
                 }
                 try { change(); status = null; Apply(discardedViewIds: discardedViewIds); }
@@ -294,6 +323,12 @@ namespace CardPresentation.Editor
             try { action(); error = null; } catch (Exception e) { error = e.Message; }
             Repaint();
         }
+        public static void RefreshMatchInCurrentWindow()
+        {
+            foreach (var window in Resources.FindObjectsOfTypeAll<CardZoneValidationWindow>())
+            { window.RefreshTargetSource(); window.SyncRuntimeState(); window.RestorePreview(); window.Repaint(); }
+        }
+
         private void OnGUI()
         {
             SyncRuntimeState(); windowChrome.Draw(this);
@@ -379,9 +414,9 @@ namespace CardPresentation.Editor
             if (GUILayout.Button("恢复默认布局")) Mutate("恢复布局", () => layout = CardZoneLayoutSettings.Default);
             if (Hand == null) return;
             EditorGUI.BeginChangeCheck();
-            var hover = EditorGUILayout.Vector3Field("悬停偏移", hoveredOffset);
+            EditorGUILayout.LabelField("悬停", "面积 +20%（等比缩放约 1.0954，不上浮）");
             var selectedOffset = EditorGUILayout.Vector3Field("选中偏移", raisedOffset);
-            if (EditorGUI.EndChangeCheck()) Mutate("调整上浮偏移", () => { hoveredOffset = hover; raisedOffset = selectedOffset; });
+            if (EditorGUI.EndChangeCheck()) Mutate("调整上浮偏移", () => { hoveredOffset = Vector3.zero; raisedOffset = selectedOffset; });
         }
 
         private void DrawCameraFacing()
@@ -409,3 +444,5 @@ namespace CardPresentation.Editor
         }
     }
 }
+
+#endif

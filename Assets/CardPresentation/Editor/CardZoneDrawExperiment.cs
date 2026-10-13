@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System;
 using System.Linq;
 using PokerEngine;
@@ -24,6 +25,11 @@ namespace CardPresentation.Editor
         public System.Collections.Generic.IReadOnlyList<string> Drawn => Array.AsReadOnly(drawn);
         public bool HasDraw => drawn.Length > 0;
         public CardZone BuildDeckZone() => deck.BuildZone(new ZoneId("editor/draw-deck"));
+
+        public void LoadDeck(System.Collections.Generic.IEnumerable<CardInteraction.CardZoneCardState> cards)
+        {
+            deck.Load(cards); initialized = true;
+        }
 
         public void EnsureDeck(string[] artIds)
         {
@@ -60,10 +66,16 @@ namespace CardPresentation.Editor
             var beforeDeck = BuildDeckZone().Cards.Select(id => id.Value).ToArray();
             var transfer = transferCards();
             handBefore = beforeHand; deckBefore = beforeDeck;
-            handAfter = transfer.Target.Cards.Select(id => id.Value).ToArray();
+            handAfter = hand.BuildZone().Cards.Select(id => id.Value).ToArray();
             deckAfter = BuildDeckZone().Cards.Select(id => id.Value).ToArray();
             drawn = transfer.Cards.Select(id => id.Value).ToArray();
             generatedDraw = generated;
+        }
+
+        public void UpdateHandAfter(CardZonePreviewModel hand)
+        {
+            if (hand == null) throw new ArgumentNullException(nameof(hand));
+            if (HasDraw) handAfter = hand.Cards.Select(card => card.Id).ToArray();
         }
 
         private void ClearAudit()
@@ -73,3 +85,4 @@ namespace CardPresentation.Editor
         }
     }
 }
+#endif

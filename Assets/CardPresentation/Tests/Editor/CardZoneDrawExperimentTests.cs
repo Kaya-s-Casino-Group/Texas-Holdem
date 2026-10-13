@@ -94,9 +94,10 @@ namespace CardPresentation.Tests
             var play = store.Get("hand", true); var hand = new CardZonePreviewModel();
             CollectionAssert.AreEqual(ids, play.DeckCards.Select(card => card.Id));
             play.Draw(hand, 2);
-            Assert.AreEqual(top.Id, hand.Cards[0].Id); Assert.AreEqual(top.ArtId, hand.Cards[0].ArtId);
-            Assert.AreEqual(top.Effects, hand.Cards[0].Effects); Assert.AreEqual(top.Tint, hand.Cards[0].Tint);
-            Assert.AreEqual(top.OriginId, hand.Cards[0].OriginId); Assert.IsTrue(hand.Cards[0].IsDisabled); Assert.IsFalse(hand.Cards[0].FaceUp);
+            var drawnTop = hand.Cards.Single(card => card.Id == top.Id);
+            Assert.AreEqual(top.ArtId, drawnTop.ArtId);
+            Assert.AreEqual(top.Effects, drawnTop.Effects); Assert.AreEqual(top.Tint, drawnTop.Tint);
+            Assert.AreEqual(top.OriginId, drawnTop.OriginId); Assert.IsTrue(drawnTop.IsDisabled); Assert.IsFalse(drawnTop.FaceUp);
             CollectionAssert.AreEqual(ids.Reverse().Take(2), play.Drawn); Assert.AreEqual(3, play.DeckCards.Count);
             Assert.AreEqual(original, JsonUtility.ToJson(store.Get("hand", false)));
 
@@ -126,35 +127,87 @@ namespace CardPresentation.Tests
             store.Get("right", true).EnsureDeck(new[] { "clubs_j" }); Assert.IsEmpty(store.Get("right", true).DeckCards);
         }
 
-        [Test] public void WindowRetainsEachConfiguredDeckAcrossTargetChangesAndSerialization()
+        [Test] public void WindowReadsConfiguredDeckFromMatchAcrossTargetsAndSerialization()
         {
             var scene = EditorSceneManager.NewPreviewScene(); CardZoneValidationWindow window = null;
             try
             {
-                var views = new HandZoneView[2];
+                var views = new HandZoneView[2]; var hosts = new CardZonePlayHost[2];
                 for (int i = 0; i < views.Length; i++)
                 {
-                    var root = new GameObject("Deck Context " + i) { hideFlags = HideFlags.HideAndDontSave };
+                    var root = new GameObject("Deck Context " + i);
                     SceneManager.MoveGameObjectToScene(root, scene); views[i] = root.AddComponent<HandZoneView>();
                     views[i].Configure(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/CardArt/Prefabs/Card.prefab"), CardZoneLayoutSettings.Default);
                     var cards = new CardZonePreviewModel(); cards.Add("clubs_j");
-                    root.AddComponent<CardZonePlayHost>().Capture(cards.BuildZone(new ZoneId("deck-context-" + i)),
-                        cards.Cards.Select(card => new CardZoneCardState(card.ToCard(), card.ArtId, card.FaceUp, card.Tint, card.Interaction)));
+                    var deck = new CardZonePreviewModel(); if (i == 0) deck.Add("spades_a");
+                    hosts[i] = root.AddComponent<CardZonePlayHost>();
+                    hosts[i].Capture(cards.BuildZone(new ZoneId("deck-context-" + i)),
+                        cards.Cards.Select(card => new CardZoneCardState(card.ToCard(), card.ArtId, card.FaceUp, card.Tint, card.Interaction)),
+                        deck: deck.Cards.Select(card => new CardZoneCardState(card.ToCard(), card.ArtId, card.FaceUp, card.Tint, card.Interaction)));
                 }
                 window = ScriptableObject.CreateInstance<CardZoneValidationWindow>(); window.SelectTarget(views[0]);
-                var experiment = typeof(CardZoneValidationWindow).GetProperty("CurrentExperiment", BindingFlags.Instance | BindingFlags.NonPublic);
-                var first = (CardZoneDrawExperiment)experiment.GetValue(window);
-                first.PrepareDeck(new[] { "spades_a", "hearts_q" }, 3); first.DeckCards[2].FaceUp = false;
-                string saved = JsonUtility.ToJson(first);
-                window.SelectTarget(views[1]); var second = (CardZoneDrawExperiment)experiment.GetValue(window);
-                second.Deck.Clear(); window.SelectTarget(views[0]);
-                Assert.AreEqual(saved, JsonUtility.ToJson(experiment.GetValue(window)));
-                string snapshot = EditorJsonUtility.ToJson(window);
-                StringAssert.Contains(first.DeckCards[0].Id, snapshot);
-                EditorJsonUtility.FromJsonOverwrite(snapshot, window);
-                Assert.AreEqual(saved, JsonUtility.ToJson(experiment.GetValue(window)));
-                window.SelectTarget(views[1]); Assert.IsEmpty(((CardZoneDrawExperiment)experiment.GetValue(window)).DeckCards);
-                window.SelectTarget(views[0]); Assert.AreEqual(saved, JsonUtility.ToJson(experiment.GetValue(window)));
+                var property = typeof(CardZoneValidationWindow).GetProperty("CurrentExperiment", BindingFlags.Instance | BindingFlags.NonPublic);
+                Func<CardZoneDrawExperiment> current = () => (CardZoneDrawExperiment)property.GetValue(window);
+                var expected = hosts[0].InitialDeckCards.Select(card => card.Id).ToArray();
+                CollectionAssert.AreEqual(expected, current().DeckCards.Select(card => card.Id));
+                // Mutating an editor buffer does not own or overwrite the match's pile.
+                current().Deck.Clear(); window.SelectTarget(views[1]); Assert.IsEmpty(current().DeckCards);
+                window.SelectTarget(views[0]); CollectionAssert.AreEqual(expected, current().DeckCards.Select(card => card.Id));
+                string snapshot = EditorJsonUtility.ToJson(window); EditorJsonUtility.FromJsonOverwrite(snapshot, window);
+                window.SelectTarget(views[1]); window.SelectTarget(views[0]);
+                CollectionAssert.AreEqual(expected, current().DeckCards.Select(card => card.Id));
+                Assert.AreEqual(1, hosts[0].InitialDeckCards.Count);
+            }
+            finally
+            {
+                if (window != null) { window.SelectTarget(null); Object.DestroyImmediate(window); }
+                EditorSceneManager.ClosePreviewScene(scene);
+            }
+        }
+
+        [Test] public void EditorRankSortWaitsForLandingAndUpdatesAudit() => AssertDeferredEditorSort(CardZoneSortOrder.RankFirst);
+        [Test] public void EditorSuitSortWaitsForLandingAndUpdatesAudit() => AssertDeferredEditorSort(CardZoneSortOrder.SuitFirst);
+
+        private void AssertDeferredEditorSort(CardZoneSortOrder order)
+        {
+            var scene = EditorSceneManager.NewPreviewScene(); CardZoneValidationWindow window = null;
+            try
+            {
+                var root = new GameObject("Deferred Editor Sort") { hideFlags = HideFlags.HideAndDontSave };
+                SceneManager.MoveGameObjectToScene(root, scene);
+                var view = root.AddComponent<HandZoneView>();
+                view.Configure(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/CardArt/Prefabs/Card.prefab"), CardZoneLayoutSettings.Default);
+                var motion = view.MotionSettings; motion.Enabled = false; view.SetMotionSettings(motion);
+                var cards = new CardZonePreviewModel(); cards.Add("clubs_j"); cards.Add("diamonds_a");
+                var host = root.AddComponent<CardZonePlayHost>();
+                host.Capture(cards.BuildZone(new ZoneId("deferred-sort-hand")), cards.Cards.Select(card =>
+                    new CardZoneCardState(card.ToCard(), card.ArtId, card.FaceUp, card.Tint, card.Interaction)));
+                window = ScriptableObject.CreateInstance<CardZoneValidationWindow>(); window.SelectTarget(view);
+                const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
+                var type = typeof(CardZoneValidationWindow);
+                var model = (CardZonePreviewModel)type.GetField("model", flags).GetValue(window);
+                var experiment = (CardZoneDrawExperiment)type.GetProperty("CurrentExperiment", flags).GetValue(window);
+                type.GetField("handSortOrder", flags).SetValue(window, order);
+                experiment.DrawSpecified(model, "hearts_q", 1);
+                type.GetMethod("InspectDrawnCard", flags).Invoke(window, null);
+                type.GetMethod("Apply", flags).Invoke(window, new object[] { true, null });
+                var unsorted = model.Cards.Select(card => card.Id).ToArray();
+                var before = view.Views.ToDictionary(card => card.ViewId);
+                type.GetMethod("TryCompleteHandSort", flags).Invoke(window, null);
+                CollectionAssert.AreEqual(unsorted, host.InitialCards.Select(card => card.Id));
+                view.AdvanceMotion(0.45f); type.GetMethod("TryCompleteHandSort", flags).Invoke(window, null);
+                CollectionAssert.AreEqual(unsorted, model.Cards.Select(card => card.Id));
+                Assert.IsTrue(view.Views.Last().IsEntering);
+                view.AdvanceMotion(0.7f); type.GetMethod("TryCompleteHandSort", flags).Invoke(window, null);
+                CollectionAssert.AreEqual(order == CardZoneSortOrder.RankFirst
+                    ? new[] { "diamonds_a", "hearts_q", "clubs_j" }
+                    : new[] { "hearts_q", "clubs_j", "diamonds_a" }, model.Cards.Select(card => card.ArtId));
+                CollectionAssert.AreEqual(model.Cards.Select(card => card.Id), host.InitialCards.Select(card => card.Id));
+                CollectionAssert.AreEqual(model.Cards.Select(card => card.Id), experiment.HandAfter);
+                CollectionAssert.AreEqual(new[] { unsorted.Last() }, experiment.Drawn);
+                Assert.AreEqual(order, host.SortOrder); Assert.IsTrue(view.IsTransitioning);
+                Assert.IsFalse(view.Views.Any(card => card.IsEntering));
+                foreach (var pair in before) Assert.AreSame(pair.Value, view.Views.Single(card => card.ViewId == pair.Key));
             }
             finally
             {
@@ -173,6 +226,7 @@ namespace CardPresentation.Tests
             experiment.Draw(hand, 3);
             CollectionAssert.AreEqual(expected.Source.Cards, experiment.BuildDeckZone().Cards);
             CollectionAssert.AreEqual(expected.Target.Cards, hand.BuildZone().Cards);
+            CollectionAssert.AreEqual(hand.Cards.Select(card => card.Id), experiment.HandAfter);
             CollectionAssert.AreEqual(expected.Cards.Select(c => c.Value), experiment.Drawn);
             CollectionAssert.AreEqual(handBefore.Cards.Select(c => c.Value), experiment.HandBefore);
             CollectionAssert.AreEqual(deckBefore.Cards.Select(c => c.Value), experiment.DeckBefore);
@@ -283,16 +337,16 @@ namespace CardPresentation.Tests
                 var experiment = new CardZoneDrawExperiment(); experiment.PrepareDeck(new[] { "hearts_q", "spades_a" }, 6);
                 view.Present(model.BuildZone(), model.Project, animate: false); var retained = view.Views[0];
                 experiment.Draw(model, 3); view.Present(model.BuildZone(), model.Project);
-                Assert.AreSame(retained, view.Views[0]); Assert.AreEqual(4, model.Cards.Count); Assert.AreEqual(3, experiment.DeckCards.Count);
+                Assert.AreSame(retained, view.Views.Single(card => card.ViewId == retained.ViewId)); Assert.AreEqual(4, model.Cards.Count); Assert.AreEqual(3, experiment.DeckCards.Count);
                 Assert.AreEqual(3, view.Views.Count(v => v.IsEntering));
-                var first = view.Views[1]; Assert.Less(Vector3.Distance(first.DisplayPose.Position, view.DeckLocalPosition), 0.00001f);
+                var first = view.Views.First(card => card.IsEntering); Assert.Less(Vector3.Distance(first.DisplayPose.Position, view.DeckLocalPosition), 0.00001f);
                 var handIds = model.BuildZone().Cards.ToArray(); var deckIds = experiment.BuildDeckZone().Cards.ToArray();
                 view.AdvanceMotion(0.05f);
                 Assert.Greater(Vector3.Distance(first.DisplayPose.Position, view.DeckLocalPosition), 0.001f);
                 CollectionAssert.AreEqual(handIds, model.BuildZone().Cards); CollectionAssert.AreEqual(deckIds, experiment.BuildDeckZone().Cards);
                 // Another draw during the first animation updates the list and reuses the same views.
                 experiment.Draw(model, 1); view.Present(model.BuildZone(), model.Project);
-                Assert.AreSame(first, view.Views[1]); Assert.AreEqual(5, view.Views.Count);
+                Assert.AreSame(first, view.Views.Single(card => card.ViewId == first.ViewId)); Assert.AreEqual(5, view.Views.Count);
                 view.CompleteTransitions(); Assert.IsFalse(view.IsTransitioning);
                 CollectionAssert.AreEqual(model.Cards.Select(c => c.Id), view.Views.Select(v => v.ViewId));
             }

@@ -7,137 +7,95 @@ using UnityEngine;
 
 namespace CardInteraction
 {
-    /// <summary>Scene-owned startup snapshot. Play works with the validation window closed and in a Player build.</summary>
+    /// <summary>A zone binding and local input/presentation adapter. The match owns every card and zone.</summary>
     [DisallowMultipleComponent, RequireComponent(typeof(CardZoneView))]
-    public sealed partial class CardZonePlayHost : MonoBehaviour, ICardInteractionSource
+    public sealed partial class CardZonePlayHost : MonoBehaviour, ICardInteractionSource, ICardHoverSource
     {
-        [SerializeField] private bool hasSnapshot;
-        [SerializeField] private string zoneId, zoneKind, controllerId;
-        [SerializeField] private List<CardZoneCardState> initialCards = new List<CardZoneCardState>();
-        [SerializeField] private List<CardZoneCardState> initialDiscardedCards = new List<CardZoneCardState>();
+        [SerializeField] private CardMatchHost match;
+        [SerializeField] private string zoneId, deckZoneId, discardZoneId;
         [SerializeField] private Camera inputCamera;
-        private List<CardZoneCardState> liveCards = new List<CardZoneCardState>();
-        private List<CardZoneCardState> discardedCards = new List<CardZoneCardState>();
         private CardZoneMouseInput mouse;
         private CardZoneView view;
-        public bool HasSnapshot => hasSnapshot;
-        public bool IsRunning { get; private set; }
-        public IReadOnlyList<CardZoneCardState> InitialCards => initialCards.AsReadOnly();
-        public IReadOnlyList<CardZoneCardState> Cards => liveCards.AsReadOnly();
-        public IReadOnlyList<CardZoneCardState> InitialDiscardedCards => initialDiscardedCards.AsReadOnly();
-        public IReadOnlyList<CardZoneCardState> DiscardedCards => discardedCards.AsReadOnly();
+        private bool attached;
+        public CardMatchHost Match => match;
+        public bool HasSnapshot => match != null && !string.IsNullOrEmpty(zoneId) && match.ContainsZone(new ZoneId(zoneId));
+        public bool IsRunning => attached && match != null && match.IsRunning;
+        public IReadOnlyList<CardZoneCardState> InitialCards => Read(zoneId, true);
+        public IReadOnlyList<CardZoneCardState> Cards => Read(zoneId, false);
+        public IReadOnlyList<CardZoneCardState> InitialDiscardedCards => Read(discardZoneId, true);
+        public IReadOnlyList<CardZoneCardState> DiscardedCards => Read(discardZoneId, false);
         public CardZoneMouseInput MouseInput => mouse;
-        public CardZone Zone => BuildZone(IsRunning ? liveCards : initialCards);
-        public CardZone DiscardZone => BuildDiscardZone(zoneId, controllerId, IsRunning ? discardedCards : initialDiscardedCards);
+        public CardZone Zone => match.GetZone(new ZoneId(zoneId));
+        public CardZone DiscardZone => match.GetZone(new ZoneId(discardZoneId));
+        private IReadOnlyList<CardZoneCardState> Read(string id, bool initial) => match != null && !string.IsNullOrEmpty(id) &&
+            match.ContainsZone(new ZoneId(id)) ? match.GetCards(new ZoneId(id), initial) : Array.Empty<CardZoneCardState>();
 
-        public void Capture(CardZone zone, IEnumerable<CardZoneCardState> cards, Camera camera = null,
-            IEnumerable<CardZoneCardState> discarded = null)
+        public void Bind(CardMatchHost owner, ZoneId zone, ZoneId deck, ZoneId discard, Camera camera = null)
         {
-            if (zone == null) throw new ArgumentNullException(nameof(zone));
-            if (cards == null) throw new ArgumentNullException(nameof(cards));
-            var copy = cards.Select(card => card != null ? card.Copy(clearHover: true) : throw new ArgumentException("Missing card state.", nameof(cards))).ToList();
-            if (!zone.Cards.SequenceEqual(copy.Select(card => card.Card.Id)))
-                throw new ArgumentException("Snapshot cards must match the zone's full identity order.", nameof(cards));
-            GetComponent<CardZoneView>().ValidateCardCount(copy.Count);
-            var discardCopy = CopyDiscarded(discarded ?? Enumerable.Empty<CardZoneCardState>());
-            zone.TransferRangeTo(BuildDiscardZone(zone.Id.Value, zone.ControllerId?.Value, discardCopy), new CardInstanceId[0], discardCopy.Count);
-            StopSession();
-            zoneId = zone.Id.Value; zoneKind = zone.Kind; controllerId = zone.ControllerId?.Value;
-            initialCards = copy; initialDiscardedCards = discardCopy; inputCamera = camera; hasSnapshot = true;
+            if (owner == null || owner.gameObject.scene != gameObject.scene) throw new ArgumentException("Bind a match in the same scene.", nameof(owner));
+            var bound = owner.GetZone(zone);
+            if (owner.GetZone(deck).Kind != CardZoneKinds.Deck || owner.GetZone(discard).Kind != CardZoneKinds.Discard)
+                throw new ArgumentException("Bind a deck and discard zone of the correct kind.");
+            GetComponent<CardZoneView>().ValidateCardCount(bound.Cards.Count);
+            StopSession(); match = owner; zoneId = zone.Value; deckZoneId = deck.Value; discardZoneId = discard.Value; inputCamera = camera;
         }
-
-        private CardZone BuildZone(IEnumerable<CardZoneCardState> cards) => new CardZone(new ZoneId(zoneId), zoneKind,
-            string.IsNullOrEmpty(controllerId) ? (ParticipantId?)null : new ParticipantId(controllerId), cards.Select(card => card.Card.Id));
-
-        public static CardZone BuildDiscardZone(string sourceId, string owner, IEnumerable<CardZoneCardState> cards) =>
-            new CardZone(new ZoneId(Guard.Text(sourceId, nameof(sourceId)) + "/discard"), CardZoneKinds.Discard,
-                string.IsNullOrEmpty(owner) ? (ParticipantId?)null : new ParticipantId(owner), cards.Select(card => card.Card.Id));
-
-        private static List<CardZoneCardState> CopyDiscarded(IEnumerable<CardZoneCardState> cards) => cards.Select(card => {
-            var copy = card != null ? card.Copy() : throw new ArgumentException("Missing discarded card state.");
-            copy.SetInteraction(default(CardInteractionState)); return copy;
-        }).ToList();
-
         public void BeginSession()
         {
-            if (!hasSnapshot) return;
-            var copy = initialCards.Select(card => card.Copy(clearHover: true)).ToList();
-            GetComponent<CardZoneView>().ValidateCardCount(copy.Count);
-            var discardCopy = CopyDiscarded(initialDiscardedCards);
-            // Validate both ownership lists before replacing a session, including deserialized startup data.
-            BuildZone(copy).TransferRangeTo(BuildDiscardZone(zoneId, controllerId, discardCopy), new CardInstanceId[0], discardCopy.Count);
-            StopSession(); view = GetComponent<CardZoneView>(); mouse = GetComponent<CardZoneMouseInput>();
-            liveCards = copy; discardedCards = discardCopy; view.Clear();
-            view.Present(BuildZone(liveCards), id => Find(id.Value).Project(), animate: false);
+            if (!HasSnapshot) return;
+            var nextView = GetComponent<CardZoneView>(); nextView.ValidateCardCount(Zone.Cards.Count);
+            StopSession(); match.StartMatch(); view = nextView; mouse = GetComponent<CardZoneMouseInput>();
+            view.Clear(); view.Present(Project(), false);
             if (view is HandZoneView)
             {
                 if (mouse == null) mouse = gameObject.AddComponent<CardZoneMouseInput>();
                 mouse.Bind(view, this, inputCamera); mouse.StateChanged += Publish;
             }
-            IsRunning = true;
+            attached = true; match.Restarted += OnMatchRestarted; match.Changed += OnMatchChanged;
         }
-
         public void StopSession()
         {
-            // Unsubscribe first: clearing hover during teardown must not recreate views being destroyed.
+            pendingSort = false;
+            if (match != null) { match.Restarted -= OnMatchRestarted; match.Changed -= OnMatchChanged; }
             if (mouse != null) { mouse.StateChanged -= Publish; mouse.Unbind(); }
-            IsRunning = false;
+            attached = false;
         }
-
-        /// <summary>Replace this running zone's ordered cards, preserving the startup snapshot.</summary>
-        public void ReplaceCards(IEnumerable<CardZoneCardState> cards, bool animate = true)
+        private void OnMatchRestarted()
         {
-            if (!IsRunning) throw new InvalidOperationException("Start the card zone session before replacing live cards.");
-            if (cards == null) throw new ArgumentNullException(nameof(cards));
-            var copy = cards.Select(card => card != null ? card.Copy() : throw new ArgumentException("Missing card state.")).ToList();
-            var zone = BuildZone(copy);
-            zone.TransferRangeTo(DiscardZone, new CardInstanceId[0], discardedCards.Count);
-            // Validate the projection and presentation before committing the interaction source.
-            var byId = copy.ToDictionary(card => card.Id, StringComparer.Ordinal);
-            view.Present(zone, id => byId[id.Value].Project(), animate);
-            liveCards = copy;
+            if (!attached || !isActiveAndEnabled) return;
+            pendingSort = false; GetComponent<CardZoneTransferPresenter>()?.CompleteTransfers();
+            view.Clear(); view.Present(Project(), false);
         }
-
-        /// <summary>Commit all selected cards in hand order. Disabled selection rejects the whole command.</summary>
+        private void OnMatchChanged(CardTableChange change, CardZonePlayHost[] presented)
+        {
+            if (!IsRunning || presented.Contains(this)) return;
+            var before = change.Before.Zones.FirstOrDefault(zone => zone.Id.Value == zoneId);
+            var after = change.After.GetZone(new ZoneId(zoneId));
+            if (!ReferenceEquals(before, after) || after.Cards.Any(id => !ReferenceEquals(change.Before.GetCard(id), change.After.GetCard(id)))) Publish();
+        }
+        private CardZoneViewData Project() => new CardZoneViewData(Zone.Id, Cards.Select(card => card.Project()));
+        public static CardZone BuildDiscardZone(string sourceId, string owner, IEnumerable<CardZoneCardState> cards) =>
+            new CardZone(new ZoneId(Guard.Text(sourceId, nameof(sourceId)) + "/discard"), CardZoneKinds.Discard,
+                string.IsNullOrEmpty(owner) ? (ParticipantId?)null : new ParticipantId(owner), cards.Select(card => card.Card.Id));
         public int DiscardSelected(bool animate = true)
         {
-            if (!IsRunning) throw new InvalidOperationException("Start the card zone session before discarding.");
-            if (!(view is HandZoneView hand)) throw new InvalidOperationException("DiscardSelected requires a HandZoneView.");
-            var batch = new CardZoneDiscardBatch(Zone, liveCards, DiscardZone);
-            if (batch.Discarded.Count == 0) return 0;
-            var byId = batch.Remaining.ToDictionary(card => card.Id, StringComparer.Ordinal);
-            hand.Present(batch.Source, id => byId[id.Value].Project(), animate, batch.Discarded.Select(card => card.Id));
-            liveCards = batch.Remaining.ToList(); discardedCards.AddRange(batch.Discarded);
-            return batch.Discarded.Count;
+            if (!IsRunning || !(view is HandZoneView hand)) throw new InvalidOperationException("Start a hand zone before discarding.");
+            var update = match.PrepareDiscard(Zone.Id, DiscardZone.Id, Cards.Where(card => card.Interaction.IsSelected).Select(card => card.Card.Id));
+            if (update.Change.Transferred.Count == 0) return 0;
+            hand.PresentDiscardCommitted(update.Project(Zone.Id), update.Change.Transferred.Select(id => id.Value), () => match.Commit(update), animate);
+            match.Notify(update, this); return update.Change.Transferred.Count;
         }
-
-        private CardZoneCardState Find(string id) => liveCards.FirstOrDefault(card => card.Id == id);
+        private CardZoneCardState Find(string id) => Cards.FirstOrDefault(card => card.Id == id);
         public bool TryGetInteraction(string viewId, out CardInteractionState state)
-        {
-            var card = Find(viewId); state = card == null ? default(CardInteractionState) : card.Interaction;
-            return card != null;
-        }
+        { var card = Find(viewId); state = card == null ? default : card.Interaction; return card != null; }
         public bool CanSelect(string viewId) { var card = Find(viewId); return card != null && card.Card.CanPlay; }
         public void SetInteraction(string viewId, CardInteractionState state)
         {
-            var card = Find(viewId) ?? throw new ArgumentException("Card is not in this local zone.", nameof(viewId));
-            card.SetInteraction(state);
+            var card = Find(viewId) ?? throw new ArgumentException("Card is outside this match zone.", nameof(viewId));
+            match.SetInteraction(card.Card.Id, state);
         }
-        public void Publish()
-        {
-            if (IsRunning && view != null) view.Present(BuildZone(liveCards), id => Find(id.Value).Project());
-        }
-
+        public void Publish() { if (IsRunning && view != null) view.Present(Project()); }
         private void OnEnable() { if (Application.isPlaying) BeginSession(); }
         private void OnDisable() => StopSession();
         private void OnDestroy() => StopSession();
-
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-        private static void RestoreSceneHosts()
-        {
-            // Also restart from the saved snapshot when Enter Play Mode disables domain/scene reload.
-            foreach (var host in FindObjectsOfType<CardZonePlayHost>())
-                if (host.isActiveAndEnabled) host.BeginSession();
-        }
     }
 }

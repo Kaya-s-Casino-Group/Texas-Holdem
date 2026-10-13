@@ -124,11 +124,11 @@ namespace CardPresentation.Tests
                 Assert.AreEqual(0, f.Host.DiscardSelected()); Assert.AreEqual(0, cues);
                 f.Select(0, 1, 2); f.Host.DiscardSelected(); Assert.AreEqual(1, cues);
                 f.View.CompleteTransitions(); f.View.AdvanceMotion(2); Assert.AreEqual(1, cues);
-                f.Host.BeginSession(); f.Select(0, 1, 2); f.Host.DiscardSelected(); Assert.AreEqual(2, cues);
+                f.Host.Match.RestartMatch(); f.Host.BeginSession(); f.Select(0, 1, 2); f.Host.DiscardSelected(); Assert.AreEqual(2, cues);
                 f.View.Present(f.View.Data, animate: false); f.View.AdvanceMotion(2); Assert.AreEqual(2, cues);
-                f.Host.BeginSession(); f.Select(0, 1, 2); f.Host.DiscardSelected(animate: false);
+                f.Host.Match.RestartMatch(); f.Host.BeginSession(); f.Select(0, 1, 2); f.Host.DiscardSelected(animate: false);
                 f.View.AdvanceMotion(2); Assert.AreEqual(2, cues);
-                f.Host.BeginSession(); var tuning = f.View.TransitionSettings; tuning.Enabled = false; f.View.SetTransitionSettings(tuning);
+                f.Host.Match.RestartMatch(); f.Host.BeginSession(); var tuning = f.View.TransitionSettings; tuning.Enabled = false; f.View.SetTransitionSettings(tuning);
                 f.Select(0, 1, 2); var old = f.View.Views.ToArray(); f.Host.DiscardSelected();
                 Assert.AreEqual(5, cues); Assert.IsTrue(old.All(card => card == null)); Assert.AreEqual(0, f.View.DepartingViews.Count);
                 f.Host.DiscardSelected(); f.Host.Publish(); f.View.AdvanceMotion(2); Assert.AreEqual(5, cues);
@@ -165,7 +165,7 @@ namespace CardPresentation.Tests
                 f.Host.Publish(); f.View.AdvanceMotion(2);
                 Assert.AreEqual(0, drawSounds); Assert.AreEqual(0, f.View.DepartingViews.Count);
                 Assert.AreEqual(2, f.Root.GetComponentsInChildren<CardInstanceView>().Length);
-                f.Host.BeginSession(); Assert.AreEqual(4, f.Host.Cards.Count); Assert.AreEqual(0, f.Host.DiscardedCards.Count);
+                f.Host.Match.RestartMatch(); f.Host.BeginSession(); Assert.AreEqual(4, f.Host.Cards.Count); Assert.AreEqual(0, f.Host.DiscardedCards.Count);
             }
         }
 
@@ -277,7 +277,7 @@ namespace CardPresentation.Tests
             {
                 using (var f = new Fixture(1))
                 {
-                    Action discard = () => { f.Host.BeginSession(); f.Select(0); f.Host.DiscardSelected(); };
+                    Action discard = () => { f.Host.Match.RestartMatch(); f.Host.BeginSession(); f.Select(0); f.Host.DiscardSelected(); };
                     discard(); var restored = f.Host.InitialCards[0].Project(); var old = f.View.DepartingViews[0];
                     f.View.Present(new CardZoneViewData(f.Host.Zone.Id, new[] { restored }));
                     Assert.IsTrue(old == null); Assert.AreEqual(0, f.View.DepartingViews.Count); Assert.AreEqual(1, f.View.Views.Count);
@@ -317,11 +317,11 @@ namespace CardPresentation.Tests
             {
                 f.Select(1); f.Host.DiscardSelected();
                 f.Host.Capture(f.Host.Zone, f.Host.Cards, discarded: f.Host.DiscardedCards);
-                string json = JsonUtility.ToJson(f.Host); JsonUtility.FromJsonOverwrite(json, f.Host); f.Host.BeginSession();
+                string json = JsonUtility.ToJson(f.Host); JsonUtility.FromJsonOverwrite(json, f.Host); f.Host.Match.RestartMatch(); f.Host.BeginSession();
                 Assert.AreEqual(1, f.Host.Cards.Count); Assert.AreEqual(1, f.Host.DiscardedCards.Count);
                 Assert.AreEqual(1, f.Host.InitialDiscardedCards.Count); Assert.AreEqual(0, f.View.DepartingViews.Count);
                 Assert.IsFalse(f.Host.DiscardedCards[0].Interaction.IsSelected);
-                f.Select(0); f.Host.DiscardSelected(); f.Host.BeginSession();
+                f.Select(0); f.Host.DiscardSelected(); f.Host.Match.RestartMatch(); f.Host.BeginSession();
                 Assert.AreEqual(1, f.Host.Cards.Count); Assert.AreEqual(1, f.Host.DiscardedCards.Count);
                 Assert.AreEqual(1, f.Root.GetComponentsInChildren<CardInstanceView>().Length);
             }

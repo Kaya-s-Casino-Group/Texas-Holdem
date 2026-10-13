@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,7 +29,7 @@ namespace CardPresentation.Editor
                 return string.IsNullOrEmpty(drawExperimentContext) ? "unbound:" + previewZoneId : drawExperimentContext;
             }
         }
-        private CardZoneDrawExperiment CurrentExperiment => drawExperiments.Get(DrawExperimentKey, Application.isPlaying);
+        private CardZoneDrawExperiment CurrentExperiment => drawExperiments.Get(DrawExperimentKey, false);
         private int DrawInsertIndex => drawPosition < 0 || drawPosition >= CurrentModel.Cards.Count ? -1 : drawPosition;
 
         private void InitializeDrawExperiments()
@@ -41,7 +42,8 @@ namespace CardPresentation.Editor
                 migratedDrawExperiment = true; drawExperiment = null;
             }
             if (!EditorApplication.isPlayingOrWillChangePlaymode) drawExperiments.EndPlay();
-            CurrentExperiment.EnsureDeck(ArtIds());
+            if (Host != null && Host.HasSnapshot) CurrentExperiment.LoadDeck(Application.isPlaying ? Host.DeckCards : Host.InitialDeckCards);
+            else CurrentExperiment.EnsureDeck(ArtIds());
         }
 
         [MenuItem("Tools/Cards/Card Zone Animation Lab")]
@@ -68,9 +70,10 @@ namespace CardPresentation.Editor
         private void DrawAnimationExperiment(string[] artIds)
         {
             if (Hand == null) { EditorGUILayout.HelpBox("抽牌实验适用于 HandZoneView 及其子类。可在卡牌列表页验证当前牌区。", MessageType.Info); return; }
-            drawMode = GUILayout.Toolbar(drawMode, new[] { "指定牌面", "从测试牌堆抽取" });
+            drawMode = GUILayout.Toolbar(drawMode, new[] { "指定牌面", "从对局抽牌堆抽取" });
             EditorGUILayout.Space(5);
             drawPosition = InsertionPicker("入手牌的位置", drawPosition, CurrentModel.Cards.Count);
+            EditorGUILayout.LabelField("整批飞入并回稳后，按手牌页所选的点数 / 花色顺序重排。", EditorStyles.miniLabel);
             drawCount = Mathf.Clamp(EditorGUILayout.IntField("抽牌数量", drawCount), 1, CardZonePreviewModel.MaximumCards);
             if (drawMode == 0)
             {
@@ -81,13 +84,13 @@ namespace CardPresentation.Editor
                         Mutate("抽取指定牌面", () => {
                             CurrentExperiment.DrawSpecified(CurrentModel, specifiedArtId, drawCount, DrawInsertIndex, specifiedFaceUp); InspectDrawnCard();
                         });
-                EditorGUILayout.HelpBox("生成指定的新卡并走抽牌流程；不消耗测试牌堆，同牌面也有独立身份。", MessageType.None);
+                EditorGUILayout.HelpBox("生成指定的新卡并走抽牌流程；不消耗对局抽牌堆，同牌面也有独立身份。", MessageType.None);
             }
             else
             {
                 EditorGUILayout.HelpBox(Application.isPlaying ?
-                    "从进入 Play 时复制的测试牌堆抽取，消耗当前副本；退出 Play 后恢复编辑器配置。" :
-                    "此牌区的测试牌堆会按当前顺序、身份和属性复制到 Play；切换牌区保留各自牌堆。", MessageType.None);
+                    "读取并编辑当前运行对局的抽牌堆；退出 Play 后恢复对局启动快照。" :
+                    "读取绑定对局的抽牌堆；共享同一堆的牌区会看到同一份顺序、身份和属性。", MessageType.None);
                 using (new EditorGUILayout.HorizontalScope())
                 {
                     using (new EditorGUI.DisabledScope(!CanDraw(1))) if (GUILayout.Button("牌顶抽 1 张")) DealFromDeck(1);
@@ -153,7 +156,7 @@ namespace CardPresentation.Editor
                 if (!experiment.HasDraw) EditorGUILayout.LabelField("尚未抽牌。", EditorStyles.miniLabel);
                 else
                 {
-                    EditorGUILayout.LabelField(experiment.GeneratedDraw ? "来源：指定生成（测试牌堆不变）" : "来源：测试牌堆", EditorStyles.miniLabel);
+                    EditorGUILayout.LabelField(experiment.GeneratedDraw ? "来源：指定生成（对局抽牌堆不变）" : "来源：对局抽牌堆", EditorStyles.miniLabel);
                     DrawIdList("牌堆之前（牌顶 → 牌底）", experiment.DeckBefore.Reverse());
                     DrawIdList("牌堆之后（牌顶 → 牌底）", experiment.DeckAfter.Reverse());
                     DrawIdList("手牌之前", experiment.HandBefore); DrawIdList("手牌之后", experiment.HandAfter); DrawIdList("本次抽取", experiment.Drawn);
@@ -240,3 +243,5 @@ namespace CardPresentation.Editor
 
     }
 }
+
+#endif

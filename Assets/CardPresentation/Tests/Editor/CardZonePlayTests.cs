@@ -128,7 +128,7 @@ namespace CardPresentation.Tests
                 var deck = new CardZoneDrawExperiment(); deck.PrepareDeck(new[] { "hearts_q", "spades_a" }); deck.Draw(live, 3);
                 var drawn = live.Cards.Select(c => new CardZoneCardState(c.ToCard(), c.ArtId, c.FaceUp, c.Tint, c.Interaction)).ToArray();
                 f.Host.ReplaceCards(drawn);
-                Assert.AreEqual(5, f.Host.Cards.Count); Assert.AreEqual(0, cues); Assert.AreSame(firstView, f.View.Views[0]);
+                Assert.AreEqual(5, f.Host.Cards.Count); Assert.AreEqual(0, cues); Assert.AreSame(firstView, f.View.Views.Single(card => card.ViewId == firstView.ViewId));
                 f.Host.SetInteraction(drawn[4].Id, new CardInteractionState(isSelected: true)); f.Host.Publish();
                 f.View.AdvanceMotion(2);
                 Assert.AreEqual(3, cues); Assert.AreEqual(5, f.View.Views.Count);
@@ -137,18 +137,80 @@ namespace CardPresentation.Tests
                 CollectionAssert.AreEqual(original, f.Host.InitialCards.Select(card => card.Id));
                 Assert.Throws<ArgumentException>(() => f.Host.ReplaceCards(new[] { drawn[0], drawn[0] }));
                 Assert.AreEqual(5, f.Host.Cards.Count); Assert.AreEqual(5, f.View.Views.Count);
-                f.Host.BeginSession(); f.View.AdvanceMotion(2);
+                f.Host.Match.RestartMatch(); f.Host.BeginSession(); f.View.AdvanceMotion(2);
                 Assert.AreEqual(3, cues); CollectionAssert.AreEqual(original, f.Host.Cards.Select(card => card.Id));
             }
         }
 
-        [Test] public void HoverIsLowerThanSelectionAndStateChangesRetargetContinuously()
+        [Test] public void RankSortWaitsForFlightAndSettleThenReusesViews() => AssertDeferredDrawSort(CardZoneSortOrder.RankFirst);
+        [Test] public void SuitSortWaitsForFlightAndSettleThenReusesViews() => AssertDeferredDrawSort(CardZoneSortOrder.SuitFirst);
+
+        private void AssertDeferredDrawSort(CardZoneSortOrder order)
+        {
+            using (var f = new Fixture())
+            {
+                var original = f.Host.Cards.Select(card => card.Id).ToArray();
+                f.Host.SetInteraction(original[0], new CardInteractionState(isSelected: true)); f.Host.Publish();
+                f.View.SetTransitionSettings(CardZoneTransitionSettings.Default);
+                var king = new CardZoneCardState(new CardInstance(new CardInstanceId("sort-king"),
+                    StandardDeck.CardId(Suit.Clubs, Rank.King)), "clubs_k", false, Color.cyan, default);
+                f.Host.ReplaceCards(f.Host.Cards.Concat(new[] { king }));
+                f.Host.RequestSortAfterLanding(order);
+                var unsorted = f.Host.Cards.Select(card => card.Id).ToArray();
+                var retained = f.View.Views.ToDictionary(card => card.ViewId);
+                int cues = 0; f.View.CardEnteredZone += _ => cues++;
+                Assert.IsFalse(f.Host.TryCompletePendingSort());
+                f.View.AdvanceMotion(0.45f); // Arrival has occurred, but inertia has not finished.
+                Assert.AreEqual(1, cues); Assert.IsFalse(f.Host.TryCompletePendingSort());
+                CollectionAssert.AreEqual(unsorted, f.Host.Cards.Select(card => card.Id));
+                var two = new CardZoneCardState(new CardInstance(new CardInstanceId("sort-two"),
+                    StandardDeck.CardId(Suit.Hearts, Rank.Two)), "hearts_02", true, Color.white, default);
+                f.Host.ReplaceCards(f.Host.Cards.Concat(new[] { two })); f.Host.RequestSortAfterLanding(order);
+                f.View.AdvanceMotion(0.8f); Assert.IsFalse(f.Host.TryCompletePendingSort());
+                Assert.AreEqual("sort-two", f.Host.Cards.Last().Id);
+                f.View.AdvanceMotion(0.4f); Assert.IsTrue(f.Host.TryCompletePendingSort());
+                CollectionAssert.AreEqual(order == CardZoneSortOrder.RankFirst
+                    ? new[] { "spades_a", "clubs_k", "hearts_q", "hearts_02" }
+                    : new[] { "spades_a", "hearts_q", "hearts_02", "clubs_k" }, f.Host.Cards.Select(card => card.ArtId));
+                Assert.IsFalse(f.Host.HasPendingSort); Assert.IsFalse(f.Host.TryCompletePendingSort());
+                Assert.IsTrue(f.View.IsTransitioning); Assert.IsFalse(f.View.Views.Any(card => card.IsEntering));
+                foreach (var pair in retained) Assert.AreSame(pair.Value, f.View.Views.Single(card => card.ViewId == pair.Key));
+                Assert.IsTrue(f.Host.Cards.Single(card => card.Id == original[0]).Interaction.IsSelected);
+                Assert.IsFalse(f.Host.Cards.Single(card => card.Id == king.Id).FaceUp);
+                Assert.AreEqual(Color.cyan, f.Host.Cards.Single(card => card.Id == king.Id).Tint);
+                f.View.AdvanceMotion(1); Assert.AreEqual(2, cues);
+                CollectionAssert.AreEqual(original, f.Host.InitialCards.Select(card => card.Id));
+            }
+        }
+
+        [Test] public void DeferredSortUsesLatestChoiceAndCancelsOnSessionRestart()
+        {
+            using (var f = new Fixture())
+            {
+                Assert.AreEqual(CardZoneSortOrder.RankFirst, f.Host.SortOrder);
+                f.Host.RequestSortAfterLanding(CardZoneSortOrder.RankFirst);
+                f.Host.RequestSortAfterLanding(CardZoneSortOrder.SuitFirst);
+                Assert.AreEqual(CardZoneSortOrder.SuitFirst, f.Host.SortOrder);
+                Assert.Throws<ArgumentOutOfRangeException>(() => f.Host.RequestSortAfterLanding((CardZoneSortOrder)99));
+                Assert.AreEqual(CardZoneSortOrder.SuitFirst, f.Host.SortOrder); Assert.IsTrue(f.Host.HasPendingSort);
+                string stored = JsonUtility.ToJson(f.Host); f.Host.SetSortOrder(CardZoneSortOrder.RankFirst);
+                JsonUtility.FromJsonOverwrite(stored, f.Host); Assert.AreEqual(CardZoneSortOrder.SuitFirst, f.Host.SortOrder);
+                Assert.IsTrue(f.Host.TryCompletePendingSort()); // With no transitions, completes on the next refresh.
+                f.Host.RequestSortAfterLanding(CardZoneSortOrder.RankFirst); f.Host.Match.RestartMatch(); f.Host.BeginSession();
+                Assert.IsFalse(f.Host.HasPendingSort); Assert.IsFalse(f.Host.TryCompletePendingSort());
+                Assert.AreEqual("hearts_q", f.Host.Cards[0].ArtId);
+                f.Host.RequestSortAfterLanding(CardZoneSortOrder.SuitFirst); f.Host.StopSession();
+                Assert.IsFalse(f.Host.HasPendingSort);
+            }
+        }
+
+        [Test] public void HoverScalesWithoutTranslationAndSelectionRetargetsIndependently()
         {
             using (var f = new Fixture())
             {
                 var card = f.View.Views[0]; f.Set(true, false);
-                Assert.AreEqual(0.01f, f.View.HoveredOffset.z); Assert.AreEqual(0.02f, f.View.SelectedOffset.z);
-                Assert.IsTrue(card.Data.Interaction.IsHovered); Assert.IsTrue(card.IsLifting); Assert.AreEqual(Vector3.zero, card.InteractionOffset);
+                Assert.AreEqual(0, f.View.HoveredOffset.z); Assert.AreEqual(0.02f, f.View.SelectedOffset.z);
+                Assert.IsTrue(card.Data.Interaction.IsHovered); Assert.IsFalse(card.IsLifting); Assert.IsTrue(card.IsHoverScaling); Assert.AreEqual(Vector3.zero, card.InteractionOffset);
                 f.View.AdvanceMotion(1); Assert.AreEqual(f.View.HoveredOffset, card.InteractionOffset);
                 f.Set(true, true); Assert.AreEqual(f.View.HoveredOffset, card.InteractionOffset);
                 f.View.AdvanceMotion(f.View.LiftSettings.RaiseSeconds * 0.25f); float raised = card.InteractionOffset.z;
@@ -162,43 +224,71 @@ namespace CardPresentation.Tests
                 Assert.Greater(card.InteractionOffset.z, f.View.HoveredOffset.z); Assert.Less(card.InteractionOffset.z, f.View.SelectedOffset.z);
                 f.View.AdvanceMotion(1); Assert.AreEqual(f.View.HoveredOffset, card.InteractionOffset);
                 f.Set(false, false); Assert.AreEqual(f.View.HoveredOffset, card.InteractionOffset);
-                f.View.AdvanceMotion(f.View.LiftSettings.LowerSeconds * 0.25f); Assert.Greater(card.InteractionOffset.z, 0); Assert.Less(card.InteractionOffset.z, f.View.HoveredOffset.z);
+                f.View.AdvanceMotion(f.View.LiftSettings.LowerSeconds * 0.25f); Assert.AreEqual(Vector3.zero, card.InteractionOffset);
+                Assert.Greater(card.HoverScale, 1); Assert.Less(card.HoverScale, Mathf.Sqrt(1.2f));
                 f.View.AdvanceMotion(1); Assert.AreEqual(Vector3.zero, card.InteractionOffset);
             }
         }
 
-        [Test] public void HoverAndLowerOvershootThenSettleQuicklyAndCanReverseDuringRebound()
+        [Test] public void HoverScaleOvershootsInBothDirectionsAndCanReverseWithoutRestartingSelection()
         {
             using (var f = new Fixture())
             {
                 var card = f.View.Views[0]; var tuning = f.View.LiftSettings;
-                Assert.AreEqual(0.12f, tuning.RaiseSeconds); Assert.AreEqual(0.14f, tuning.LowerSeconds);
+                float target = Mathf.Sqrt(1.2f), growth = target - 1;
                 f.Set(true, false); f.View.AdvanceMotion(tuning.RaiseSeconds * 0.65f);
-                Assert.Greater(card.InteractionOffset.z, f.View.HoveredOffset.z * 1.1f);
-                Assert.Less(card.InteractionOffset.z, f.View.HoveredOffset.z * 1.18f);
-                var tween = DOTween.TweensByTarget(card.FaceRoot).Single(); var over = card.InteractionOffset;
-                f.Host.Publish(); Assert.AreSame(tween, DOTween.TweensByTarget(card.FaceRoot).Single());
-                Assert.AreEqual(over, card.InteractionOffset);
+                Assert.Greater(card.HoverScale, target + growth * 0.1f);
+                Assert.Less(card.HoverScale, target + growth * 0.18f);
+                Assert.AreEqual(Vector3.zero, card.InteractionOffset);
+                var tween = DOTween.TweensByTarget(card.HoverRoot).Single(); var over = card.HoverScale;
+                f.Host.Publish(); f.View.RefreshLayout();
+                Assert.AreSame(tween, DOTween.TweensByTarget(card.HoverRoot).Single()); Assert.AreEqual(over, card.HoverScale);
                 f.View.AdvanceMotion(tuning.RaiseSeconds * 0.35f + 0.001f);
-                Assert.AreEqual(f.View.HoveredOffset, card.InteractionOffset); Assert.IsFalse(card.IsLifting);
-
+                Assert.AreEqual(1.2f, card.HoverRoot.localScale.x * card.HoverRoot.localScale.z, 0.00001f);
+                Assert.IsFalse(card.IsHoverScaling); Assert.IsFalse(card.IsLifting);
                 f.Set(false, false); f.View.AdvanceMotion(tuning.LowerSeconds * 0.65f);
-                Assert.Less(card.InteractionOffset.z, -0.001f); Assert.Greater(card.InteractionOffset.z, -0.0018f);
-                f.View.AdvanceMotion(tuning.LowerSeconds * 0.35f + 0.001f);
-                Assert.AreEqual(Vector3.zero, card.InteractionOffset); Assert.IsFalse(card.IsLifting);
-
-                f.Set(true, false); f.View.AdvanceMotion(tuning.RaiseSeconds * 0.65f);
-                var midway = card.InteractionOffset; f.Set(false, false); Assert.AreEqual(midway, card.InteractionOffset);
-                f.View.AdvanceMotion(tuning.LowerSeconds * 0.65f); midway = card.InteractionOffset;
-                f.Set(true, false); Assert.AreEqual(midway, card.InteractionOffset);
-                f.View.AdvanceMotion(tuning.RaiseSeconds + 0.001f); Assert.AreEqual(f.View.HoveredOffset, card.InteractionOffset);
-
-                f.Set(true, true); f.View.AdvanceMotion(tuning.RaiseSeconds + 0.001f);
-                Assert.AreEqual(f.View.SelectedOffset, card.InteractionOffset);
+                Assert.Less(card.HoverScale, 1 - growth * 0.1f); Assert.Greater(card.HoverScale, 1 - growth * 0.18f);
+                float midway = card.HoverScale;
+                f.Set(true, false); Assert.AreEqual(midway, card.HoverScale);
+                f.View.AdvanceMotion(tuning.RaiseSeconds + 0.001f); Assert.AreEqual(target, card.HoverScale);
+                f.Set(true, true); f.View.AdvanceMotion(tuning.RaiseSeconds * 0.25f);
+                var lift = DOTween.TweensByTarget(card.FaceRoot).Single(); var offset = card.InteractionOffset;
+                f.Set(false, true); Assert.AreSame(lift, DOTween.TweensByTarget(card.FaceRoot).Single());
+                Assert.AreEqual(offset, card.InteractionOffset);
+                f.View.AdvanceMotion(1); Assert.AreEqual(f.View.SelectedOffset, card.InteractionOffset); Assert.AreEqual(1, card.HoverScale);
                 f.Set(true, false); f.View.AdvanceMotion(tuning.LowerSeconds * 0.65f);
-                Assert.Less(card.InteractionOffset.z, f.View.HoveredOffset.z);
-                f.View.AdvanceMotion(tuning.LowerSeconds * 0.35f + 0.001f);
-                Assert.AreEqual(f.View.HoveredOffset, card.InteractionOffset); Assert.IsFalse(card.IsLifting);
+                Assert.Less(card.InteractionOffset.z, 0); // Deselect still rebounds below the resting position.
+                f.View.AdvanceMotion(1); Assert.AreEqual(Vector3.zero, card.InteractionOffset); Assert.AreEqual(target, card.HoverScale);
+                f.Set(false, false); f.View.AdvanceMotion(1);
+                Assert.AreEqual(Vector3.one, card.HoverRoot.localScale); Assert.IsFalse(card.IsHoverScaling);
+            }
+        }
+
+        [Test] public void HoverScaleSurvivesFlipReflowAndLegacyOffsetsWithoutLeakingIntoOtherZones()
+        {
+            using (var f = new Fixture())
+            {
+                JsonUtility.FromJsonOverwrite("{\"hoveredOffset\":{\"x\":0,\"y\":0,\"z\":0.2}}", f.View);
+                var card = f.View.Views[0]; f.Set(true, false); f.View.AdvanceMotion(1);
+                var layout = f.View.Layout; layout.ArcHeight = -0.012f; f.View.SetLayout(layout);
+                for (int i = 0; i < 3; i++)
+                {
+                    f.View.Present(new CardZoneViewData(f.Host.Zone.Id, new[] {
+                        new CardVisualData(card.ViewId, i % 2 == 0 ? null : "hearts_q", interaction: new CardInteractionState(true, false)) }), false);
+                    f.View.RefreshLayout();
+                    Assert.AreEqual(Vector3.zero, card.InteractionOffset);
+                    Assert.AreEqual(1.2f, card.HoverScale * card.HoverScale, 0.00001f);
+                    Assert.AreEqual(Vector3.one, card.transform.localScale);
+                    Assert.IsFalse(card.IsHoverScaling);
+                }
+                var other = new GameObject("Generic zone"); SceneManager.MoveGameObjectToScene(other, f.Scene);
+                try
+                {
+                    var zone = other.AddComponent<CardZoneView>(); zone.Configure(f.View.CardPrefab, CardZoneLayoutSettings.Default);
+                    zone.Present(f.View.Data, false);
+                    Assert.AreEqual(1, zone.Views[0].HoverScale);
+                }
+                finally { Object.DestroyImmediate(other); }
             }
         }
 
@@ -255,14 +345,14 @@ namespace CardPresentation.Tests
         {
             using (var f = new Fixture())
             {
-                var card = f.View.Views[0]; f.Set(true, false); f.View.AdvanceMotion(0.04f);
+                var card = f.View.Views[0]; f.Set(false, true); f.View.AdvanceMotion(0.04f);
                 var current = card.InteractionOffset; f.Set(false, false); Assert.AreEqual(current, card.InteractionOffset);
-                f.View.AdvanceMotion(0.03f); current = card.InteractionOffset; f.Set(true, false); Assert.AreEqual(current, card.InteractionOffset);
+                f.View.AdvanceMotion(0.03f); current = card.InteractionOffset; f.Set(false, true); Assert.AreEqual(current, card.InteractionOffset);
                 f.Root.transform.SetPositionAndRotation(Vector3.one, Quaternion.Euler(40, 35, 12));
                 f.Root.transform.localScale = new Vector3(1.3f, 0.7f, 1.2f);
                 var layout = f.View.Layout; layout.ArcHeight = -0.012f; f.View.SetLayout(layout);
                 var data = new CardZoneViewData(f.Host.Zone.Id, new[] {
-                    f.Host.Cards[1].Project(), new CardVisualData(card.ViewId, interaction: new CardInteractionState(isHovered: true)) });
+                    f.Host.Cards[1].Project(), new CardVisualData(card.ViewId, interaction: new CardInteractionState(isSelected: true)) });
                 f.View.Present(data); Assert.AreSame(card, f.View.Views[1]);
                 f.View.AdvanceMotion(0.02f);
                 var actual = f.View.transform.InverseTransformVector(card.FaceRoot.position - f.View.transform.TransformPoint(card.DisplayPose.Position));
@@ -281,10 +371,10 @@ namespace CardPresentation.Tests
                 {
                     var card = f.View.Views[0]; f.Set(true, false); f.View.AdvanceMotion(0.03f);
                     f.View.Present(f.Host.Zone, id => f.Host.Cards.Single(c => c.Id == id.Value).Project(), animate: false);
-                    Assert.IsFalse(card.IsLifting); Assert.AreEqual(f.View.HoveredOffset, card.InteractionOffset);
-                    f.Set(false, false); Assert.IsTrue(card.IsLifting); f.View.enabled = false;
-                    Assert.IsFalse(card.IsLifting); Assert.AreEqual(Vector3.zero, card.InteractionOffset);
-                    f.View.enabled = true; f.Set(true, false); var owned = DOTween.TweensByTarget(card.FaceRoot).Single();
+                    Assert.IsFalse(card.IsLifting); Assert.IsFalse(card.IsHoverScaling); Assert.AreEqual(f.View.HoveredOffset, card.InteractionOffset);
+                    f.Set(false, false); Assert.IsTrue(card.IsHoverScaling); f.View.enabled = false;
+                    Assert.IsFalse(card.IsLifting); Assert.IsFalse(card.IsHoverScaling); Assert.AreEqual(Vector3.zero, card.InteractionOffset);
+                    f.View.enabled = true; f.Set(true, false); var owned = DOTween.TweensByTarget(card.HoverRoot).Single();
                     f.View.Clear(); Assert.IsFalse(owned.IsActive()); Assert.IsTrue(foreign.IsActive()); Assert.AreEqual(0, value);
                 }
             }
@@ -305,7 +395,7 @@ namespace CardPresentation.Tests
                 Assert.IsTrue(restored.Card.IsDisabled); Assert.IsFalse(restored.FaceUp); Assert.AreEqual(Color.red, restored.Tint);
                 Assert.AreEqual(first.Effects, restored.Card.Effects); Assert.IsNull(f.View.Views[0].Data.FaceArtId);
                 f.Set(false, false); Assert.IsFalse(restored.Interaction.IsSelected); Assert.IsTrue(f.Host.InitialCards[0].Interaction.IsSelected);
-                f.Host.BeginSession(); Assert.IsTrue(f.Host.Cards[0].Interaction.IsSelected);
+                f.Host.Match.RestartMatch(); f.Host.BeginSession(); Assert.IsTrue(f.Host.Cards[0].Interaction.IsSelected);
                 Assert.AreEqual(2, f.Root.GetComponentsInChildren<CardInstanceView>().Length);
                 CollectionAssert.DoesNotContain(typeof(CardZonePlayHost).Assembly.GetReferencedAssemblies().Select(a => a.Name).ToArray(), "CardPresentation.Editor");
             }

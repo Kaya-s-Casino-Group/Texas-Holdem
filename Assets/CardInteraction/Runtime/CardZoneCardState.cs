@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace CardInteraction
 {
-    /// <summary>Serializable local card data for a scene-authored zone; not an authoritative match save.</summary>
+    /// <summary>Serializable observer decoration keyed to a match card; not an authoritative match save.</summary>
     [Serializable]
     public sealed class CardZoneCardState
     {
