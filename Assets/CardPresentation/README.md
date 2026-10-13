@@ -17,7 +17,7 @@
 
 ## 卡牌悬停信息 Prefab
 
-`Prefabs/CardSuitChipsTooltip.prefab` 提供 World Space 的两栏卡牌提示：上栏“花色符号 + 花色文字 + 点数”（如 `♣ 梅花 J`），下栏蓝色点数加“筹码”；背景完整复制用户提供的图，文字与原生花色符号都使用 Fusion Pixel 12px 比例简体中文的 TMP 位图字体。`CardTooltipView.SetContent(suit, rank, chips)` 消费调用方提供的数据，红桃/方块整个上栏变红，切回黑桃/梅花恢复深色，可在 Inspector 预览；不查询计分或更改卡牌属性。Runtime 新增 UGUI/TMP 依赖，纯 C# 引擎保持独立，鼠标射线拦截关闭。
+`Prefabs/CardSuitChipsTooltip.prefab` 提供 World Space 的两栏卡牌提示：上栏“花色符号 + 花色文字 + 点数”（如 `♣ 梅花 J`），下栏蓝色点数加“筹码”；背景为深色底板，两行各有独立的浅米色矩形背景（均无 Sprite），文字与原生花色符号都使用 Fusion Pixel 12px 比例简体中文的 TMP 位图字体。`CardTooltipView.SetContent(suit, rank, chips)` 消费调用方提供的数据，红桃/方块整个上栏变红，切回黑桃/梅花恢复深色，可在 Inspector 预览；不查询计分或更改卡牌属性。Runtime 新增 UGUI/TMP 依赖，纯 C# 引擎保持独立，鼠标射线拦截关闭。
 
 场景 `CardInteraction.CardHoverPresenter` 持有提示 Prefab，并为本地相机复用一个实例；`ICardHoverSource` 提供观察者可读的数据与卡牌视觉锚点。提示跟随卡牌上方、朝向场景相机且可限制在视口内，牌背及飞入/离场不显示。验证宿主按卡牌定义查询基础点数；固化手牌会自动注册，也可用 `Tools > Cards > Configure Card Hover Tooltip` 接入已有手牌。CardZoneView 不持有提示引用、不采集鼠标、不查询计分。资源结构见 [UI README](UI/README.md)，数据边界与配置见 [交互 README](../CardInteraction/README.md#场景共用的悬停提示)。
 

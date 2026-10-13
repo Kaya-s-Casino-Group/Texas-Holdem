@@ -15,13 +15,13 @@ using Object = UnityEngine.Object;
 
 namespace CardPresentation.Editor
 {
-    /// <summary>Prepare the two-panel art prefab without installing gameplay or scene hover behaviour.</summary>
+    /// <summary>Prepare the suit/chips tooltip prefab without installing gameplay or scene hover behaviour.</summary>
     public static class CardTooltipPrefabBuilder
     {
-        public const string BackgroundPath = "Assets/CardPresentation/UI/Textures/CardSuitChipsBackground.png";
         public const string FontPath = "Assets/Fonts/FusionPixelFont/TMP/FusionPixel12pxProportional.asset";
         public const string PrefabPath = "Assets/CardPresentation/Prefabs/CardSuitChipsTooltip.prefab";
-        private const string SourceBackground = "ArtDirection/UI/card-suit-chips-background-v1.png";
+        private static readonly Color BackgroundColor = new Color32(51, 42, 36, 255);
+        private static readonly Color RowBackgroundColor = new Color32(242, 230, 204, 255);
         private const string SourceFont = "Assets/Fonts/FusionPixelFont/fusion-pixel-12px-proportional-zh_hans.ttf";
         private const string PreviewPath = "Library/CardTooltipValidation/tooltip.png";
         private static bool importingTextMeshPro;
@@ -29,12 +29,8 @@ namespace CardPresentation.Editor
         [MenuItem("Tools/Cards/Prepare Suit And Chips Tooltip Prefab")]
         public static void Prepare()
         {
-            EnsureFolder(Path.GetDirectoryName(BackgroundPath));
             EnsureFolder(Path.GetDirectoryName(FontPath));
             EnsureFolder(Path.GetDirectoryName(PrefabPath));
-            if (!File.Exists(BackgroundPath)) File.Copy(SourceBackground, BackgroundPath);
-            AssetDatabase.ImportAsset(BackgroundPath, ImportAssetOptions.ForceSynchronousImport);
-            PrepareBackground();
             if (!EnsureTextMeshProResources()) return;
             var font = PrepareFont();
             var existing = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);
@@ -48,27 +44,88 @@ namespace CardPresentation.Editor
             Debug.Log("Suit/chips tooltip prepared: " + PrefabPath);
         }
 
-        private static void PrepareBackground()
+        private static void ConfigureBackground(Image background)
         {
-            var importer = (TextureImporter)AssetImporter.GetAtPath(BackgroundPath);
-            importer.textureType = TextureImporterType.Sprite;
-            importer.spriteImportMode = SpriteImportMode.Single;
-            var spriteSettings = new TextureImporterSettings();
-            importer.ReadTextureSettings(spriteSettings);
-            spriteSettings.spriteMeshType = SpriteMeshType.FullRect;
-            importer.SetTextureSettings(spriteSettings);
-            importer.spritePixelsPerUnit = 100;
-            importer.spriteBorder = Vector4.zero;
-            importer.sRGBTexture = true;
-            importer.alphaSource = TextureImporterAlphaSource.FromInput;
-            importer.alphaIsTransparency = true;
-            importer.mipmapEnabled = false;
-            importer.npotScale = TextureImporterNPOTScale.None;
-            importer.maxTextureSize = 2048;
-            importer.textureCompression = TextureImporterCompression.Uncompressed;
-            importer.filterMode = FilterMode.Bilinear;
-            importer.wrapMode = TextureWrapMode.Clamp;
-            importer.SaveAndReimport();
+            if (background.sprite != null) background.color = BackgroundColor;
+            background.sprite = null;
+            background.overrideSprite = null;
+            background.type = Image.Type.Simple;
+            background.preserveAspect = false;
+            background.raycastTarget = false;
+        }
+
+        [MenuItem("Tools/Cards/Use Compact Suit And Chips Tooltip Style")]
+        public static void UseCompactStyle()
+        {
+            var root = PrefabUtility.LoadPrefabContents(PrefabPath);
+            try
+            {
+                ApplyCompactStyle(root);
+                var prefab = PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
+                Validate(prefab);
+                Selection.activeObject = prefab;
+            }
+            finally { PrefabUtility.UnloadPrefabContents(root); }
+        }
+
+        private static void ApplyCompactStyle(GameObject root)
+        {
+            var rect = (RectTransform)root.transform;
+            rect.sizeDelta = new Vector2(336, 180);
+            var background = rect.Find("Background").GetComponent<Image>();
+            ConfigureBackground(background);
+            background.color = BackgroundColor;
+            StretchRect(background.rectTransform, Vector2.zero, new Vector2(-4, -4));
+            background.transform.SetAsFirstSibling();
+
+            var border = Decoration("Border", rect, new Color32(105, 84, 69, 255));
+            StretchRect(border.rectTransform, Vector2.zero, Vector2.zero);
+            border.transform.SetAsFirstSibling();
+            var shadow = Decoration("Shadow", rect, new Color32(32, 23, 15, 60));
+            StretchRect(shadow.rectTransform, new Vector2(4, -5), Vector2.zero);
+            shadow.transform.SetAsFirstSibling();
+            var divider = rect.Find("Divider");
+            if (divider != null) Object.DestroyImmediate(divider.gameObject);
+            StyleRow(Decoration("SuitRankBackground", rect, RowBackgroundColor),
+                new Vector2(0, 44), new Vector2(312, 64), 3);
+            StyleRow(Decoration("ChipsBackground", rect, RowBackgroundColor),
+                new Vector2(0, -38), new Vector2(312, 76), 4);
+
+            StyleLabel(rect.Find("SuitRank").GetComponent<TMP_Text>(), 36, new Vector2(0, 44), new Vector2(296, 48));
+            StyleLabel(rect.Find("Chips").GetComponent<TMP_Text>(), 48, new Vector2(0, -38), new Vector2(296, 64));
+        }
+
+        private static void StyleRow(Image image, Vector2 position, Vector2 size, int siblingIndex)
+        {
+            var rect = image.rectTransform;
+            rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = position;
+            rect.sizeDelta = size;
+            rect.SetSiblingIndex(siblingIndex);
+        }
+
+        private static Image Decoration(string name, RectTransform parent, Color color)
+        {
+            var image = parent.Find(name)?.GetComponent<Image>() ??
+                CreateRect(name, parent, Vector2.zero, Vector2.zero).gameObject.AddComponent<Image>();
+            ConfigureBackground(image);
+            image.color = color;
+            return image;
+        }
+
+        private static void StretchRect(RectTransform rect, Vector2 position, Vector2 inset)
+        {
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.anchoredPosition = position;
+            rect.sizeDelta = inset;
+        }
+
+        private static void StyleLabel(TMP_Text label, float size, Vector2 position, Vector2 bounds)
+        {
+            label.fontSize = size;
+            label.rectTransform.anchoredPosition = position;
+            label.rectTransform.sizeDelta = bounds;
         }
 
         private static bool EnsureTextMeshProResources()
@@ -148,6 +205,7 @@ namespace CardPresentation.Editor
             var root = PrefabUtility.LoadPrefabContents(PrefabPath);
             try
             {
+                ConfigureBackground(root.transform.Find("Background").GetComponent<Image>());
                 var header = root.transform.Find("SuitRank")?.GetComponent<TMP_Text>();
                 var chips = root.transform.Find("Chips")?.GetComponent<TMP_Text>();
                 var view = root.GetComponent<CardTooltipView>() ?? root.AddComponent<CardTooltipView>();
@@ -164,7 +222,7 @@ namespace CardPresentation.Editor
             {
                 root.layer = LayerMask.NameToLayer("UI");
                 var rect = (RectTransform)root.transform;
-                rect.sizeDelta = new Vector2(448, 320); // Same 1.4 aspect as the complete 1484 x 1060 source.
+                rect.sizeDelta = new Vector2(448, 320);
                 rect.localScale = Vector3.one * 0.0004f;
                 var canvas = root.GetComponent<Canvas>();
                 canvas.renderMode = RenderMode.WorldSpace;
@@ -174,13 +232,12 @@ namespace CardPresentation.Editor
                 group.blocksRaycasts = false;
 
                 var background = CreateRect("Background", rect, Vector2.zero, rect.sizeDelta).gameObject.AddComponent<Image>();
-                background.sprite = AssetDatabase.LoadAssetAtPath<Sprite>(BackgroundPath);
-                background.type = Image.Type.Simple;
-                background.preserveAspect = true;
-                background.raycastTarget = false;
+                background.color = BackgroundColor;
+                ConfigureBackground(background);
                 var suit = CreateLabel("SuitRank", rect, font, new Vector2(0, 72), new Vector2(336, 64), 48);
                 var chips = CreateLabel("Chips", rect, font, new Vector2(0, -46), new Vector2(352, 112), 60);
                 root.AddComponent<CardTooltipView>().Configure(suit, chips);
+                ApplyCompactStyle(root);
                 Canvas.ForceUpdateCanvases();
                 foreach (var label in root.GetComponentsInChildren<TMP_Text>()) label.ForceMeshUpdate();
                 return PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
@@ -240,8 +297,8 @@ namespace CardPresentation.Editor
             Directory.CreateDirectory(Path.GetDirectoryName(PreviewPath));
             // Isolate the capture from the user's unsaved scene and the gameplay camera.
             var scene = EditorSceneManager.NewPreviewScene();
-            var target = new RenderTexture(896, 640, 24, RenderTextureFormat.ARGB32) { antiAliasing = 1 };
-            var pixels = new Texture2D(896, 640, TextureFormat.RGBA32, false);
+            var target = new RenderTexture(896, 480, 24, RenderTextureFormat.ARGB32) { antiAliasing = 1 };
+            var pixels = new Texture2D(896, 480, TextureFormat.RGBA32, false);
             var previous = RenderTexture.active;
             try
             {
@@ -253,7 +310,9 @@ namespace CardPresentation.Editor
                 camera.scene = scene;
                 camera.transform.position = new Vector3(0, 0, -1);
                 camera.orthographic = true;
-                camera.orthographicSize = 0.072f;
+                var tooltipRect = (RectTransform)root.transform;
+                camera.orthographicSize = Mathf.Max(tooltipRect.rect.height * tooltipRect.localScale.y,
+                    tooltipRect.rect.width * tooltipRect.localScale.x / (896f / 480f)) * 0.6f;
                 camera.nearClipPlane = 0.01f;
                 camera.farClipPlane = 2;
                 camera.cullingMask = 1 << 31;
@@ -261,7 +320,7 @@ namespace CardPresentation.Editor
                 camera.backgroundColor = new Color(0.065f, 0.15f, 0.115f);
                 camera.allowHDR = false;
                 camera.allowMSAA = false;
-                camera.aspect = 1.4f;
+                camera.aspect = 896f / 480f;
                 camera.GetUniversalAdditionalCameraData().renderPostProcessing = false;
                 root.GetComponent<Canvas>().worldCamera = camera;
                 target.Create();
@@ -275,7 +334,7 @@ namespace CardPresentation.Editor
                         throw new InvalidOperationException("Tooltip heading must render entirely with Fusion Pixel glyphs.");
                     RenderPipeline.SubmitRenderRequest(camera, new UniversalRenderPipeline.SingleCameraRequest { destination = target });
                     RenderTexture.active = target;
-                    pixels.ReadPixels(new Rect(0, 0, 896, 640), 0, 0);
+                    pixels.ReadPixels(new Rect(0, 0, 896, 480), 0, 0);
                     pixels.Apply();
                     File.WriteAllBytes(path, pixels.EncodeToPNG());
                 }

@@ -6,11 +6,11 @@
 
 | 资源 | 路径 | 配置 |
 | --- | --- | --- |
-| 背景 | `Textures/CardSuitChipsBackground.png` | 1484 × 1060，RGBA；Sprite/Single/FullRect，无压缩、无 mipmap、Bilinear/Clamp |
+| 背景 | Prefab 的 `Background` 节点 | 336 × 180 外框，深棕色 #332A24；Image/Simple，无 Sprite，内缩 2px |
 | 字体 | `Assets/Fonts/FusionPixelFont/TMP/FusionPixel12pxProportional.asset` | Fusion Pixel 12px 比例简体中文，12px RASTER_HINTED 位图，Point/Clamp，动态字符图集 |
 | 提示 Prefab | `Assets/CardPresentation/Prefabs/CardSuitChipsTooltip.prefab` | World Space Canvas，上方花色/点数、下方筹码 |
 
-背景完整复制自 `ArtDirection/UI/card-suit-chips-background-v1.png`，保留原始透明边缘、上下两块底板及比例。纹理不做九宫格拉伸；背景 Image 使用 Simple、Preserve Aspect。缩放根节点可以整体调整尺寸。
+外层是深棕色底板，每行文字各有独立的浅米色 #F2E6CC 矩形背景：上行 312 × 64，下行 312 × 76，两行间隔 12px。另有 2px 棕色边框和轻阴影。全部使用无 Sprite 的 Image 绘制纯色矩形，关闭 Preserve Aspect；颜色可在对应 Image 上调整。缩放根节点可以整体调整尺寸。
 
 字体 Asset 保存自身材质与 1024 × 1024 位图图集，直接引用原始 `fusion-pixel-12px-proportional-zh_hans.ttf`，预填 ASCII、四种花色名称、“筹码”和原生花色字形 `♠ ♥ ♣ ♦`（U+2660/U+2665/U+2663/U+2666）。花色字形不用 Sprite 或其他字体替代。动态模式可补充后续中文；原字体许可证沿用 FusionPixelFont 目录中的 OFL 与来源说明。标准 TMP Essential Resources 位于 `Assets/TextMesh Pro`，提示的两行文字都显式使用 Fusion Pixel，不修改全局默认字体。
 
@@ -18,12 +18,16 @@
 
 ```text
 CardSuitChipsTooltip         RectTransform + World Space Canvas + CanvasGroup + CardTooltipView
-├── Background              Image
+├── Shadow                  Image：轻阴影
+├── Border                  Image：细边框
+├── Background              Image：深色底板
+├── SuitRankBackground      Image：上行浅色背景
+├── ChipsBackground         Image：下行浅色背景
 ├── SuitRank                TextMeshProUGUI：♣ 梅花 J
 └── Chips                   TextMeshProUGUI：<color=#009AFF>+10</color>筹码
 ```
 
-画布为 448 × 320，根节点等比缩放 0.0004，文字字号分别为 48 与 60（12px 的整数倍）。上栏按“花色符号 + 花色文字 + 点数”排列：黑桃/梅花整行深棕色，红桃/方块整行红色（默认 #C73532），包含符号、文字和点数。下栏数字始终蓝色，筹码文字深棕色。文字居中、不换行，超长内容采用省略；两栏的位置和尺寸均可在 Prefab 内调整。Prefab 的“+10”是预览数值；运行时由宿主提供基础/名义筹码数据，不代表最终结算。
+画布为 336 × 180，根节点等比缩放 0.0004，文字字号分别为 36 与 48（12px 的整数倍）。上栏按“花色符号 + 花色文字 + 点数”排列：黑桃/梅花整行深棕色，红桃/方块整行红色（默认 #C73532），包含符号、文字和点数。下栏数字始终蓝色，筹码文字深棕色。文字居中、不换行，超长内容采用省略；两栏的位置和尺寸均可在 Prefab 内调整。Prefab 的“+10”是预览数值；运行时由宿主提供基础/名义筹码数据，不代表最终结算。
 
 `CardTooltipView` 保存当前展示内容及三种颜色配置，可在 Prefab Inspector 修改 Suit、Rank、Chip Points 预览不同卡牌；内容变化会重新填写两个 TMP 文本节点。调用方也可使用：
 
@@ -38,11 +42,12 @@ View 接收已经解析、允许当前观察者读取的花色/点数和筹码�
 
 ## 编辑器工具
 
-- `Tools > Cards > Prepare Suit And Chips Tooltip Prefab`：准备缺失的背景、字体和 Prefab；补充四种花色字形并为旧模板绑定 CardTooltipView，重复执行保留 GUID、布局和颜色设置。不在场景安装对象或逻辑。
+- `Tools > Cards > Prepare Suit And Chips Tooltip Prefab`：准备缺失的字体和 Prefab；将旧图片背景转换为纯色矩形，补充四种花色字形并为旧模板绑定 CardTooltipView，重复执行保留 GUID、布局和纯色背景的颜色设置。不在场景安装对象或逻辑。
+- `Tools > Cards > Use Compact Suit And Chips Tooltip Style`：应用 336 × 180 的紧凑布局、深色底板、两行浅色背景、细边框与轻阴影，字号为 36/48。新建 Prefab 默认使用此样式。
 - `Tools > Cards > Capture Suit And Chips Tooltip Prefab`：在独立 Preview Scene 中渲染，输出 `Library/CardTooltipValidation/tooltip.png` 及四种花色的 `tooltip_clubs/diamonds/hearts/spades.png`；检查上栏实际使用 Fusion Pixel 字形，关闭临时场景并释放资源，不修改或保存用户场景。
 - `Tools > Cards > Configure Card Hover Tooltip`：将选中的固化手牌（或当前场景的全部固化手牌）注册到场景提示 Presenter；固化手牌时也自动接入。进入 Play 后在 Game 悬停查看。工具不自动保存场景。
 
-生成工具位于 `Editor/CardTooltipPrefabBuilder.cs`，展示组件位于 `Runtime/CardTooltipView.cs`，各有独立 .meta。CardPresentation.Runtime 新增 UGUI/TMP 引用；离屏渲染依赖仍只在 Editor，PokerEngine 的纯 C# 模块不引用 UI。Prefab 及引用的 Sprite、TMP 字体/材质属于普通 Assets，可随引用它们的游戏场景进入首包，展示组件沿用现有 link.xml 的保留规则。
+生成工具位于 `Editor/CardTooltipPrefabBuilder.cs`，展示组件位于 `Runtime/CardTooltipView.cs`，各有独立 .meta。CardPresentation.Runtime 新增 UGUI/TMP 引用；离屏渲染依赖仍只在 Editor，PokerEngine 的纯 C# 模块不引用 UI。Prefab 及引用的 TMP 字体/材质属于普通 Assets，可随引用它们的游戏场景进入首包，展示组件沿用现有 link.xml 的保留规则。
 
 ## 手牌操作按钮
 
