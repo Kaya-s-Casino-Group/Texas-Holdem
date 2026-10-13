@@ -9,7 +9,8 @@
     "PokerEngine.Draw",
     "PokerEngine.Runs",
     "PokerEngine.Progression",
-    "PokerEngine.Encounters"
+    "PokerEngine.Encounters",
+    "PokerEngine.Combat"
   ],
   "includePlatforms": [],
   "excludePlatforms": [],

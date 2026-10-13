@@ -8,4 +8,5 @@
   <assembly fullname="PokerEngine.Composition" preserve="all" />
   <assembly fullname="PokerEngine.Progression" preserve="all" />
   <assembly fullname="PokerEngine.Encounters" preserve="all" />
+  <assembly fullname="PokerEngine.Combat" preserve="all" />
 </linker>

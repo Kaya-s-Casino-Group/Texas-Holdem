@@ -10,7 +10,8 @@
     "PokerEngine.Runs",
     "PokerEngine.Composition",
     "PokerEngine.Progression",
-    "PokerEngine.Encounters"
+    "PokerEngine.Encounters",
+    "PokerEngine.Combat"
   ],
   "includePlatforms": [
     "Editor"
