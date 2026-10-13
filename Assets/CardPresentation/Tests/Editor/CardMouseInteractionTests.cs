@@ -104,7 +104,8 @@ namespace CardPresentation.Tests
                 f.Pointer.ProcessPointer(ray);
                 Assert.IsTrue(source.IsHovered); Assert.IsFalse(source.IsSelected);
                 Assert.IsTrue(first.Data.Interaction.IsHovered);
-                Assert.AreEqual(new Vector3(0, 0, 0.01f), f.Zone.HoveredOffset);
+                Assert.AreEqual(Vector3.zero, f.Zone.HoveredOffset);
+                Assert.AreEqual(1.2f, first.HoverScale * first.HoverScale, 0.00001f);
                 var expected = f.Zone.transform.TransformVector(f.Zone.HoveredOffset);
                 Assert.Less(Vector3.Distance(first.FaceRoot.position - first.transform.position, expected), 0.00001f);
                 f.Click(ray); Assert.IsTrue(source.IsSelected);
@@ -133,6 +134,24 @@ namespace CardPresentation.Tests
                 Assert.AreSame(second, hit);
                 second.Surface.GetComponent<MeshRenderer>().enabled = false;
                 Assert.IsTrue(CardZoneRaycaster.TryHit(f.Zone, f.RayAt(first), null, out hit)); Assert.AreSame(first, hit);
+            }
+        }
+
+        [Test] public void HoverHitFollowsEnlargedCardEdgeAndExitRestoresOriginalSize()
+        {
+            using (var f = new Fixture(1))
+            {
+                var card = f.Zone.Views[0]; var surface = card.Surface.transform;
+                var bounds = card.Surface.GetComponent<MeshFilter>().sharedMesh.bounds;
+                // A point just outside the original width, inside the final 1.0954 scale.
+                var point = surface.TransformPoint(bounds.center + new Vector3(bounds.extents.x * 1.05f, 0, 0));
+                var edgeRay = new Ray(point + f.Zone.transform.up * 2, -f.Zone.transform.up);
+                Assert.IsFalse(CardZoneRaycaster.TryHit(f.Zone, edgeRay, null, out _));
+                f.Pointer.ProcessPointer(f.RayAt(card));
+                f.Pointer.ProcessPointer(edgeRay);
+                Assert.IsTrue(f.Model.Cards[0].IsHovered); Assert.AreEqual(Vector3.zero, card.InteractionOffset);
+                f.Pointer.CancelPointer(); Assert.AreEqual(1, card.HoverScale);
+                Assert.IsFalse(CardZoneRaycaster.TryHit(f.Zone, edgeRay, null, out _));
             }
         }
 

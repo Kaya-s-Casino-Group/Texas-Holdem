@@ -6,7 +6,13 @@
     "CardPresentation.Editor",
     "CardArt.Runtime",
     "PokerEngine.Core",
-    "CardPresentation.Tests.Support"
+    "PokerEngine.Scoring",
+    "Unity.TextMeshPro",
+    "Unity.ugui",
+    "CardPresentation.Tests.Support",
+    "RetroRendering.Runtime",
+    "Unity.RenderPipelines.Universal.Runtime",
+    "Unity.RenderPipelines.Core.Runtime"
   ],
   "includePlatforms": [
     "Editor"

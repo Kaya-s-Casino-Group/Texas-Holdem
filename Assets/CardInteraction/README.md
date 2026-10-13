@@ -1,6 +1,6 @@
 # 卡牌鼠标交互
 
-`CardInteraction.Runtime` 是可选输入模块，依赖 `CardPresentation.Runtime`、`CardArt.Runtime`、`PokerEngine.Core` 和 Unity UGUI。展示模块不反向引用输入模块。运行时程序集与 link.xml 进入首包；编辑器验证入口留在 `CardPresentation.Editor`。
+`CardInteraction.Runtime` 是可选输入及本地交互适配模块，依赖 `CardPresentation.Runtime`、`CardArt.Runtime`、`PokerEngine.Core`、`PokerEngine.Scoring` 和 Unity UGUI。展示模块不反向引用输入模块。运行时程序集与 link.xml 进入首包；编辑器验证入口留在 `CardPresentation.Editor`。
 
 ## 状态归属与数据流
 
@@ -22,7 +22,7 @@ Play 中的鼠标 → CardZonePointerController → ICardInteractionSource
 
 - 移入一张牌设置悬停，离开或换牌清除旧悬停。左键按下并在同一张牌松开，切换选中；可选多张，不执行拖拽。
 - 选中表示待提交。离开牌面、离开窗口、失焦、解绑或 UI 遮挡会取消悬停与未完成点击，保留已选中状态。
-- 默认悬停上浮为牌区局部 `+Z 0.01`，选中为 `+Z 0.02`；选中优先，两档不叠加。表现层使用 DOTween OutBack，上浮 0.12 秒、回落 0.14 秒，时长包含越过目标后的回稳；惯性强度默认 2.2；选中上浮额外乘 1.35（上限 3），默认约 25% 的越过量让第二段上浮更明显；基础强度设为 0 时全部关闭回弹。状态立即写回卡牌，动画独立追随。取消选中后，鼠标仍在牌上时回落到较低的悬停位置；两种状态都结束才回原位。选中时在第二段上浮过程中同步将该牌自身 local Y 摆动角度平滑归零，然后保持静止；取消后从实际角度恢复摆动，悬停仍可摆动。
+- 悬停面积扩大 20%（等比缩放 √1.2 ≈ 1.0954），不再上浮；选中仍默认沿局部 +Z 0.02 上浮，取消选中回落至原位。悬停缩放和选中位移由两个独立 DOTween OutBack 驱动，可同时成立；鼠标移入/移出不重播选中动画。默认放大/上浮 0.12 秒、缩小/回落 0.14 秒，惯性强度 2.2；选中上浮额外乘 1.35（上限 3）。状态立即写回卡牌，快速反向从实际姿态接续。选中时摆角随上浮平滑归零并保持静止，取消后恢复摆动。
 - `CanSelect` 决定能否新增选中；已选中的牌总能通过再次点击取消。验证模型使用 Core `CanPlay`：禁用牌可悬停但不可新增选中，失效牌可以选中。正式宿主可补充回合、归属、数量等条件，提交时仍须由引擎验证。
 - 鼠标控制器只管理选择，不修改 Zone 列表；弃牌按钮调用宿主命令。排序后状态跟随原牌；移除卡牌后不再返回其选中身份，也不会把旧按下事件应用到另一张牌。
 
@@ -30,7 +30,7 @@ Play 中的鼠标 → CardZonePointerController → ICardInteractionSource
 
 `CardZoneRaycaster.TryHit` 将世界射线变换到每张牌实际渲染 Mesh 的局部空间，与 bounds 相交。支持区域旋转、缩放、圆弧、翻面、上浮和摆动；使用距离最近的牌，等深度时后面的列表元素优先。美术 Prefab 的 Collider 保持关闭，不依赖 Physics.Raycast。
 
-当前悬停牌按实际动画偏移同时保留未上浮时的命中范围，防止沿 Z 位移后在静止鼠标下反复进出。入列飞行/回稳中的牌、未渲染牌和停用牌区不参与命中；已有牌让位时按实际位置命中。命中范围是矩形包围盒，不逐像素裁切圆角；只处理绑定牌区，场景遮挡和多个牌区的输入仲裁由宿主负责。
+命中使用实际缩放后的卡牌几何。当前悬停牌若处于选中上浮，还按实际动画偏移保留未上浮时的命中范围，防止沿 Z 位移后在静止鼠标下反复进出。入列飞行/回稳中的牌、未渲染牌和停用牌区不参与命中；已有牌让位时按实际位置命中。命中范围是矩形包围盒，不逐像素裁切圆角；只处理绑定牌区，场景遮挡和多个牌区的输入仲裁由宿主负责。
 
 ## 运行时接入
 
@@ -55,27 +55,100 @@ var pending = mouseInput.Controller.GetSelectedViewIds();
 
 未指定相机时使用 Camera.main。组件仅读取鼠标左键；Unity 编辑器中只接受 Play 的 Game 视图输入，Scene 和其他窗口不响应；鼠标不在相机视口、应用失焦或 EventSystem 检测到 UI 时阻止牌区输入。宿主也可直接调用 `CardZonePointerController.ProcessPointer` 注入射线和左键边沿；`CancelPointer` 清理未完成手势。解绑时用 `Unbind`，并按宿主生命周期移除事件订阅。
 
+## Game 中的手牌操作按钮
+
+场景 `HandActionPresenter` 绑定一个手牌 `CardZonePlayHost`、`HandActionPanelView` 及既有 `CardZoneTransferPresenter` 路径；展示 Prefab 为 `Assets/CardPresentation/Prefabs/HandActionPanel.prefab`。四个按钮分别出牌、弃掉选中、点数理牌、花色理牌；没有主动抽牌按钮，不显示牌堆数字和“优先”状态行。当前使用 Fusion Pixel 字体和占位色块，默认缩小为左下角两行；位置、尺寸及颜色可在 Prefab 调整。按钮面板为 Screen Space Camera Canvas，独立 UI Camera 叠加到主相机 Stack；World Space 单牌提示和右下角抽牌堆图标共用 UI Camera 绘制，数据与 Presenter 所有权仍各自独立。相机及 Renderer 接入见 [渲染模块](../Rendering/README.md)。
+
+```text
+UGUI Button → HandActionPanelView 请求 → HandActionPresenter
+                                           ↓
+                     CardZonePlayHost.PlaySelected / DiscardSelected / RequestSortAfterLanding
+                                           ↓ CardMatchHost → CardTableSession 原子更新归属/顺序
+                             HandZoneView / PlayedZoneView 消费变化
+```
+
+`Configure(hand, panel, route)` 绑定本地命令。按钮不保存选中集合、不操作 CardView 或 Transform：出牌要求活动的两区会话与匹配路径、非空选择、每张 CanPlay、可见视觉实例和目标剩余容量；上一批跨区飞行期间不能再提交出牌。无选中或选中含禁用牌时不能出/弃，失效牌仍能出/弃。出牌经既有 PlaySelected 更新两区 Card 列表，复用交叉飞行和落位整理动画；点击时再次检查权限，过期按钮事件不绕过检查。亮色文字保留当前排序选择，不额外写“优先”。完整回合、抽弃次数、PVP 权限仍由正式玩法宿主提供。
+
+`CardMatchHost` 是局内卡牌数据的唯一入口，持有纯 C# `CardTableSession` 和当前观察者的逐牌表现/交互投影；手牌、出牌区、抽牌堆、弃牌堆全部注册在同一张 `CardTableState` 中。`CardZonePlayHost` 只持有 Match 和三个 ZoneId 的绑定，以及该牌区输入/排序偏好。多个手牌区可以绑定同一个抽牌堆和弃牌堆；所有身份在整局中唯一，任一牌只能处于一个牌区。
+
+场景启动快照保存在 Match。玩法可以直接调用 Player 可用的 `StartMatch(CardTableState, IEnumerable<CardZoneCardState>)` 初始化或恢复引擎存档，并提供当前观察者的美术 ID、可见性、Tint 和本地状态；引擎数据覆盖投影里的定义、效果及禁用，悬停在启动时清除。`Bind(match, zoneId, deckId, discardId, camera)` 绑定各牌区，`BeginSession` 只建立表现与输入订阅，重复绑定或停用牌区不会补牌或重置对局。明确调用 `match.RestartMatch()` 才统一恢复所有牌区的启动快照。
+
+`InitialDeckCards / DeckCards / DeckZone` 是转发 Match 的查询，列表末尾是牌顶。`DrawCards`、`PlaySelected`、`DiscardSelected` 和排序使用 Match 的 Prepare/Commit 命令：先计算新的完整归属和顺序，校验权限、目标容量及美术表现，再提交 Match 并消费变化。过期/跨对局提交、重复身份、禁用牌或坏牌面不消耗牌堆；成功转移保留身份、定义、效果、来源和观察者属性，出/弃清除本地待提交状态。View 仍负责飞行、翻面、惯性和音效，抽牌耗尽不自动补牌。
+
+验证窗口每次刷新和提交前读取 Match：Edit 编辑启动快照，Play 编辑当前会话。`Capture`、`ReplaceCardsAndDeck`、`ConfigureInitial`、`PrepareDebugEdit`、预览出牌和旧场景迁移全部位于显式 `#if UNITY_EDITOR` 内；Player 不包含这些调试入口或旧列表字段。Editor 的列表是编辑缓冲和诊断记录，不能作为另一份牌堆来源。整个 `CardPresentation/Editor` 的工具同样显式使用宏，程序集继续限定 Editor 平台。
+
+旧场景可执行 `Tools > Cards > Migrate Scene To Card Match`：验证全局身份后迁移所有牌区，合并弃牌堆，单个旧抽牌堆作为共享堆；若原来有多个非空堆则保留各自归属。迁移支持 Undo、清空旧 Host 列表，只标记场景 dirty。运行时 Match/Core 脚本使用既有 Runtime 程序集与 link.xml 进入首包；需保存场景以持久化 Match 引用。
+
+抽牌由玩法流程调用 `DrawCards`，不由玩家按钮触发。`Runtime/DrawPilePresenter.cs` 保存本地宿主与 `CardPresentation.DrawPileView` 引用，每帧将当前 DeckCards 数量投影为牌背叠层；Edit 显式刷新读取 InitialDeckCards，Play 不读取编辑器窗口。图标不拥有牌堆、不发抽牌命令；悬停显示紧凑牌组统计表，点击打开并保持完整卡牌总览，返回关闭，全部属于本地展示状态。空堆保留一张暗色牌背；右下角数字显示剩余牌数（含 0），复用 Fusion Pixel 字体，不接收射线。`Editor/DrawPileSetup.cs` 将独立 `DrawPileIcon.prefab` 放在右下角并绑定同一 UI Camera；采用 GraphicRaycaster 和稳定的 Icon 射线区域；Deck 子节点的 CardUIGraphic 仅负责图集渲染与惯性缩放，不接收射线。
+
+固化手牌时自动创建按钮和抽牌堆图标并绑定；`Tools > Cards > Configure Hand Action Buttons` 可手动接入。出牌路径从该手牌上的 CardZoneTransferPresenter 匹配；没有路径时仅禁用出牌按钮，配置路径后重新接入。`Update Player Hand UI` 可升级旧 Prefab：原 Draw 字段通过 FormerlySerializedAs 保留按钮/文字引用，改为 Play 并移除 Status 节点，保留 GUID/配色。缺少 EventSystem 时创建旧 Input Manager 对应的 StandaloneInputModule，已有活动 EventSystem 则复用。四个按钮 Graphic 与牌堆 Icon 固定区域拦截射线，背景/文字及图集牌堆叠层不拦截；CardZoneMouseInput 沿用 UI 遮挡检查。准备工具支持 Undo、保留已有 Prefab 样式，仅标记场景 dirty；需保存场景以保留引用。Prefab、运行脚本、字体与 .meta 沿现有程序集和 link.xml 进入首包，不依赖打开验证窗口。
+
+## 抽牌落位后排序
+
+本地手牌宿主的 `SortOrder` 默认为 `CardZoneSortOrder.RankFirst`，也支持 `SuitFirst`，沿用 Core 的点数/花色排序。抽牌命令先向 Match 提交原始转移顺序，再调用 `RequestSortAfterLanding(order)`；`TryCompletePendingSort()` 在 Play 的 LateUpdate 检查整区飞入、回稳、让位及离场过渡是否完成，之后更新 Card 层列表，触发已有重排动画。它不按固定时长估算、不修改 View 内部顺序；进入完成时的单牌音效通知早于回稳结束，不能用该通知提前排序。
+
+```csharp
+host.DrawCards(count); // 自动排队落位后按当前偏好理牌
+```
+
+连续抽牌保留请求并延后执行；新的排序请求覆盖选择，手动改序不触发自动排序。无动画时下次刷新完成，已排序/空手牌消耗请求而不重播。排序读取当前卡牌定义，保留逐牌身份、可见性、效果、Tint 与交互，未知定义稳定归尾；初始快照不被 Play 排序改写。SetSortOrder 只保存偏好；请求要求运行中的 HandZoneView，StopSession、停用和重启清理等待。固化时保存此牌区的排序选择，编辑器两个原有按钮沿用此选择；牌堆和出牌区不自动排序。
+
+## 场景共用的悬停提示
+
+`CardHoverPresenter` 由场景持有，每个本地观察者/相机配置一份。它保存 `CardSuitChipsTooltip` Prefab 引用和来源列表，第一次有效悬停时生成一个提示实例，换牌或换区继续复用；手牌使用 World Space，总览卡牌将同一实例临时挂到页面 Canvas。无悬停时隐藏，组件停用/销毁时释放。CardZoneView 和每张 CardView 不持有提示 Prefab。
+
+```text
+逐牌 Interaction → 宿主投影 → CardInstanceView
+       ↓
+ICardHoverSource → CardHoverTarget（视觉锚点、花色、点数、筹码）
+       ↓
+场景 CardHoverPresenter → 共用 CardTooltipView.SetContent
+```
+
+`ICardHoverSource.TryGetHoveredCard` 由客户端玩法适配器实现：先确认观察者权限，再解析允许展示的数据，返回当前视觉实例作为锚点。Presenter 不持有权威卡牌，不解析 ArtId，也不计算最终得分；普通来源按 Sources 顺序取第一个有效目标；实现 ICardHoverScope 的活动页面可通过 CapturesHover 独占提示来源，避免读到背后手牌的悬停。输入仲裁仍由宿主处理。
+
+CardHoverTarget 支持场景 CardInstanceView 和原生 Canvas CardUIItemView 两种视觉锚点。DeckOverviewPresenter 复用该接口，从只读 DeckOverviewData 的规则花色/点数及 CardScoreRules.GetBasePoints 提供基础筹码；已抽出、禁用、失效牌仍能查看，隐藏/未知定义不提供信息。总览打开时独占提示层，鼠标移出卡牌即隐藏，关闭后恢复手牌提示。
+
+当前验证宿主 `CardZonePlayHost` 已实现该接口：读取运行副本的逐牌悬停状态，按 CardInstance.DefinitionId 查询标准 52 张牌定义及 `CardScoreRules.GetBasePoints`（2–10、J/Q/K=10、A=11）。禁用/失效牌仍可查看印刷基础点数；未知定义或纯美术牌不提供提示。正式玩法应实现自己的来源，通过能力解析后的有效牌面、`ScoringCard.PointsPerTrigger` 等提供所需数值，并在适配器中处理权限；基础/名义筹码不等于最终结算。
+
+Presenter 在 Play 的 LateUpdate 消费投影，要求目标正面可见、悬停、处于活动渲染状态且没有飞入/离场；隐藏牌、移出/弃掉、失焦后清除悬停或来源停用即隐藏。编辑模式不自动处理鼠标；`RefreshPresentation()` 供宿主显式刷新和确定性测试。
+
+提示的位置、朝向及视口限制使用指定 SceneCamera（为空时 Camera.main），按卡牌实际 Mesh 投影的上边缘放置，不继承卡牌翻面、摆动和悬停缩放。可通过 `SetRenderingCamera(uiCamera)` 单独指定绘制相机，Canvas.worldCamera 及活动/Culling Mask 检查使用该相机；留空则回退到场景相机。安装按钮工具会自动接入同场景/同观察者的 UI Camera，后续注册提示也会识别已有 Stack。主相机排除 UI 层，UI Camera 只绘制 UI 并同步主相机投影。Inspector 提供 Size Multiplier（默认 0.55）、Gap（0.008）、Camera Plane Offset、Toward Camera（0.002）、Clamp To Viewport 与 Viewport Padding（12 像素）；场景根对象建议保持单位缩放。所有提示 Graphic 的 Raycast Target 关闭，不拦截鼠标。
+
+Canvas 卡牌使用实际 Graphic 的四角（包括放大/摆动）定位，同一提示实例临时挂在其 rootCanvas 下、排序高于页面，显示于卡牌左侧并垂直居中。Canvas Size Multiplier 默认 0.4（448 × 320 模板为 179.2 × 128 Canvas 单位），Canvas Gap 默认 8；Inspector 可调。位置跟随 CanvasScaler，边界限制仍由 Clamp To Viewport / Viewport Padding 控制。提示不接收射线，移回手牌时恢复 World Space 父级、尺寸和排序；不创建另一份 Tooltip Prefab。
+
+```csharp
+// sourceComponent 是实现 ICardHoverSource 的 MonoBehaviour。
+presenter.Configure(tooltipPrefab, playerCamera, new[] { sourceComponent });
+presenter.RegisterSource(otherZoneSource); // 去重追加
+presenter.RemoveSource(otherZoneSource);
+```
+
+验证窗口固化 HandZoneView 时会自动注册至同场景/相机的 `Card Hover UI`。已有固化手牌可执行 `Tools > Cards > Configure Card Hover Tooltip`；工具保留已设置的尺寸和偏移，支持 Undo，只标记场景 dirty，不自动保存。保存场景后，其 Prefab → 背景/字体/材质引用随场景进入首包，不依赖 Editor 或临时路径。
+
+新增 6 项提示回归覆盖：鼠标控制器到逐牌状态再到 UI 的完整链路、基础点数与红黑整行颜色恢复、复用和排序身份、隐藏牌/弃牌/飞入过滤、定义与美术解耦、禁用失效牌数值保留、相机跟随/屏幕边界、多个来源及停用/重启清理。
+
 ## 固化牌区与 Play 验证
 
 在验证窗口配置卡牌后，使用“固化并进入 Play”或 `Tools > Cards > Play Card Zone`，直接在 Game 视图悬停、左键选择。`Tools > Cards > Bake Card Zone For Play` 只固化；原 Preview Mouse Interaction 菜单作为该入口的兼容别名。Scene 不再提供交互回调。
 
-固化将完整卡牌顺序、身份、定义、效果、禁用、可见性、Tint、初始选中和图集 ID 写入场景中的 `CardZonePlayHost`；瞬时悬停会清除。`CardZoneView` 序列化共用布局、摆动、相机和外观配置，`HandZoneView` 补充上浮、抽牌/弃牌及音效配置。根对象为普通 Untagged 场景对象，临时卡面仍使用 DontSave；Play 时由宿主根据数据重新生成并自动绑定鼠标，关闭验证窗口也可运行。
+固化将完整卡牌顺序、身份、定义、效果、禁用、可见性、Tint、初始选中和图集 ID 写入场景中的 `CardMatchHost`，牌区宿主只保存绑定；瞬时悬停会清除。`CardZoneView` 序列化共用布局、摆动、相机和外观配置，`HandZoneView` 补充上浮、抽牌/弃牌及音效配置。根对象为普通 Untagged 场景对象，临时卡面仍使用 DontSave；Play 时由宿主根据数据重新生成并自动绑定鼠标，关闭验证窗口也可运行。
 
-每次进入 Play 都复制初始卡牌数据。运行时的悬停/选中写入这份逐牌副本，不改写编辑时的初始快照；退出后再次进入可从相同状态验证。打开验证窗口时，可从宿主恢复原始卡牌身份和顺序。点击“固化当前牌区”或编辑器配置更新都会同步快照；工具不自动保存整个场景，保存场景即可将快照保留到磁盘。这里是本地场景启动数据，不是权威 Match 存档，也不实现完整对局规则。
+每次进入 Play 都复制初始卡牌数据。运行时的悬停/选中写入这份逐牌副本，不改写编辑时的初始快照；退出后再次进入可从相同状态验证。打开验证窗口时，可从宿主恢复原始卡牌身份和顺序。点击“固化当前牌区”或编辑器配置更新都会同步快照；工具不自动保存整个场景，保存场景即可将快照保留到磁盘。这里是本地场景启动配置；纯卡牌权威状态另由 CardTableSnapshotCodec 保存，完整回合规则仍由玩法引擎维护。
 
 出牌区的五张上限由展示契约声明；Capture 与 BeginSession 会在替换初始数据或停止旧会话前验证容量，超限保持原会话。ReplaceCards 在展示提交前同样拒绝超限输入。
 
-手动接入时可使用 `host.Capture(zone, cards, camera)` 保存启动快照，`BeginSession()` 重建显示并绑定输入，`StopSession()` 解绑。会话中通过 `ReplaceCards(cards, animate)` 提交新的有序卡牌列表，先复制/验证并投影，再更新交互数据源；不会改写初始快照，新增身份驱动入列动画和逐张音效，animate=false 可静默恢复。验证窗口在 Play 中通过同一入口编辑完整列表，初始快照不受影响。`Cards` 是当前运行时逐牌数据，`InitialCards` 是初始快照；读取 `card.Interaction` 或控制器的 `GetSelectedViewIds()` 获取选择。
+正式接入使用 `match.StartMatch(state, observerCards)`、`host.Bind(...)` 和 `BeginSession()`，`StopSession()` 仅解绑。编辑器可使用 UNITY_EDITOR 限定的 `Capture` / `ReplaceCards` 配置与调试，验证窗口通过这些入口编辑完整列表；玩法调用正式 Match 命令，不能依赖 Editor API。新增身份驱动入列动画和逐张音效。`Cards` 是当前运行时逐牌数据，`InitialCards` 是初始快照；读取 `card.Interaction` 或控制器的 `GetSelectedViewIds()` 获取选择。
 
 测试归入 `CardPresentation.Tests.Editor`，使用轻量入口 `Poker > Tests > Run Card Presentation In Current Scene`。9 项鼠标测试覆盖数据写回、Z 偏移、稳定悬停、重叠优先级、禁用/失效、取消手势、排序/移除、变换/牌背、入列屏蔽及运行时解绑，并验证点击选中的上浮惯性、回稳与鼠标离开不中断；另有 8 项上浮/固化测试覆盖 Tween 连续性与清理、场景快照序列化、运行时副本、重启恢复及编辑器重新载入。
 
 ## 弃牌命令
 
-本地 `CardZonePlayHost.DiscardSelected(animate = true)` 返回实际弃牌张数。它通过 `CardZoneDiscardBatch` 从每张卡牌的 Interaction 读取选中，按当前手牌顺序验证 Core `CanDiscard`，使用 `TransferRangeTo` 生成手牌与弃牌区的新有序列表。空选择返回 0；选中集合中有禁用牌时整次拒绝，原卡牌/列表/视觉保持原样；失效牌允许弃掉。
+本地 `CardZonePlayHost.DiscardSelected(animate = true)` 返回实际弃牌张数。它从每张卡牌的 Interaction 读取选中并提交到 Match.PrepareDiscard，按当前手牌顺序验证 Core `CanDiscard`，使用 `TransferRangeTo` 生成手牌与弃牌区的新有序列表。空选择返回 0；选中集合中有禁用牌时整次拒绝，原卡牌/列表/视觉保持原样；失效牌允许弃掉。
 
-`Cards` / `Zone` 是剩余手牌，`DiscardedCards` / `DiscardZone` 保留已弃牌的原身份、定义、来源、规则效果、可见性和 Tint。逻辑弃牌区 ID 为原 ZoneId 加 `/discard`，Kind 为 `CardZoneKinds.Discard`；移入时只清除悬停和选中。再次 ReplaceCards 不能把同身份同时放在手牌和弃牌区；未来回收操作应明确进行跨区转移。
+`Cards` / `Zone` 是剩余手牌，`DiscardedCards` / `DiscardZone` 保留已弃牌的原身份、定义、来源、规则效果、可见性和 Tint。逻辑弃牌区 ID 由宿主绑定决定，可由多个手牌共享，Kind 为 `CardZoneKinds.Discard`；移入时只清除悬停和选中。再次 ReplaceCards 不能把同身份同时放在手牌和弃牌区；未来回收操作应明确进行跨区转移。
 
-提交新手牌投影时附带本批 `discardedViewIds`，展示层据此保留短暂的飞出实例，数据不等待动画。按钮也可在飞行期间再次提交，已弃牌不再命中或出现在选中集合。初始快照保持不变，重启会话恢复初始手牌与弃牌数据；`Capture(..., discarded: cards)` 可固化初始弃牌区，`InitialDiscardedCards` 可读。这只是场景验证宿主，正式对局的回合、归属、次数限制仍由玩法引擎确认，不新增权威存档字段。
+提交新手牌投影时附带本批 `discardedViewIds`，展示层据此保留短暂的飞出实例，数据不等待动画。按钮也可在飞行期间再次提交，已弃牌不再命中或出现在选中集合。初始快照保持不变，重启 Match 恢复所有牌区启动数据；`Capture(..., discarded: cards)` 可固化初始弃牌区，`InitialDiscardedCards` 可读。全局归属由 CardTableSession 验证；正式对局的回合、归属权限和次数限制仍由各玩法引擎确认。
 
 ```csharp
 int count = host.DiscardSelected();
@@ -88,9 +161,9 @@ var discardPile = host.DiscardZone;
 
 ## 出牌命令与两区数据
 
-`CardZonePlayHost.PlaySelected(destinationHost, transferPresenter, animate = true)` 返回本批张数，要求两区运行中的宿主与路径引用一一对应。选中状态仍由逐牌数据提供；`CardZonePlayBatch` 验证两区完整身份顺序、互不重复、每张 Core `CanPlay` 和目标五张容量，通过 `CardZone.TransferRangeTo` 生成两份新列表。禁用牌或容量不足整批拒绝，失效牌允许出牌；空选择返回 0。按手牌原顺序追加，清除移入牌的悬停/选中，身份、定义、来源、效果、禁用、可见性和 Tint 保留。两区的弃牌档案不变。
+`CardZonePlayHost.PlaySelected(destinationHost, transferPresenter, animate = true)` 返回本批张数，要求两区运行中的宿主与路径引用一一对应。选中状态仍由逐牌数据提供；Match.PreparePlay 验证全局身份归属、每张 Core `CanPlay` 和目标五张容量，通过 `CardZone.TransferRangeTo` 生成两份新列表。禁用牌或容量不足整批拒绝，失效牌允许出牌；空选择返回 0。按手牌原顺序追加，清除移入牌的悬停/选中，身份、定义、来源、效果、禁用、可见性和 Tint 保留。未受影响的牌堆/弃牌区不变。
 
-提交前要求两端视图对应当前卡牌列表，再预校验双方展示。确认可展示后一次赋值两端运行数据并交接相同视觉实例；不会等待动画完成再修改 Zone。初始快照不受运行时命令影响，重复点击不会重复打出已移走的牌。目标已接收但尚在飞行的牌照常占用容量；可继续提交新的合法批次。 每批可少于五张；反向落位和到齐后的整理都是视觉临时偏移，两段动画中 Zone 顺序始终保持提交后的手牌顺序，不为表现反转卡牌数据。
+提交前要求两端视图对应当前卡牌列表，再预校验双方展示。确认可展示后原子提交共享 Match 并交接相同视觉实例；不会等待动画完成再修改 Zone。初始快照不受运行时命令影响，重复点击不会重复打出已移走的牌。目标已接收但尚在飞行的牌照常占用容量；可继续提交新的合法批次。 每批可少于五张；反向落位和到齐后的整理都是视觉临时偏移，两段动画中 Zone 顺序始终保持提交后的手牌顺序，不为表现反转卡牌数据。
 
 ```csharp
 route.Configure(handView, playedView, CardZoneTransferSettings.Default);
@@ -98,4 +171,18 @@ int playedCount = handHost.PlaySelected(playedHost, route);
 // handHost.Zone / playedHost.Zone 此时已经是提交后的列表。
 ```
 
-`PlaySelectedPreview` 是编辑器验证的初始快照版本，仅限非 Play 且两个宿主均未开始会话；直接更新两份序列化卡牌数据，验证窗口负责 Undo 和场景 dirty 标记。它不绑定鼠标、不从 CardView 反推数据。路径参数和验证操作见 CardPresentation README。新增 `Runtime/CardZonePlayBatch.cs` 与 `Runtime/CardZonePlayHost.Transfer.cs`，沿用首包运行时程序集；完整回合/归属/资源消耗与计分仍交给玩法引擎，此命令只验证本地牌区转移。
+`PlaySelectedPreview` 是编辑器验证的初始快照版本，仅限非 Play 且两个宿主均未开始会话；在共享 Match 启动快照中一次提交两区变化，验证窗口记录 Match 的 Undo 和场景 dirty 标记。它不绑定鼠标、不从 CardView 反推数据。路径参数和验证操作见 CardPresentation README。新增 `Runtime/CardZonePlayBatch.cs` 与 `Runtime/CardZonePlayHost.Transfer.cs`，沿用首包运行时程序集；完整回合/归属/资源消耗与计分仍交给玩法引擎，此命令只验证本地牌区转移。
+
+## Canvas 牌组检查
+
+DeckOverviewPresenter 持有 Match、抽牌区 ID、明确的牌组成员和 DeckOverviewView 引用。Configure / SetRoster 配置身份集合，Refresh 从对局读取每张当前卡牌及观察者获准查看的投影，按 DeckZone 成员关系标记剩余。只读操作不提交命令、不改变顺序或规则效果；新增到本抽牌堆的身份纳入成员，正式构筑的永久增删由 SetRoster 更新。工具用与手牌直接关联的启动牌区引导成员，不遍历注册表推断其他玩家牌组。
+
+Open / Close 控制 Canvas 页，逐牌悬停属于页面的 CardUIItemView，不写回 Match 的手牌交互。运行时只读 State 变化即可刷新，关闭页面不停止对局；所有 UI/效果参数由展示层消费。牌堆图标由 DrawPilePresenter 绑定，悬停预览、左键保持打开、返回关闭；共享悬停提示和页面的惯性显隐均由各自拥有的 DOTween 驱动。Editor/DeckOverviewSetup 用 UNITY_EDITOR 限定，场景引用支持 Undo、只标记 dirty。原生 Canvas 资源与 Shader 说明见 [UI README](../CardPresentation/UI/README.md#原生-canvas-牌组总览)。
+
+## 牌堆预览与 UI 动画
+
+DrawPilePresenter 只管理本地预览、固定显示与关闭意图：DrawPileView 发出悬停/左键事件，DeckOverviewPresenter 继续提供同一 Match 的只读牌组投影；悬停的 DeckSummary 统计表仅由图标控制，离开图标立即收起；点击固定显示完整 DeckOverview 卡牌页，返回取消固定并抑制仍在图标上的重复开启。默认进入 Play 关闭总览，玩法可通过 SetPinned / Open 显式打开。图标跟随手牌 CardView 的当前图集，顶层 CoverCardId 是美术配置，不揭示权威牌顶。
+
+CardHoverPresenter 仍拥有唯一提示实例，新增独立 DOTween 显隐倍率。有效目标出现时 OutBack 放大，离开时 InBack 缩小结束再停用；重复刷新不重播，快速反向接续当前倍率。IsVisible 表示当前有有效展示目标，退场阶段实例可暂时保持活动；Hide(false) 与停用立即回收自身动画。Canvas/World Space 切换继续复用模板、数据内容和实例，不改变权威卡牌或手牌交互。
+
+DrawPilePresenter 持有 DeckSummary Prefab 和唯一局部实例；通过 DeckOverviewPresenter.ReadData 消费同一只读牌组投影，缓存按 Match State 更新，完整页面关闭时也可读取。不创建另一份逻辑牌堆，统计表不写入卡牌交互且不抢占悬停来源，只有点击打开的完整页沿用 ICardHoverScope。悬停统计表、点击完整页和返回关闭的意图独立，切换只改变本地展示状态。
