@@ -177,3 +177,7 @@ BattleActor（抽象 MonoBehaviour：身份绑定、最新单位读取、表现�
 - `测试面板 > 编辑模式测试 > 角色与表现协议`：在独立 PreviewScene 中验证角色槽位、命令所有权、最新快照读取、定向受击/死亡事件、禁用输入、重开身份与模型姿态复位，以及手动句柄逐阶段等待、死亡完成、取消旧回调和单次终态。
 
 纯引擎所有权始终在 CardDuelState；Scene/.unity 保存的是宿主配置和表现绑定，不能当作正在进行中的战局存档。
+
+## 卡牌美术接入
+
+单牌 CardView 与 Canvas 总览共用 `Assets/CardArt/Profiles/StandardCardArt.asset`。Host 经 DeckOverviewPresenter 绑定手牌 Prefab 的配置，牌区只消费投影和管理动画；CardMatchHost 绑定玩法侧 CardStateArtBindings，按卡牌状态选择组合 ID；单牌渲染器只消费通用参数组合。Run DeckEntry 的效果与禁用进入 CardDuel 后保留，禁用牌不能出牌/弃牌。美术入口为 `卡牌美术 > Shader 参数组合`，支持实际实例对照预览及独立可控光源；玩法映射入口为 `玩法配置 > 卡牌状态美术映射`。

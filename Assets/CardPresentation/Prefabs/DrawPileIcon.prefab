@@ -273,6 +273,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   atlas: {fileID: 11400000, guid: 1d3634e8a66e54d2a97d2546b6db8de3, type: 2}
+  artProfile: {fileID: 11400000, guid: db55b7ffb2c3247e4a6984ce54a9192b, type: 2}
 --- !u!1 &2754167688291129839
 GameObject:
   m_ObjectHideFlags: 0
@@ -339,6 +340,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   atlas: {fileID: 11400000, guid: 1d3634e8a66e54d2a97d2546b6db8de3, type: 2}
+  artProfile: {fileID: 11400000, guid: db55b7ffb2c3247e4a6984ce54a9192b, type: 2}
 --- !u!1 &4207042970198313473
 GameObject:
   m_ObjectHideFlags: 0
@@ -405,6 +407,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   atlas: {fileID: 11400000, guid: 1d3634e8a66e54d2a97d2546b6db8de3, type: 2}
+  artProfile: {fileID: 11400000, guid: db55b7ffb2c3247e4a6984ce54a9192b, type: 2}
 --- !u!1 &4692056197449507678
 GameObject:
   m_ObjectHideFlags: 0
@@ -756,6 +759,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   atlas: {fileID: 11400000, guid: 1d3634e8a66e54d2a97d2546b6db8de3, type: 2}
+  artProfile: {fileID: 11400000, guid: db55b7ffb2c3247e4a6984ce54a9192b, type: 2}
 --- !u!1 &5513144136560257332
 GameObject:
   m_ObjectHideFlags: 0
@@ -867,6 +871,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   atlas: {fileID: 11400000, guid: 1d3634e8a66e54d2a97d2546b6db8de3, type: 2}
+  artProfile: {fileID: 11400000, guid: db55b7ffb2c3247e4a6984ce54a9192b, type: 2}
 --- !u!1 &6633914005120715330
 GameObject:
   m_ObjectHideFlags: 0
@@ -933,6 +938,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   atlas: {fileID: 11400000, guid: 1d3634e8a66e54d2a97d2546b6db8de3, type: 2}
+  artProfile: {fileID: 11400000, guid: db55b7ffb2c3247e4a6984ce54a9192b, type: 2}
 --- !u!1 &7088135905114077604
 GameObject:
   m_ObjectHideFlags: 0
@@ -999,6 +1005,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   atlas: {fileID: 11400000, guid: 1d3634e8a66e54d2a97d2546b6db8de3, type: 2}
+  artProfile: {fileID: 11400000, guid: db55b7ffb2c3247e4a6984ce54a9192b, type: 2}
 --- !u!1 &9073095319595413614
 GameObject:
   m_ObjectHideFlags: 0
@@ -1065,3 +1072,4 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   atlas: {fileID: 11400000, guid: 1d3634e8a66e54d2a97d2546b6db8de3, type: 2}
+  artProfile: {fileID: 11400000, guid: db55b7ffb2c3247e4a6984ce54a9192b, type: 2}

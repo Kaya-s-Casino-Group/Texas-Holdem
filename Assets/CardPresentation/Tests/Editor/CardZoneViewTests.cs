@@ -274,7 +274,7 @@ namespace CardPresentation.Tests
                 f.Zone.Present(Data(data, Card("b")));
                 var view = f.Zone.Views[0];
                 Assert.AreEqual((CardEffects)7, view.Data.Effects); Assert.IsTrue(view.Data.IsDisabled);
-                var brightness = f.Zone.AppearanceSettings.IneffectiveBrightness;
+                var brightness = f.Zone.CardPrefab.GetComponentInChildren<CardArt.CardView>(true).ArtProfile.Resolve(new[]{"dim"},Color.white).Tint.r;
                 Assert.AreEqual(new Color(brightness, brightness, brightness, 1), view.Surface.Tint);
                 Assert.AreEqual("spades_a", view.Surface.CardId);
                 Assert.IsTrue(view.Surface.SealEnabled); Assert.IsTrue(view.Surface.FoilEnabled); Assert.IsTrue(view.Surface.RedCrossEnabled);

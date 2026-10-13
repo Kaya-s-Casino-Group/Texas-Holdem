@@ -153,5 +153,13 @@ MonoBehaviour:
   sharedMesh: {fileID: -1461911779039665215, guid: 30eec5ed36eef497ebee454983aba1fd, type: 3}
   sharedMaterial: {fileID: 2100000, guid: 7af438a3725e0427aac80215285452bd, type: 2}
   atlas: {fileID: 11400000, guid: 1d3634e8a66e54d2a97d2546b6db8de3, type: 2}
+  artProfile: {fileID: 11400000, guid: db55b7ffb2c3247e4a6984ce54a9192b, type: 2}
   cardId: spades_a
   colorTint: {r: 1, g: 1, b: 1, a: 1}
+  foilEnabled: 0
+  foilColor: {r: 1, g: 1, b: 1, a: 1}
+  foilStrength: 1
+  sealEnabled: 0
+  sealColor: {r: 0.65, g: 0.08, b: 0.04, a: 1}
+  sealEmissionStrength: 0
+  redCrossEnabled: 0

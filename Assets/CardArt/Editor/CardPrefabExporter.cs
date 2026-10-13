@@ -16,6 +16,7 @@ namespace CardArt.Editor
     public sealed class CardPrefabExportSettings
     {
         public CardAtlasData atlas;
+        public CardArtProfile artProfile;
         public Shader shader;
         public Mesh mesh;
         public string cardId = "spades_a";
@@ -53,7 +54,15 @@ namespace CardArt.Editor
         {
             var check = new CardPrefabCheck();
             if (settings == null) { check.errors.Add("缺少导出配置。"); return check; }
+            if (settings.artProfile != null) { try { settings.artProfile.ValidateAtlas(settings.atlas); } catch (Exception exception) { check.errors.Add(exception.Message); } }
             ValidateShader(settings.shader, check.errors);
+            if(settings.artProfile!=null && settings.shader!=null)
+            {
+                var probe=new Material(settings.shader);
+                try { ValidateProfileParameters(settings.artProfile,probe); }
+                catch(Exception exception) { check.errors.Add(exception.Message); }
+                finally { UnityEngine.Object.DestroyImmediate(probe); }
+            }
             ValidateAtlas(settings, check);
             ValidateSeal(settings, check);
             ValidateRedCross(settings, check);
@@ -268,6 +277,24 @@ namespace CardArt.Editor
                 }
             }
             finally { UnityEngine.Object.DestroyImmediate(probe); }
+        }
+
+        public static void ValidateProfileParameters(CardArtProfile profile, Material material)
+        {
+            if(profile==null || material==null) throw new ArgumentException("缺少美术配置或材质。");
+            var sources=string.Join("\n",ReadShaderSources(AssetDatabase.GetAssetPath(material.shader),new HashSet<string>()));
+            foreach(var combination in profile.Combinations)
+            {
+                profile.Resolve(new[]{combination.Id},Color.white).ValidateFor(material);
+                foreach(var parameter in combination.Parameters)
+                {
+                    string name=Regex.Escape(parameter.Name);
+                    string type=parameter.Kind==CardShaderValueKind.Float ? "(?:float|half|real)" : "(?:float4|half4|real4)";
+                    if(!Regex.IsMatch(sources,@"UNITY_DEFINE_INSTANCED_PROP\s*\(\s*"+type+@"\s*,\s*"+name+@"\s*\)") ||
+                        !Regex.IsMatch(sources,@"UNITY_ACCESS_INSTANCED_PROP\s*\([^,]+,\s*"+name+@"\s*\)"))
+                        throw new ArgumentException("组合参数必须在 Shader 中声明并读取实例值："+parameter.Name);
+                }
+            }
         }
 
         static List<string> ReadShaderSources(string path, HashSet<string> visited)
@@ -493,6 +520,7 @@ namespace CardArt.Editor
                 surface.transform.localPosition = -check.surfaceBounds.center;
                 var view = surface.AddComponent<CardView>();
                 view.Bind(settings.mesh, material, settings.atlas, settings.cardId);
+                view.SetArtProfile(settings.artProfile);
                 view.SetSealColor(settings.sealColor);
                 view.SetSealEmissionStrength(settings.sealEmissionStrength);
                 view.SetSealEnabled(settings.sealEnabled);

@@ -7,8 +7,9 @@
   "optionalUnityReferences": [
     "TestAssemblies"
   ],
-  "includePlatforms": [
-    "Editor"
-  ],
-  "autoReferenced": false
+  "includePlatforms": [],
+  "autoReferenced": false,
+  "defineConstraints": [
+    "UNITY_EDITOR"
+  ]
 }

@@ -121,6 +121,21 @@ namespace PokerEngine.Tests
             CollectionAssert.AreEqual(state.Zone(CardZoneKinds.Hand).Cards, replay.Zone(CardZoneKinds.Hand).Cards);
             Assert.That(initial.Revision, Is.EqualTo(1));
         }
+        [Test] public void DisabledRunEntriesKeepTheirAttributesAndRejectActionsWithoutSpendingResources()
+        {
+            var engine = Engine(energy: 3);
+            var deck = StandardDeck.Cards().Select((card, i) => new DeckEntry("run/" + i, card.Id, (CardEffects)7, true)).ToArray();
+            var initial = engine.Create("disabled", HmacDeckShuffler.FromSeed(new byte[32]), deck);
+            Assert.That(initial.Table.Cards.All(card => card.IsDisabled && card.Effects == (CardEffects)7), Is.True);
+            var state = engine.Execute(initial, initial.Revision, CardDuelAction.Start).State;
+            foreach (var action in new[] { CardDuelAction.Play, CardDuelAction.Discard })
+            {
+                var result = engine.Execute(state, state.Revision, action, state.Zone(CardZoneKinds.Hand).Cards.Take(1));
+                Assert.That(result.Error, Is.EqualTo(CardDuelError.InvalidSelection));
+                Assert.That(result.State, Is.SameAs(state)); Assert.That(result.Events, Is.Empty);
+            }
+            Conserved(state);
+        }
         [Test] public void ExplicitDeckKeepsRunOriginsAndCurrentSize()
         {
             var engine = Engine(); var deck = StandardDeck.Cards().Select((card, i) => new DeckEntry("run/" + i, card.Id)).ToList();

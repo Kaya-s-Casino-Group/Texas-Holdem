@@ -29,7 +29,8 @@ namespace PokerEngine.Tests
                 .Where(path => path.Replace('\\', '/').Contains("/Tests/")))
             {
                 var definition = UnityEngine.JsonUtility.FromJson<TestAssemblyDefinition>(File.ReadAllText(path));
-                Assert.That(definition.includePlatforms, Is.EqualTo(new[] { "Editor" }), path);
+                Assert.That((definition.includePlatforms ?? new string[0]).SequenceEqual(new[] { "Editor" }) ||
+                    (definition.defineConstraints ?? new string[0]).Contains("UNITY_EDITOR"), Is.True, path);
                 Assert.That(definition.autoReferenced, Is.False, path);
             }
         }
@@ -37,6 +38,7 @@ namespace PokerEngine.Tests
         {
             public string name = null;
             public string[] includePlatforms = null;
+            public string[] defineConstraints = null;
             public bool autoReferenced = true;
         }
 

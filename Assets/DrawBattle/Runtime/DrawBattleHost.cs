@@ -88,7 +88,7 @@ namespace Poker.DrawBattle
             actions.Hand.Bind(match, DrawEngine.Zone(state.Id, CardZoneKinds.Hand), deck, discard, actions.Hand.GetComponent<HandZoneView>().FacingCamera);
             actions.Played.Bind(match, DrawEngine.Zone(state.Id, CardZoneKinds.Played), deck, discard);
             actions.Hand.BeginSession(); actions.Played.BeginSession();
-            if (overview != null) overview.Configure(match, overview.View, deck, state.World.Cards.Select(card => card.Id));
+            if (overview != null) { overview.BindArtwork(actions.Hand.GetComponent<HandZoneView>().CardPrefab); overview.Configure(match, overview.View, deck, state.World.Cards.Select(card => card.Id)); }
             if (drawPile != null) { drawPile.Configure(actions.Hand, drawPile.View); if (overview != null) drawPile.BindOverview(overview); }
             StateChanged?.Invoke(State); actions.Refresh();
             if (State.Phase == DrawPhase.Scored && State.World.ActiveDecision == null) ContinueBattle(false);

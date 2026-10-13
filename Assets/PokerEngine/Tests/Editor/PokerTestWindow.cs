@@ -26,6 +26,8 @@ namespace PokerEngine.Tests
             new Entry { Id = id, Title = title, Description = description, Assembly = assembly, Type = type, Method = method, Report = report,
                 RequiredComponent = component, Play = true, Legacy = legacy, Capture = report.EndsWith(".png") };
         private static readonly Entry[] Focused = {
+            Suite("CardArtworkPreview", "卡牌实例预览与光源", "自由参数组合、最小 Shader 协议、实例渲染与可控光源。", "CardArt.Tests.Editor", "CardArtworkPreviewTests", "CardShaderCombinationTests"),
+            Suite("CardArtworkIntegration", "卡牌属性与共享美术", "状态映射、组合叠加、Run/战局投影、Canvas 与跨区保留。", "CardPresentation.Tests.Editor", "CardAppearanceTests", "CanvasDeckOverviewTests", "CardZoneViewPrefabExporterTests"),
             Suite("CardDuelTests", "战局发牌与四牌区", "空手初始化、补牌策略、牌区守恒、出牌与弃牌。", "PokerEngine.Tests.Editor", "CardDuelTests"),
             Suite("PlayerTurnTests", "能量与回合", "独立能耗、超上限能量、自动与主动结束回合。", "PokerEngine.Tests.Editor", "PlayerTurnTests"),
             Suite("BattleSettlementTests", "生命、伤害与结算", "共用战斗状态、伤害换算、胜负及动作账本。", "PokerEngine.Tests.Editor", "CombatTests", "ScoredDuelTests"),

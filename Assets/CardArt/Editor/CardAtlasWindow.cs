@@ -58,7 +58,7 @@ namespace CardArt.Editor
         {
             windowChrome.Release();
             Undo.undoRedoPerformed -= OnUndo;
-            ClearThumbnails();
+            ClearThumbnails(); DisposeArtworkPreview();
         }
 
         private void OnDestroy()
@@ -66,7 +66,7 @@ namespace CardArt.Editor
             if (recipe != null && !AssetDatabase.Contains(recipe)) DestroyImmediate(recipe);
         }
 
-        private void OnUndo() { prefabCheck = null; Changed(); ClearThumbnails(); Repaint(); }
+        private void OnUndo() { combinationDraft = null; prefabCheck = null; Changed(); ClearThumbnails(); Repaint(); }
         private void Changed() { status = null; error = null; imageChecks = null; EditorUtility.SetDirty(recipe); Repaint(); }
 
         private void OnFocus() { imageChecks = null; prefabCheck = null; ClearThumbnails(); }
@@ -100,9 +100,10 @@ namespace CardArt.Editor
         private void DrawWindowContents()
         {
             if (recipe == null) return;
-            var nextTab = GUILayout.Toolbar(tab, new[] { $"卡牌 ({recipe.cards.Count})", "图集预览", "Prefab 导出" });
+            var nextTab = GUILayout.Toolbar(tab, new[] { $"卡牌 ({recipe.cards.Count})", "图集预览", "Prefab 导出", "参数组合" });
             if (nextTab != tab) { tab = nextTab; contentScroll = Vector2.zero; }
             if (tab == 2) { DrawPrefabExport(); return; }
+            if (tab == 3) { DrawArtwork(); return; }
             if (Event.current.type == EventType.MouseDown || Event.current.type == EventType.KeyDown || Event.current.type == EventType.DragPerform)
                 Undo.RecordObject(recipe, "编辑卡牌图集");
             using (new EditorGUILayout.HorizontalScope(EditorStyles.toolbar))

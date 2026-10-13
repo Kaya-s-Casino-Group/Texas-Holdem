@@ -41,6 +41,7 @@ namespace CardInteraction
     public sealed partial class CardMatchHost : MonoBehaviour
     {
         [SerializeField] private string matchId;
+        [SerializeField, InspectorName("卡牌状态美术映射")] private CardStateArtBindings artBindings;
         [SerializeField] private bool runtimeManaged;
         [SerializeField] private long initialRevision;
         [SerializeField] private List<CardMatchZoneSnapshot> initialZones = new List<CardMatchZoneSnapshot>();
@@ -48,6 +49,12 @@ namespace CardInteraction
         private Dictionary<string, CardZoneCardState> presentation;
         private CardTableState runtimeSeed;
         private Dictionary<string, CardZoneCardState> runtimeSeedPresentation;
+        public CardStateArtBindings ArtBindings => artBindings;
+        public void ConfigureArtBindings(CardStateArtBindings bindings)
+        {
+            if(IsRunning) throw new InvalidOperationException("请在绑定战局前配置状态美术映射。");
+            artBindings=bindings;
+        }
         public bool IsRunning { get; private set; }
         public bool IsRuntimeManaged => runtimeManaged;
         public ICardMatchCommands Commands { get; private set; }
@@ -68,7 +75,7 @@ namespace CardInteraction
             runtimeSeed = state; runtimeSeedPresentation = next;
             RestartMatch();
         }
-        private static Dictionary<string, CardZoneCardState> BuildObserverPresentation(CardTableState state, IEnumerable<CardZoneCardState> observerCards)
+        private Dictionary<string, CardZoneCardState> BuildObserverPresentation(CardTableState state, IEnumerable<CardZoneCardState> observerCards)
         {
             if (state == null || observerCards == null) throw new ArgumentNullException();
             state.Validate();
@@ -79,7 +86,7 @@ namespace CardInteraction
             var styles = cards.ToDictionary(card => card.Id, card => card);
             return state.Cards.ToDictionary(card => card.Id.Value, card => {
                 var style = styles[card.Id.Value];
-                return new CardZoneCardState(card, style.ArtId, style.FaceUp, style.Tint, style.Interaction.WithHovered(false));
+                return new CardZoneCardState(card, style.ArtId, style.FaceUp, style.Tint, style.Interaction.WithHovered(false), artBindings != null ? artBindings : style.ArtBindings);
             }, StringComparer.Ordinal);
         }
         public void RestartMatch()
@@ -156,7 +163,7 @@ namespace CardInteraction
             foreach (var card in change.After.Cards)
             {
                 var style = styles[card.Id.Value];
-                styles[card.Id.Value] = new CardZoneCardState(card, style.ArtId, style.FaceUp, style.Tint, style.Interaction);
+                styles[card.Id.Value] = new CardZoneCardState(card, style.ArtId, style.FaceUp, style.Tint, style.Interaction, artBindings != null ? artBindings : style.ArtBindings);
             }
             if (clearTransferredInput) foreach (var id in change.Transferred) styles[id.Value].SetInteraction(default);
             return new CardMatchUpdate { Host = this, Session = owner, Change = change, Presentation = styles, Preview = preview };

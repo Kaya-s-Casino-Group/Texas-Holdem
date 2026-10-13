@@ -70,8 +70,7 @@ namespace CardPresentation
             for (int i = 0; i < cardLayers.Length; i++)
             {
                 cardLayers[i].Bind(atlas,cardMaterial); cardLayers[i].raycastTarget = false;
-                cardLayers[i].Present(new CardVisualData("pile/"+i,i == cardLayers.Length-1 && coverCardId != "card_back" ? coverCardId : null),
-                    CardAppearanceSettings.Default);
+                cardLayers[i].Present(new CardVisualData("pile/"+i,i == cardLayers.Length-1 && coverCardId != "card_back" ? coverCardId : null));
             }
             ApplyCount();
         }

@@ -29,6 +29,7 @@ namespace CardArt.Editor
             if (prefabSettings.atlas == null) prefabSettings.atlas = AssetDatabase.LoadAssetAtPath<CardAtlasData>(CardRenderingValidation.AtlasPath);
             if (prefabSettings.shader == null) prefabSettings.shader = Shader.Find(CardShaderProperties.ShaderName);
             if (prefabSettings.mesh == null) prefabSettings.mesh = AssetDatabase.LoadAllAssetsAtPath(CardRenderingValidation.MeshPath).OfType<Mesh>().FirstOrDefault();
+            if (prefabSettings.artProfile == null) prefabSettings.artProfile = AssetDatabase.LoadAssetAtPath<CardArtProfile>(DefaultProfilePath);
             prefabCheck = null;
         }
 
@@ -52,6 +53,7 @@ namespace CardArt.Editor
                     var faces = AvailableFaces();
                     if (!faces.Contains(prefabSettings.cardId)) prefabSettings.cardId = faces.FirstOrDefault() ?? "";
                 }
+                prefabSettings.artProfile = (CardArtProfile)EditorGUILayout.ObjectField("共享美术配置", prefabSettings.artProfile, typeof(CardArtProfile), false);
                 prefabSettings.shader = (Shader)EditorGUILayout.ObjectField("Shader", prefabSettings.shader, typeof(Shader), false);
                 prefabSettings.mesh = (Mesh)EditorGUILayout.ObjectField("Mesh", prefabSettings.mesh, typeof(Mesh), false);
                 var ids = AvailableFaces();

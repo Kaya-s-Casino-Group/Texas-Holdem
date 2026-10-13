@@ -19,7 +19,7 @@ namespace CardPresentation
         public Transform DealFlipRoot { get; private set; }
         public float DealFlipAngle { get; private set; }
         public Transform SwayRoot { get; private set; }
-        public CardShaderAppearance Appearance { get; private set; }
+        public CardShaderAppearance Appearance => Surface != null ? Surface.Appearance : null;
         private CardZoneMotionSettings motionSettings;
         private Tween swayTween;
         private readonly object swayTweenId = new object();
@@ -74,8 +74,8 @@ namespace CardPresentation
             bool initialized = Data != null;
             // Unknown faces never retain an old known front texture, even when the same view is reused.
             Surface.SetCard(data.FaceArtId ?? "card_back");
-            ApplyAppearance(appearance);
             Data = data;
+            ApplyAppearance(appearance);
             ApplyFaceRotation();
             ApplyInteractionOffset(hoveredOffset, selectedOffset, lift, animate && initialized, hoverScaling);
         }
@@ -149,9 +149,16 @@ namespace CardPresentation
             if (!Data.FaceUp) SetDealFlipAngle(0);
         }
 
+        internal static CardShaderAppearance PrepareArtwork(CardView surface, CardVisualData card)
+        {
+            ValidateArt(surface, card.FaceArtId ?? "card_back");
+            var appearance = CardAppearanceResolver.Resolve(card,surface.ArtProfile);
+            appearance.ValidateFor(surface); return appearance;
+        }
+
         internal void ApplyAppearance(CardShaderAppearance appearance)
         {
-            appearance.ApplyTo(Surface); Appearance = appearance;
+            Surface.PresentArtwork(CardAppearanceResolver.Combinations(Data),CardAppearanceResolver.Tint(Data), appearance);
         }
 
         // Offset belongs to the visual child, so zone reflow and flip rotation cannot accumulate or invert it.

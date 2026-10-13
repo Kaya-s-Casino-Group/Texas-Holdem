@@ -4,6 +4,14 @@
 
 ## [Unreleased]
 
+### 2026-10-13 — 自由 Shader 组合与玩法状态映射
+
+- CardArtProfile 只保存图集、基础组合及命名的通用 Shader 参数组合；支持数值、HDR 颜色、向量及覆盖/乘算。美术输入中移除游戏状态，保留原 Atlas/Instancing 最小约定；组合与导出检查参数类型及实例声明/读取，自定义参数名可用。
+- 玩法侧 CardStateArtBindings 配置效果/禁用条件、组合 ID 与叠加顺序。CardMatchHost 绑定战局映射，Run/战局投影、交互与跨区保留该配置；隐藏牌只用基础组合。现有火漆、镭射、失效与红叉迁移为默认资源，保持原画面与 HDR 参数。
+- 场景单牌消费共享材质和独立 MPB，每次从基础组合重新合成；Canvas 保持现有顶点通道适配，对未支持的参数明确报错。Zone 不持有 Shader 样式配置。
+- 中文美术工具编辑、校验和预览组合 ID，独立相机渲染两张真实实例，支持可控主光/补光/环境亮度。玩法映射有独立 Inspector 入口及状态检查；测试面板提供对应专项。
+- Run DeckEntry 的效果、禁用和来源保留到 CardDuel，禁用牌拒绝出/弃；Core 存档无需新增字段。可挂载测试辅助组件以 UNITY_EDITOR 编译约束隔离，Player 排除测试代码。
+
 ### 2026-10-13 — 中文测试面板与 Editor 隔离
 
 - 项目全部测试程序集显式限定 Editor 并关闭自动引用，补齐 CardPresentation.Tests.Support 的平台边界；发布边界测试检查 Player 不包含项目测试程序集。

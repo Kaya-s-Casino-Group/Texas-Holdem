@@ -1,3 +1,4 @@
+using CardArt;
 using System;
 using DG.Tweening;
 using UnityEngine;
@@ -11,7 +12,6 @@ namespace CardPresentation
         [SerializeField] private CardUIGraphic graphic;
         [SerializeField] private float hoverScale = 1.095445f;
         private CardVisualData card;
-        private CardAppearanceSettings appearance;
         private CardZoneMotionSettings motion;
         private Tween hoverTween;
         private float amplitude, period, phase, time, idleYaw, idleRoll;
@@ -24,13 +24,13 @@ namespace CardPresentation
         public bool IsRemaining { get; private set; }
 
         public void Configure(CardUIGraphic surface) { graphic = surface != null ? surface : throw new ArgumentNullException(nameof(surface)); }
-        public void Present(CardVisualData data, bool remaining, CardAppearanceSettings settings, CardZoneMotionSettings motionSettings)
+        public void Present(CardVisualData data, bool remaining, CardZoneMotionSettings motionSettings)
         {
             if (graphic == null || data == null) throw new ArgumentNullException();
             motionSettings.Validate();
             bool hovered = card != null && card.ViewId == data.ViewId && Interaction.IsHovered;
-            var next = LocalCard(data, hovered); graphic.Present(next, settings, remaining ? 1 : hovered ? .48f : .28f, remaining ? 0 : .65f);
-            card = next; IsRemaining = remaining; appearance = settings; motion = motionSettings;
+            var next = LocalCard(data, hovered); graphic.Present(next, remaining ? 1 : hovered ? .48f : .28f, remaining ? 0 : .65f);
+            card = next; IsRemaining = remaining; motion = motionSettings;
             motion.GetProfile(data.ViewId, out amplitude, out period, out phase);
             ApplyPose();
         }
@@ -41,7 +41,7 @@ namespace CardPresentation
         {
             if (card == null || hovered == Interaction.IsHovered) return;
             card = LocalCard(card, hovered);
-            graphic.Present(card, appearance, IsRemaining ? 1 : hovered ? .48f : .28f, IsRemaining ? 0 : .65f);
+            graphic.Present(card, IsRemaining ? 1 : hovered ? .48f : .28f, IsRemaining ? 0 : .65f);
             var surface = graphic.rectTransform;
             hoverTween?.Kill(); hoverTween = null;
             if (hovered) transform.SetAsLastSibling();
@@ -72,7 +72,7 @@ namespace CardPresentation
             if (graphic != null)
             {
                 graphic.rectTransform.localScale = Vector3.one; graphic.rectTransform.localRotation = Quaternion.identity;
-                if (card != null) graphic.Present(card, appearance, IsRemaining ? 1 : .28f, IsRemaining ? 0 : .65f);
+                if (card != null) graphic.Present(card, IsRemaining ? 1 : .28f, IsRemaining ? 0 : .65f);
             }
         }
         private void OnDestroy() { hoverTween?.Kill(); }

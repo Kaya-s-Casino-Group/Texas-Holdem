@@ -100,7 +100,7 @@ namespace Poker.SingleBattle
             actions.Hand.Bind(match, State.Zone(CardZoneKinds.Hand).Id, deck, discard, actions.Hand.GetComponent<HandZoneView>().FacingCamera);
             actions.Played.Bind(match, State.Zone(CardZoneKinds.Played).Id, deck, discard);
             actions.Hand.BeginSession(); actions.Played.BeginSession();
-            if (overview != null) { overview.Configure(match, overview.View, deck, State.Table.Cards.Select(card => card.Id)); overview.Close(false); }
+            if (overview != null) { overview.BindArtwork(actions.Hand.GetComponent<HandZoneView>().CardPrefab); overview.Configure(match, overview.View, deck, State.Table.Cards.Select(card => card.Id)); overview.Close(false); }
             if (drawPile != null) { drawPile.Configure(actions.Hand, drawPile.View); if (overview != null) drawPile.BindOverview(overview); }
         }
         private CardZoneCardState Style(CardInstance card, CardInteractionState interaction = default) =>

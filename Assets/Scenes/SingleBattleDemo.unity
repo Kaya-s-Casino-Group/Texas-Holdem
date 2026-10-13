@@ -592,6 +592,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   matchId: 
+  artBindings: {fileID: 11400000, guid: 9b6ce29f9270f4acb9bb028eb5671951, type: 2}
   runtimeManaged: 1
   initialRevision: 0
   initialZones: []
@@ -1743,13 +1744,6 @@ MonoBehaviour:
     OverlapLift: 0.0005
     ArcHeight: 0.008
     Alignment: 1
-  appearanceSettings:
-    FoilColor: {r: 2, g: 2, b: 2, a: 1}
-    FoilStrength: 1.2
-    SealColor: {r: 0.65, g: 0.08, b: 0.04, a: 1}
-    SealEmissionStrength: 0.2
-    IneffectiveBrightness: 0.45
-    IneffectiveFoilMultiplier: 0.2
   motionSettings:
     Enabled: 1
     MaxSwayAngle: 5
@@ -4107,13 +4101,6 @@ MonoBehaviour:
     OverlapLift: 0.0005
     ArcHeight: 0
     Alignment: 1
-  appearanceSettings:
-    FoilColor: {r: 1, g: 1, b: 1, a: 1}
-    FoilStrength: 1.2
-    SealColor: {r: 0.65, g: 0.08, b: 0.04, a: 1}
-    SealEmissionStrength: 0.2
-    IneffectiveBrightness: 0.45
-    IneffectiveFoilMultiplier: 0.2
   motionSettings:
     Enabled: 0
     MaxSwayAngle: 0
@@ -6265,19 +6252,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2754167688291129839, guid: 6b709c02eca1c4db99fe5b99a3d483c4, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5229808527949728345, guid: 6b709c02eca1c4db99fe5b99a3d483c4, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6532255397514111467, guid: 6b709c02eca1c4db99fe5b99a3d483c4, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6633914005120715330, guid: 6b709c02eca1c4db99fe5b99a3d483c4, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8025545089967779818, guid: 6b709c02eca1c4db99fe5b99a3d483c4, type: 3}
       propertyPath: m_Camera
@@ -6289,7 +6276,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9073095319595413614, guid: 6b709c02eca1c4db99fe5b99a3d483c4, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

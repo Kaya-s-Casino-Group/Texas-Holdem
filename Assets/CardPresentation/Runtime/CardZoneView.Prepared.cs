@@ -1,3 +1,4 @@
+using CardArt;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -37,7 +38,7 @@ namespace CardPresentation
                 bounds = CardInstanceView.ValidatePrefab(prefab, out var template);
                 motion = owner.MotionSettings;
                 poses = owner.CalculateCardPoses(owner.Layout, motion.LayoutSize(bounds.size), data.Cards.Count);
-                appearances = ResolveAppearances(data, owner.appearanceSettings, template);
+                appearances = new CardShaderAppearance[data.Cards.Count];
                 owner.ValidatePresentationSettings();
                 update = createUpdate();
                 nextOrdered = new CardInstanceView[data.Cards.Count];
@@ -56,6 +57,7 @@ namespace CardPresentation
                             view = root.AddComponent<CardInstanceView>(); created.Add(view);
                             view.Initialize(prefab, bounds);
                         }
+                        appearances[i] = CardInstanceView.PrepareArtwork(view.Surface, card);
                         next.Add(card.ViewId, view); nextOrdered[i] = view;
                     }
                 }

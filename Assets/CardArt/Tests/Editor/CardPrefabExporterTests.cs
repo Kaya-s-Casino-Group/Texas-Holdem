@@ -59,6 +59,22 @@ namespace CardArt.Tests
         }
 
         [Test]
+        public void ExportPreservesArtProfileAndRejectsAtlasMismatchBeforeWritingAssets()
+        {
+            var settings = Settings();
+            var profile = ScriptableObject.CreateInstance<CardArtProfile>();
+            profile.Configure(atlas, CardDeferredShaderCombinations.Create());
+            AssetDatabase.CreateAsset(profile,folder + "/Profile.asset"); settings.artProfile = profile;
+            var prefab = CardPrefabExporter.Export(settings);
+            Assert.AreSame(profile,prefab.GetComponentInChildren<CardView>(true).ArtProfile);
+            var original = File.ReadAllText(folder + "/TestCard.prefab");
+            profile.Configure(AssetDatabase.LoadAssetAtPath<CardAtlasData>(CardRenderingValidation.AtlasPath),CardDeferredShaderCombinations.Create());
+            Assert.IsFalse(CardPrefabExporter.Validate(settings).CanExport);
+            Assert.Throws<ArgumentException>(() => CardPrefabExporter.Export(settings));
+            Assert.AreEqual(original,File.ReadAllText(folder + "/TestCard.prefab"));
+        }
+
+        [Test]
         public void ExportBuildsBoundPrefabAndSharedMaterialWithoutAddingSceneObjects()
         {
             var settings = Settings();

@@ -1689,13 +1689,7 @@ MonoBehaviour:
   - {fileID: 8756432828014044809}
   - {fileID: 8854998587316927306}
   - {fileID: 6971886176216168239}
-  appearance:
-    FoilColor: {r: 1, g: 1, b: 1, a: 1}
-    FoilStrength: 1.2
-    SealColor: {r: 0.65, g: 0.08, b: 0.04, a: 1}
-    SealEmissionStrength: 0.2
-    IneffectiveBrightness: 0.45
-    IneffectiveFoilMultiplier: 0.2
+  artProfile: {fileID: 11400000, guid: db55b7ffb2c3247e4a6984ce54a9192b, type: 2}
   motion:
     Enabled: 1
     MaxSwayAngle: 1.5

@@ -17,10 +17,12 @@ namespace CardPresentation
         public CardEffects Effects { get; }
         public bool IsDisabled { get; }
         public CardInteractionState Interaction { get; }
+        public CardStateArtBindings ArtBindings { get; }
 
         public CardVisualData(string viewId, string faceArtId = null, CardInstanceId? cardId = null, Color? tint = null,
-            CardEffects effects = CardEffects.None, bool isDisabled = false, CardInteractionState interaction = default(CardInteractionState))
+            CardEffects effects = CardEffects.None, bool isDisabled = false, CardInteractionState interaction = default(CardInteractionState), CardStateArtBindings artBindings = null)
         {
+            ArtBindings = artBindings;
             ViewId = Guard.Text(viewId, nameof(viewId));
             if (cardId.HasValue && !cardId.Value.IsValid) throw new ArgumentException("Invalid card identity.", nameof(cardId));
             CardId = cardId;
@@ -35,13 +37,23 @@ namespace CardPresentation
         /// <summary>Authority/local projection. Invisible cards disclose no rule attributes and do not resolve artwork.
         /// Remote clients receive the already-filtered CardVisualData, never the authoritative CardInstance.</summary>
         public static CardVisualData FromCard(CardInstance card, string viewId, bool isVisible,
-            Func<CardDefinitionId, string> resolveArt, CardInteractionState interaction = default(CardInteractionState), Color? tint = null)
+            Func<CardDefinitionId, string> resolveArt, CardInteractionState interaction = default(CardInteractionState), Color? tint = null, CardStateArtBindings artBindings = null)
         {
             if (card == null) throw new ArgumentNullException(nameof(card));
-            if (!isVisible) return new CardVisualData(viewId, tint: tint, interaction: interaction);
+            if (!isVisible) return new CardVisualData(viewId, tint: tint, interaction: interaction, artBindings: artBindings);
             if (resolveArt == null) throw new ArgumentNullException(nameof(resolveArt));
             var art = Guard.Text(resolveArt(card.DefinitionId), nameof(resolveArt));
-            return new CardVisualData(viewId, art, card.Id, tint, card.Effects, card.IsDisabled, interaction);
+            return new CardVisualData(viewId, art, card.Id, tint, card.Effects, card.IsDisabled, interaction, artBindings);
+        }
+        /// <summary>Run-owned deck entries use the same artwork attributes without inventing battle-instance IDs.</summary>
+        public static CardVisualData FromDeckEntry(DeckEntry entry, string viewId, bool isVisible,
+            Func<CardDefinitionId, string> resolveArt, Color? tint = null, CardStateArtBindings artBindings = null)
+        {
+            if (entry == null) throw new ArgumentNullException(nameof(entry));
+            if (!isVisible) return new CardVisualData(viewId, tint: tint, artBindings: artBindings);
+            if (resolveArt == null) throw new ArgumentNullException(nameof(resolveArt));
+            return new CardVisualData(viewId, Guard.Text(resolveArt(entry.DefinitionId), nameof(resolveArt)), tint: tint,
+                effects: entry.Effects, isDisabled: entry.IsDisabled, artBindings: artBindings);
         }
     }
 

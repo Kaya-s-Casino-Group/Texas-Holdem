@@ -84,8 +84,8 @@ namespace CardPresentation.Tests
                 AssertFacing(f.Zone, f.Camera); Assert.AreSame(view, f.Zone.Views[0]); Assert.AreSame(data, f.Zone.Data);
                 Assert.AreEqual(baseRotation, view.transform.localRotation);
                 Assert.AreEqual(appearance.Tint, view.Appearance.Tint);
-                Assert.AreEqual(appearance.FoilEnabled, view.Surface.FoilEnabled);
-                Assert.AreEqual(appearance.FoilStrength, view.Surface.FoilStrength);
+                Assert.AreEqual(appearance.GetFloat("_FoilEnabled") != 0, view.Surface.FoilEnabled);
+                Assert.AreEqual(appearance.GetFloat("_FoilStrength"), view.Surface.FoilStrength);
                 Assert.Less(Quaternion.Angle(sway, view.SwayRoot.localRotation), 0.001f);
                 Assert.Greater(Vector3.Dot(view.FaceRoot.up, f.Zone.transform.up), 0.99999f);
                 Assert.Less(Vector3.Dot(f.Zone.Views[1].FaceRoot.up, f.Zone.transform.up), -0.99999f);

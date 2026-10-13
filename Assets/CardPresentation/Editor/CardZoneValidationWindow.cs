@@ -1,4 +1,5 @@
 #if UNITY_EDITOR
+using CardArt;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,7 +18,6 @@ namespace CardPresentation.Editor
         [SerializeField] private CardZoneView target;
         [SerializeField] private CardZoneLayoutSettings layout = CardZoneLayoutSettings.Default;
         [SerializeField] private Vector3 raisedOffset = new Vector3(0, 0, .02f), hoveredOffset;
-        [SerializeField] private CardAppearanceSettings appearanceSettings = CardAppearanceSettings.Default;
         [SerializeField] private CardZoneLiftSettings liftSettings = CardZoneLiftSettings.Default;
         [SerializeField] private CardZoneMotionSettings motionSettings = CardZoneMotionSettings.Default;
         [SerializeField] private CardZoneTransitionSettings transitionSettings = CardZoneTransitionSettings.Default;
@@ -89,7 +89,7 @@ namespace CardPresentation.Editor
         {
             if (target == null) return;
             layout = target.Layout;
-            appearanceSettings = target.AppearanceSettings; motionSettings = target.MotionSettings;
+            motionSettings = target.MotionSettings;
             faceCamera = target.FaceCamera; facingCamera = target.FacingCamera;
             if (Hand == null) return;
             raisedOffset = Hand.SelectedOffset; hoveredOffset = Hand.HoveredOffset; liftSettings = Hand.LiftSettings;
@@ -122,7 +122,7 @@ namespace CardPresentation.Editor
                 Hand.SetInteractionOffsets(hoveredOffset, raisedOffset);
             }
             target.SetLayout(layout, motionSettings, animate); layout = target.Layout; motionSettings = target.MotionSettings;
-            target.SetCameraFacing(faceCamera, facingCamera); target.SetAppearanceSettings(appearanceSettings);
+            target.SetCameraFacing(faceCamera, facingCamera);
         }
         private void Mutate(string description, Action change)
         {
@@ -193,11 +193,10 @@ namespace CardPresentation.Editor
         [SerializeField] private int stylePage;
         private void DrawStylePage()
         {
-            stylePage = GUILayout.Toolbar(stylePage, new[] { "布局", "动画", "音效", "外观" });
+            stylePage = GUILayout.Toolbar(Mathf.Clamp(stylePage, 0, 2), new[] { "布局", "动画", "音效" });
             if (stylePage == 0) { DrawLayout(); DrawCameraFacing(); }
             else if (stylePage == 1) { if (Hand != null) { DrawLiftSettings(); DrawTransitions(); DrawDiscardSettings(); } DrawMotion(); }
             else if (stylePage == 2) DrawAudioControls();
-            else DrawAppearance();
         }
         private void DrawLayout()
         {
@@ -232,19 +231,7 @@ namespace CardPresentation.Editor
             EditorGUILayout.HelpBox("开启后整区 +Y 朝向相机位置，+Z 沿相机上方；未指定时使用 MainCamera。关闭后恢复原朝向。", MessageType.None);
         }
 
-        private void DrawAppearance()
-        {
-            EditorGUILayout.Space(); EditorGUILayout.LabelField("Shader 样式（卡牌属性决定开关）", EditorStyles.boldLabel);
-            EditorGUI.BeginChangeCheck(); var next = appearanceSettings;
-            next.FoilColor = EditorGUILayout.ColorField(new GUIContent("塑封镭射颜色 HDR"), next.FoilColor, true, false, true);
-            next.FoilStrength = EditorGUILayout.Slider("塑封镭射强度", next.FoilStrength, 0, 5);
-            next.SealColor = EditorGUILayout.ColorField(new GUIContent("强化火漆颜色"), next.SealColor, true, false, false);
-            next.SealEmissionStrength = EditorGUILayout.Slider("强化火漆发光", next.SealEmissionStrength, 0, 1);
-            next.IneffectiveBrightness = EditorGUILayout.Slider("失效牌面亮度", next.IneffectiveBrightness, 0, 1);
-            next.IneffectiveFoilMultiplier = EditorGUILayout.Slider("失效镭射系数", next.IneffectiveFoilMultiplier, 0, 1);
-            if (EditorGUI.EndChangeCheck()) Mutate("调整卡牌 Shader 样式", () => appearanceSettings = next);
-            if (GUILayout.Button("恢复默认 Shader 样式")) Mutate("恢复卡牌 Shader 样式", () => appearanceSettings = CardAppearanceSettings.Default);
-        }
+
     }
 }
 #endif

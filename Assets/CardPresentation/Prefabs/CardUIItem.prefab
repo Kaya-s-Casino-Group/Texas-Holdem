@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8200339045676425462}
   - component: {fileID: 3559615124148754878}
+  - component: {fileID: 3664753320750772496}
   m_Layer: 5
   m_Name: Surface
   m_TagString: Untagged
@@ -57,6 +58,15 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   atlas: {fileID: 11400000, guid: 1d3634e8a66e54d2a97d2546b6db8de3, type: 2}
+  artProfile: {fileID: 11400000, guid: db55b7ffb2c3247e4a6984ce54a9192b, type: 2}
+--- !u!222 &3664753320750772496
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6339143987598544612}
+  m_CullTransparentMesh: 1
 --- !u!1 &7052309297148354255
 GameObject:
   m_ObjectHideFlags: 0

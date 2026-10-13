@@ -1,3 +1,4 @@
+using CardArt;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +13,6 @@ namespace CardPresentation
     {
         [SerializeField] private GameObject cardPrefab;
         [SerializeField] private CardZoneLayoutSettings layout = CardZoneLayoutSettings.Default;
-        [SerializeField] private CardAppearanceSettings appearanceSettings = CardAppearanceSettings.Default;
         [SerializeField] private CardZoneMotionSettings motionSettings = CardZoneMotionSettings.Default;
         [SerializeField] private bool faceCamera;
         [SerializeField] private Camera facingCamera;
@@ -33,7 +33,6 @@ namespace CardPresentation
         public virtual bool SupportsSway => true;
         public CardZoneLayoutSettings Layout => ResolveLayoutSettings(layout);
         public GameObject CardPrefab => cardPrefab;
-        public CardAppearanceSettings AppearanceSettings => appearanceSettings;
         public CardZoneMotionSettings MotionSettings => ResolveMotionSettings(motionSettings);
         public virtual bool IsTransitioning => ordered.Any(view => view != null && view.IsTransitioning);
         public bool FaceCamera => faceCamera;
@@ -48,7 +47,7 @@ namespace CardPresentation
             settings = ResolveLayoutSettings(settings);
             var motion = MotionSettings;
             CalculateCardPoses(settings, motion.LayoutSize(bounds.size), 0);
-            appearanceSettings.Validate(); ValidatePresentationSettings();
+            ValidatePresentationSettings();
             cardPrefab = prefab; layout = settings; motionSettings = motion;
         }
 
@@ -200,31 +199,6 @@ namespace CardPresentation
         {
             if (!hasUnfacedRotation) return;
             transform.localRotation = unfacedLocalRotation; hasUnfacedRotation = false;
-        }
-
-        /// <summary>Re-resolve the current card attributes using new art tuning, without touching shared materials.</summary>
-        public void SetAppearanceSettings(CardAppearanceSettings settings)
-        {
-            settings.Validate();
-            if (Data == null) { appearanceSettings = settings; return; }
-            CardInstanceView.ValidatePrefab(cardPrefab, out var template);
-            var appearances = ResolveAppearances(Data, settings, template);
-            // Validate every card before changing any existing view or the active settings.
-            appearanceSettings = settings;
-            for (int i = 0; i < ordered.Length; i++) if (ordered[i] != null) ordered[i].ApplyAppearance(appearances[i]);
-        }
-
-        private static CardShaderAppearance[] ResolveAppearances(CardZoneViewData data, CardAppearanceSettings settings, CardArt.CardView template)
-        {
-            settings.Validate();
-            var result = new CardShaderAppearance[data.Cards.Count];
-            for (int i = 0; i < result.Length; i++)
-            {
-                CardInstanceView.ValidateArt(template, data.Cards[i].FaceArtId ?? "card_back");
-                result[i] = CardAppearanceResolver.Resolve(data.Cards[i], settings);
-                result[i].ValidateFor(template);
-            }
-            return result;
         }
 
         protected static void ValidateOffset(Vector3 offset)

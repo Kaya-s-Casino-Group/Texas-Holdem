@@ -53,7 +53,6 @@ namespace CardPresentation.Tests
                 var discardLocal = source.transform.InverseTransformPoint(discard.position);
                 var layout = source.Layout; layout.ArcHeight = .006f; source.SetLayout(layout);
                 var transition = source.TransitionSettings; transition.SettleSeconds = .82f; source.SetTransitionSettings(transition);
-                var appearance = source.AppearanceSettings; appearance.FoilColor = new Color(2, 3, 4); source.SetAppearanceSettings(appearance);
                 source.SetInteractionOffsets(new Vector3(0, 0, .011f), new Vector3(0, 0, .023f));
                 source.SetDrawSound(source.DrawSound, .31f); source.SetDiscardSound(null, .54f, false); source.SetSelectionSound(null, .67f);
                 source.gameObject.AddComponent<CardZonePlayHost>(); source.gameObject.AddComponent<CardZoneMouseInput>();
@@ -66,7 +65,7 @@ namespace CardPresentation.Tests
                 var hand = asset.GetComponent<HandZoneView>();
                 Assert.NotNull(hand); Assert.AreEqual(2, asset.GetComponents<Component>().Length); Assert.AreEqual(0, asset.transform.childCount);
                 Assert.AreSame(source.CardPrefab, hand.CardPrefab); Assert.AreEqual(source.Layout.ArcHeight, hand.Layout.ArcHeight);
-                Assert.AreEqual(.82f, hand.TransitionSettings.SettleSeconds); Assert.AreEqual(appearance.FoilColor, hand.AppearanceSettings.FoilColor);
+                Assert.AreEqual(.82f, hand.TransitionSettings.SettleSeconds); Assert.AreSame(source.CardPrefab, hand.CardPrefab);
                 Assert.AreEqual(source.SelectedOffset, hand.SelectedOffset); Assert.AreEqual(source.HoveredOffset, hand.HoveredOffset);
                 Assert.AreEqual(.31f, hand.DrawSoundVolume); Assert.AreSame(source.DrawSoundOverride, hand.DrawSoundOverride);
                 Assert.AreEqual(.54f, hand.DiscardSoundVolume); Assert.IsFalse(hand.DiscardSoundEnabled); Assert.AreEqual(.67f, hand.SelectionSoundVolume);

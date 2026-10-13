@@ -74,13 +74,15 @@ namespace CardPresentation.Tests
             {
                 var state = Card("foil",Suit.Spades,Rank.Ace,"spades_a",effects:CardEffects.Laminated | CardEffects.Enhanced);
                 f.View.Present(new DeckOverviewData(new[] { Entry(state,false) })); var graphic = f.View.Cards.Single().Graphic;
-                var settings = CardAppearanceSettings.Default; settings.FoilColor = new Color(1.2f,3.2f,4);
-                graphic.Present(state.Project(),settings,.28f,.65f);
+                var combinations = AssetDatabase.LoadAssetAtPath<CardArtProfile>("Assets/CardArt/Profiles/StandardCardArt.asset").Combinations;
+                combinations.Single(c=>c.Id=="base").Parameters.Single(p=>p.Name=="_FoilColor").Value = new Color(1.2f,3.2f,4);
+                var profile = ScriptableObject.CreateInstance<CardArtProfile>(); profile.Configure(graphic.Atlas, combinations);
+                graphic.SetArtProfile(profile); graphic.Present(state.Project(),.28f,.65f);
                 using (var helper = new VertexHelper())
                 {
                     typeof(CardUIGraphic).GetMethod("OnPopulateMesh",BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly).Invoke(graphic,new object[] { helper });
                     Assert.AreEqual(4,helper.currentVertCount); var vertex = UIVertex.simpleVert; helper.PopulateUIVertex(ref vertex,0);
-                    Assert.AreEqual(new Vector4(1.2f,3.2f,4,settings.FoilStrength),vertex.uv1);
+                    Assert.AreEqual(new Vector4(1.2f,3.2f,4,1.2f),vertex.uv1);
                     Assert.AreEqual(3,Mathf.FloorToInt(vertex.uv3.x/2)); Assert.AreEqual(.65f,vertex.uv3.x-6,.000001f);
                     Assert.AreEqual(.28f,graphic.Opacity); Assert.AreEqual(.28f,vertex.color.a/255f,1f/255);
                     Assert.AreEqual(Color.white,state.Tint);
@@ -91,8 +93,8 @@ namespace CardPresentation.Tests
                     Assert.AreEqual(Vector2.zero,new Vector2(vertex.uv0.z,vertex.uv0.w));
                 }
                 var before = graphic.Data;
-                Assert.Throws<ArgumentOutOfRangeException>(() => graphic.SetPresentation(float.NaN,0)); Assert.AreSame(before,graphic.Data);
-                Assert.Throws<ArgumentException>(() => graphic.Present(new CardVisualData("bad","missing"),settings)); Assert.AreSame(before,graphic.Data);
+                Assert.Throws<ArgumentOutOfRangeException>(() => graphic.SetPresentation(float.NaN,0)); Assert.AreSame(before,graphic.Data); Object.DestroyImmediate(profile);
+                Assert.Throws<ArgumentException>(() => graphic.Present(new CardVisualData("bad","missing"))); Assert.AreSame(before,graphic.Data);
             }
         }
 
@@ -106,7 +108,7 @@ namespace CardPresentation.Tests
             try
             {
                 var graphic = root.GetComponent<CardUIItemView>().Graphic;
-                graphic.Present(card.Project(),CardAppearanceSettings.Default);
+                graphic.Present(card.Project());
                 using (var helper = new VertexHelper())
                 {
                     typeof(CardUIGraphic).GetMethod("OnPopulateMesh",BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly).Invoke(graphic,new object[] { helper });

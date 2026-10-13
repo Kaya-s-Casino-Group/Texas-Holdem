@@ -11,6 +11,27 @@ namespace CardPresentation
     public sealed class CardUIGraphic : MaskableGraphic
     {
         [SerializeField] private CardAtlasData atlas;
+        [SerializeField] private CardArtProfile artProfile;
+        private CardArtProfile subscribedProfile;
+        public CardArtProfile ArtProfile => artProfile;
+        public void SetArtProfile(CardArtProfile profile)
+        {
+            if (profile != null && atlas != null) profile.ValidateAtlas(atlas);
+            artProfile = profile; SubscribeProfile(); RefreshArtwork();
+        }
+        private void SubscribeProfile()
+        {
+            if (subscribedProfile != null) subscribedProfile.Changed -= RefreshArtwork;
+            subscribedProfile = isActiveAndEnabled ? artProfile : null;
+            if (subscribedProfile != null) subscribedProfile.Changed += RefreshArtwork;
+        }
+        private void RefreshArtwork()
+        {
+            if (data == null) return;
+            if (artProfile != null) artProfile.ValidateAtlas(atlas);
+            var resolved = CardAppearanceResolver.Resolve(data, artProfile);
+            ValidateCanvasParameters(resolved); appearance = resolved; SetVerticesDirty();
+        }
         private CardVisualData data;
         private CardShaderAppearance appearance;
         private float opacity = 1, desaturation;
@@ -28,6 +49,7 @@ namespace CardPresentation
                 sharedMaterial.shader.name != "CardPresentation/Card Canvas") throw new ArgumentException("Bind a card atlas and shared Canvas card material.");
             if (!skin.TryGetCard("card_back", out var back) || back.clipped) throw new ArgumentException("The atlas needs an unclipped card_back region.");
             if (data != null) ValidateCard(skin, data);
+            if (artProfile != null) artProfile.ValidateAtlas(skin);
             atlas = skin; material = sharedMaterial; EnsureChannels(); SetAllDirty();
         }
         public static void ValidateCard(CardAtlasData skin, CardVisualData card)
@@ -36,12 +58,24 @@ namespace CardPresentation
             if (!skin.TryGetCard(card.FaceArtId ?? "card_back", out var region) || region.clipped ||
                 region.uv.z <= 0 || region.uv.w <= 0) throw new ArgumentException("Missing or cropped UI card artwork.");
         }
-        public void Present(CardVisualData card, CardAppearanceSettings settings, float presentationOpacity = 1, float presentationDesaturation = 0)
+        public void Present(CardVisualData card, float presentationOpacity = 1, float presentationDesaturation = 0)
         {
             ValidateCard(atlas, card); ValidateUnit(presentationOpacity); ValidateUnit(presentationDesaturation);
-            var resolved = CardAppearanceResolver.Resolve(card, settings);
+            if (artProfile != null) artProfile.ValidateAtlas(atlas);
+            var resolved = CardAppearanceResolver.Resolve(card, artProfile);
+            ValidateCanvasParameters(resolved);
             data = card; appearance = resolved; opacity = presentationOpacity; desaturation = presentationDesaturation;
             SetVerticesDirty();
+        }
+        private static void ValidateCanvasParameters(CardShaderAppearance resolved)
+        {
+            var supported = new System.Collections.Generic.HashSet<string> { "_ColorTint", "_FoilEnabled", "_FoilColor", "_FoilStrength", "_SealEnabled", "_SealColor", "_SealEmissionStrength", "_RedCrossEnabled" };
+            foreach (var parameter in resolved.Parameters)
+                {
+                    if (!supported.Contains(parameter.Name)) throw new ArgumentException("当前 Canvas 卡牌适配器未定义参数通道：" + parameter.Name);
+                    bool color = parameter.Name == "_ColorTint" || parameter.Name == "_FoilColor" || parameter.Name == "_SealColor";
+                    if(parameter.Kind != (color ? CardShaderValueKind.Color : CardShaderValueKind.Float)) throw new ArgumentException("Canvas 参数通道类型不匹配：" + parameter.Name);
+                }
         }
         public void SetPresentation(float presentationOpacity, float presentationDesaturation)
         {
@@ -51,7 +85,12 @@ namespace CardPresentation
         }
         private static void ValidateUnit(float value)
         { if (!CardZoneRowLayout.Finite(value) || value < 0 || value > 1) throw new ArgumentOutOfRangeException(nameof(value)); }
-        protected override void OnEnable() { base.OnEnable(); EnsureChannels(); }
+        protected override void OnEnable() { base.OnEnable(); SubscribeProfile(); RefreshArtwork(); EnsureChannels(); }
+        protected override void OnDisable()
+        { if (subscribedProfile != null) subscribedProfile.Changed -= RefreshArtwork; subscribedProfile = null; base.OnDisable(); }
+#if UNITY_EDITOR
+        protected override void OnValidate() { base.OnValidate(); SubscribeProfile(); RefreshArtwork(); }
+#endif
         protected override void OnCanvasHierarchyChanged() { base.OnCanvasHierarchyChanged(); EnsureChannels(); }
         private void EnsureChannels() { if (canvas != null) canvas.additionalShaderChannels |= RequiredChannels; }
         protected override void OnPopulateMesh(VertexHelper helper)
@@ -59,12 +98,14 @@ namespace CardPresentation
             helper.Clear(); if (data == null || appearance == null || atlas == null) return;
             if (!atlas.TryGetCard(data.FaceArtId ?? "card_back", out var region)) return;
             var rect = GetPixelAdjustedRect(); var uv = region.uv;
-            float flags = (appearance.FoilEnabled ? 1 : 0) + (appearance.SealEnabled ? 2 : 0) + (appearance.RedCrossEnabled ? 4 : 0);
+            float flags = (appearance.GetFloat("_FoilEnabled") != 0 ? 1 : 0) + (appearance.GetFloat("_SealEnabled") != 0 ? 2 : 0) + (appearance.GetFloat("_RedCrossEnabled") != 0 ? 4 : 0);
             var tint = appearance.Tint * color;
             float exposure = Mathf.Max(1, Mathf.Max(tint.r, Mathf.Max(tint.g, tint.b)));
             var vertexColor = new Color(tint.r / exposure, tint.g / exposure, tint.b / exposure, tint.a * opacity);
-            var foil = new Vector4(appearance.FoilColor.r, appearance.FoilColor.g, appearance.FoilColor.b, appearance.FoilStrength);
-            var seal = new Vector4(appearance.SealColor.r, appearance.SealColor.g, appearance.SealColor.b, appearance.SealEmissionStrength);
+            var foilColor = appearance.GetColor("_FoilColor", Color.white);
+            var foil = new Vector4(foilColor.r, foilColor.g, foilColor.b, appearance.GetFloat("_FoilStrength"));
+            var sealColor = appearance.GetColor("_SealColor", Color.white);
+            var seal = new Vector4(sealColor.r, sealColor.g, sealColor.b, appearance.GetFloat("_SealEmissionStrength"));
             // Pack the three bits and [0,1] desaturation into separate ranges of one float.
             // Opacity uses native vertex alpha, leaving UV channels for immutable atlas dimensions.
             var state = new Vector4(flags * 2 + desaturation, uv.z, uv.w, exposure);

@@ -65,7 +65,7 @@ graph TD
 
 `CardDefinition` 为静态定义；`CardInstance` 为当前对局实体，`OriginId` 关联 Run 中的持久牌。复制牌产生新持久 ID 并继承强化，下一关重新创建实例牌。`StandardDeck` 提供标准 52 张牌，不依赖德州模块。
 
-`CardInstance.Effects` 使用 `[Flags] CardEffects`：None=0、Enhanced=1<<0（强化）、Laminated=1<<1（塑封）、Ineffective=1<<2（失效）。不同效果可以共存；重复添加相同效果不会增加层数。强化/塑封在引擎中仍是语义标记，不自动赋予数值或材质；Unity 的 CardPresentation 模块负责将属性映射为火漆、镭射、失效压暗和禁用红叉，Core 不引用美术配置。已有 DrawCard/RunCard 的数值强化仍由对应模块管理，本轮不增加 Run 商店选项或跨关效果同步。
+`CardInstance.Effects` 使用 `[Flags] CardEffects`：None=0、Enhanced=1<<0（强化）、Laminated=1<<1（塑封）、Ineffective=1<<2（失效）。不同效果可以共存；重复添加相同效果不会增加层数。强化/塑封在引擎中仍是语义标记，不自动赋予数值或材质；Unity 的 CardPresentation 通过玩法侧 CardStateArtBindings 将可见状态映射为美术组合 ID，再由 CardArtProfile 合成通用 Shader 参数；火漆、镭射、压暗和红叉只是当前默认映射，Core 不引用美术配置。已有 DrawCard/RunCard 的数值强化仍由对应模块管理，本轮不增加 Run 商店选项或跨关效果同步。
 
 `IsDisabled` 独立于效果：卡牌层的 CanPlay / CanDiscard 都等于 !IsDisabled；CanScore 只受 Ineffective 影响。花色/点数继续从 DefinitionId 对应的 CardDefinition 获取。悬停、选中、观察者可见性和 Unity 颜色不进入 Core 卡牌或权威存档。
 
@@ -76,7 +76,7 @@ next = next.AddEffects(CardEffects.Ineffective).WithDisabled(true);
 next = next.RemoveEffects(CardEffects.Ineffective); // 强化/塑封保留，禁用仍生效
 ```
 
-WithEffects / AddEffects / RemoveEffects / WithDisabled 返回新实例；未知位（含负数掩码）在构造和存档校验时拒绝。DeckEntry 可携带 Effects / IsDisabled，德州初始化和洗牌后重分配 ID 会保留这些属性。任意 CardZone 转移接口仍仅处理成员/顺序；Draw 的打出与丢弃命令统一检查所选牌的卡牌权限，在转移前原子拒绝包含禁用牌的请求。能力强制移牌不被这项玩家操作限制隐式禁止。
+WithEffects / AddEffects / RemoveEffects / WithDisabled 返回新实例；未知位（含负数掩码）在构造和存档校验时拒绝。DeckEntry 可携带 Effects / IsDisabled，CardDuel 创建也保留这些属性与 Run 来源，玩家出/弃拒绝禁用牌；德州初始化和洗牌后重分配 ID 会保留这些属性。任意 CardZone 转移接口仍仅处理成员/顺序；Draw 的打出与丢弃命令统一检查所选牌的卡牌权限，在转移前原子拒绝包含禁用牌的请求。能力强制移牌不被这项玩家操作限制隐式禁止。
 
 ScoringCard 携带 Effects。失效牌仍进入完整牌型判定，其逐牌点数、加分/加倍率/乘倍率、重触发及逐牌小丑计分都跳过；牌型基础分、等级和 BeforeCards / AfterCards 的整手效果照常结算。Draw 与 Holdem 的 Run 计分适配器均传递实例牌效果；两种玩法的牌型分类器不因失效而过滤卡牌。
 
@@ -395,4 +395,4 @@ Core 的 `CardTableState` 保存 MatchId、Revision、完整 CardInstance 注册
 
 Unity 的 CardMatchHost 消费此基础层，运行时及编辑器围绕同一对局数据读取/操作；编辑器调试 API 使用 UNITY_EDITOR 宏，不进入 Player。新增 Core 类型沿现有 Core asmdef/link.xml 进入首包。
 
-所有项目测试 asmdef（包括 CardPresentation.Tests.Support）显式限定 Editor，关闭 autoReferenced；Player 编译列表检查不包含任何项目测试程序集。测试面板及实战验证逻辑均留在 Tests/Editor。Tools 的旧离线辅助脚本位于 Unity Assets 之外，不参与游戏构建，也不作为编辑器面板的入口；日常改动只运行对应专项。
+所有项目测试 asmdef 限定 Editor 并关闭 autoReferenced；可挂载的 CardPresentation.Tests.Support 通过 UNITY_EDITOR 编译约束隔离，避免 Unity 将辅助 MonoBehaviour 识别为不可挂载的编辑器脚本；Player 编译列表检查不包含任何项目测试程序集。测试面板及实战验证逻辑均留在 Tests/Editor。Tools 的旧离线辅助脚本位于 Unity Assets 之外，不参与游戏构建，也不作为编辑器面板的入口；日常改动只运行对应专项。

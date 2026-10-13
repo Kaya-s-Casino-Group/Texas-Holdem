@@ -98,10 +98,10 @@ namespace PokerEngine
         {
             var entries = Guard.Copy(deck ?? StandardDeck.Cards().Select((card, i) => new DeckEntry("standard/" + i, card.Id)), nameof(deck));
             if (entries.Length < HandSize || entries.Length > 512 || entries.Any(entry => entry == null || !faces.ContainsKey(entry.DefinitionId)) ||
-                entries.Select(entry => entry.Id).Distinct(StringComparer.Ordinal).Count() != entries.Length || entries.Any(entry => entry.IsDisabled))
+                entries.Select(entry => entry.Id).Distinct(StringComparer.Ordinal).Count() != entries.Length)
                 throw new ArgumentException("Demo requires a playable deck of standard faces with unique origins, at least the hand size.");
             var duel = Duel.Create(id, new ParticipantId("player"), new ParticipantId(id + "/enemy"), initialHealth);
-            var cards = entries.Select((entry, i) => new CardInstance(new CardInstanceId(id + "/card/" + i), entry.DefinitionId, entry.Id, entry.Effects)).ToArray();
+            var cards = entries.Select((entry, i) => new CardInstance(new CardInstanceId(id + "/card/" + i), entry.DefinitionId, entry.Id, entry.Effects, entry.IsDisabled)).ToArray();
             var shuffled = shuffler.Shuffle(cards.Select(card => card.Id).ToArray(), random);
             var zones = new[] { CardZoneKinds.Deck, CardZoneKinds.Hand, CardZoneKinds.Played, CardZoneKinds.Discard }
                 .Select(kind => new CardZone(ZoneId(id, kind), kind, duel.PlayerId, kind == CardZoneKinds.Deck ? shuffled.Cards : new CardInstanceId[0])).ToArray();
@@ -122,7 +122,7 @@ namespace PokerEngine
                 return new CardDuelTransition(state, CardDuelError.InvalidPhase);
             var ids = (selected ?? new CardInstanceId[0]).ToArray();
             if (action != CardDuelAction.Play && action != CardDuelAction.Discard ? ids.Length != 0 : ids.Length < 1 || ids.Length > MaxSelection ||
-                ids.Distinct().Count() != ids.Length || ids.Any(id => !state.Zone(CardZoneKinds.Hand).Cards.Contains(id)))
+                ids.Distinct().Count() != ids.Length || ids.Any(id => !state.Zone(CardZoneKinds.Hand).Cards.Contains(id) || state.Table.GetCard(id).IsDisabled))
                 return new CardDuelTransition(state, CardDuelError.InvalidSelection);
             if (action == CardDuelAction.Discard && state.DiscardsRemaining == 0) return new CardDuelTransition(state, CardDuelError.NoDiscards);
             if ((action == CardDuelAction.Play && state.Duel.PlayerTurn.Energy < Duel.Definition.PlayEnergyCost) ||

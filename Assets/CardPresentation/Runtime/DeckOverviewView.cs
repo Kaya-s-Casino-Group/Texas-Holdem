@@ -31,7 +31,14 @@ namespace CardPresentation
         [SerializeField, Min(0)] private float rowPadding = 2;
         [SerializeField] private TMP_Text[] categoryTotals;
         [SerializeField] private TMP_Text[] rankTotals;
-        [SerializeField] private CardAppearanceSettings appearance = CardAppearanceSettings.Default;
+        [SerializeField] private CardArtProfile artProfile;
+        public CardArtProfile ArtProfile => artProfile;
+        public void BindArtProfile(CardArtProfile profile)
+        {
+            if (profile != null && atlas != null) profile.ValidateAtlas(atlas);
+            artProfile = profile;
+            foreach (var item in items.Values) if (item != null) item.Graphic.SetArtProfile(profile);
+        }
         [SerializeField] private CardZoneMotionSettings motion = CardZoneMotionSettings.Default;
         [Header("牌组面板显隐（Canvas 单位）")]
         [SerializeField, Min(0)] private float entranceDistance = 90;
@@ -120,7 +127,8 @@ namespace CardPresentation
         {
             if (data == null) throw new ArgumentNullException(nameof(data));
             if (atlas == null || cardPrefab == null || rows == null || rows.Length != 4) throw new InvalidOperationException("Configure the overview.");
-            appearance.Validate(); motion.Validate();
+            if (artProfile != null) artProfile.ValidateAtlas(atlas);
+            motion.Validate();
             foreach (var card in data.Cards.Where(card => card.Suit.HasValue)) CardUIGraphic.ValidateCard(atlas, card.Visual);
             ApplyRowAnchors();
             var rowScales = rows.Select(RowScale).ToArray();
@@ -156,7 +164,8 @@ namespace CardPresentation
                     var forward = pose.Rotation * Vector3.forward;
                     float roll = arcHeight > 0 && cards.Count > 1 ? Mathf.Atan2(forward.x,-forward.z) * Mathf.Rad2Deg : 0;
                     rect.localRotation = Quaternion.Euler(0,0,roll);
-                    item.Present(entry.Visual, entry.IsRemaining, appearance, motion);
+                    item.Graphic.SetArtProfile(artProfile != null ? artProfile : cardPrefab.Graphic.ArtProfile);
+                    item.Present(entry.Visual, entry.IsRemaining, motion);
                 }
                 foreach (var card in cards) if (items[card.Visual.ViewId].Interaction.IsHovered) items[card.Visual.ViewId].transform.SetAsLastSibling();
             }

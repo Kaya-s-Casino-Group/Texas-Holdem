@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using CardPresentation;
+using CardArt;
 using PokerEngine;
 using UnityEngine;
 
@@ -22,6 +23,13 @@ namespace CardInteraction
         public DeckOverviewView View => view;
         public IReadOnlyList<string> RosterIds => rosterIds.AsReadOnly();
         public bool CapturesHover => view != null && view.IsOpen;
+        public void BindArtwork(GameObject cardPrefab)
+        {
+            if (view == null || cardPrefab == null) throw new ArgumentNullException();
+            var surface = cardPrefab.GetComponentInChildren<CardView>(true);
+            if (surface == null) throw new ArgumentException("Use a card artwork prefab.");
+            view.BindArtProfile(surface.ArtProfile);
+        }
 #if UNITY_EDITOR
         public void ClearAuthoringRoster()
         {

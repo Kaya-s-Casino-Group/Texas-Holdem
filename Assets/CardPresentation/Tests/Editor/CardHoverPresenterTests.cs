@@ -1,3 +1,4 @@
+using CardArt;
 using System;
 using System.Linq;
 using CardInteraction;
@@ -147,9 +148,9 @@ namespace CardPresentation.Tests
                 item.Graphic.enabled = false; f.Presenter.RefreshPresentation(); Assert.IsFalse(f.Presenter.IsVisible);
                 item.Graphic.enabled = true;
                 var hidden = new CardVisualData(visual.ViewId,null,visual.CardId,visual.Tint,visual.Effects,visual.IsDisabled,visual.Interaction);
-                item.Present(hidden,item.IsRemaining,CardAppearanceSettings.Default,CardZoneMotionSettings.Default);
+                item.Present(hidden,item.IsRemaining,CardZoneMotionSettings.Default);
                 f.Presenter.RefreshPresentation(); Assert.IsFalse(f.Presenter.IsVisible);
-                item.Present(visual,item.IsRemaining,CardAppearanceSettings.Default,CardZoneMotionSettings.Default);
+                item.Present(visual,item.IsRemaining,CardZoneMotionSettings.Default);
                 item.SetHovered(true,false); item.transform.localPosition += Vector3.left * 2000;
                 f.Presenter.RefreshPresentation(); Assert.IsTrue(f.Presenter.IsVisible);
                 var corners = new Vector3[4]; ((RectTransform)f.Presenter.Instance.transform).GetWorldCorners(corners);

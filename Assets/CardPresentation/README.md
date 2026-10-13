@@ -1,10 +1,10 @@
 # 牌区展示、手牌与出牌区
 
-`CardPresentation.Runtime` 为 Unity 展示模块，引用 `PokerEngine.Core`、`CardArt.Runtime` 与已安装的 `DOTween.dll`，不引用 Holdem、Draw、Runs 或 Abilities。提供牌区展示和跨区出牌路径，消费外部卡牌状态而不采集鼠标输入；属性立即同步，悬停驱动缩放、选中驱动上浮动画，列表变化驱动补牌、让位与弃牌动画，可附加持续的视觉摆动。使用既有卡牌 Prefab 和 CardView，不修改规则状态。运行时不自动创建场景牌区；编辑器工具可显式创建测试牌区。
+`CardPresentation.Runtime` 为 Unity 展示模块，引用 `PokerEngine.Core`、`CardArt.Runtime` 与已安装的 `DOTween.dll`，不引用 Holdem、Draw、Runs 或 Abilities。提供牌区展示和跨区出牌路径，消费外部卡牌状态而不采集鼠标输入；属性立即同步，悬停驱动缩放、选中驱动上浮动画，列表变化驱动补牌、让位与弃牌动画，可附加持续的视觉摆动。使用既有卡牌 Prefab 和 CardView，不修改规则状态。运行时不自动创建场景牌区；编辑器工具只观察实战牌局并调整现有 View 的布局、动画和音效。
 
 ## 通用牌区与派生边界
 
-- `CardZoneView`：通用基类，负责按 ZoneId/ViewId 同步有序视觉实例、外观、可见性、圆弧/直排布局、相机朝向与持续摆动。直接使用时，列表增删重排立即落位，不附带手牌飞入/弃牌/上浮和音效。
+- `CardZoneView`：通用基类，负责按 ZoneId/ViewId 同步有序视觉实例、属性投影、可见性、圆弧/直排布局、相机朝向与持续摆动。直接使用时，列表增删重排立即落位，不附带手牌飞入/弃牌/上浮和音效。
 - `HandZoneView : CardZoneView`：手牌表现。负责悬停缩放与选中上浮、抽牌及翻面/惯性、重排过渡、虚拟弃牌终点及离场动画、抽牌/弃牌/选中三组独立音效。类未封闭，可继续派生。
 - `PlayedZoneView : CardZoneView`：出牌表现，最多五张卡牌，五个固定直排槽位，弧度与持续摆动强制关闭；不继承手牌行为。
 - Core `CardZone` 继续共用有序数据模型，通过 `Kind` 区分含义；`DefaultZoneKind` 为验证工具提供默认 Kind（手牌为 `hand`、出牌区为 `played`），不替代引擎规则校验。
@@ -83,7 +83,7 @@ HandZoneView : CardZoneView             通用区域布局 + 手牌抽取/弃牌
 
 ## 卡牌属性与本地状态
 
-| 数据 | 来源 | 当前表现 |
+| 数据 | 来源 | 当前默认配置的表现 |
 | --- | --- | --- |
 | 花色、点数 | Core 卡牌定义，经宿主映射到图集 | 对应牌面 |
 | 强化 | CardInstance.Effects.Enhanced | 开启火漆及样式配置的发光 |
@@ -113,21 +113,35 @@ var visual = CardVisualData.FromCard(card, stableViewId, isVisible,
     definitionId => artByDefinition[definitionId], interaction);
 ```
 
-## 属性驱动 Shader
+## 美术组合与玩法映射
 
-数据流为 `CardInstance → CardVisualData → CardAppearanceResolver → CardShaderAppearance → CardView / MaterialPropertyBlock`。CardZoneView 只维护顺序、实例和展示配置；效果开关完全由每张牌的属性解析。CardView 不判断强化、禁用或计分规则。
+美术侧只提供 Shader 参数组合，玩法侧约定卡牌状态对应哪些组合：
 
-`CardAppearanceSettings` 只保存美术样式，不进入 Core 或引擎存档。默认镭射颜色白色、强度 1.2；火漆颜色 RGB(0.65, 0.08, 0.04)、发光 0.2；失效时牌面 RGB 乘 0.45，镭射强度乘 0.2，火漆发光归零。效果颜色忽略 Alpha，镭射 RGB 保留 HDR；强度与系数在入口检查范围并拒绝非有限值。压暗使用现有 Tint 乘色，不是真正的去色/灰度。
+- `CardArtProfile`（`Assets/CardArt/Profiles/StandardCardArt.asset`）：图集、基础组合 ID、命名的 `CardShaderCombination` 列表。每项参数只有名字、Float/Color/Vector 类型、值和覆盖/乘算方式，不包含强化、失效等游戏状态。
+- `CardStateArtBindings`（`Assets/CardPresentation/Resources/StandardCardStateArt.asset`）：玩法配置。匹配所需/排除的 Effects 与禁用条件，所有匹配规则按列表顺序输出组合 ID。可以为某个组合状态指定独立美术组合，或叠加多个组合。它不定义 Shader 参数名和值。
+- `CardMatchHost.ArtBindings`：战局配置引用；绑定/投影时传给观察者数据，交互和跨区转移保留该引用。Demo 已绑定默认映射；未显式选择的适配器使用默认资源。Run 用 `FromDeckEntry(..., artBindings: bindings)` 选择同类映射。
 
-强化、塑封、失效与禁用可以叠加。失效不移除火漆或镭射标识，禁用红叉叠加在最上层。每次 Present 都重新生成完整 Shader 输入，包括关闭的开关和归零的参数，避免移除属性、翻面、实例复用或重复刷新后残留特效、累积压暗。外部直接调用 CardView 做的临时设置会被下一次 Present 覆盖。
+当前默认映射为强化 → `wax`、塑封 → `foil`、失效 → `dim`、禁用 → `cross`，依次叠加。这只是可编辑的默认资源：把强化映射为 `foil` 不需要修改美术配置、渲染器或 Shader。美术配置保留原手牌的 HDR 镭射颜色；基础组合将效果关闭，`dim` 通过乘算压暗和减弱强度。
 
-```csharp
-var style = CardAppearanceSettings.Default;
-style.FoilColor = new Color(1.2f, 3.2f, 4f);
-zoneView.SetAppearanceSettings(style); // 立即按当前卡牌属性刷新；不改共享材质
+```text
+DeckEntry / CardInstance
+  → CardVisualData（观察者可见的状态 + 玩法映射引用）
+  → CardStateArtBindings（按顺序选择组合 ID）
+  → CardArtProfile（合成通用 Shader 参数）
+  → CardView / MaterialPropertyBlock，或 CardUIGraphic / 顶点通道
 ```
 
-在更改任何视觉实例前，牌区会检查所有卡牌需要的 Shader 能力及贴图。要求强化时必须支持火漆并配置火漆贴图，非零发光需要发光接口；塑封需要镭射支持；禁用需要红叉支持及贴图。缺失时整次提交报错并保留原显示。火漆位置、尺寸、旋转、法线强度和镭射动画速度仍属于共享材质配置，此模块不修改它们，也不克隆逐牌材质。
+每次投影从基础组合重新合成，清空旧 MPB 后写入本次参数；移除状态、隐藏、复用和跨区不会累积上次效果。隐藏牌不匹配玩法状态，只使用基础组合。通用渲染器不判断效果或权限，Zone 只负责实例、顺序、布局和动画。
+
+Shader 沿用原先的 Atlas UV、表面标识、颜色及 Instancing 最小采样约定，不强制火漆/镭射/红叉扩展。自定义参数必须在 Shader 中存在且类型正确，声明实例 buffer 并通过实例读取（PerRendererData 可作为 Inspector 标记）；组合编辑和导出检查这些条件。通用组合支持数值、HDR 颜色、向量；贴图与 Keyword 属于共享 Shader/Material 配置。Atlas 的 BaseMap、FrontUVRect、BackUVRect 由采样路径维护，不能由组合覆盖。共享 Mesh/Material 不按卡牌克隆。
+
+当前 `CardUIGraphic` 是现有 Canvas Shader 的适配器，支持该 Shader 已定义的颜色、镭射、火漆、红叉顶点通道；其他参数会明确报错，接新 Canvas Shader 时扩展其通道适配器。场景 Shader 的自由实例参数不受这组 Canvas 通道限制。
+
+美术入口 `卡牌美术 > Shader 参数组合`（旧“属性表现”入口保留）：折叠区编辑参数名、类型、值及组合；“应用组合修改”校验并更新预览，“保存美术配置”保存资产。预览勾选组合 ID，按选择顺序叠加；左侧基础组合、右侧所选组合。独立相机渲染真实实例，支持主光/补光/环境亮度及主光方向，不依赖 Inspector Prefab 缩略图，关闭时清理预览场景。
+
+玩法入口 `玩法配置 > 卡牌状态美术映射`：编辑默认规则，检查任意效果/禁用组合得到的 ID 顺序。各玩法可以创建独立映射资产并给 CardMatchHost 配置。`卡牌美术 > 接入当前玩法场景` 绑定现有美术及默认玩法配置；Prefab 导出保存美术配置引用。
+
+`测试面板 > 打开面板` 提供“卡牌实例预览与光源”和“卡牌属性与共享美术”专项；不运行全量离线规则测试。完整 Run 牌组界面仍由 Run 宿主按需接入，Unity 配置引用不进入 Core 存档或远端协议。
 
 ## 使用
 
@@ -166,7 +180,7 @@ zoneView.Present(new CardZoneViewData(new ZoneId("opponent/hand"), new[] {
 - **手牌**：`SetLiftSettings(settings)` / `LiftSettings`：设置/读取上浮与回落动画；关闭时立即到达目标。单牌 `InteractionOffset` 返回实际牌区局部偏移，`IsLifting` 表示是否仍在过渡。
 - **手牌**：`SetInteractionOffsets(hovered, selected)`：分别设置悬停/选中偏移；`HoveredOffset` / `SelectedOffset` 可读取。输入全部验证后统一应用，不修改顺序或卡牌数据。
 - **手牌**：`SetRaisedOffset(offset)`：保留兼容便捷入口，把两档设为相同偏移；旧 `RaisedOffset` 属性对应选中偏移。
-- `SetAppearanceSettings(settings)`：按新样式重新解析当前牌区属性，刷新所有逐牌 Shader 参数；`CardInstanceView.Appearance` 可读取解析结果。
+- `CardInstanceView.Appearance` 只读当前单牌渲染器的解析结果；美术设置通过 `CardArtProfile` 调整，跨区保留卡牌自己的配置。
 - `Clear()`：释放本组件创建的实例并解除绑定；不删除其他场景子对象。
 - `Configure(prefab, settings)`：初始配置或 Clear 后更换 Prefab。已有绑定时用 SetLayout 调整布局。
 
@@ -365,7 +379,7 @@ UI Camera 新增 5 项回归，覆盖独立 Forward Renderer 的精简配置、�
 
 ## Canvas 牌组总览
 
-原生 UI 卡牌由 CardUIGraphic / CardUIItemView 消费 CardVisualData，DeckOverviewView 组合四行与剩余统计。它是另一种表现适配器，不继承带 MeshRenderer 的场景 CardZoneView；四行也不创建逻辑 Zone。共享规则属性、CardAppearanceResolver、图集及美术纹理；Shader 的采样/镭射/火漆坐标数学共用 HLSL，渲染分别使用 Canvas 与场景 Deferred。行宽固定、间距随牌数变化，浅圆弧直接共用手牌 CardZoneRowLayout 并将 XZ 转为 XY，保持正立与绘制顺序重叠；左侧分类/逐花色/逐点数统计独立于牌区排列。四行共同挂在 SuitRows RectTransform 下，stretch anchors 分配四个等高槽位，默认纵向重叠 12%，VerticalOverlap / SetVerticalOverlap 可调；调整共同父级大小会在 Canvas 渲染前自动重排与适配卡牌尺寸，Editor 和 Play 都保留视觉身份/悬停，不重新投影 Match。
+原生 UI 卡牌由 CardUIGraphic / CardUIItemView 消费 CardVisualData，DeckOverviewView 组合四行与剩余统计。它是另一种表现适配器，不继承带 MeshRenderer 的场景 CardZoneView；四行也不创建逻辑 Zone。共享规则属性、CardStateArtBindings、参数组合、图集及美术纹理；Shader 的采样/镭射/火漆坐标数学共用 HLSL，渲染分别使用 Canvas 与场景 Deferred。行宽固定、间距随牌数变化，浅圆弧直接共用手牌 CardZoneRowLayout 并将 XZ 转为 XY，保持正立与绘制顺序重叠；左侧分类/逐花色/逐点数统计独立于牌区排列。四行共同挂在 SuitRows RectTransform 下，stretch anchors 分配四个等高槽位，默认纵向重叠 12%，VerticalOverlap / SetVerticalOverlap 可调；调整共同父级大小会在 Canvas 渲染前自动重排与适配卡牌尺寸，Editor 和 Play 都保留视觉身份/悬停，不重新投影 Match。
 
 逐牌 idle 保留独立 local Y 摆动并附加轻微平面摆角；悬停时所在行一起置顶，退出恢复花色顺序。UI Camera 保留 Stack，在场景 540p 解析放大之后按输出分辨率绘制，不再继承低分辨率附件。
 
