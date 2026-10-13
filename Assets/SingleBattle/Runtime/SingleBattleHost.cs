@@ -23,6 +23,7 @@ namespace Poker.SingleBattle
         [SerializeField] private PlayerBattleActor[] playerActors = Array.Empty<PlayerBattleActor>();
         [SerializeField] private EnemyBattleActor[] enemyActors = Array.Empty<EnemyBattleActor>();
         private IBattleTargetPolicy targetPolicy;
+        private IBattleAllyTargetPolicy allyTargetPolicy;
         public IReadOnlyList<PlayerBattleActor> Players => Array.AsReadOnly(playerActors);
         public IReadOnlyList<EnemyBattleActor> Enemies => Array.AsReadOnly(enemyActors);
         private IEnumerable<BattleActor> Actors => Players.Cast<BattleActor>().Concat(Enemies);
@@ -43,6 +44,11 @@ namespace Poker.SingleBattle
         {
             if (State != null) throw new InvalidOperationException("Configure targeting before starting the battle.");
             targetPolicy = policy ?? throw new ArgumentNullException(nameof(policy));
+        }
+        public void ConfigureAllyTargetPolicy(IBattleAllyTargetPolicy policy)
+        {
+            if (State != null) throw new InvalidOperationException("Configure support targeting before starting the battle.");
+            allyTargetPolicy = policy ?? throw new ArgumentNullException(nameof(policy));
         }
         [SerializeField, InspectorName("公共战局规则")] private BattleRulesProfile rulesProfile;
         public BattleRulesProfile RulesProfile => rulesProfile;
@@ -66,6 +72,10 @@ namespace Poker.SingleBattle
         public long LastDamage { get; private set; }
         public CardDuelTransition LastPlayResolution { get; private set; }
         public ParticipantId LastPlayedBy { get; private set; }
+        public CardDuelTransition LastDiscardResolution { get; private set; }
+        public ParticipantId LastDiscardedBy { get; private set; }
+        public CardDuelTransition PreviewSelectedDiscard() => CanReceivePlayerInput
+            ? Engine.PreviewDiscard(State, State.Revision, playerActor.ParticipantId, playerActor.SelectedCards()) : null;
         /// <summary>Read-only evaluation of the currently selected cards. Does not commit state or emit presentation events.</summary>
         public CardDuelTransition PreviewSelectedPlay() => CanReceivePlayerInput
             ? Engine.PreviewPlay(State, State.Revision, playerActor.ParticipantId, playerActor.SelectedCards()) : null;
@@ -113,13 +123,13 @@ namespace Poker.SingleBattle
             if (playerActor == null) playerActor = Players[0];
             if (match.Commands != null && !ReferenceEquals(match.Commands, playerActor)) throw new InvalidOperationException("Another authority owns the card UI.");
             if (rulesProfile == null) throw new InvalidOperationException("Bind the shared battle rules first.");
-            var nextEngine = new CardDuelEngine(rulesProfile.BuildRules(), scoring: rulesProfile.BuildScoring(), targetPolicy: targetPolicy);
+            var nextEngine = new CardDuelEngine(rulesProfile.BuildRules(), scoring: rulesProfile.BuildScoring(), targetPolicy: targetPolicy, allyTargetPolicy: allyTargetPolicy);
             string id = "battle/" + Guid.NewGuid().ToString("N");
             var nextState = nextEngine.Create(id, HmacDeckShuffler.CreateRandomState(),
                 Players.Select((actor, index) => actor.CreateSetup(new ParticipantId(index == 0 ? "player" : id + "/player/" + index))),
                 Enemies.Select((actor, index) => actor.CreateSetup(new ParticipantId(id + "/enemy/" + index))));
             Engine = nextEngine; State = nextState;
-            LastScore = null; LastDamage = 0; LastPlayResolution = null; LastPlayedBy = default; Message = "选择 1–5 张牌组成牌型 · 能量用尽或手动结束回合";
+            LastScore = null; LastDamage = 0; LastPlayResolution = null; LastPlayedBy = default; LastDiscardResolution = null; LastDiscardedBy = default; Message = "选择 1–5 张牌组成牌型 · 能量用尽或手动结束回合";
             // Bind the empty table before the first turn deals, so opening cards use the normal draw presentation.
             BindActors(); Bind();
             var opening = Engine.Execute(State, State.Revision, CardDuelAction.Start);
@@ -173,6 +183,7 @@ namespace Poker.SingleBattle
             if (actor != playerActor || !playerActor.CanDiscard(hand)) return 0;
             var ids = playerActor.SelectedCards(); var frame = match.PrepareExternalDiscard(playerActor, hand.Zone.Id, hand.DiscardZone.Id, ids);
             var result = Engine.Execute(State, State.Revision, actor.ParticipantId, CardDuelAction.Discard, ids); if (!result.Accepted) return 0;
+            LastDiscardResolution = result; LastDiscardedBy = actor.ParticipantId;
             State = result.State; busy = true;
             try
             {

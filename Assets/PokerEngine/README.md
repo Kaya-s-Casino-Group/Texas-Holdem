@@ -65,6 +65,8 @@ graph TD
 
 攻击来源边界：`AttackContext` 携带原始基础伤害、来源类型和可选 `HandAttackInfo`；正式 CardDuel 出牌复用权威分类结果，并在移牌前捕获有效牌面与卡牌效果。SubmittedCards 包含所有提交牌，PatternCards 保留组成牌，ScoringCards 排除其中失效牌。Combat 不反向依赖 Scoring，也不重新识别牌型。攻击与承伤修正共用同一个 AttackContext，各目标共用同一份牌快照；它与实时 CombatState 分开，后者仍按原有阶段时机读取。`DamageModification.Triggers` 仅存储实际返回的触发来源/原因/卡牌范围与引用，不定义具体能力规则。旧无牌来源的数值调用明确标记 Other，不伪造出牌快照。
 
+弃牌收益与攻击结算独立：`IDiscardRewardRule.Resolve(DiscardRewardContext)` 接收权威弃牌快照和存活友方目标，返回 `DiscardRewardPlan`。默认 NoDiscardRewardRule 产生空计划，不判牌型、不计分、不创建 CombatEvent；有支持效果时仍通过 CombatEngine 原子应用，暂只允许 GainBlock / Heal，禁止改来源、攻击敌方或清空格挡。费用、次数和发牌继续由 TeamBattle / CardDuel 负责。`PreviewDiscard` 直接复用正式 Execute；`DiscardRewardResolution` 保存上下文及返回计划，供配置无关的只读面板投影。
+
 ## 通用基础层
 
 `CardDefinition` 为静态定义；`CardInstance` 为当前对局实体，`OriginId` 关联 Run 中的持久牌。复制牌产生新持久 ID 并继承强化，下一关重新创建实例牌。`StandardDeck` 提供标准 52 张牌，不依赖德州模块。

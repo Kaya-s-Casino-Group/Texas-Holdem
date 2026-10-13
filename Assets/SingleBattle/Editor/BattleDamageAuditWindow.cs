@@ -154,16 +154,17 @@ namespace Poker.SingleBattle.Editor
             GUILayout.Label(value, EditorStyles.wordWrappedLabel, GUILayout.ExpandWidth(true));
             EditorGUILayout.EndHorizontal();
         }
-        private static string ErrorName(CardDuelError error)
+        internal static string ErrorName(CardDuelError error)
         {
             switch (error)
             {
-                case CardDuelError.InvalidSelection: return "请选择合法的 1～5 张手牌；禁用牌不能出牌。";
+                case CardDuelError.InvalidSelection: return "请选择合法的 1～5 张手牌；禁用牌不能操作。";
                 case CardDuelError.InsufficientEnergy: return "当前能量不足，正式出牌会被拒绝。";
                 case CardDuelError.InvalidPhase: return "当前阶段不能出牌。";
                 case CardDuelError.StaleRevision: return "战局已变化，请重新读取。";
                 case CardDuelError.InvalidTarget: return "当前目标无效。";
                 case CardDuelError.InvalidDamagePlan: return "伤害策略返回了不符合来源、目标或版本约定的结果。";
+                case CardDuelError.InvalidDiscardReward: return "弃牌收益规则返回了无效结果；本次操作未提交。";
                 case CardDuelError.InvalidDamageModifier: return "攻击修正或目标承伤修正返回了无效结果，本次出牌会被拒绝。";
                 case CardDuelError.Overflow: return "结算数值溢出，正式出牌会被拒绝。";
                 case CardDuelError.InvalidState: return "战局与规则不匹配。";

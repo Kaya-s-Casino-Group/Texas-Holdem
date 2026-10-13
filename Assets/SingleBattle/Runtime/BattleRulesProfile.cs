@@ -15,6 +15,10 @@ namespace Poker.SingleBattle
         [SerializeField, InspectorName("牌型计分配置")] private PokerScoreProfile scoring;
         public PokerScoreProfile Scoring => scoring;
         public ScoreProfile BuildScoring() => scoring != null ? scoring.Build() : ScoreProfile.Default;
-        public BattleRules BuildRules() => new BattleRules(version, damage != null ? damage.BuildRule() : throw new System.InvalidOperationException("请先绑定独立的出牌伤害配置。"), roundLimit);
+        [SerializeField, InspectorName("弃牌收益配置（空为无收益）")] private DiscardRewardProfile discardReward;
+        public DiscardRewardProfile DiscardReward => discardReward;
+        public void ConfigureDiscardReward(DiscardRewardProfile profile) => discardReward = profile;
+        public BattleRules BuildRules() => new BattleRules(version, damage != null ? damage.BuildRule() : throw new System.InvalidOperationException("请先绑定独立的出牌伤害配置。"), roundLimit,
+            discardReward: discardReward != null ? discardReward.BuildRule() ?? throw new System.InvalidOperationException("弃牌收益配置返回了空规则。") : new NoDiscardRewardRule());
     }
 }

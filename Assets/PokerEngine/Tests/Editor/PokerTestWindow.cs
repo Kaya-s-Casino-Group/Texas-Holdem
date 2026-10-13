@@ -28,6 +28,7 @@ namespace PokerEngine.Tests
         private static readonly Entry[] Focused = {
             Suite("CardArtworkPreview", "卡牌实例预览与光源", "自由参数组合、最小 Shader 协议、实例渲染与可控光源。", "CardArt.Tests.Editor", "CardArtworkPreviewTests", "CardShaderCombinationTests"),
             Suite("CardArtworkIntegration", "卡牌属性与共享美术", "状态映射、组合叠加、Run/战局投影、Canvas 与跨区保留。", "CardPresentation.Tests.Editor", "CardAppearanceTests", "CanvasDeckOverviewTests", "CardZoneViewPrefabExporterTests"),
+            Suite("DiscardRewardTests", "弃牌收益与友方边界", "默认无收益、独立规则、友方校验、原子拒绝和正式弃牌预览。", "PokerEngine.Tests.Editor", "DiscardRewardTests"),
             Suite("AttackContextTests", "攻击来源与触发依据", "正式出牌快照、提交/组成/计分范围、双方共用上下文与原因记录。", "PokerEngine.Tests.Editor", "AttackContextTests"),
             Suite("ScoredHandDamageTests", "出牌伤害与只读验算", "转换接口、逐目标请求、正式结算复用及状态/随机数不变。", "PokerEngine.Tests.Editor", "ScoredHandDamageTests"),
             Suite("ScoreProfileTests", "牌型筹码与倍率", "默认数值、单牌覆盖、成长、计分子集与配置隔离。", "PokerEngine.Tests.Editor", "ScoreProfileTests", "CardScoreQueryTests"),

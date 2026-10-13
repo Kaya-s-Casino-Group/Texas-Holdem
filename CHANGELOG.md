@@ -4,6 +4,18 @@
 
 ## [Unreleased]
 
+### 2026-10-13 — 独立弃牌收益接口与验算边界
+
+- 新增 IDiscardRewardRule / DiscardRewardContext / DiscardRewardPlan，默认 NoDiscardRewardRule 返回空计划，不计分、不产生额外收益、不改变原有弃牌能耗/次数/补牌。
+- 独立 DiscardRewardProfile 配置在开局创建快照，公共规则引用 DemoDiscardReward，缺失引用默认无收益。收益只能作用于已验证的存活友方；当前承接已有格挡/治疗效果，未添加具体生产规则。
+- PreviewDiscard 复用正式入口，Host 记录最近实际弃牌；中文「弃牌收益验算」面板读取相同结果，展示卡牌快照、友方目标、费用和收益说明。
+- 补充默认无事件、敌方拒绝、非法策略与溢出回滚、预览/提交一致、循环洗牌随机隔离、配置快照和缓存生命周期测试。
+
+### 2026-10-13 — 预留友方目标边界
+
+- 新增独立 IBattleAllyTargetPolicy 与默认 SelfOrRequestedAllyPolicy，Host / CardDuel / TeamBattle 支持开战前注入；目标限定存活己方单位，并验证请求及策略输出。
+- 弃牌收益尚未定案，暂不启用牌型换格挡，也不改变现有过牌、能耗和次数逻辑。
+
 ### 2026-10-13 — 攻击来源快照与触发依据
 
 - 正式出牌生成不可变 HandAttackInfo / AttackCardSnapshot，明确提交牌、牌型组成牌、实际计分牌三个范围，失效牌不参与逐牌计分但仍可组成牌型。

@@ -27,6 +27,24 @@ namespace PokerEngine.Tests
         }
         private static CardDuelState EndPlayers(CardDuelEngine engine, CardDuelState state)
         { return Do(engine, Do(engine, state, P1, CardDuelAction.EndTurn), P2, CardDuelAction.EndTurn); }
+        private sealed class InvalidAllyPolicy : IBattleAllyTargetPolicy
+        {
+            public IReadOnlyList<ParticipantId> SelectTargets(BattleAllyTargetContext context) => new[] { E1 };
+        }
+        [Test] public void SupportTargetsDefaultToSelfAndRejectHostileOrInvalidRequests()
+        {
+            var engine = Engine(); var state = Create(engine);
+            CollectionAssert.AreEqual(new[] { P1 }, engine.Duel.AllyTargets(state.Duel, P1));
+            CollectionAssert.AreEqual(new[] { P2 }, engine.Duel.AllyTargets(state.Duel, P1, new[] { P2 }));
+            Assert.Throws<ArgumentException>(() => engine.Duel.AllyTargets(state.Duel, P1, new[] { E1 }));
+            Assert.Throws<ArgumentException>(() => engine.Duel.AllyTargets(state.Duel, P1, new[] { P2, P2 }));
+            Assert.Throws<ArgumentException>(() => engine.Duel.AllyTargets(state.Duel, P1, new[] { new ParticipantId("absent") }));
+            var invalid = new TeamBattleEngine(engine.Duel.Definition, allyTargetPolicy: new InvalidAllyPolicy());
+            Assert.Throws<ArgumentException>(() => invalid.AllyTargets(state.Duel, P1));
+            var dying = EndPlayers(engine, Create(engine, hp2: 1));
+            var dead = Do(engine, dying, E1, CardDuelAction.EnemyAction, targets: new[] { P2 });
+            Assert.Throws<ArgumentException>(() => engine.Duel.AllyTargets(dead.Duel, P1, new[] { P2 }));
+        }
         [Test] public void SeparateDecksAndBudgetsAllowInterleavedPlayerActions()
         {
             var engine = Engine(); var state = Create(engine);

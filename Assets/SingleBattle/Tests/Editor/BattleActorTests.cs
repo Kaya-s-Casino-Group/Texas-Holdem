@@ -174,6 +174,41 @@ namespace Poker.SingleBattle.Tests
             }
             finally { UnityEngine.Object.DestroyImmediate(rules); UnityEngine.Object.DestroyImmediate(damage); }
         }
+        [Test] public void DiscardPreviewUsesSnapshotAndRecordsOnlyTheCommittedAction()
+        {
+            var profile = ScriptableObject.CreateInstance<NoDiscardRewardProfile>();
+            try
+            {
+                using (var f = new Fixture(start: false))
+                {
+                    f.Host.RulesProfile.ConfigureDiscardReward(profile); f.Host.StartBattle(); f.Select();
+                    var before = f.Host.State; var mirror = f.Match.State; int changes = 0, attacks = 0;
+                    f.Host.StateChanged += () => changes++; f.Player.ActionPresented += () => attacks++;
+                    var preview = f.Host.PreviewSelectedDiscard();
+                    Assert.IsTrue(preview.Accepted); Assert.IsEmpty(preview.DiscardReward.Plan.Effects);
+                    Assert.AreSame(before, f.Host.State); Assert.AreSame(mirror, f.Match.State);
+                    Assert.AreEqual(0, changes); Assert.AreEqual(0, attacks); Assert.IsNull(f.Host.LastDiscardResolution);
+                    var serialized = new SerializedObject(profile); serialized.FindProperty("version").stringValue = "discard.next.2";
+                    serialized.ApplyModifiedPropertiesWithoutUndo();
+                    Assert.AreEqual("discard.none.1", f.Host.PreviewSelectedDiscard().DiscardReward.Plan.RuleVersion);
+                    Assert.AreEqual(1, f.Player.Discard(f.Hand, false));
+                    var actual = f.Host.LastDiscardResolution;
+                    Assert.AreEqual(f.Player.ParticipantId, f.Host.LastDiscardedBy);
+                    Assert.AreEqual(preview.DiscardReward.Plan.RuleVersion, actual.DiscardReward.Plan.RuleVersion);
+                    CollectionAssert.AreEqual(preview.DiscardReward.Context.Cards.Select(card => card.Id), actual.DiscardReward.Context.Cards.Select(card => card.Id));
+                    Assert.IsNull(f.Host.LastPlayResolution); Assert.IsNull(f.Host.LastScore); Assert.AreEqual(0, attacks);
+                    Assert.AreEqual(preview.State.DiscardsRemaining, actual.State.DiscardsRemaining);
+                    f.Host.StartBattle(); f.Select(); Assert.IsNull(f.Host.LastDiscardResolution);
+                    Assert.AreEqual("discard.next.2", f.Host.PreviewSelectedDiscard().DiscardReward.Plan.RuleVersion);
+                    f.Host.RulesProfile.ConfigureDiscardReward(null); f.Host.StartBattle(); f.Select();
+                    Assert.AreEqual("discard.none.1", f.Host.PreviewSelectedDiscard().DiscardReward.Plan.RuleVersion);
+                }
+                var demo = AssetDatabase.LoadAssetAtPath<BattleRulesProfile>("Assets/SingleBattle/Profiles/DemoBattleRules.asset");
+                Assert.AreSame(AssetDatabase.LoadAssetAtPath<NoDiscardRewardProfile>("Assets/SingleBattle/Profiles/DemoDiscardReward.asset"), demo.DiscardReward);
+                Assert.IsInstanceOf<NoDiscardRewardRule>(demo.BuildRules().DiscardReward);
+            }
+            finally { UnityEngine.Object.DestroyImmediate(profile); }
+        }
         [Test] public void DerivedActorsBindDistinctSlotsAndOnlyPlayerOwnsCardCommands()
         {
             using (var f = new Fixture())

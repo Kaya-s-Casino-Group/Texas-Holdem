@@ -12,14 +12,16 @@ namespace PokerEngine
         public int RoundLimit { get; }
         public IAttackDamageModifier AttackDamage { get; }
         public IIncomingDamageModifier IncomingDamage { get; }
+        public IDiscardRewardRule DiscardReward { get; }
         public BattleRules(string version, IScoredHandDamageRule damagePolicy, int roundLimit,
-            IAttackDamageModifier attackDamage = null, IIncomingDamageModifier incomingDamage = null)
+            IAttackDamageModifier attackDamage = null, IIncomingDamageModifier incomingDamage = null, IDiscardRewardRule discardReward = null)
         {
             Version = Guard.Text(version, nameof(version)); DamagePolicy = damagePolicy ?? throw new ArgumentNullException(nameof(damagePolicy));
             if (roundLimit < 1 || roundLimit > 1000) throw new ArgumentOutOfRangeException(nameof(roundLimit));
             RoundLimit = roundLimit;
             AttackDamage = attackDamage ?? new IdentityAttackDamageModifier();
             IncomingDamage = incomingDamage ?? new IdentityIncomingDamageModifier();
+            DiscardReward = discardReward ?? new NoDiscardRewardRule();
         }
     }
     /// <summary>Immutable player-specific card and action budget, captured when entering the encounter.</summary>
@@ -152,8 +154,9 @@ namespace PokerEngine
         public bool Accepted => Error == CardDuelError.None;
         public IReadOnlyList<CombatEvent> Events { get; }
         public DamagePlan Damage { get; }
-        internal TeamBattleTransition(TeamBattleState state, CardDuelError error = CardDuelError.None, IEnumerable<CombatEvent> events = null, DamagePlan damage = null)
-        { State = state; Error = error; Damage = damage; Events = Guard.View((events ?? new CombatEvent[0]).ToArray()); }
+        public DiscardRewardResolution DiscardReward { get; }
+        internal TeamBattleTransition(TeamBattleState state, CardDuelError error = CardDuelError.None, IEnumerable<CombatEvent> events = null, DamagePlan damage = null, DiscardRewardResolution discardReward = null)
+        { State = state; Error = error; Damage = damage; DiscardReward = discardReward; Events = Guard.View((events ?? new CombatEvent[0]).ToArray()); }
     }
     /// <summary>Combat and round authority. Cards/scoring legality belong to CardDuelEngine; animations belong to the host.
     /// Commands serialize by revision even though players share one phase.</summary>
@@ -161,8 +164,13 @@ namespace PokerEngine
     {
         public BattleRules Definition { get; }
         public IBattleTargetPolicy TargetPolicy { get; }
-        public TeamBattleEngine(BattleRules definition, IBattleTargetPolicy targetPolicy = null)
-        { Definition = definition ?? throw new ArgumentNullException(nameof(definition)); TargetPolicy = targetPolicy ?? new FirstLivingOpponentPolicy(); }
+        public IBattleAllyTargetPolicy AllyTargetPolicy { get; }
+        public TeamBattleEngine(BattleRules definition, IBattleTargetPolicy targetPolicy = null, IBattleAllyTargetPolicy allyTargetPolicy = null)
+        {
+            Definition = definition ?? throw new ArgumentNullException(nameof(definition));
+            TargetPolicy = targetPolicy ?? new FirstLivingOpponentPolicy();
+            AllyTargetPolicy = allyTargetPolicy ?? new SelfOrRequestedAllyPolicy();
+        }
         public TeamBattleState Create(string id, IEnumerable<BattlePlayerSetup> players, IEnumerable<BattleEnemySetup> enemies)
         {
             var p = players.ToArray(); var e = enemies.ToArray();
@@ -186,8 +194,19 @@ namespace PokerEngine
                 targets.Any(id => !context.Opponents.Contains(id))) throw new ArgumentException("Target policy must return distinct living opponents.");
             return Guard.View(targets);
         }
+        public IReadOnlyList<ParticipantId> AllyTargets(TeamBattleState state, ParticipantId source, IEnumerable<ParticipantId> requested = null)
+        {
+            var context = new BattleAllyTargetContext(state, source, requested);
+            if (!context.Allies.Contains(source) || context.Requested.Count > 64 ||
+                context.Requested.Distinct().Count() != context.Requested.Count || context.Requested.Any(id => !context.Allies.Contains(id)))
+                throw new ArgumentException("Support requests require distinct living allies.");
+            var targets = AllyTargetPolicy.SelectTargets(context)?.ToArray();
+            if (targets == null || targets.Length == 0 || targets.Length > 64 || targets.Distinct().Count() != targets.Length ||
+                targets.Any(id => !context.Allies.Contains(id))) throw new ArgumentException("Support policy must return distinct living allies.");
+            return Guard.View(targets);
+        }
         public TeamBattleTransition Execute(TeamBattleState state, long revision, ParticipantId actor, ScoredDuelActionKind action,
-            ScoreResult score = null, IEnumerable<ParticipantId> requestedTargets = null, HandAttackInfo hand = null)
+            ScoreResult score = null, IEnumerable<ParticipantId> requestedTargets = null, HandAttackInfo hand = null, IEnumerable<DiscardCardSnapshot> discardedCards = null)
         {
             if (state == null) throw new ArgumentNullException(nameof(state));
             if (!ReferenceEquals(state.Rules, Definition)) return new TeamBattleTransition(state, CardDuelError.InvalidState);
@@ -203,7 +222,7 @@ namespace PokerEngine
             try
             {
                 var combat = state.Combat; var players = state.Players.ToArray(); var scores = state.Scores.ToArray();
-                IReadOnlyList<CombatEvent> events = new CombatEvent[0]; DamagePlan damagePlan = null;
+                IReadOnlyList<CombatEvent> events = new CombatEvent[0]; DamagePlan damagePlan = null; DiscardRewardResolution discardReward = null;
                 if (action == ScoredDuelActionKind.ScoredHand || enemy)
                 {
                     if (!enemy)
@@ -247,6 +266,27 @@ namespace PokerEngine
                         hit.Error == CombatError.InvalidDamageModifier ? CardDuelError.InvalidDamageModifier : CardDuelError.InvalidTarget);
                     combat = hit.State; events = hit.Events;
                 }
+                if (action == ScoredDuelActionKind.Discard)
+                {
+                    // Validate friendly targets even for the default empty reward plan.
+                    var targets = AllyTargets(state, actor, requestedTargets);
+                    DiscardRewardPlan plan;
+                    try
+                    {
+                        var context = new DiscardRewardContext(state, actor, discardedCards, targets);
+                        plan = Definition.DiscardReward.Resolve(context);
+                        if (plan == null) return new TeamBattleTransition(state, CardDuelError.InvalidDiscardReward);
+                        plan.Validate(context, Definition.DiscardReward.Version);
+                        discardReward = new DiscardRewardResolution(context, plan);
+                    }
+                    catch (ArgumentException) { return new TeamBattleTransition(state, CardDuelError.InvalidDiscardReward); }
+                    if (plan.Effects.Count > 0)
+                    {
+                        var reward = CombatEngine.Resolve(combat, combat.Revision, plan.Effects);
+                        if (!reward.Accepted) return new TeamBattleTransition(state, reward.Error == CombatError.Overflow ? CardDuelError.Overflow : CardDuelError.InvalidDiscardReward);
+                        combat = reward.State; events = reward.Events;
+                    }
+                }
                 if (!enemy)
                 {
                     int index = Array.FindIndex(players, x => x.Id == actor);
@@ -273,7 +313,7 @@ namespace PokerEngine
                 }
                 if (phase == ScoredDuelPhase.Won || phase == ScoredDuelPhase.Lost) pending = new ParticipantId[0];
                 return new TeamBattleTransition(new TeamBattleState(Definition, combat, players, state.Enemies, phase, pending,
-                    checked(state.Revision + 1), rounds, scores, state.Actions.Concat(new[] { new BattleActionRecord(actor, action, action == ScoredDuelActionKind.ScoredHand ? (int?)state.Scores.Count : null) })), events: events, damage: damagePlan);
+                    checked(state.Revision + 1), rounds, scores, state.Actions.Concat(new[] { new BattleActionRecord(actor, action, action == ScoredDuelActionKind.ScoredHand ? (int?)state.Scores.Count : null) })), events: events, damage: damagePlan, discardReward: discardReward);
             }
             catch (OverflowException) { return new TeamBattleTransition(state, CardDuelError.Overflow); }
             catch (ArgumentException) { return new TeamBattleTransition(state, CardDuelError.InvalidTarget); }
