@@ -4,7 +4,7 @@
 
 ## 编辑
 
-菜单 `Poker > Run Flow Editor` 打开窗口；双击流程资产也可打开。已有示例为 `Configs/RunFlow_ThreeFloorsAndBoss.asset`，包含三棵普通分支树和一棵独立 Boss 树。窗口“三层 + Boss 示例”会创建新资产，不覆盖原资产。
+菜单 `Tools > Poker > Run Flow Editor` 打开窗口；双击流程资产也可打开。已有示例为 `Configs/RunFlow_ThreeFloorsAndBoss.asset`，包含三棵普通分支树和一棵独立 Boss 树。窗口“三层 + Boss 示例”会创建新资产，不覆盖原资产。
 
 - 左侧添加、删除、调整楼层顺序；“整局规则”配置开局金币、小丑、奖励池和商店池。
 - 中间通过“+ 节点”添加普通战斗、精英、Boss、奖励、商店。拖动节点改变排布；右侧圆点连接到目标左侧圆点或节点框，支持分支及汇合。
@@ -56,4 +56,4 @@ state = started.State;
 
 `Poker.RunFlow.Runtime` 引用 UnityEngine，负责资产到纯 C# 定义的桥接，并有 link.xml；GameCore 的十个程序集继续无 Unity 依赖。`Poker.RunFlow.Editor` 和测试程序集仅进入 Editor。本轮提供固定地图编辑；随机地图生成、玩家地图/选路界面及场景 Run 宿主接入另行实现。跨 Run 成长由独立 PlayerProgressionState 持有，见 [Progression README](../PokerEngine/Runtime/Progression/README.md)。
 
-测试入口 `测试面板 > 编辑模式测试 > 更多模块 / 全量回归 > 关卡流程编辑器`：8 项同步测试，覆盖资产保存重导入、不可变转换、四层实际 Draw Run 与每步快照恢复、撤销/重做、图及内容 ID 校验、楼层排序、排布和 Player 程序集边界；结果位于 `Library/RunFlowEditorTests`。不保存或替换当前场景。
+测试入口 `Tools > 测试面板 > 编辑模式测试 > 更多模块 / 全量回归 > 关卡流程编辑器`：8 项同步测试，覆盖资产保存重导入、不可变转换、四层实际 Draw Run 与每步快照恢复、撤销/重做、图及内容 ID 校验、楼层排序、排布和 Player 程序集边界；结果位于 `Library/RunFlowEditorTests`。不保存或替换当前场景。

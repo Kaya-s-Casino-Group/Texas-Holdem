@@ -4,7 +4,7 @@ using UnityEngine;
 
 public static class PokerBuild
 {
-    [MenuItem("Poker/Build macOS Game")]
+    [MenuItem("Tools/Poker/Build macOS Game")]
     public static void BuildMac()
     {
         PlayerSettings.productName = "Pocket Poker";

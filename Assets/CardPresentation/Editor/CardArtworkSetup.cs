@@ -16,7 +16,7 @@ namespace CardPresentation.Editor
     public static class CardArtworkSetup
     {
         public const string ProfilePath = "Assets/CardArt/Profiles/StandardCardArt.asset";
-        [MenuItem("卡牌美术/接入当前玩法场景")]
+        [MenuItem("Tools/卡牌美术/接入当前玩法场景")]
         public static void Configure()
         {
             if (Application.isPlaying) throw new InvalidOperationException("请退出 Play 后配置卡牌美术资源。");

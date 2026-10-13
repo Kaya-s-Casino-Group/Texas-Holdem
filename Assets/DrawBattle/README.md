@@ -48,6 +48,6 @@ battle.StartEncounter(rules, run.Encounter, resolveArt, command => {
 
 ## 验证入口
 
-- **Poker > Tests > Run Draw Battle In Current Scene**：同步 NUnit 回归，使用独立 PreviewScene，不替换当前场景。
-- Play 中 **测试面板 > 实战验证 > 分数目标战局**：调用真实按钮和指针事件，等待真实飞行/补牌动画，检查重复提交锁定、计分、次数、四区、牌堆数字、悬停统计、点击牌库与排序。完成恢复原战局；报告 `Library/DrawBattleTests/play.json`。不模拟系统鼠标。
+- **Tools > 测试面板 > 编辑模式测试 > 更多模块 / 全量回归 > 分数目标战局逻辑**：同步 NUnit 回归，使用独立 PreviewScene，不替换当前场景。
+- Play 中 **Tools > 测试面板 > 实战验证 > 分数目标战局**：调用真实按钮和指针事件，等待真实飞行/补牌动画，检查重复提交锁定、计分、次数、四区、牌堆数字、悬停统计、点击牌库与排序。完成恢复原战局；报告 `Library/DrawBattleTests/play.json`。不模拟系统鼠标。
 - 既有 **Run Card Presentation In Current Scene** 保留原验证/预览模式回归。

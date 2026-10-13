@@ -12,7 +12,7 @@ namespace CardPresentation.Editor
         private CardEffects previewEffects;
         private bool previewDisabled;
         private CardArtProfile previewArt;
-        [MenuItem("玩法配置/卡牌状态美术映射")]
+        [MenuItem("Tools/玩法配置/卡牌状态美术映射")]
         public static void Open() { Selection.activeObject = CardStateArtBindings.Standard; EditorGUIUtility.PingObject(Selection.activeObject); }
         public override void OnInspectorGUI()
         {

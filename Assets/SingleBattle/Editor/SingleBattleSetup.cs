@@ -19,7 +19,7 @@ namespace Poker.SingleBattle.Editor
         private static readonly Color Ink = new Color32(25, 30, 35, 238);
         private static readonly Color Paper = new Color32(238, 232, 213, 255);
         private static TMP_FontAsset font;
-        [MenuItem("Poker/Single Battle/Configure Demo Scene")]
+        [MenuItem("Tools/Poker/Single Battle/Configure Demo Scene")]
         public static void Configure()
         {
             var scene = SceneManager.GetActiveScene();
@@ -78,7 +78,7 @@ namespace Poker.SingleBattle.Editor
             Selection.activeObject = host;
             Debug.Log("SingleBattleDemo configured and saved. Enter Play: select cards, play/discard, defeat the guardian, restart.");
         }
-        [MenuItem("Poker/Single Battle/Connect Battle Actors")]
+        [MenuItem("Tools/Poker/Single Battle/Connect Battle Actors")]
         public static void ConnectActors()
         {
             var scene = SceneManager.GetActiveScene();
@@ -176,7 +176,7 @@ namespace Poker.SingleBattle.Editor
             if (firstSetup) presenter.ConfigureAttackOffset(new Vector3(actor is PlayerBattleActor ? .06f : -.06f, 0, 0));
             EditorUtility.SetDirty(cracks); EditorUtility.SetDirty(presenter);
         }
-        [MenuItem("Poker/Single Battle/Refresh Energy HUD")]
+        [MenuItem("Tools/Poker/Single Battle/Refresh Energy HUD")]
         public static void RefreshEnergyHud()
         {
             var scene = SceneManager.GetActiveScene();
@@ -189,7 +189,7 @@ namespace Poker.SingleBattle.Editor
             label.text = "能量 3 / 3\n出牌 1 · 弃牌 1";
             EditorUtility.SetDirty(label); EditorSceneManager.MarkSceneDirty(scene); EditorSceneManager.SaveScene(scene);
         }
-        [MenuItem("Poker/Single Battle/Prepare Runtime Card Zones")]
+        [MenuItem("Tools/Poker/Single Battle/Prepare Runtime Card Zones")]
         public static void PrepareRuntimeCardZones()
         {
             var scene = SceneManager.GetActiveScene();
@@ -221,7 +221,7 @@ namespace Poker.SingleBattle.Editor
         public const string FoxPrefabPath = "Assets/Art/Models/Creatures/FoxStatue/VAT/FoxStatue_Collapse_VAT.prefab";
         public const string DragonPrefabPath = "Assets/Art/Models/Creatures/DragonGargoyle/VAT/DragonGargoyle_Collapse_VAT.prefab";
 
-        [MenuItem("Poker/Single Battle/Organize Demo Scene")]
+        [MenuItem("Tools/Poker/Single Battle/Organize Demo Scene")]
         public static void Organize()
         {
             var scene = SceneManager.GetActiveScene();
@@ -336,7 +336,7 @@ namespace Poker.SingleBattle.Editor
             var text = Label(rect, "Label", title, 20, new Vector2(0, -4), rect.sizeDelta - new Vector2(0, 8), Paper, true); text.alignment = TextAlignmentOptions.Center;
             return button;
         }
-        [MenuItem("Poker/Single Battle/Capture Game View")]
+        [MenuItem("Tools/Poker/Single Battle/Capture Game View")]
         public static void Capture()
         {
             if (!Application.isPlaying) throw new InvalidOperationException("Enter Play first.");

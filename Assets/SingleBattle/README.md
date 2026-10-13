@@ -165,19 +165,19 @@ BattleActor（抽象 MonoBehaviour：身份绑定、最新单位读取、表现�
 
 ## 维护和验证
 
-- `Poker > Single Battle > Configure Demo Scene`：只允许在专用 Demo 场景中执行，重建本 Demo 的 HUD 与宿主绑定并保存；不会修改共享 UI prefab。HUD 手工调整后不要执行此菜单覆盖自己的布局。
-- `Poker > Single Battle > Connect Battle Actors`：在当前专用 Demo 中创建/复用玩家节点、创建/复用 Enemy 逻辑根节点，将当前可见的 Enemy 或 DragonGargoyle 模型移入 Model 子树（保持世界姿态），把怪物组件挂到逻辑根，连接双方与宿主并保存；保留现有 HUD、模型和布局。
-- `Poker > Single Battle > Organize Demo Scene`：将已摆放的 Fox 接入玩家 Model，连接双方 VAT prefab，按五个根分组整理场景并保存；保留美术、UI 引用与世界姿态，可重复执行。角色连接和 HUD 配置菜单支持分组后的层级。
-- `Poker > Single Battle > Prepare Runtime Card Zones`：清理本 Demo 的验证牌、初始牌区和 roster，保留手牌/出牌区 View、相机、牌堆锚点、模型和 UI；保存场景，运行时由战局提供四区。
-- `Poker > Single Battle > Refresh Energy HUD`：仅更新能量标签为两行并保留所需高度，显示当前/上限和出牌/弃牌消耗；保存当前场景，不重建其他 HUD 或模型。
-- `测试面板 > 实战验证 > 单战局发牌专项`：发牌专项检查，使用真实出牌/弃牌按钮和动画交叉验证两种时机，检查输入锁定与回合补满；只临时覆盖设置并恢复，报告 `Library/SingleBattleTests/dealing.json`。
-- `测试面板 > 实战验证 > 单战局完整流程`：通过真实按钮事件及真实飞行动画验证弃牌、补牌、扣血、怪物阶段、重复输入锁定、牌库浏览、排序、胜利、失败、重开。测试包含能量扣除、同回合连续出牌、自动/主动/空过回合结束、单次反击及能量恢复；测试只临时覆盖运行时数值，结束恢复初始数值并开始新战局。报告位于 `Library/SingleBattleTests/play.json`。
-- `Poker > Single Battle > Capture Game View`：Play 中截图到 `Library/SingleBattleTests/demo.png`。
+- `Tools > Poker > Single Battle > Configure Demo Scene`：只允许在专用 Demo 场景中执行，重建本 Demo 的 HUD 与宿主绑定并保存；不会修改共享 UI prefab。HUD 手工调整后不要执行此菜单覆盖自己的布局。
+- `Tools > Poker > Single Battle > Connect Battle Actors`：在当前专用 Demo 中创建/复用玩家节点、创建/复用 Enemy 逻辑根节点，将当前可见的 Enemy 或 DragonGargoyle 模型移入 Model 子树（保持世界姿态），把怪物组件挂到逻辑根，连接双方与宿主并保存；保留现有 HUD、模型和布局。
+- `Tools > Poker > Single Battle > Organize Demo Scene`：将已摆放的 Fox 接入玩家 Model，连接双方 VAT prefab，按五个根分组整理场景并保存；保留美术、UI 引用与世界姿态，可重复执行。角色连接和 HUD 配置菜单支持分组后的层级。
+- `Tools > Poker > Single Battle > Prepare Runtime Card Zones`：清理本 Demo 的验证牌、初始牌区和 roster，保留手牌/出牌区 View、相机、牌堆锚点、模型和 UI；保存场景，运行时由战局提供四区。
+- `Tools > Poker > Single Battle > Refresh Energy HUD`：仅更新能量标签为两行并保留所需高度，显示当前/上限和出牌/弃牌消耗；保存当前场景，不重建其他 HUD 或模型。
+- `Tools > 测试面板 > 实战验证 > 单战局发牌专项`：发牌专项检查，使用真实出牌/弃牌按钮和动画交叉验证两种时机，检查输入锁定与回合补满；只临时覆盖设置并恢复，报告 `Library/SingleBattleTests/dealing.json`。
+- `Tools > 测试面板 > 实战验证 > 单战局完整流程`：通过真实按钮事件及真实飞行动画验证弃牌、补牌、扣血、怪物阶段、重复输入锁定、牌库浏览、排序、胜利、失败、重开。测试包含能量扣除、同回合连续出牌、自动/主动/空过回合结束、单次反击及能量恢复；测试只临时覆盖运行时数值，结束恢复初始数值并开始新战局。报告位于 `Library/SingleBattleTests/play.json`。
+- `Tools > Poker > Single Battle > Capture Game View`：Play 中截图到 `Library/SingleBattleTests/demo.png`。
 - `CardDuelTests`：纯规则回归，含 52 张开局、四区守恒、出牌/反击、弃牌预算、非法输入、终局、确定性洗回及传入当前构筑。
-- `测试面板 > 编辑模式测试 > 角色与表现协议`：在独立 PreviewScene 中验证角色槽位、命令所有权、最新快照读取、定向受击/死亡事件、禁用输入、重开身份与模型姿态复位，以及手动句柄逐阶段等待、死亡完成、取消旧回调和单次终态。
+- `Tools > 测试面板 > 编辑模式测试 > 角色与表现协议`：在独立 PreviewScene 中验证角色槽位、命令所有权、最新快照读取、定向受击/死亡事件、禁用输入、重开身份与模型姿态复位，以及手动句柄逐阶段等待、死亡完成、取消旧回调和单次终态。
 
 纯引擎所有权始终在 CardDuelState；Scene/.unity 保存的是宿主配置和表现绑定，不能当作正在进行中的战局存档。
 
 ## 卡牌美术接入
 
-单牌 CardView 与 Canvas 总览共用 `Assets/CardArt/Profiles/StandardCardArt.asset`。Host 经 DeckOverviewPresenter 绑定手牌 Prefab 的配置，牌区只消费投影和管理动画；CardMatchHost 绑定玩法侧 CardStateArtBindings，按卡牌状态选择组合 ID；单牌渲染器只消费通用参数组合。Run DeckEntry 的效果与禁用进入 CardDuel 后保留，禁用牌不能出牌/弃牌。美术入口为 `卡牌美术 > Shader 参数组合`，支持实际实例对照预览及独立可控光源；玩法映射入口为 `玩法配置 > 卡牌状态美术映射`。
+单牌 CardView 与 Canvas 总览共用 `Assets/CardArt/Profiles/StandardCardArt.asset`。Host 经 DeckOverviewPresenter 绑定手牌 Prefab 的配置，牌区只消费投影和管理动画；CardMatchHost 绑定玩法侧 CardStateArtBindings，按卡牌状态选择组合 ID；单牌渲染器只消费通用参数组合。Run DeckEntry 的效果与禁用进入 CardDuel 后保留，禁用牌不能出牌/弃牌。美术入口为 `Tools > 卡牌美术 > Shader 参数组合`，支持实际实例对照预览及独立可控光源；玩法映射入口为 `Tools > 玩法配置 > 卡牌状态美术映射`。

@@ -69,7 +69,7 @@ namespace PokerEngine.Tests
         [SerializeField] private bool showModules, showLegacy;
         public static bool IsBusy => active != null || PokerEngineTestMenu.IsRunning;
 
-        [MenuItem("测试面板/打开面板", false, 100)]
+        [MenuItem("Tools/测试面板", false, 100)]
         public static void Open()
         {
             var window = GetWindow<PokerTestWindow>("测试面板"); window.minSize = new Vector2(520, 460); window.Show();

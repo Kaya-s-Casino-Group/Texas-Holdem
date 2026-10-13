@@ -241,7 +241,7 @@ Run 负责牌组、小丑槽位/副本数、等级/成长、牌型等级、金�
 
 ### 完整 Run 与多楼层
 
-Unity 策划工具位于独立 `Assets/RunFlow` 模块，菜单 `Poker > Run Flow Editor`。流程保存为 ScriptableObject `RunFlowAsset`，经 `BuildDefinition` / `BuildContent` 转换为本节纯 C# 模型后初始化一次 Run；GameCore 不引用 Unity 或编辑器，Run v4 进度快照与策划资产分开保存。编辑操作与初始化示例见 [RunFlow README](../RunFlow/README.md)。
+Unity 策划工具位于独立 `Assets/RunFlow` 模块，菜单 `Tools > Poker > Run Flow Editor`。流程保存为 ScriptableObject `RunFlowAsset`，经 `BuildDefinition` / `BuildContent` 转换为本节纯 C# 模型后初始化一次 Run；GameCore 不引用 Unity 或编辑器，Run v4 进度快照与策划资产分开保存。编辑操作与初始化示例见 [RunFlow README](../RunFlow/README.md)。
 
 一次完整肉鸽由有序 `RunDefinition.Floors` 组成，每个 `RunFloorDefinition` 独立保存 Id、Kind（Normal/Boss）和自己的 NodeTree。例如“三层 + Boss 层”对应四棵独立节点树：
 
@@ -363,11 +363,11 @@ RunSnapshotCodec<TState> schema **v4** 将当前楼层、每层节点路线及�
 
 ## 验证与首包
 
-统一入口为 `测试面板`，界面为中文。编辑模式专项显示实际用例数量，实战验证要求对应玩法场景处于 Play，截图独立分页；全量回归收进折叠区，不自动执行。面板显示进度、通过/失败数量并可打开报告，编辑模式测试可停止；进入 Play 或脚本编译时停止剩余用例并释放重载锁。
+统一入口为 `Tools > 测试面板`，界面为中文。编辑模式专项显示实际用例数量，实战验证要求对应玩法场景处于 Play，截图独立分页；全量回归收进折叠区，不自动执行。面板显示进度、通过/失败数量并可打开报告，编辑模式测试可停止；进入 Play 或脚本编译时停止剩余用例并释放重载锁。
 
 ModuleBoundaryTests 检查真实程序集引用，防止基础层反向依赖、德州/Draw互相引用或 Run 引入具体模式。保留原德州规则/随机守恒/恢复测试，新增独立能力、牌型子集、Draw 存档/续执行、模式无关 Run 和跨玩法集成测试。
 
-Unity Test Runner 可正常运行 EditMode；若当前场景有未保存修改，可用 `测试面板 > 编辑模式测试 > 更多模块 / 全量回归 > GameCore 全模块` 在当前 Editor 场景逐项执行同步 NUnit 方法，结果写入 `Library/PokerEngineTests/status.json` 与 `results.xml`。该轻量运行器不保存或替换场景，不支持协程/参数化/setup/teardown；遇到这些测试会拒绝，需改用完整 Test Runner。
+Unity Test Runner 可正常运行 EditMode；若当前场景有未保存修改，可用 `Tools > 测试面板 > 编辑模式测试 > 更多模块 / 全量回归 > GameCore 全模块` 在当前 Editor 场景逐项执行同步 NUnit 方法，结果写入 `Library/PokerEngineTests/status.json` 与 `results.xml`。该轻量运行器不保存或替换场景，不支持协程/参数化/setup/teardown；遇到这些测试会拒绝，需改用完整 Test Runner。
 
 PackagingTests 验证所有十个模块出现在 Player 编译列表、linker 保留和资源 GUID 唯一。具体本轮结果见根 CHANGELOG。本轮未进行完整 Player 或 IL2CPP 构建；目标平台仍须验证泛型 DataContract 序列化与 AOT 行为。
 

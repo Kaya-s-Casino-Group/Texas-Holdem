@@ -142,7 +142,7 @@ Runtime Managed 场景每场由玩法生成或恢复状态，验证窗口不读�
 
 正式实战接入使用 `match.StartExternalMatch(authority, state, observerCards)`、`host.Bind(...)` 和 `BeginSession()`，`StopSession()` 仅解绑。验证工具只读取 `Cards` 与相关牌区，不调用 Capture / ReplaceCards；这些 Editor API 留给迁移和隔离测试。新增身份仍驱动入列动画及音效。当前选择来自 `card.Interaction` 或控制器的 `GetSelectedViewIds()`。
 
-测试归入 `CardPresentation.Tests.Editor`，使用轻量入口 `测试面板 > 编辑模式测试 > 更多模块 / 全量回归 > 卡牌表现全模块`。9 项鼠标测试覆盖数据写回、Z 偏移、稳定悬停、重叠优先级、禁用/失效、取消手势、排序/移除、变换/牌背、入列屏蔽及运行时解绑，并验证点击选中的上浮惯性、回稳与鼠标离开不中断；另有 8 项上浮/固化测试覆盖 Tween 连续性与清理、场景快照序列化、运行时副本、重启恢复及编辑器重新载入。
+测试归入 `CardPresentation.Tests.Editor`，使用轻量入口 `Tools > 测试面板 > 编辑模式测试 > 更多模块 / 全量回归 > 卡牌表现全模块`。9 项鼠标测试覆盖数据写回、Z 偏移、稳定悬停、重叠优先级、禁用/失效、取消手势、排序/移除、变换/牌背、入列屏蔽及运行时解绑，并验证点击选中的上浮惯性、回稳与鼠标离开不中断；另有 8 项上浮/固化测试覆盖 Tween 连续性与清理、场景快照序列化、运行时副本、重启恢复及编辑器重新载入。
 
 ## 弃牌命令
 

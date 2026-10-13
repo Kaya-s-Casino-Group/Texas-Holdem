@@ -24,7 +24,7 @@ UI Camera 为 Overlay，开启项目自定义 URP 的 `renderOverlayAtNativeReso
 
 ## 验证
 
-`测试面板 > 编辑模式测试 > 更多模块 / 全量回归 > 卡牌表现全模块` 覆盖 UI Renderer、Stack 注册/复用/销毁、投影、按钮 Prefab、悬停提示和后处理执行顺序；原生 UI 检查使用不同尺寸输出与普通 Overlay，验证实际单像素条纹、场景颜色保留及关闭 UI。`Tools > Cards > Capture UI Camera Stack In Play` 在 UI Camera 完成渲染后记录真实目标尺寸和主场景复古输入尺寸，输出 `Library/CardUICameraValidation/frame.json` 与 `game.png`，用于检查实际 Game 布局及叠加结果。
+`Tools > 测试面板 > 编辑模式测试 > 更多模块 / 全量回归 > 卡牌表现全模块` 覆盖 UI Renderer、Stack 注册/复用/销毁、投影、按钮 Prefab、悬停提示和后处理执行顺序；原生 UI 检查使用不同尺寸输出与普通 Overlay，验证实际单像素条纹、场景颜色保留及关闭 UI。`Tools > Cards > Capture UI Camera Stack In Play` 在 UI Camera 完成渲染后记录真实目标尺寸和主场景复古输入尺寸，输出 `Library/CardUICameraValidation/frame.json` 与 `game.png`，用于检查实际 Game 布局及叠加结果。
 
 ## 雕像裂痕与刚体 VAT
 

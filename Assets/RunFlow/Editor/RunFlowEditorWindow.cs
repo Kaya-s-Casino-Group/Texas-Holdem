@@ -26,7 +26,7 @@ namespace Poker.RunFlow.Editor
         private RunFlowFloorData Floor => asset != null && floorIndex >= 0 && floorIndex < asset.Floors.Count ? asset.Floors[floorIndex] : null;
         private RunFlowNodeData Selected => Floor == null ? null : Floor.Nodes.FirstOrDefault(n => n.Id == selectedNode);
 
-        [MenuItem("Poker/Run Flow Editor")]
+        [MenuItem("Tools/Poker/Run Flow Editor")]
         public static void ShowWindow() => Open(Selection.activeObject as RunFlowAsset);
         public static RunFlowEditorWindow Open(RunFlowAsset target)
         {
@@ -41,7 +41,7 @@ namespace Poker.RunFlow.Editor
             var target = EditorUtility.InstanceIDToObject(instanceId) as RunFlowAsset;
             if (target == null) return false; Open(target); return true;
         }
-        [MenuItem("Poker/Run Flow/Create Four Floor Example")]
+        [MenuItem("Tools/Poker/Run Flow/Create Four Floor Example")]
         public static void CreateExample()
         {
             var target = CreateInstance<RunFlowAsset>(); target.CopyFrom(ExampleRunContent.CreateFourFloors().Definition);
