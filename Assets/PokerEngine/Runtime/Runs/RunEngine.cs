@@ -4,7 +4,8 @@ using System.Linq;
 
 namespace PokerEngine
 {
-    public enum RunAction { StartEncounter = 1, PlayerEncounter, SystemEncounter, ChooseReward, SkipReward, Buy, Sell, UpgradeJoker, ReorderJokers, Reroll }
+    public enum RunAction { StartEncounter = 1, PlayerEncounter, SystemEncounter, ChooseReward, SkipReward, Buy, Sell, UpgradeJoker, ReorderJokers, Reroll,
+        StartRun, CompleteNode, ChooseNextNode }
     public sealed class RunCommand<TCommand> where TCommand : class
     {
         public string Id { get; }
@@ -14,11 +15,13 @@ namespace PokerEngine
         public string TargetId { get; }
         public IReadOnlyList<string> Order { get; }
         public TCommand EncounterCommand { get; }
+        public string NextNodeId { get; }
         public RunCommand(string id, long revision, RunAction action, string itemId = null, string targetId = null,
-            IEnumerable<string> order = null, TCommand encounterCommand = null)
+            IEnumerable<string> order = null, TCommand encounterCommand = null, string nextNodeId = null)
         {
             Id = Guard.Text(id, nameof(id)); ExpectedRevision = revision; Action = action; ItemId = itemId; TargetId = targetId;
             Order = Guard.View(Guard.Copy(order ?? new string[0], nameof(order))); EncounterCommand = encounterCommand;
+            NextNodeId = nextNodeId;
         }
     }
     public enum RunError { None = 0, StaleRevision, WrongActor, WrongPhase, InvalidCommand, InsufficientGold, Capacity, UnknownOffer,
@@ -26,6 +29,7 @@ namespace PokerEngine
     public sealed class RunTransitionResult<TState, TEvent> where TState : class
     {
         private readonly Func<TState, IEnumerable<TEvent>, ParticipantId, IReadOnlyList<TEvent>> filter;
+        private readonly Func<ParticipantId, IReadOnlyList<TEvent>> eventProjection;
         public bool Accepted => Error == RunError.None;
         public RunError Error { get; }
         public string EncounterError { get; }
@@ -35,13 +39,16 @@ namespace PokerEngine
         public ScoreResult ScoredRound { get; }
         internal RunTransitionResult(string id, RunError error, RunState<TState> state,
             Func<TState, IEnumerable<TEvent>, ParticipantId, IReadOnlyList<TEvent>> filter,
-            IEnumerable<TEvent> events = null, ScoreResult score = null, string encounterError = null)
+            IEnumerable<TEvent> events = null, ScoreResult score = null, string encounterError = null,
+            Func<ParticipantId, IReadOnlyList<TEvent>> eventProjection = null)
         {
             CommandId = id; Error = error; State = state; EncounterError = encounterError; this.filter = filter;
+            this.eventProjection = eventProjection;
             EncounterEvents = Guard.View(Guard.Copy(events ?? new TEvent[0], nameof(events))); ScoredRound = score;
         }
         public IReadOnlyList<TEvent> EventsFor(ParticipantId viewer)
         {
+            if (eventProjection != null) return eventProjection(viewer);
             if (State.Encounter == null) throw new ArgumentException("No encounter has started.");
             return filter(State.Encounter, EncounterEvents, viewer);
         }
@@ -65,17 +72,27 @@ namespace PokerEngine
             var cards = deck ?? content.StartingDeck.Select((definition, i) => new RunCard(id + "/card/" + i, definition));
             var jokers = content.Definition.StartingJokers.Select((definition, i) => new RunJoker(id + "/joker/start/" + i, definition, charges: content.Joker(definition).Charges));
             var state = new RunState<TState>(id, 0, content.CardsAndAbilities.Version, content.Definition.Version, content.Definition.Scoring.Version, player,
-                RunPhase.Preparing, 0, content.Definition.StartingGold, 0, 0, cards, jokers,
+                RunPhase.Preparing, -1, content.Definition.StartingGold, 0, 0, cards, jokers,
                 Enum.GetValues(typeof(HandCategory)).Cast<HandCategory>().Select(c => new HandLevel(c, 1)), new RunOffer[0], new ScoreResult[0],
-                random ?? HmacDeckShuffler.CreateRandomState(), encounter.Kind, encounter.RulesVersion, encounter.SchemaVersion, content.StartingDeckVersion);
+                random ?? HmacDeckShuffler.CreateRandomState(), encounter.Kind, encounter.RulesVersion, encounter.SchemaVersion, content.StartingDeckVersion,
+                0, content.Definition.Floors.Select(RunFloorState.Initial));
             RunValidator.Validate(state, content, encounter); return state;
         }
         public RunTransitionResult<TState, TEvent> Execute(RunState<TState> state, RunCommand<TCommand> command, ParticipantId authenticatedActor) => ExecuteCore(state, command, authenticatedActor, false);
+        public IReadOnlyList<RunNodeDefinition> GetAvailableNextNodes(RunState<TState> state)
+        {
+            RunValidator.Validate(state, content, encounter);
+            var tree = content.Definition.Floors[state.FloorIndex].NodeTree;
+            return Guard.View(state.Phase == RunPhase.NodeChoice
+                ? tree.Node(state.Nodes.CurrentNodeId).NextNodeIds.Select(tree.Node).ToArray()
+                : new RunNodeDefinition[0]);
+        }
         /// <summary>Authority only: starts encounters and submits mode-defined system actions.</summary>
         public RunTransitionResult<TState, TEvent> ExecuteSystem(RunState<TState> state, RunCommand<TCommand> command) => ExecuteCore(state, command, default(ParticipantId), true);
         private RunTransitionResult<TState, TEvent> Result(string id, RunError error, RunState<TState> state,
-            IEnumerable<TEvent> events = null, ScoreResult score = null, string encounterError = null) =>
-            new RunTransitionResult<TState, TEvent>(id, error, state, encounter.FilterEvents, events, score, encounterError);
+            IEnumerable<TEvent> events = null, ScoreResult score = null, string encounterError = null,
+            Func<ParticipantId, IReadOnlyList<TEvent>> eventProjection = null) =>
+            new RunTransitionResult<TState, TEvent>(id, error, state, encounter.FilterEvents, events, score, encounterError, eventProjection);
         private RunTransitionResult<TState, TEvent> ExecuteCore(RunState<TState> state, RunCommand<TCommand> command, ParticipantId actor, bool system)
         {
             if (state == null || command == null) throw new ArgumentNullException();
@@ -84,12 +101,12 @@ namespace PokerEngine
                 if (state.Revision != command.ExpectedRevision) throw new Denied(RunError.StaleRevision);
                 RunValidator.Validate(state, content, encounter);
                 if (state.Phase == RunPhase.Completed || state.Phase == RunPhase.Failed) throw new Denied(RunError.WrongPhase);
-                bool systemAction = command.Action == RunAction.StartEncounter || command.Action == RunAction.SystemEncounter;
+                bool systemAction = command.Action == RunAction.StartEncounter || command.Action == RunAction.StartRun || command.Action == RunAction.SystemEncounter;
                 if (system != systemAction) throw new Denied(RunError.WrongActor);
                 if (!system && command.Action != RunAction.PlayerEncounter && actor != state.PlayerId) throw new Denied(RunError.WrongActor);
                 var work = new Work(this, state, checked(state.Revision + 1)); work.Apply(command, actor);
                 var next = work.Build(); RunValidator.Validate(next, content, encounter);
-                return Result(command.Id, RunError.None, next, work.Events, work.Score);
+                return Result(command.Id, RunError.None, next, work.Events, work.Score, eventProjection: work.EventsFor);
             }
             catch (Denied e) { return Result(command.Id, e.Error, state, encounterError: e.EncounterError); }
             catch (OverflowException) { return Result(command.Id, RunError.AmountOverflow, state); }
@@ -107,14 +124,22 @@ namespace PokerEngine
             private RunPhase phase; private int stage, rounds; private long gold, score;
             private List<RunCard> deck; private List<RunJoker> jokers; private List<HandLevel> levels; private List<RunOffer> offers;
             private List<ScoreResult> scores; private RandomState random; private TState encounterState;
+            private string currentNode; private readonly List<string> path; private readonly List<string> completed;
+            private int floorIndex; private bool floorCompleted; private readonly List<RunFloorState> floors;
+            private readonly List<Func<ParticipantId, IReadOnlyList<TEvent>>> eventBatches = new List<Func<ParticipantId, IReadOnlyList<TEvent>>>();
             public readonly List<TEvent> Events = new List<TEvent>(); public ScoreResult Score;
             private RunContent Content => engine.content;
+            private RunFloorDefinition Floor => Content.Definition.Floors[floorIndex];
+            private RunNodeTree Tree => Floor.NodeTree;
+            private RunNodeDefinition Node => Tree.Node(currentNode);
             private RunEncounterContext Context => new RunEncounterContext(source.Id, source.PlayerId, phase, stage, Content, deck, jokers, levels, random);
             public Work(RunEngine<TState, TCommand, TEvent> engine, RunState<TState> state, long revision)
             {
                 this.engine = engine; source = state; this.revision = revision; phase = state.Phase; stage = state.StageIndex;
                 rounds = state.RoundsScored; gold = state.Gold; score = state.StageScore; deck = state.Deck.ToList(); jokers = state.Jokers.ToList();
                 levels = state.HandLevels.ToList(); offers = state.Offers.ToList(); scores = state.Scores.ToList(); random = state.Random; encounterState = state.Encounter;
+                currentNode = state.Nodes.CurrentNodeId; path = state.Nodes.Path.ToList(); completed = state.Nodes.CompletedNodeIds.ToList();
+                floorIndex = state.FloorIndex; floors = state.Floors.ToList(); floorCompleted = floors[floorIndex].IsCompleted;
             }
             private string Id(string kind) => source.Id + "/" + kind + "/" + revision;
             private string EntityId(string kind)
@@ -131,6 +156,12 @@ namespace PokerEngine
                 switch (command.Action)
                 {
                     case RunAction.StartEncounter: Start(); break;
+                    case RunAction.StartRun: Require(RunPhase.Preparing); EnterNode(Tree.EntryNodeId); break;
+                    case RunAction.CompleteNode: Require(RunPhase.Shop); FinishNode(); break;
+                    case RunAction.ChooseNextNode:
+                        Require(RunPhase.NodeChoice);
+                        if (!Node.NextNodeIds.Contains(command.NextNodeId)) throw new Denied(RunError.InvalidTarget);
+                        EnterNode(command.NextNodeId); break;
                     case RunAction.PlayerEncounter:
                     case RunAction.SystemEncounter: ExecuteEncounter(command, actor); break;
                     case RunAction.ChooseReward: Require(RunPhase.Reward); Claim(command, true); break;
@@ -156,10 +187,43 @@ namespace PokerEngine
                 new RunJoker(j.Id, j.DefinitionId, level ?? j.Level, growth ?? j.Growth, j.Charges, j.CooldownRounds, j.Memory);
             private void Start()
             {
-                BuildPhase(); if (phase == RunPhase.Shop) stage++;
-                if (stage >= Content.Definition.Stages.Count) throw new Denied(RunError.WrongPhase);
-                phase = RunPhase.Encounter; rounds = 0; score = 0; offers.Clear();
-                Accept(engine.encounter.Create(Context)); Harvest();
+                if (phase == RunPhase.Preparing) { EnterNode(Tree.EntryNodeId); return; }
+                Require(RunPhase.Shop);
+                // Legacy linear callers can still leave a shop and start its single encounter successor.
+                if (Node.NextNodeIds.Count != 1 || !(Tree.Node(Node.NextNodeIds[0]) is RunEncounterNodeDefinition))
+                    throw new Denied(RunError.WrongPhase);
+                FinishNode();
+            }
+            private void EnterNode(string id)
+            {
+                if (path.Contains(id)) throw new Denied(RunError.InvalidTarget);
+                currentNode = id; path.Add(id); offers.Clear();
+                if (Node is RunEncounterNodeDefinition)
+                {
+                    stage = Content.Definition.StageIndex(floorIndex, id); rounds = 0; score = 0; phase = RunPhase.Encounter;
+                    Accept(engine.encounter.Create(Context)); Harvest();
+                }
+                else if (Node is RunRewardNodeDefinition) { phase = RunPhase.Reward; GenerateOffers(true); }
+                else if (Node is RunShopNodeDefinition) { phase = RunPhase.Shop; GenerateOffers(false); }
+                else throw new Denied(RunError.InvalidCommand);
+            }
+            private void FinishNode()
+            {
+                if (completed.Contains(currentNode)) throw new Denied(RunError.InvalidCommand);
+                completed.Add(currentNode); offers.Clear();
+                var next = Node.NextNodeIds;
+                if (next.Count == 0)
+                {
+                    floorCompleted = true; SaveFloor();
+                    if (floorIndex + 1 == Content.Definition.Floors.Count) phase = RunPhase.Completed;
+                    else
+                    {
+                        floorIndex++; floorCompleted = false; path.Clear(); completed.Clear();
+                        EnterNode(Tree.EntryNodeId);
+                    }
+                }
+                else if (next.Count == 1) EnterNode(next[0]);
+                else phase = RunPhase.NodeChoice;
             }
             private void ExecuteEncounter(RunCommand<TCommand> command, ParticipantId actor)
             {
@@ -169,7 +233,11 @@ namespace PokerEngine
             private void Accept(RunEncounterTransition<TState, TEvent> result)
             {
                 if (!result.Accepted) throw new Denied(RunError.EncounterRejected, result.Error);
+                // A single transition can finish one encounter and create another. Validate each state before it is replaced.
+                engine.encounter.Validate(Context, result.State);
                 encounterState = result.State; Events.AddRange(result.Events);
+                var eventState = result.State; var events = result.Events.ToArray();
+                eventBatches.Add(viewer => engine.encounter.FilterEvents(eventState, events, viewer));
                 random = engine.encounter.ReadProgress(Context, encounterState).Random;
             }
             private void Harvest()
@@ -189,23 +257,22 @@ namespace PokerEngine
                             runtime == null ? j.CooldownRounds : runtime.CooldownRounds, runtime == null ? j.Memory : runtime.Memory);
                     }).ToList();
                     encounterState = engine.encounter.SyncBuild(Context, encounterState);
+                    engine.encounter.Validate(Context, encounterState);
                 }
                 var rule = Content.Definition.Stages[stage];
                 if (score >= rule.TargetScore)
-                { gold = checked(gold + rule.ClearGold); phase = RunPhase.Reward; GenerateOffers(true); }
+                { gold = checked(gold + rule.ClearGold); FinishNode(); }
                 else if (rounds >= rule.RoundLimit || progress.Exhausted) phase = RunPhase.Failed;
             }
             private void GenerateOffers(bool reward)
             {
-                var pool = reward ? Content.Definition.RewardPool : Content.Definition.ShopPool;
+                var pool = Tree.OfferPool(Node, Content.Definition);
                 var shuffled = new HmacDeckShuffler().Shuffle(pool.Select(id => new CardInstanceId(id)).ToArray(), random); random = shuffled.Random;
                 offers = shuffled.Cards.Take(Content.Definition.OfferCount).Select((id, i) => new RunOffer(Id((reward ? "reward/" : "shop/") + i), id.Value)).ToList();
             }
             private void EndReward()
             {
-                offers.Clear();
-                if (stage + 1 == Content.Definition.Stages.Count) phase = RunPhase.Completed;
-                else { phase = RunPhase.Shop; GenerateOffers(false); }
+                FinishNode();
             }
             private void Claim(RunCommand<TCommand> command, bool reward)
             {
@@ -238,9 +305,16 @@ namespace PokerEngine
                 }
                 offers.Remove(offer); if (reward) EndReward();
             }
-            public RunState<TState> Build() => new RunState<TState>(source.Id, revision, source.ContentVersion, source.RulesVersion, source.ScoreVersion, source.PlayerId,
-                phase, stage, gold, score, rounds, deck, jokers, levels, offers, scores, random, source.EncounterKind,
-                source.EncounterRulesVersion, source.EncounterSchemaVersion, source.StartingDeckVersion, encounterState);
+            private void SaveFloor() => floors[floorIndex] = new RunFloorState(Floor.Id, Floor.Kind,
+                new RunNodeState(Tree.Version, Tree.Fingerprint, currentNode, path, completed), floorCompleted);
+            public RunState<TState> Build()
+            {
+                SaveFloor();
+                return new RunState<TState>(source.Id, revision, source.ContentVersion, source.RulesVersion, source.ScoreVersion, source.PlayerId,
+                    phase, stage, gold, score, rounds, deck, jokers, levels, offers, scores, random, source.EncounterKind,
+                    source.EncounterRulesVersion, source.EncounterSchemaVersion, source.StartingDeckVersion, floorIndex, floors, encounterState);
+            }
+            public IReadOnlyList<TEvent> EventsFor(ParticipantId viewer) => Guard.View(eventBatches.SelectMany(batch => batch(viewer)).ToArray());
         }
     }
 }

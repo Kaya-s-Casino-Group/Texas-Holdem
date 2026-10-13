@@ -13,6 +13,11 @@ namespace PokerEngine
         public int StageIndex { get; }
         public RunContent Content { get; }
         public RunStageDefinition Stage => Content.Definition.Stages[StageIndex];
+        /// <summary>The current or most recently entered encounter, including its Normal/Elite/Boss kind.</summary>
+        public RunEncounterNodeDefinition Node => Content.Definition.EncounterNodes[StageIndex];
+        public int FloorIndex => Content.Definition.EncounterFloorIndex(StageIndex);
+        /// <summary>Floor owning this encounter, including while its frozen state is retained on a later floor.</summary>
+        public RunFloorDefinition Floor => Content.Definition.Floors[FloorIndex];
         public IReadOnlyList<RunCard> Deck { get; }
         public IReadOnlyList<RunJoker> Jokers { get; }
         public IReadOnlyList<HandLevel> HandLevels { get; }

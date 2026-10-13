@@ -10,6 +10,54 @@ namespace PokerEngine
         public static readonly AbilityDefinitionId CallEnergy = new AbilityDefinitionId("example.call-energy");
         public static readonly AbilityDefinitionId SwapCard = new AbilityDefinitionId("example.swap-card");
         public static readonly AbilityDefinitionId PeekDeck = new AbilityDefinitionId("example.peek-deck");
+        /// <summary>Three independent branching floors followed by a separate boss floor.</summary>
+        public static RunContent CreateFourFloors(bool drawMode = true)
+        {
+            var sample = Create(drawMode); var floors = new List<RunFloorDefinition>();
+            for (int i = 1; i <= 3; i++)
+            {
+                var tree = new RunNodeTree("example.floor." + i + ".1", "opening", new RunNodeDefinition[] {
+                    new RunEncounterNodeDefinition("opening", new RunStageDefinition("opening", 200 * i, 6), new[] { "reward" }),
+                    new RunRewardNodeDefinition("reward", new[] { "normal", "elite" }),
+                    new RunEncounterNodeDefinition("normal", new RunStageDefinition("normal", 500 * i, 8), new[] { "shop" }),
+                    new RunEncounterNodeDefinition("elite", new RunStageDefinition("elite", 800 * i, 8, clearGold: 10 * i), new[] { "elite-reward" }, RunNodeKind.Elite),
+                    new RunRewardNodeDefinition("elite-reward", new[] { "shop" }),
+                    new RunShopNodeDefinition("shop")
+                });
+                floors.Add(new RunFloorDefinition("floor-" + i, tree));
+            }
+            floors.Add(new RunFloorDefinition("boss-floor", new RunNodeTree("example.boss-floor.1", "boss", new RunNodeDefinition[] {
+                new RunEncounterNodeDefinition("boss", new RunStageDefinition("boss", 5000, 10, clearGold: 15), new[] { "final-reward" }, RunNodeKind.Boss),
+                new RunRewardNodeDefinition("final-reward")
+            }), RunFloorKind.Boss));
+            var offers = sample.Definition.ShopPool.Select(sample.Offer).ToArray();
+            var jokers = offers.Where(o => o.Kind == RunOfferKind.Joker).Select(o => o.JokerId)
+                .Concat(sample.Definition.StartingJokers).Distinct().Select(sample.Joker);
+            var definition = new RunDefinition(drawMode ? "run.draw.four-floors.1" : "run.holdem.four-floors.1", sample.Definition.Scoring,
+                floors, sample.Definition.ShopPool, sample.Definition.RewardPool, sample.Definition.StartingJokers);
+            return new RunContent(sample.CardsAndAbilities, definition, jokers, offers, sample.StartingDeckVersion, sample.StartingDeck);
+        }
+        /// <summary>A normal/elite branch that merges at a shop before the final boss.</summary>
+        public static RunContent CreateBranching(bool drawMode = true)
+        {
+            var sample = Create(drawMode);
+            var tree = new RunNodeTree("example.branching.1", "opening", new RunNodeDefinition[] {
+                new RunEncounterNodeDefinition("opening", new RunStageDefinition("opening", 200, 6), new[] { "opening-reward" }),
+                new RunRewardNodeDefinition("opening-reward", new[] { "normal", "elite" }),
+                new RunEncounterNodeDefinition("normal", new RunStageDefinition("normal", 500, 8), new[] { "shop" }),
+                new RunEncounterNodeDefinition("elite", new RunStageDefinition("elite", 800, 8, clearGold: 10), new[] { "elite-reward" }, RunNodeKind.Elite),
+                new RunRewardNodeDefinition("elite-reward", new[] { "shop" }),
+                new RunShopNodeDefinition("shop", new[] { "boss" }),
+                new RunEncounterNodeDefinition("boss", new RunStageDefinition("boss", 2000, 8, clearGold: 15), new[] { "final-reward" }, RunNodeKind.Boss),
+                new RunRewardNodeDefinition("final-reward")
+            });
+            var offers = sample.Definition.ShopPool.Select(sample.Offer).ToArray();
+            var jokers = offers.Where(o => o.Kind == RunOfferKind.Joker).Select(o => o.JokerId)
+                .Concat(sample.Definition.StartingJokers).Distinct().Select(sample.Joker);
+            var definition = new RunDefinition(drawMode ? "run.draw.branching.1" : "run.holdem.branching.1", sample.Definition.Scoring,
+                tree, sample.Definition.ShopPool, sample.Definition.RewardPool, sample.Definition.StartingJokers);
+            return new RunContent(sample.CardsAndAbilities, definition, jokers, offers, sample.StartingDeckVersion, sample.StartingDeck);
+        }
         public static RunContent Create(bool drawMode = false)
         {
             var definitions = new[] {

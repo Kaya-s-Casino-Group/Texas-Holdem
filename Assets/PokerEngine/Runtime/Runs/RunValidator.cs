@@ -24,8 +24,10 @@ namespace PokerEngine
             Need(s.ContentVersion == content.CardsAndAbilities.Version && s.RulesVersion == d.Version && s.ScoreVersion == d.Scoring.Version &&
                 s.StartingDeckVersion == content.StartingDeckVersion && s.EncounterKind == encounter.Kind &&
                 s.EncounterRulesVersion == encounter.RulesVersion && s.EncounterSchemaVersion == encounter.SchemaVersion, "Versions");
-            Need(Enum.IsDefined(typeof(RunPhase), s.Phase) && s.StageIndex >= 0 && s.StageIndex < d.Stages.Count && s.Gold >= 0 && s.StageScore >= 0 &&
-                s.RoundsScored >= 0 && s.RoundsScored <= d.Stages[s.StageIndex].RoundLimit, "Progress");
+            Need(Enum.IsDefined(typeof(RunPhase), s.Phase) && s.Gold >= 0 && s.StageScore >= 0 && s.RoundsScored >= 0, "Progress");
+            var visitedEncounters = CheckFloors(s, d);
+            int lastStage = visitedEncounters.Length == 0 ? -1 : visitedEncounters.Last().StageIndex;
+            Need(s.StageIndex == lastStage && (lastStage < 0 ? s.RoundsScored == 0 && s.StageScore == 0 : s.RoundsScored <= d.Stages[lastStage].RoundLimit), "StageIndex");
             Need(s.Random.Algorithm == HmacDeckShuffler.Algorithm && s.Random.AlgorithmVersion == 1 && s.Random.StateBytes.Count == 40, "Random");
             Need(s.Deck.Count >= encounter.MinimumDeckSize && s.Deck.Count <= 512, "Deck.Count"); Unique(s.Deck.Select(c => c.Id), "Deck");
             foreach (var card in s.Deck)
@@ -45,7 +47,8 @@ namespace PokerEngine
                 s.HandLevels.All(l => Enum.IsDefined(typeof(HandCategory), l.Category) && l.Level > 0), "HandLevels");
             Unique(s.Offers.Select(o => o.Id), "Offers"); Unique(s.Offers.Select(o => o.DefinitionId), "Offers.Definitions");
             Need(s.Offers.Count <= d.OfferCount, "Offers.Count");
-            var pool = s.Phase == RunPhase.Reward ? d.RewardPool : d.ShopPool;
+            var tree = d.Floors[s.FloorIndex].NodeTree;
+            var pool = s.Phase == RunPhase.Reward || s.Phase == RunPhase.Shop ? tree.OfferPool(tree.Node(s.Nodes.CurrentNodeId), d) : d.ShopPool;
             Need(s.Offers.All(o => pool.Contains(o.DefinitionId)), "Offers.Pool");
             Need((s.Phase == RunPhase.Shop || s.Phase == RunPhase.Reward) || s.Offers.Count == 0, "Offers.Phase");
             Need(s.Phase != RunPhase.Reward || s.Offers.Count > 0, "Reward.Empty");
@@ -53,9 +56,17 @@ namespace PokerEngine
             foreach (var score in s.Scores) ScoreEngine.Validate(score);
             var stageScores = s.Scores.Where(r => r.Id.StartsWith(s.Id + "/stage/" + s.StageIndex + "/", StringComparison.Ordinal)).ToArray();
             Need(stageScores.Length == s.RoundsScored && stageScores.Sum(r => r.Total) == s.StageScore, "ScoreLedger");
-            Need(s.Scores.All(r => Enumerable.Range(0, s.StageIndex + 1).Any(i => r.Id.StartsWith(s.Id + "/stage/" + i + "/", StringComparison.Ordinal))), "Scores.Stage");
+            Need(s.Scores.All(r => visitedEncounters.Any(n => r.Id.StartsWith(s.Id + "/stage/" + n.StageIndex + "/", StringComparison.Ordinal))), "Scores.Stage");
+            foreach (var node in visitedEncounters)
+            {
+                var ledger = s.Scores.Where(r => r.Id.StartsWith(s.Id + "/stage/" + node.StageIndex + "/", StringComparison.Ordinal)).ToArray();
+                Need(ledger.Length <= node.Node.Stage.RoundLimit, "Scores.Budget");
+                if (node.Completed) Need(ledger.Sum(r => r.Total) >= node.Node.Stage.TargetScore, "Nodes.EncounterOutcome");
+            }
             if (s.Phase == RunPhase.Preparing)
-                Need(s.StageIndex == 0 && s.Encounter == null && s.Scores.Count == 0 && s.RoundsScored == 0, "Preparing");
+                Need(s.StageIndex == -1 && s.Encounter == null && s.Scores.Count == 0 && s.RoundsScored == 0, "Preparing");
+            else if (visitedEncounters.Length == 0)
+                Need(s.Encounter == null && s.Scores.Count == 0 && s.Phase != RunPhase.Failed, "Encounter.Unstarted");
             else
             {
                 Need(s.Encounter != null, "Encounter.Missing");
@@ -81,10 +92,58 @@ namespace PokerEngine
                     Need(progress.IsCheckpoint, "BetweenEncounters");
                     bool cleared = s.StageScore >= d.Stages[s.StageIndex].TargetScore;
                     Need(s.Phase == RunPhase.Failed ? !cleared && (s.RoundsScored == d.Stages[s.StageIndex].RoundLimit || progress.Exhausted) : cleared, "Outcome");
-                    Need(s.Phase != RunPhase.Completed || s.StageIndex == d.Stages.Count - 1, "Completion");
-                    Need(s.Phase != RunPhase.Shop || s.StageIndex < d.Stages.Count - 1, "Shop.LastStage");
                 }
             }
+        }
+        private sealed class VisitedEncounter
+        {
+            public RunEncounterNodeDefinition Node;
+            public int StageIndex;
+            public bool Completed;
+        }
+        private static VisitedEncounter[] CheckFloors<TState>(RunState<TState> s, RunDefinition d) where TState : class
+        {
+            Need(s.Floors.Count == d.Floors.Count && s.FloorIndex >= 0 && s.FloorIndex < d.Floors.Count, "Floors.CountOrIndex");
+            Need(s.Phase != RunPhase.Preparing || s.FloorIndex == 0, "Floors.Preparing");
+            Need(s.Phase != RunPhase.Completed || s.FloorIndex == d.Floors.Count - 1, "Floors.Final");
+            var visited = new List<VisitedEncounter>();
+            for (int i = 0; i < d.Floors.Count; i++)
+            {
+                var floor = s.Floors[i]; var definition = d.Floors[i];
+                Need(floor != null && floor.FloorId == definition.Id && floor.Kind == definition.Kind, "Floors.Identity");
+                bool completed = i < s.FloorIndex || (i == s.FloorIndex && s.Phase == RunPhase.Completed);
+                Need(floor.IsCompleted == completed, "Floors.CompletionOrder");
+                var phase = i < s.FloorIndex ? RunPhase.Completed : i > s.FloorIndex ? RunPhase.Preparing : s.Phase;
+                var nodes = CheckNodes(floor.Nodes, definition.NodeTree, phase);
+                foreach (var node in nodes)
+                    visited.Add(new VisitedEncounter { Node = node, StageIndex = d.StageIndex(i, node.Id), Completed = floor.Nodes.CompletedNodeIds.Contains(node.Id) });
+            }
+            return visited.ToArray();
+        }
+        private static RunEncounterNodeDefinition[] CheckNodes(RunNodeState nodes, RunNodeTree tree, RunPhase phase)
+        {
+            Need(nodes != null && nodes.TreeVersion == tree.Version && nodes.TreeFingerprint == tree.Fingerprint, "Nodes.Tree");
+            var current = tree.Node(nodes.CurrentNodeId);
+            Unique(nodes.Path, "Nodes.Path"); Unique(nodes.CompletedNodeIds, "Nodes.Completed");
+            if (phase == RunPhase.Preparing)
+                Need(nodes.Path.Count == 0 && nodes.CompletedNodeIds.Count == 0 && current.Id == tree.EntryNodeId, "Nodes.Preparing");
+            else
+            {
+                Need(nodes.Path.Count > 0 && nodes.Path[0] == tree.EntryNodeId && nodes.Path.Last() == current.Id, "Nodes.Current");
+                for (int i = 0; i < nodes.Path.Count; i++)
+                {
+                    var node = tree.Node(nodes.Path[i]);
+                    if (i + 1 < nodes.Path.Count) Need(node.NextNodeIds.Contains(nodes.Path[i + 1]), "Nodes.Edge");
+                }
+                bool finished = phase == RunPhase.NodeChoice || phase == RunPhase.Completed;
+                Need(nodes.CompletedNodeIds.SequenceEqual(nodes.Path.Take(nodes.Path.Count - (finished ? 0 : 1))), "Nodes.CompletionOrder");
+                if (phase == RunPhase.Completed) Need(current.NextNodeIds.Count == 0, "Nodes.Terminal");
+                else if (phase == RunPhase.NodeChoice) Need(current.NextNodeIds.Count > 1, "Nodes.Choice");
+                else if (phase == RunPhase.Encounter || phase == RunPhase.Failed) Need(current is RunEncounterNodeDefinition, "Nodes.Encounter");
+                else if (phase == RunPhase.Reward) Need(current is RunRewardNodeDefinition, "Nodes.Reward");
+                else if (phase == RunPhase.Shop) Need(current is RunShopNodeDefinition, "Nodes.Shop");
+            }
+            return nodes.Path.Select(tree.Node).OfType<RunEncounterNodeDefinition>().ToArray();
         }
         private static bool SameScore(ScoreResult left, ScoreResult right)
         {

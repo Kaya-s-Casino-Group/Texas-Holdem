@@ -5,7 +5,7 @@ using System.Runtime.Serialization;
 
 namespace PokerEngine
 {
-    public enum RunPhase { Preparing = 1, Encounter, Reward, Shop, Completed, Failed }
+    public enum RunPhase { Preparing = 1, Encounter, Reward, Shop, Completed, Failed, NodeChoice }
     public enum RunOfferKind { Joker = 1, EnhanceCard, DuplicateCard, RemoveCard, TransformCard, UpgradeHand, Gold }
 
     public sealed class JokerDefinition
@@ -77,19 +77,51 @@ namespace PokerEngine
         public long RerollCost { get; }
         public int OfferCount { get; }
         public IReadOnlyList<RunStageDefinition> Stages { get; }
+        public IReadOnlyList<RunFloorDefinition> Floors { get; }
+        public IReadOnlyList<RunEncounterNodeDefinition> EncounterNodes { get; }
+        /// <summary>Compatibility view for single-floor definitions; multi-floor callers must select a floor.</summary>
+        public RunNodeTree NodeTree => Floors.Count == 1 ? Floors[0].NodeTree : throw new InvalidOperationException("Select a floor's NodeTree from Floors.");
         public IReadOnlyList<string> StartingJokers { get; }
         public IReadOnlyList<string> ShopPool { get; }
         public IReadOnlyList<string> RewardPool { get; }
         public RunDefinition(string version, ScoreProfile scoring, IEnumerable<RunStageDefinition> stages, IEnumerable<string> shopPool,
             IEnumerable<string> rewardPool, IEnumerable<string> startingJokers = null, int jokerCapacity = 5, long startingGold = 10, long rerollCost = 2, int offerCount = 3)
+            : this(version, scoring, RunNodeTree.Linear(stages), shopPool, rewardPool, startingJokers, jokerCapacity, startingGold, rerollCost, offerCount) { }
+        public RunDefinition(string version, ScoreProfile scoring, RunNodeTree nodeTree, IEnumerable<string> shopPool,
+            IEnumerable<string> rewardPool, IEnumerable<string> startingJokers = null, int jokerCapacity = 5, long startingGold = 10, long rerollCost = 2, int offerCount = 3)
+            : this(version, scoring, new[] { new RunFloorDefinition("default", nodeTree) }, shopPool, rewardPool, startingJokers,
+                jokerCapacity, startingGold, rerollCost, offerCount) { }
+        public RunDefinition(string version, ScoreProfile scoring, IEnumerable<RunFloorDefinition> floors, IEnumerable<string> shopPool,
+            IEnumerable<string> rewardPool, IEnumerable<string> startingJokers = null, int jokerCapacity = 5, long startingGold = 10, long rerollCost = 2, int offerCount = 3)
         {
             Version = Guard.Text(version, nameof(version)); Scoring = scoring ?? throw new ArgumentNullException(nameof(scoring));
-            Stages = Guard.View(Guard.Copy(stages, nameof(stages))); ShopPool = Guard.View(Guard.Copy(shopPool, nameof(shopPool)));
+            var floorArray = Guard.Copy(floors, nameof(floors));
+            if (floorArray.Length == 0 || floorArray.Length > 32 || floorArray.Select(f => f.Id).Distinct(StringComparer.Ordinal).Count() != floorArray.Length)
+                throw new ArgumentException("Invalid floors or duplicate floor identities.");
+            Floors = Guard.View(floorArray); EncounterNodes = Guard.View(floorArray.SelectMany(f => f.NodeTree.EncounterNodes).ToArray());
+            Stages = Guard.View(EncounterNodes.Select(n => n.Stage).ToArray()); ShopPool = Guard.View(Guard.Copy(shopPool, nameof(shopPool)));
             RewardPool = Guard.View(Guard.Copy(rewardPool, nameof(rewardPool))); StartingJokers = Guard.View(Guard.Copy(startingJokers ?? new string[0], nameof(startingJokers)));
-            if (Stages.Count == 0 || Stages.Count > 100 || Stages.Select(s => s.Id).Distinct().Count() != Stages.Count || jokerCapacity < 0 || jokerCapacity > 32 ||
+            if (jokerCapacity < 0 || jokerCapacity > 32 ||
                 startingGold < 0 || rerollCost < 1 || offerCount < 1 || offerCount > 10 || ShopPool.Count == 0 || RewardPool.Count == 0 ||
+                ShopPool.Any(string.IsNullOrWhiteSpace) || RewardPool.Any(string.IsNullOrWhiteSpace) ||
                 ShopPool.Distinct().Count() != ShopPool.Count || RewardPool.Distinct().Count() != RewardPool.Count) throw new ArgumentException("Invalid run definition.");
             JokerCapacity = jokerCapacity; StartingGold = startingGold; RerollCost = rerollCost; OfferCount = offerCount;
+        }
+        public int StageIndex(int floorIndex, string nodeId)
+        {
+            if (floorIndex < 0 || floorIndex >= Floors.Count) throw new ArgumentOutOfRangeException(nameof(floorIndex));
+            return Floors.Take(floorIndex).Sum(f => f.NodeTree.EncounterNodes.Count) + Floors[floorIndex].NodeTree.StageIndex(nodeId);
+        }
+        public int EncounterFloorIndex(int stageIndex)
+        {
+            if (stageIndex < 0 || stageIndex >= Stages.Count) throw new ArgumentOutOfRangeException(nameof(stageIndex));
+            int offset = 0;
+            for (int i = 0; i < Floors.Count; i++)
+            {
+                offset += Floors[i].NodeTree.EncounterNodes.Count;
+                if (stageIndex < offset) return i;
+            }
+            throw new ArgumentOutOfRangeException(nameof(stageIndex));
         }
     }
     public sealed class RunContent
@@ -111,6 +143,8 @@ namespace PokerEngine
             this.jokers = Guard.Copy(jokers, nameof(jokers)).ToDictionary(j => j.Id, StringComparer.Ordinal);
             this.offers = Guard.Copy(offers, nameof(offers)).ToDictionary(o => o.Id, StringComparer.Ordinal);
             if (definition.StartingJokers.Any(id => !this.jokers.ContainsKey(id)) || definition.ShopPool.Concat(definition.RewardPool).Any(id => !this.offers.ContainsKey(id)) ||
+                definition.Floors.Any(f => f.NodeTree.Nodes.Where(n => n.Kind == RunNodeKind.Reward || n.Kind == RunNodeKind.Shop)
+                    .SelectMany(n => f.NodeTree.OfferPool(n, definition)).Any(id => !this.offers.ContainsKey(id))) ||
                 this.jokers.Values.Any(j => j.AbilityId.HasValue && !cardsAndAbilities.Contains(j.AbilityId.Value)) ||
                 this.offers.Values.Any(o => o.Kind == RunOfferKind.Joker && !this.jokers.ContainsKey(o.JokerId) ||
                     o.CardDefinition.HasValue && !cardsAndAbilities.Contains(o.CardDefinition.Value))) throw new ArgumentException("Unresolved run content.");
@@ -189,6 +223,10 @@ namespace PokerEngine
         [DataMember(Order = 20, IsRequired = true)] public string EncounterRulesVersion { get; private set; }
         [DataMember(Order = 21, IsRequired = true)] public int EncounterSchemaVersion { get; private set; }
         [DataMember(Order = 22, IsRequired = true)] public string StartingDeckVersion { get; private set; }
+        [DataMember(Order = 23, IsRequired = true)] public int FloorIndex { get; private set; }
+        [DataMember(Name = "Floors", Order = 24, IsRequired = true)] private RunFloorState[] floors;
+        public IReadOnlyList<RunFloorState> Floors => Guard.View(floors);
+        public RunNodeState Nodes => floors[FloorIndex].Nodes;
         public IReadOnlyList<RunCard> Deck => Guard.View(deck);
         public IReadOnlyList<RunJoker> Jokers => Guard.View(jokers);
         public IReadOnlyList<HandLevel> HandLevels => Guard.View(levels);
@@ -197,13 +235,14 @@ namespace PokerEngine
         public RunState(string id, long revision, string contentVersion, string rulesVersion, string scoreVersion, ParticipantId player,
             RunPhase phase, int stageIndex, long gold, long stageScore, int roundsScored, IEnumerable<RunCard> deck, IEnumerable<RunJoker> jokers,
             IEnumerable<HandLevel> levels, IEnumerable<RunOffer> offers, IEnumerable<ScoreResult> scores, RandomState random, string encounterKind, string encounterRulesVersion,
-            int encounterSchemaVersion, string startingDeckVersion, TState encounter = null)
+            int encounterSchemaVersion, string startingDeckVersion, int floorIndex, IEnumerable<RunFloorState> floors, TState encounter = null)
         {
             Id = Guard.Text(id, nameof(id)); Revision = revision; ContentVersion = contentVersion; RulesVersion = rulesVersion; ScoreVersion = scoreVersion;
             PlayerId = player; Phase = phase; StageIndex = stageIndex; Gold = gold; StageScore = stageScore; RoundsScored = roundsScored;
             this.deck = Guard.Copy(deck, nameof(deck)); this.jokers = Guard.Copy(jokers, nameof(jokers)); this.levels = Guard.Copy(levels, nameof(levels));
             this.offers = Guard.Copy(offers, nameof(offers)); this.scores = Guard.Copy(scores, nameof(scores)); Random = random; Encounter = encounter;
             EncounterKind = encounterKind; EncounterRulesVersion = encounterRulesVersion; EncounterSchemaVersion = encounterSchemaVersion; StartingDeckVersion = startingDeckVersion;
+            FloorIndex = floorIndex; this.floors = Guard.Copy(floors, nameof(floors));
         }
     }
 }

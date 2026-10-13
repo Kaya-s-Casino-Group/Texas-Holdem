@@ -62,7 +62,8 @@ namespace PokerEngine.Tests
                 if (command.Action == "repeat") return new RunEncounterTransition<TestEncounter, Event>(state, new[] { new Event("tick"), new Event("secret", true) });
                 bool exhausted = command.Action == "exhaust";
                 var score = exhausted ? null : ScoreEngine.Fixed((command.Action == "bad-score" ? "wrong/" : state.Id + "/") + "round/" + (state.Round + 1), 10);
-                var next = new TestEncounter(state.Id, state.Random, state.Deck, state.Round + (exhausted ? 0 : 1), true, exhausted, score);
+                var next = new TestEncounter(command.Action == "bad-state" ? "wrong-identity" : state.Id,
+                    state.Random, state.Deck, state.Round + (exhausted ? 0 : 1), true, exhausted, score);
                 return new RunEncounterTransition<TestEncounter, Event>(next, new[] { new Event("tick"), new Event("secret", true) });
             }
             public void Validate(RunEncounterContext c, TestEncounter state)
@@ -144,7 +145,7 @@ namespace PokerEngine.Tests
             Assert.Throws<SnapshotException>(() => RunSnapshotCodec<TestEncounter>.Deserialize(json, f.Content, new Adapter(schema: 2)));
             Assert.Throws<SnapshotException>(() => RunSnapshotCodec<TestEncounter>.Deserialize(json, Content(deckVersion: "deck.2"), f.Adapter));
             Assert.Throws<SnapshotException>(() => RunSnapshotCodec<DifferentEncounter>.Deserialize(json, f.Content, new DifferentAdapter()));
-            Assert.Throws<SnapshotException>(() => RunSnapshotCodec<TestEncounter>.Deserialize(json.Replace("\"SchemaVersion\":2", "\"SchemaVersion\":1"), f.Content, f.Adapter));
+            Assert.Throws<SnapshotException>(() => RunSnapshotCodec<TestEncounter>.Deserialize(json.Replace("\"SchemaVersion\":" + RunSnapshotCodec<TestEncounter>.SchemaVersion, "\"SchemaVersion\":2"), f.Content, f.Adapter));
         }
         [Test] public void EmbeddedFrozenScoreMustAgreeWithRunLedger()
         {
@@ -214,6 +215,25 @@ namespace PokerEngine.Tests
             Assert.That(forged.EncounterError, Is.EqualTo("WrongActor")); Assert.That(forged.State, Is.SameAs(f.State));
             var system = f.Apply(RunAction.SystemEncounter, "score", accept: false);
             Assert.That(system.EncounterError, Is.EqualTo("WrongActor")); Assert.That(system.EncounterEvents.Count, Is.Zero);
+        }
+        [Test] public void InvalidCompletedEncounterCannotBeHiddenByAutomaticallyStartingItsSuccessor()
+        {
+            var sample = Content(target: 10);
+            var tree = new RunNodeTree("direct.1", "first", new[] {
+                new RunEncounterNodeDefinition("first", sample.Definition.Stages[0], new[] { "second" }),
+                new RunEncounterNodeDefinition("second", sample.Definition.Stages[1])
+            });
+            var definition = new RunDefinition("run.direct.1", ScoreProfile.Default, tree, sample.Definition.ShopPool, sample.Definition.RewardPool);
+            var content = new RunContent(sample.CardsAndAbilities, definition, new JokerDefinition[0],
+                new[] { sample.Offer("remove"), sample.Offer("gold") }, sample.StartingDeckVersion, sample.StartingDeck);
+            var adapter = new Adapter(); var engine = new RunEngine<TestEncounter, Command, Event>(content, adapter);
+            var initial = engine.Create("direct", Player);
+            var started = engine.ExecuteSystem(initial, new RunCommand<Command>("start", initial.Revision, RunAction.StartRun));
+            Assert.IsTrue(started.Accepted); var before = started.State;
+            var denied = engine.Execute(before, new RunCommand<Command>("bad", before.Revision, RunAction.PlayerEncounter,
+                encounterCommand: new Command("bad-state")), Player);
+            Assert.AreEqual(RunError.InvalidState, denied.Error); Assert.AreSame(before, denied.State); Assert.IsEmpty(denied.EncounterEvents);
+            Assert.IsEmpty(denied.State.Nodes.CompletedNodeIds); Assert.IsEmpty(denied.State.Scores);
         }
     }
 }

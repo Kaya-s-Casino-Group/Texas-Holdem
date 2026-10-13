@@ -9,7 +9,7 @@ namespace PokerEngine
     /// <summary>Atomic build and typed encounter snapshots. Mode identity, rules and data formats are pinned explicitly.</summary>
     public static class RunSnapshotCodec<TState> where TState : class
     {
-        public const int SchemaVersion = 2;
+        public const int SchemaVersion = 4;
         public const int MaxUtf8Bytes = 16 * 1024 * 1024;
         private static readonly UTF8Encoding Utf8 = new UTF8Encoding(false, true);
         [DataContract] private sealed class Envelope
