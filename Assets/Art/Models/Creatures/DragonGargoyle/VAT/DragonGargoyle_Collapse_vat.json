@@ -1,0 +1,1233 @@
+{
+  "schema": "statue-rigid-vat-v1",
+  "reference_implementation": "https://github.com/sharpen3d/openvat/tree/43b519620c710c9081a72eba253222d6fe6f931f/Development/openvat",
+  "encoding": "rigid piece transforms",
+  "frame_start": 1,
+  "frame_end": 110,
+  "frame_count": 110,
+  "fps": 30.0,
+  "piece_count": 36,
+  "vertex_count": 13390,
+  "triangle_count": 7812,
+  "position_min": [
+    -0.5758994221687317,
+    -0.5741832256317139,
+    0.01646323874592781
+  ],
+  "position_max": [
+    0.8059774041175842,
+    0.6535738706588745,
+    0.923934280872345
+  ],
+  "position_max_minus_min": [
+    1.381876826286316,
+    1.2277570962905884,
+    0.9074710421264172
+  ],
+  "texture": {
+    "width": 64,
+    "height": 128,
+    "component_bits": 16,
+    "format": "OpenEXR RGBA",
+    "linear": true,
+    "alpha": "independent data channel",
+    "mipmaps": false,
+    "filter": "point/nearest",
+    "wrap": "clamp",
+    "row_origin": "bottom-left",
+    "first_frame_row": 127,
+    "frame_row_formula": "height - 1 - (frame - frame_start)",
+    "piece_column_formula": "piece_id",
+    "padding": "unused piece columns; remaining time rows repeat final pose"
+  },
+  "rotation": {
+    "channels": "XYZW",
+    "encoding": "rgba = quaternion_xyzw * 0.5 + 0.5",
+    "reference": "rotation delta from saved rest pose",
+    "signs": "adjacent frames same hemisphere",
+    "interpolation": "shortest-path normalized linear interpolation"
+  },
+  "uv_channels": [
+    {
+      "name": "UVMap",
+      "index": 0
+    },
+    {
+      "name": "VAT_UV",
+      "index": 1
+    },
+    {
+      "name": "VAT_PIVOT_XY",
+      "index": 2
+    },
+    {
+      "name": "VAT_PIVOT_Z_ID",
+      "index": 3
+    }
+  ],
+  "pivot": "VAT_PIVOT_XY.xy, VAT_PIVOT_Z_ID.x; all in bind mesh local coordinates",
+  "lookup": "VAT_UV.xy is texel center of piece_id at first frame; subtract frame_offset/height from y",
+  "decode": "P = pivot_current + rotate(q_delta, P_rest - pivot_rest); N/T = rotate(q_delta, N/T_rest)",
+  "coordinates": {
+    "space": "bind mesh local XYZ, Blender right-handed Z-up",
+    "unit": "Blender scene units",
+    "unit_scale_metres": 1.0,
+    "anchor_world_row_major": [
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ],
+    "fbx_axis_forward": "-Z",
+    "fbx_axis_up": "Y",
+    "fbx_bake_space_transform": false,
+    "note": "Keep mesh-local axes for decoding. If importer bakes an axis conversion, apply the same basis to pivots, positions, rotations, normals and tangents."
+  },
+  "animations": {
+    "DragonGargoyle_Collapse": {
+      "startFrame": 1,
+      "endFrame": 110,
+      "framerate": 30.0,
+      "looping": false,
+      "end_behavior": "hold last frame",
+      "duration_seconds": 3.6333333333333333
+    }
+  },
+  "pieces": [
+    {
+      "id": 0,
+      "source": "SF_Piece_000",
+      "vertex_start": 0,
+      "vertex_count": 574,
+      "pivot_rest": [
+        0.11783943325281143,
+        -0.0510929673910141,
+        0.1016770526766777
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        0.11783943325281143,
+        0.0,
+        1.0,
+        0.0,
+        -0.0510929673910141,
+        0.0,
+        0.0,
+        1.0,
+        0.1016770526766777,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 35
+    },
+    {
+      "id": 1,
+      "source": "SF_Piece_001",
+      "vertex_start": 574,
+      "vertex_count": 232,
+      "pivot_rest": [
+        -0.24524028599262238,
+        0.008124422281980515,
+        0.923619270324707
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        -0.24524028599262238,
+        0.0,
+        1.0,
+        0.0,
+        0.008124422281980515,
+        0.0,
+        0.0,
+        1.0,
+        0.923619270324707,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 24
+    },
+    {
+      "id": 2,
+      "source": "SF_Piece_002",
+      "vertex_start": 806,
+      "vertex_count": 512,
+      "pivot_rest": [
+        0.2249593883752823,
+        0.03307903930544853,
+        0.6630918383598328
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        0.2249593883752823,
+        0.0,
+        1.0,
+        0.0,
+        0.03307903930544853,
+        0.0,
+        0.0,
+        1.0,
+        0.6630918383598328,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 27
+    },
+    {
+      "id": 3,
+      "source": "SF_Piece_003",
+      "vertex_start": 1318,
+      "vertex_count": 683,
+      "pivot_rest": [
+        -0.16296403110027313,
+        -0.006031620316207409,
+        0.46216824650764465
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        -0.16296403110027313,
+        0.0,
+        1.0,
+        0.0,
+        -0.006031620316207409,
+        0.0,
+        0.0,
+        1.0,
+        0.46216824650764465,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 30
+    },
+    {
+      "id": 4,
+      "source": "SF_Piece_004",
+      "vertex_start": 2001,
+      "vertex_count": 243,
+      "pivot_rest": [
+        -0.14879843592643738,
+        0.21504706144332886,
+        0.07313792407512665
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        -0.14879843592643738,
+        0.0,
+        1.0,
+        0.0,
+        0.21504706144332886,
+        0.0,
+        0.0,
+        1.0,
+        0.07313792407512665,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 35
+    },
+    {
+      "id": 5,
+      "source": "SF_Piece_005",
+      "vertex_start": 2244,
+      "vertex_count": 239,
+      "pivot_rest": [
+        0.06665586680173874,
+        0.19183233380317688,
+        0.35047823190689087
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        0.06665586680173874,
+        0.0,
+        1.0,
+        0.0,
+        0.19183233380317688,
+        0.0,
+        0.0,
+        1.0,
+        0.35047823190689087,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 32
+    },
+    {
+      "id": 6,
+      "source": "SF_Piece_006",
+      "vertex_start": 2483,
+      "vertex_count": 907,
+      "pivot_rest": [
+        0.0174771249294281,
+        -0.25852182507514954,
+        0.3034503757953644
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        0.0174771249294281,
+        0.0,
+        1.0,
+        0.0,
+        -0.25852182507514954,
+        0.0,
+        0.0,
+        1.0,
+        0.3034503757953644,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 32
+    },
+    {
+      "id": 7,
+      "source": "SF_Piece_007",
+      "vertex_start": 3390,
+      "vertex_count": 256,
+      "pivot_rest": [
+        0.2250647246837616,
+        0.004385001491755247,
+        0.9110715389251709
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        0.2250647246837616,
+        0.0,
+        1.0,
+        0.0,
+        0.004385001491755247,
+        0.0,
+        0.0,
+        1.0,
+        0.9110715389251709,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 24
+    },
+    {
+      "id": 8,
+      "source": "SF_Piece_008",
+      "vertex_start": 3646,
+      "vertex_count": 336,
+      "pivot_rest": [
+        -0.25405314564704895,
+        0.05051030218601227,
+        0.6741700768470764
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        -0.25405314564704895,
+        0.0,
+        1.0,
+        0.0,
+        0.05051030218601227,
+        0.0,
+        0.0,
+        1.0,
+        0.6741700768470764,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 27
+    },
+    {
+      "id": 9,
+      "source": "SF_Piece_009",
+      "vertex_start": 3982,
+      "vertex_count": 193,
+      "pivot_rest": [
+        -0.12445374578237534,
+        -0.09664588421583176,
+        0.03963300585746765
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        -0.12445374578237534,
+        0.0,
+        1.0,
+        0.0,
+        -0.09664588421583176,
+        0.0,
+        0.0,
+        1.0,
+        0.03963300585746765,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 36
+    },
+    {
+      "id": 10,
+      "source": "SF_Piece_010",
+      "vertex_start": 4175,
+      "vertex_count": 221,
+      "pivot_rest": [
+        0.17053276300430298,
+        0.20064301788806915,
+        0.05691324546933174
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        0.17053276300430298,
+        0.0,
+        1.0,
+        0.0,
+        0.20064301788806915,
+        0.0,
+        0.0,
+        1.0,
+        0.05691324546933174,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 36
+    },
+    {
+      "id": 11,
+      "source": "SF_Piece_011",
+      "vertex_start": 4396,
+      "vertex_count": 524,
+      "pivot_rest": [
+        -0.12871088087558746,
+        -0.03333495557308197,
+        0.6835353374481201
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        -0.12871088087558746,
+        0.0,
+        1.0,
+        0.0,
+        -0.03333495557308197,
+        0.0,
+        0.0,
+        1.0,
+        0.6835353374481201,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 27
+    },
+    {
+      "id": 12,
+      "source": "SF_Piece_012",
+      "vertex_start": 4920,
+      "vertex_count": 672,
+      "pivot_rest": [
+        0.1351788491010666,
+        -0.03505424037575722,
+        0.448987752199173
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        0.1351788491010666,
+        0.0,
+        1.0,
+        0.0,
+        -0.03505424037575722,
+        0.0,
+        0.0,
+        1.0,
+        0.448987752199173,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 30
+    },
+    {
+      "id": 13,
+      "source": "SF_Piece_013",
+      "vertex_start": 5592,
+      "vertex_count": 407,
+      "pivot_rest": [
+        -0.16664712131023407,
+        0.03014346770942211,
+        0.16365274786949158
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        -0.16664712131023407,
+        0.0,
+        1.0,
+        0.0,
+        0.03014346770942211,
+        0.0,
+        0.0,
+        1.0,
+        0.16365274786949158,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 34
+    },
+    {
+      "id": 14,
+      "source": "SF_Piece_014",
+      "vertex_start": 5999,
+      "vertex_count": 375,
+      "pivot_rest": [
+        -0.00857821386307478,
+        0.05132324621081352,
+        0.5040086507797241
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        -0.00857821386307478,
+        0.0,
+        1.0,
+        0.0,
+        0.05132324621081352,
+        0.0,
+        0.0,
+        1.0,
+        0.5040086507797241,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 30
+    },
+    {
+      "id": 15,
+      "source": "SF_Piece_015",
+      "vertex_start": 6374,
+      "vertex_count": 646,
+      "pivot_rest": [
+        -0.04748162999749184,
+        -0.1773427128791809,
+        0.1858915239572525
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        -0.04748162999749184,
+        0.0,
+        1.0,
+        0.0,
+        -0.1773427128791809,
+        0.0,
+        0.0,
+        1.0,
+        0.1858915239572525,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 34
+    },
+    {
+      "id": 16,
+      "source": "SF_Piece_016",
+      "vertex_start": 7020,
+      "vertex_count": 376,
+      "pivot_rest": [
+        0.11902659386396408,
+        -0.035454243421554565,
+        0.7937599420547485
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        0.11902659386396408,
+        0.0,
+        1.0,
+        0.0,
+        -0.035454243421554565,
+        0.0,
+        0.0,
+        1.0,
+        0.7937599420547485,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 26
+    },
+    {
+      "id": 17,
+      "source": "SF_Piece_017",
+      "vertex_start": 7396,
+      "vertex_count": 211,
+      "pivot_rest": [
+        -0.10758673399686813,
+        0.19893571734428406,
+        0.25917819142341614
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        -0.10758673399686813,
+        0.0,
+        1.0,
+        0.0,
+        0.19893571734428406,
+        0.0,
+        0.0,
+        1.0,
+        0.25917819142341614,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 33
+    },
+    {
+      "id": 18,
+      "source": "SF_Piece_018",
+      "vertex_start": 7607,
+      "vertex_count": 215,
+      "pivot_rest": [
+        0.061941348016262054,
+        0.258241206407547,
+        0.17486919462680817
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        0.061941348016262054,
+        0.0,
+        1.0,
+        0.0,
+        0.258241206407547,
+        0.0,
+        0.0,
+        1.0,
+        0.17486919462680817,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 34
+    },
+    {
+      "id": 19,
+      "source": "SF_Piece_019",
+      "vertex_start": 7822,
+      "vertex_count": 132,
+      "pivot_rest": [
+        -0.006522831041365862,
+        0.004789717495441437,
+        0.30236420035362244
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        -0.006522831041365862,
+        0.0,
+        1.0,
+        0.0,
+        0.004789717495441437,
+        0.0,
+        0.0,
+        1.0,
+        0.30236420035362244,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 32
+    },
+    {
+      "id": 20,
+      "source": "SF_Piece_020",
+      "vertex_start": 7954,
+      "vertex_count": 732,
+      "pivot_rest": [
+        -0.018292710185050964,
+        -0.12461930513381958,
+        0.47012752294540405
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        -0.018292710185050964,
+        0.0,
+        1.0,
+        0.0,
+        -0.12461930513381958,
+        0.0,
+        0.0,
+        1.0,
+        0.47012752294540405,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 30
+    },
+    {
+      "id": 21,
+      "source": "SF_Piece_021",
+      "vertex_start": 8686,
+      "vertex_count": 363,
+      "pivot_rest": [
+        -0.16356170177459717,
+        0.08098166435956955,
+        0.02996259741485119
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        -0.16356170177459717,
+        0.0,
+        1.0,
+        0.0,
+        0.08098166435956955,
+        0.0,
+        0.0,
+        1.0,
+        0.02996259741485119,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 36
+    },
+    {
+      "id": 22,
+      "source": "SF_Piece_022",
+      "vertex_start": 9049,
+      "vertex_count": 307,
+      "pivot_rest": [
+        0.16808854043483734,
+        0.08849707245826721,
+        0.17889201641082764
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        0.16808854043483734,
+        0.0,
+        1.0,
+        0.0,
+        0.08849707245826721,
+        0.0,
+        0.0,
+        1.0,
+        0.17889201641082764,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 34
+    },
+    {
+      "id": 23,
+      "source": "SF_Piece_023",
+      "vertex_start": 9356,
+      "vertex_count": 369,
+      "pivot_rest": [
+        0.10983633249998093,
+        -0.15316925942897797,
+        0.2604074776172638
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        0.10983633249998093,
+        0.0,
+        1.0,
+        0.0,
+        -0.15316925942897797,
+        0.0,
+        0.0,
+        1.0,
+        0.2604074776172638,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 33
+    },
+    {
+      "id": 24,
+      "source": "SF_Piece_024",
+      "vertex_start": 9725,
+      "vertex_count": 321,
+      "pivot_rest": [
+        -0.1426207572221756,
+        -0.016139041632413864,
+        0.8297745585441589
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        -0.1426207572221756,
+        0.0,
+        1.0,
+        0.0,
+        -0.016139041632413864,
+        0.0,
+        0.0,
+        1.0,
+        0.8297745585441589,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 25
+    },
+    {
+      "id": 25,
+      "source": "SF_Piece_025",
+      "vertex_start": 10046,
+      "vertex_count": 329,
+      "pivot_rest": [
+        0.22340653836727142,
+        0.04721936583518982,
+        0.5075204372406006
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        0.22340653836727142,
+        0.0,
+        1.0,
+        0.0,
+        0.04721936583518982,
+        0.0,
+        0.0,
+        1.0,
+        0.5075204372406006,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 30
+    },
+    {
+      "id": 26,
+      "source": "SF_Piece_026",
+      "vertex_start": 10375,
+      "vertex_count": 357,
+      "pivot_rest": [
+        -0.12268313765525818,
+        -0.1500774621963501,
+        0.3055628538131714
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        -0.12268313765525818,
+        0.0,
+        1.0,
+        0.0,
+        -0.1500774621963501,
+        0.0,
+        0.0,
+        1.0,
+        0.3055628538131714,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 32
+    },
+    {
+      "id": 27,
+      "source": "SF_Piece_027",
+      "vertex_start": 10732,
+      "vertex_count": 112,
+      "pivot_rest": [
+        0.007415281143039465,
+        0.09900037944316864,
+        0.19786937534809113
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        0.007415281143039465,
+        0.0,
+        1.0,
+        0.0,
+        0.09900037944316864,
+        0.0,
+        0.0,
+        1.0,
+        0.19786937534809113,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 34
+    },
+    {
+      "id": 28,
+      "source": "SF_Piece_028",
+      "vertex_start": 10844,
+      "vertex_count": 279,
+      "pivot_rest": [
+        0.17159387469291687,
+        0.0777045339345932,
+        0.03470934182405472
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        0.17159387469291687,
+        0.0,
+        1.0,
+        0.0,
+        0.0777045339345932,
+        0.0,
+        0.0,
+        1.0,
+        0.03470934182405472,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 36
+    },
+    {
+      "id": 29,
+      "source": "SF_Piece_029",
+      "vertex_start": 11123,
+      "vertex_count": 190,
+      "pivot_rest": [
+        -0.09576153755187988,
+        0.11146487295627594,
+        0.39036670327186584
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        -0.09576153755187988,
+        0.0,
+        1.0,
+        0.0,
+        0.11146487295627594,
+        0.0,
+        0.0,
+        1.0,
+        0.39036670327186584,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 31
+    },
+    {
+      "id": 30,
+      "source": "SF_Piece_030",
+      "vertex_start": 11313,
+      "vertex_count": 702,
+      "pivot_rest": [
+        -0.049836818128824234,
+        -0.06177755072712898,
+        0.06434278935194016
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        -0.049836818128824234,
+        0.0,
+        1.0,
+        0.0,
+        -0.06177755072712898,
+        0.0,
+        0.0,
+        1.0,
+        0.06434278935194016,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 35
+    },
+    {
+      "id": 31,
+      "source": "SF_Piece_031",
+      "vertex_start": 12015,
+      "vertex_count": 494,
+      "pivot_rest": [
+        0.12412497401237488,
+        -0.03638690337538719,
+        0.6492592692375183
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        0.12412497401237488,
+        0.0,
+        1.0,
+        0.0,
+        -0.03638690337538719,
+        0.0,
+        0.0,
+        1.0,
+        0.6492592692375183,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 28
+    },
+    {
+      "id": 32,
+      "source": "SF_Piece_032",
+      "vertex_start": 12509,
+      "vertex_count": 189,
+      "pivot_rest": [
+        0.01976802758872509,
+        0.2837388515472412,
+        0.03467224910855293
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        0.01976802758872509,
+        0.0,
+        1.0,
+        0.0,
+        0.2837388515472412,
+        0.0,
+        0.0,
+        1.0,
+        0.03467224910855293,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 36
+    },
+    {
+      "id": 33,
+      "source": "SF_Piece_033",
+      "vertex_start": 12698,
+      "vertex_count": 192,
+      "pivot_rest": [
+        0.09918598085641861,
+        0.07179407775402069,
+        0.06417188048362732
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        0.09918598085641861,
+        0.0,
+        1.0,
+        0.0,
+        0.07179407775402069,
+        0.0,
+        0.0,
+        1.0,
+        0.06417188048362732,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 35
+    },
+    {
+      "id": 34,
+      "source": "SF_Piece_034",
+      "vertex_start": 12890,
+      "vertex_count": 315,
+      "pivot_rest": [
+        0.16860486567020416,
+        0.011312086135149002,
+        0.2935980260372162
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        0.16860486567020416,
+        0.0,
+        1.0,
+        0.0,
+        0.011312086135149002,
+        0.0,
+        0.0,
+        1.0,
+        0.2935980260372162,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 32
+    },
+    {
+      "id": 35,
+      "source": "SF_Piece_035",
+      "vertex_start": 13205,
+      "vertex_count": 185,
+      "pivot_rest": [
+        0.10136930644512177,
+        -0.09885067492723465,
+        0.024452853947877884
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        0.10136930644512177,
+        0.0,
+        1.0,
+        0.0,
+        -0.09885067492723465,
+        0.0,
+        0.0,
+        1.0,
+        0.024452853947877884,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 36
+    }
+  ],
+  "materials": [
+    "DragonGargoyle_Material_VAT"
+  ],
+  "source_materials": [
+    "DragonGargoyle_Material",
+    "SF_StoneInterior"
+  ],
+  "surface_mask": {
+    "attribute": "VAT_SURFACE",
+    "semantic": "COLOR.r",
+    "exterior": 0,
+    "interior": 1,
+    "storage": "linear vertex color RGBA; R=surface type, G/B=0, A=1",
+    "constant_per_triangle": true,
+    "material_slots": 1
+  },
+  "files": {
+    "mesh": "DragonGargoyle_Collapse.fbx",
+    "position": "DragonGargoyle_Collapse_position.exr",
+    "rotation": "DragonGargoyle_Collapse_rotation.exr",
+    "bind_mesh": "DragonGargoyle_Collapse_bind_mesh.json",
+    "validation": "DragonGargoyle_Collapse_validation.json"
+  },
+  "animation_bounds": {
+    "min": [
+      -0.6397896364345752,
+      -0.7202085997168939,
+      -0.003191761356318601
+    ],
+    "max": [
+      0.9360265173637692,
+      0.7403420388463355,
+      0.9986370205879211
+    ],
+    "padding": 0.003
+  },
+  "unity_export": {
+    "runtime_files_sha256": {
+      "DragonGargoyle_Collapse.fbx": "a82726d921314d7cdb57b93a8eb61d7c71b8a6dc4aae4570ed89496b9a051d2e",
+      "DragonGargoyle_Collapse_position.exr": "a26667fba63e745803d16ba897230a0fbf15f2af51bab27ad44a33a756c97d4f",
+      "DragonGargoyle_Collapse_rotation.exr": "97b5c240d88631f2f9dc9e07f0257cce0e0ac167229ddec4ba75e12307e659ea"
+    }
+  }
+}

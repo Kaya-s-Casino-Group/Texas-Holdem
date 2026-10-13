@@ -13,6 +13,7 @@ public static class DragonGargoyleAssetImport
     const string Folder = "Assets/Art/Models/Creatures/DragonGargoyle";
     const string ModelPath = Folder + "/DragonGargoyle.fbx";
     const string MaterialPath = Folder + "/DragonGargoyle_Material.mat";
+    const string ShaderName = "Rendering/Gargoyle Cracks Deferred";
     const string Output = "Blender/DragonGargoyle";
 
     [MenuItem("Tools/Art Assets/Configure Dragon Gargoyle")]
@@ -26,8 +27,9 @@ public static class DragonGargoyleAssetImport
         Texture("Normal.jpg", false, true, false);
         Texture("MetallicRoughness.png", false, false, false);
         Texture("MetallicSmoothness.png", false, false, true);
-        var shader = Shader.Find("Universal Render Pipeline/Lit");
-        if (shader == null) throw new InvalidOperationException("Project URP Lit shader is missing.");
+        Texture("Cracks.png", false, false, false, 128, TextureImporterCompression.Uncompressed);
+        var shader = Shader.Find(ShaderName);
+        if (shader == null) throw new InvalidOperationException("Gargoyle Cracks Deferred shader is missing.");
         var mat = AssetDatabase.LoadAssetAtPath<Material>(MaterialPath);
         if (mat == null)
         {
@@ -42,15 +44,9 @@ public static class DragonGargoyleAssetImport
         mat.SetTexture("_MetallicGlossMap", Load("MetallicSmoothness.png"));
         mat.SetFloat("_Metallic", 1);
         mat.SetFloat("_Smoothness", 1);
-        mat.SetFloat("_SmoothnessTextureChannel", 0);
-        mat.SetFloat("_WorkflowMode", 1);
-        mat.SetFloat("_Surface", 0);
-        mat.SetFloat("_Cull", (float)CullMode.Off); // Preserve glTF doubleSided=true.
+        mat.SetTexture("_CrackMap", Load("Cracks.png"));
         mat.doubleSidedGI = true;
-        mat.EnableKeyword("_NORMALMAP");
-        mat.EnableKeyword("_METALLICSPECGLOSSMAP");
-        mat.DisableKeyword("_SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A");
-        mat.DisableKeyword("_SPECULAR_SETUP");
+        mat.shaderKeywords = Array.Empty<string>();
         EditorUtility.SetDirty(mat);
         AssetDatabase.SaveAssetIfDirty(mat);
 
@@ -85,7 +81,8 @@ public static class DragonGargoyleAssetImport
     static string TexturePath(string suffix) => Folder + "/Textures/DragonGargoyle_" + suffix;
     static Texture2D Load(string suffix) => AssetDatabase.LoadAssetAtPath<Texture2D>(TexturePath(suffix));
 
-    static void Texture(string suffix, bool srgb, bool normal, bool alpha)
+    static void Texture(string suffix, bool srgb, bool normal, bool alpha, int maxSize = 1024,
+        TextureImporterCompression compression = TextureImporterCompression.CompressedHQ)
     {
         var importer = AssetImporter.GetAtPath(TexturePath(suffix)) as TextureImporter;
         if (importer == null) throw new InvalidOperationException("Missing texture: " + suffix);
@@ -95,9 +92,9 @@ public static class DragonGargoyleAssetImport
         importer.alphaSource = alpha ? TextureImporterAlphaSource.FromInput : TextureImporterAlphaSource.None;
         importer.alphaIsTransparency = false;
         importer.mipmapEnabled = true;
-        importer.maxTextureSize = 1024;
+        importer.maxTextureSize = maxSize;
         importer.npotScale = TextureImporterNPOTScale.None;
-        importer.textureCompression = TextureImporterCompression.CompressedHQ;
+        importer.textureCompression = compression;
         importer.filterMode = FilterMode.Bilinear;
         importer.wrapMode = TextureWrapMode.Repeat;
         importer.anisoLevel = 4;
@@ -110,8 +107,27 @@ public static class DragonGargoyleAssetImport
     {
         var model = AssetDatabase.LoadAssetAtPath<GameObject>(ModelPath);
         var mat = AssetDatabase.LoadAssetAtPath<Material>(MaterialPath);
-        if (model == null || mat == null || mat.shader.name != "Universal Render Pipeline/Lit")
-            throw new InvalidOperationException("Model or URP material is missing.");
+        if (model == null || mat == null || mat.shader == null || mat.shader.name != ShaderName)
+            throw new InvalidOperationException("Model or Gargoyle Cracks Deferred material is missing.");
+        if (!mat.shader.isSupported || mat.passCount != 4 || mat.shaderKeywords.Length != 0 ||
+            new[] { "GBuffer", "ShadowCaster", "DepthOnly", "DepthNormals" }.Any(p => mat.FindPass(p) < 0))
+            throw new InvalidOperationException("Gargoyle shader passes or keywords failed validation.");
+        bool wasAsync = ShaderUtil.allowAsyncCompilation;
+        try
+        {
+            ShaderUtil.allowAsyncCompilation = false;
+            for (int i = 0; i < mat.passCount; ++i) ShaderUtil.CompilePass(mat, i, true);
+        }
+        finally { ShaderUtil.allowAsyncCompilation = wasAsync; }
+        if (ShaderUtil.ShaderHasError(mat.shader))
+            throw new InvalidOperationException("Gargoyle shader failed compilation: " +
+                string.Join("\n", ShaderUtil.GetShaderMessages(mat.shader).Select(m => m.message)));
+        var cracks = Load("Cracks.png");
+        var crackImporter = AssetImporter.GetAtPath(TexturePath("Cracks.png")) as TextureImporter;
+        if (cracks == null || cracks.width != 128 || cracks.height != 128 || mat.GetTexture("_CrackMap") != cracks ||
+            crackImporter == null || crackImporter.sRGBTexture || !crackImporter.mipmapEnabled ||
+            crackImporter.wrapMode != TextureWrapMode.Repeat || crackImporter.filterMode != FilterMode.Bilinear)
+            throw new InvalidOperationException("Crack texture size, binding or linear repeat sampling failed validation.");
         var filters = model.GetComponentsInChildren<MeshFilter>(true);
         var renderers = model.GetComponentsInChildren<Renderer>(true);
         if (filters.Length != 1 || renderers.Length != 1 || renderers[0].sharedMaterials.Any(m => m != mat))
@@ -136,7 +152,9 @@ public static class DragonGargoyleAssetImport
         report.AppendLine("Triangles: " + triangles + "; vertices: " + mesh.vertexCount);
         report.AppendLine("Unity dimensions (m): " + bounds.size.ToString("F6"));
         report.AppendLine("Minimum Y: " + bounds.min.y + "; root scale 1; root rotation identity");
-        report.AppendLine("Material: URP/Lit; glTF double-sided preserved; all renderer slots linked");
+        report.AppendLine("Material: " + ShaderName + "; glTF double-sided preserved; all renderer slots linked");
+        report.AppendLine("Shader: all four passes compiled; rest-object-space triplanar cracks; no feature keywords");
+        report.AppendLine("Cracks.png: 128x128; linear RG data; R=proximity, G=reveal order; Repeat; mipmaps");
         foreach (var tuple in new[]{("BaseColor.jpg", "_BaseMap"), ("Normal.jpg", "_BumpMap"), ("MetallicSmoothness.png", "_MetallicGlossMap")})
         {
             var texture = Load(tuple.Item1);
@@ -149,6 +167,32 @@ public static class DragonGargoyleAssetImport
         Directory.CreateDirectory(Output);
         File.WriteAllText(Output + "/unity_import_report.txt", report.ToString());
         Debug.Log(report.ToString());
+    }
+
+    [MenuItem("Tools/Art Assets/Dragon Gargoyle Cracks/Intact")]
+    static void PreviewIntact() => PreviewCracks(0);
+
+    [MenuItem("Tools/Art Assets/Dragon Gargoyle Cracks/Partial")]
+    static void PreviewPartial() => PreviewCracks(0.55f);
+
+    [MenuItem("Tools/Art Assets/Dragon Gargoyle Cracks/Full")]
+    static void PreviewFull() => PreviewCracks(1);
+
+    static void PreviewCracks(float progress)
+    {
+        var mat = AssetDatabase.LoadAssetAtPath<Material>(MaterialPath);
+        if (mat == null || mat.shader.name != ShaderName)
+            throw new InvalidOperationException("Gargoyle Cracks Deferred material is missing.");
+        var vat = AssetDatabase.LoadAssetAtPath<Material>(GargoyleVATImport.SurfacePath);
+        foreach (var preview in new[] {mat, vat}.Where(m => m != null))
+        {
+            Undo.RecordObject(preview, "Preview Gargoyle Cracks");
+            preview.SetFloat("_CrackProgress", progress);
+            EditorUtility.SetDirty(preview);
+            AssetDatabase.SaveAssetIfDirty(preview);
+        }
+        SceneView.RepaintAll();
+        Debug.Log("Dragon Gargoyle crack progress: " + progress);
     }
 
 }
