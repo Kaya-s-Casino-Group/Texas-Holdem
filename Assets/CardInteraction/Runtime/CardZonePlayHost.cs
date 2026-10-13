@@ -95,7 +95,9 @@ namespace CardInteraction
             match.SetInteraction(card.Card.Id, state);
         }
         public void Publish() { if (IsRunning && view != null) view.Present(Project()); }
-        private void OnEnable() { if (Application.isPlaying) BeginSession(); }
+        // A gameplay host may bind and deal before this component's first OnEnable.
+        // Keep that live session, its draw animation and its queued post-landing sort.
+        private void OnEnable() { if (Application.isPlaying && !IsRunning) BeginSession(); }
         private void OnDisable() => StopSession();
         private void OnDestroy() => StopSession();
     }

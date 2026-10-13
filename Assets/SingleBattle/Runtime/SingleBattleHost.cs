@@ -144,6 +144,8 @@ namespace Poker.SingleBattle
             actions.Hand.Bind(match, PlayerZone(CardZoneKinds.Hand).Id, deck, discard, actions.Hand.GetComponent<HandZoneView>().FacingCamera);
             actions.Played.Bind(match, PlayerZone(CardZoneKinds.Played).Id, deck, discard);
             actions.Hand.BeginSession(); actions.Played.BeginSession();
+            // Rebinding an observer also restores the selected ordering for an already dealt hand.
+            actions.Hand.RequestSortAfterLanding(actions.Hand.SortOrder);
             if (overview != null) { overview.BindArtwork(actions.Hand.GetComponent<HandZoneView>().CardPrefab); overview.Configure(match, overview.View, deck, State.Table.Zones.Where(zone => zone.ControllerId == playerActor.ParticipantId).SelectMany(zone => zone.Cards)); overview.Close(false); }
             if (drawPile != null) { drawPile.Configure(actions.Hand, drawPile.View); if (overview != null) drawPile.BindOverview(overview); }
         }

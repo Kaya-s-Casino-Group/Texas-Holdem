@@ -79,6 +79,34 @@ namespace Poker.SingleBattle.Tests
                 foreach (var profile in profiles) UnityEngine.Object.DestroyImmediate(profile);
             }
         }
+        [Test] public void OpeningAndPlayerSwitchAutomaticallySortWithoutChangingAuthoritativeCards()
+        {
+            using (var f = new Fixture(playerCount: 2))
+            {
+                Assert.AreEqual(CardZoneSortOrder.RankFirst, f.Hand.SortOrder);
+                AssertSorted();
+                Assert.IsTrue(f.Host.SelectPlayer(f.Host.Players[1]));
+                AssertSorted();
+                f.Hand.SetSortOrder(CardZoneSortOrder.SuitFirst);
+                Assert.IsTrue(f.Host.SelectPlayer(f.Host.Players[0]));
+                AssertSorted();
+
+                void AssertSorted()
+                {
+                    var state = f.Host.State;
+                    var hand = f.Host.PlayerZone(CardZoneKinds.Hand);
+                    Assert.IsTrue(f.Hand.HasPendingSort);
+                    f.HandView.CompleteTransitions();
+                    Assert.IsTrue(f.Hand.TryCompletePendingSort());
+                    CardDefinition Face(CardInstanceId id) => f.Host.Engine.Face(state.Table.GetCard(id));
+                    var expected = f.Hand.SortOrder == CardZoneSortOrder.RankFirst ? hand.SortByRank(Face) : hand.SortBySuit(Face);
+                    CollectionAssert.AreEqual(expected.Cards, f.Hand.Zone.Cards);
+                    Assert.AreSame(state, f.Host.State);
+                    Assert.IsFalse(f.Hand.HasPendingSort);
+                    f.HandView.CompleteTransitions();
+                }
+            }
+        }
         [Test] public void ScoreAssetDrivesBattleAndHoverWithoutMutatingAnExistingSnapshot()
         {
             var profile = ScriptableObject.CreateInstance<Poker.Scoring.PokerScoreProfile>();
