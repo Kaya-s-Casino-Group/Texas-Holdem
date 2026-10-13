@@ -13,6 +13,7 @@ public static class OrnateWoodenTableAssetImport
     const string Folder = "Assets/Art/Models/Environment/OrnateWoodenTable";
     const string ModelPath = Folder + "/OrnateWoodenTable.fbx";
     const string MaterialPath = Folder + "/OrnateWoodenTable_Material.mat";
+    const string ShaderName = "Rendering/Table Deferred";
     const string Output = "Blender/OrnateWoodenTable";
 
     [MenuItem("Tools/Art Assets/Configure Ornate Wooden Table")]
@@ -26,8 +27,8 @@ public static class OrnateWoodenTableAssetImport
         Texture("Normal.jpg", false, true, false);
         Texture("MetallicRoughness.png", false, false, false);
         Texture("MetallicSmoothness.png", false, false, true);
-        var shader = Shader.Find("Universal Render Pipeline/Lit");
-        if (shader == null) throw new InvalidOperationException("Project URP Lit shader is missing.");
+        var shader = Shader.Find(ShaderName);
+        if (shader == null) throw new InvalidOperationException("Table Deferred shader is missing.");
         var mat = AssetDatabase.LoadAssetAtPath<Material>(MaterialPath);
         if (mat == null)
         {
@@ -42,15 +43,9 @@ public static class OrnateWoodenTableAssetImport
         mat.SetTexture("_MetallicGlossMap", Load("MetallicSmoothness.png"));
         mat.SetFloat("_Metallic", 1);
         mat.SetFloat("_Smoothness", 1);
-        mat.SetFloat("_SmoothnessTextureChannel", 0);
-        mat.SetFloat("_WorkflowMode", 1);
-        mat.SetFloat("_Surface", 0);
-        mat.SetFloat("_Cull", (float)CullMode.Off); // Preserve glTF doubleSided=true.
         mat.doubleSidedGI = true;
-        mat.EnableKeyword("_NORMALMAP");
-        mat.EnableKeyword("_METALLICSPECGLOSSMAP");
-        mat.DisableKeyword("_SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A");
-        mat.DisableKeyword("_SPECULAR_SETUP");
+        // The table always samples these three maps; no Lit feature variants are needed.
+        mat.shaderKeywords = Array.Empty<string>();
         EditorUtility.SetDirty(mat);
         AssetDatabase.SaveAssetIfDirty(mat);
 
@@ -111,8 +106,22 @@ public static class OrnateWoodenTableAssetImport
     {
         var model = AssetDatabase.LoadAssetAtPath<GameObject>(ModelPath);
         var mat = AssetDatabase.LoadAssetAtPath<Material>(MaterialPath);
-        if (model == null || mat == null || mat.shader.name != "Universal Render Pipeline/Lit")
-            throw new InvalidOperationException("Model or URP material is missing.");
+        if (model == null || mat == null || mat.shader == null || mat.shader.name != ShaderName)
+            throw new InvalidOperationException("Model or Table Deferred material is missing.");
+        if (!mat.shader.isSupported || mat.passCount != 4 || mat.shaderKeywords.Length != 0 ||
+            mat.GetTag("UniversalMaterialType", false) != "Lit" ||
+            new[] { "GBuffer", "ShadowCaster", "DepthOnly", "DepthNormals" }.Any(p => mat.FindPass(p) < 0))
+            throw new InvalidOperationException("Table Deferred passes, material type or keywords failed validation.");
+        bool wasAsync = ShaderUtil.allowAsyncCompilation;
+        try
+        {
+            ShaderUtil.allowAsyncCompilation = false;
+            for (int i = 0; i < mat.passCount; ++i) ShaderUtil.CompilePass(mat, i, true);
+        }
+        finally { ShaderUtil.allowAsyncCompilation = wasAsync; }
+        if (ShaderUtil.ShaderHasError(mat.shader))
+            throw new InvalidOperationException("Table Deferred shader failed compilation: " +
+                string.Join("\n", ShaderUtil.GetShaderMessages(mat.shader).Select(m => m.message)));
         var filters = model.GetComponentsInChildren<MeshFilter>(true);
         var renderers = model.GetComponentsInChildren<Renderer>(true);
         if (filters.Length != 1 || renderers.Length != 1 || renderers[0].sharedMaterials.Any(m => m != mat))
@@ -137,7 +146,8 @@ public static class OrnateWoodenTableAssetImport
         report.AppendLine("Triangles: " + triangles + "; vertices: " + mesh.vertexCount);
         report.AppendLine("Unity dimensions (m): " + bounds.size.ToString("F6"));
         report.AppendLine("Minimum Y: " + bounds.min.y + "; root scale 1; root rotation identity");
-        report.AppendLine("Material: URP/Lit; glTF double-sided preserved; all renderer slots linked");
+        report.AppendLine("Material: " + ShaderName + "; glTF double-sided preserved; all renderer slots linked");
+        report.AppendLine("Shader: GBuffer, ShadowCaster, DepthOnly, DepthNormals compiled; no material feature keywords");
         foreach (var tuple in new[]{("BaseColor.jpg", "_BaseMap"), ("Normal.jpg", "_BumpMap"), ("MetallicSmoothness.png", "_MetallicGlossMap")})
         {
             var texture = Load(tuple.Item1);
