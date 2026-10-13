@@ -86,7 +86,7 @@ Tint、HDR 镭射颜色/强度、火漆颜色/贡献、红叉、去色通过顶�
 - `Tools > Cards > Capture Canvas Deck Overview Prefab`：独立 Preview Scene 验证 52 张样例及效果，输出 `Library/DeckOverviewValidation/overview.png`；离屏验证只在编辑器使用，不属于运行方案。
 - `Poker > Tests > Capture Canvas Deck Hover In Play`：捕获当前 Game 中卡牌左侧的共用信息提示，写入 `Library/DeckOverviewValidation/hover.png`；捕获后恢复原悬停和页面状态，不修改对局。
 - 玩法通过 Presenter.Open / Close 控制页面，图标由 DrawPilePresenter 管理预览/固定显示，“返回”关闭并取消固定。
-- Poker > Tests > Validate Deck Icon And UI Motion In Play 检查指针事件、快速反向、上移回弹、两种提示惯性与固定显示，结果写入 Library/DeckOverviewValidation/motion.json。
+- 测试面板 > 实战验证 > 牌堆与总览动画 检查指针事件、快速反向、上移回弹、两种提示惯性与固定显示，结果写入 Library/DeckOverviewValidation/motion.json。
 
 新增运行脚本、Shader、材质和 Prefab 带独立 .meta，沿现有 Runtime asmdef/link.xml 和场景资源引用进入首包；Editor 工具和 Play 验证菜单整文件用 UNITY_EDITOR 限定。工具只标记场景 dirty，不自动保存。
 

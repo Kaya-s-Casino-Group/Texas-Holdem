@@ -54,6 +54,6 @@ state = started.State;
 
 资产格式版本为 1，Unity 序列化 `.asset`（当前项目为文本 YAML），与进度快照版本分开。Run 进度继续使用 `RunSnapshotCodec` schema v4，包含当前层、所有层路径、构筑、随机流、积分和当前对局。资产是流程模板，不写入玩家进度；进度恢复需要同版本 `RunContent`。
 
-`Poker.RunFlow.Runtime` 引用 UnityEngine，负责资产到纯 C# 定义的桥接，并有 link.xml；GameCore 的八个程序集继续无 Unity 依赖。`Poker.RunFlow.Editor` 和测试程序集仅进入 Editor。本轮提供固定地图编辑；随机地图生成、玩家地图/选路界面及场景 Run 宿主接入另行实现。跨 Run 成长由独立 PlayerProgressionState 持有，见 [Progression README](../PokerEngine/Runtime/Progression/README.md)。
+`Poker.RunFlow.Runtime` 引用 UnityEngine，负责资产到纯 C# 定义的桥接，并有 link.xml；GameCore 的十个程序集继续无 Unity 依赖。`Poker.RunFlow.Editor` 和测试程序集仅进入 Editor。本轮提供固定地图编辑；随机地图生成、玩家地图/选路界面及场景 Run 宿主接入另行实现。跨 Run 成长由独立 PlayerProgressionState 持有，见 [Progression README](../PokerEngine/Runtime/Progression/README.md)。
 
-测试入口 `Poker > Tests > Run Flow Editor In Current Scene`：8 项同步测试，覆盖资产保存重导入、不可变转换、四层实际 Draw Run 与每步快照恢复、撤销/重做、图及内容 ID 校验、楼层排序、排布和 Player 程序集边界；结果位于 `Library/RunFlowEditorTests`。不保存或替换当前场景。
+测试入口 `测试面板 > 编辑模式测试 > 更多模块 / 全量回归 > 关卡流程编辑器`：8 项同步测试，覆盖资产保存重导入、不可变转换、四层实际 Draw Run 与每步快照恢复、撤销/重做、图及内容 ID 校验、楼层排序、排布和 Player 程序集边界；结果位于 `Library/RunFlowEditorTests`。不保存或替换当前场景。

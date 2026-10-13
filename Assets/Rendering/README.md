@@ -24,7 +24,7 @@ UI Camera 为 Overlay，开启项目自定义 URP 的 `renderOverlayAtNativeReso
 
 ## 验证
 
-`Poker > Tests > Run Card Presentation In Current Scene` 覆盖 UI Renderer、Stack 注册/复用/销毁、投影、按钮 Prefab、悬停提示和后处理执行顺序；原生 UI 检查使用不同尺寸输出与普通 Overlay，验证实际单像素条纹、场景颜色保留及关闭 UI。`Tools > Cards > Capture UI Camera Stack In Play` 在 UI Camera 完成渲染后记录真实目标尺寸和主场景复古输入尺寸，输出 `Library/CardUICameraValidation/frame.json` 与 `game.png`，用于检查实际 Game 布局及叠加结果。
+`测试面板 > 编辑模式测试 > 更多模块 / 全量回归 > 卡牌表现全模块` 覆盖 UI Renderer、Stack 注册/复用/销毁、投影、按钮 Prefab、悬停提示和后处理执行顺序；原生 UI 检查使用不同尺寸输出与普通 Overlay，验证实际单像素条纹、场景颜色保留及关闭 UI。`Tools > Cards > Capture UI Camera Stack In Play` 在 UI Camera 完成渲染后记录真实目标尺寸和主场景复古输入尺寸，输出 `Library/CardUICameraValidation/frame.json` 与 `game.png`，用于检查实际 Game 布局及叠加结果。
 
 ## 雕像裂痕与刚体 VAT
 
@@ -39,3 +39,14 @@ GPU 验证在 Metal 上读取全部 15,564 个导入顶点的变形位置、法�
 `Tools > Art Assets > Dragon Gargoyle Cracks > Validate Rendering` 对当前场景实际使用的 mesh 做 GPU 片元读取，并与新复制的 mesh 对照，检查外表面标记、裂痕遮罩及静止/崩塌时的 0→1 裂痕画面差异。捕获使用临时材质，恢复当前材质、PropertyBlock 和场景 dirty 状态。`Configure Assets` 通过原生 Mesh setters 重建已有 mesh 的顶点流并上传到 GPU，保持 GUID；避免 `CopySerialized` 增加 COLOR 通道后 CPU 数据已更新、GPU 却保留旧布局的情况。报告与截图在 `Library/GargoyleCrackValidation/`。
 
 Blender 插件与导出流程见 `Tools/Blender/README.md`。安装 `statue_fracture.zip` 后在 Destruction 面板导出，验证通过的四个输入文件发布到雕像 VAT 目录；Unity 检测 manifest 后自动更新 mesh 和材质，保留 GUID、材质调节值和场景播放设置。工作包、bind JSON 与检查报告留在 Assets 外。
+
+雕像 VAT 导入现已共用 `Assets/Editor/RigidVATAssetImport.cs`：按 `_vat.json` 识别文件和源材质，
+生成保持 GUID 的准备 mesh、单材质以及带播放组件的 Prefab。额外原始 UV 集移至 UV4+，
+Unity UV1/2/3 始终用于 VAT；原 UV0 和法线保留。选中 manifest 后可在 `Tools > Art Assets > Statue VAT`
+配置资源、验证 GPU 或切换自动导入。旧 Gargoyle 菜单继续使用同一实现。
+
+FoxStatue 的完整闭环报告在 `Library/FoxStatueValidation`。
+36 块、110 帧、64×128 EXR16，外表面归属、原 UV / 角法线、二值 COLOR.r、四个 pass、
+整数与半帧 GPU 解码、末帧夹取、实际裂痕渲染均通过。保存后重新打开再次导出，也保留了
+mesh / 材质 / Prefab GUID、已加载 mesh 实例、材质裂痕值和实例播放进度；实际 GPU 片元读回
+与新复制 mesh 一致。使用 `Assets/Art/Models/Creatures/FoxStatue/VAT/FoxStatue_Collapse_VAT.prefab`。

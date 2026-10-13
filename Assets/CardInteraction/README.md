@@ -2,6 +2,8 @@
 
 `CardInteraction.Runtime` 是可选输入及本地交互适配模块，依赖 `CardPresentation.Runtime`、`CardArt.Runtime`、`PokerEngine.Core`、`PokerEngine.Scoring` 和 Unity UGUI。展示模块不反向引用输入模块。运行时程序集与 link.xml 进入首包；编辑器验证入口留在 `CardPresentation.Editor`。
 
+Draw 实际玩法接入见 [Draw 战局桥接](../DrawBattle/README.md)。外部权威模式下，CardMatchHost 仅保存展示镜像，ICardMatchCommands 将按钮提交给玩法；排序仅作用于本地显示，原编辑器/独立卡牌验证模式保持。
+
 ## 状态归属与数据流
 
 ```text
@@ -75,7 +77,7 @@ UGUI Button → HandActionPanelView 请求 → HandActionPresenter
 
 `InitialDeckCards / DeckCards / DeckZone` 是转发 Match 的查询，列表末尾是牌顶。`DrawCards`、`PlaySelected`、`DiscardSelected` 和排序使用 Match 的 Prepare/Commit 命令：先计算新的完整归属和顺序，校验权限、目标容量及美术表现，再提交 Match 并消费变化。过期/跨对局提交、重复身份、禁用牌或坏牌面不消耗牌堆；成功转移保留身份、定义、效果、来源和观察者属性，出/弃清除本地待提交状态。View 仍负责飞行、翻面、惯性和音效，抽牌耗尽不自动补牌。
 
-验证窗口每次刷新和提交前读取 Match：Edit 编辑启动快照，Play 编辑当前会话。`Capture`、`ReplaceCardsAndDeck`、`ConfigureInitial`、`PrepareDebugEdit`、预览出牌和旧场景迁移全部位于显式 `#if UNITY_EDITOR` 内；Player 不包含这些调试入口或旧列表字段。Editor 的列表是编辑缓冲和诊断记录，不能作为另一份牌堆来源。整个 `CardPresentation/Editor` 的工具同样显式使用宏，程序集继续限定 Editor 平台。
+验证窗口只观察外部玩法权威绑定的实战 Match，不提交卡牌数据；Edit 仅调表现参数。Capture、ReplaceCardsAndDeck、ConfigureInitial、PrepareDebugEdit、预览出牌和迁移 API 仍通过 #if UNITY_EDITOR 留给旧资源迁移与隔离测试；窗口不调用这些 API，也不持有卡牌编辑缓冲。工具程序集仍限定 Editor 平台。
 
 旧场景可执行 `Tools > Cards > Migrate Scene To Card Match`：验证全局身份后迁移所有牌区，合并弃牌堆，单个旧抽牌堆作为共享堆；若原来有多个非空堆则保留各自归属。迁移支持 Undo、清空旧 Host 列表，只标记场景 dirty。运行时 Match/Core 脚本使用既有 Runtime 程序集与 link.xml 进入首包；需保存场景以持久化 Match 引用。
 
@@ -124,23 +126,23 @@ presenter.RegisterSource(otherZoneSource); // 去重追加
 presenter.RemoveSource(otherZoneSource);
 ```
 
-验证窗口固化 HandZoneView 时会自动注册至同场景/相机的 `Card Hover UI`。已有固化手牌可执行 `Tools > Cards > Configure Card Hover Tooltip`；工具保留已设置的尺寸和偏移，支持 Undo，只标记场景 dirty，不自动保存。保存场景后，其 Prefab → 背景/字体/材质引用随场景进入首包，不依赖 Editor 或临时路径。
+真实手牌场景可执行 `Tools > Cards > Configure Card Hover Tooltip` 配置悬停 UI；验证窗口不再自动固化或注册卡牌。工具保留已设置的尺寸和偏移，支持 Undo，只标记场景 dirty，不自动保存。保存场景后，其 Prefab → 背景/字体/材质引用随场景进入首包。
 
 新增 6 项提示回归覆盖：鼠标控制器到逐牌状态再到 UI 的完整链路、基础点数与红黑整行颜色恢复、复用和排序身份、隐藏牌/弃牌/飞入过滤、定义与美术解耦、禁用失效牌数值保留、相机跟随/屏幕边界、多个来源及停用/重启清理。
 
 ## 固化牌区与 Play 验证
 
-在验证窗口配置卡牌后，使用“固化并进入 Play”或 `Tools > Cards > Play Card Zone`，直接在 Game 视图悬停、左键选择。`Tools > Cards > Bake Card Zone For Play` 只固化；原 Preview Mouse Interaction 菜单作为该入口的兼容别名。Scene 不再提供交互回调。
+进入实际玩法场景的 Play，通过 Game 视图悬停与左键选择；玩法创建牌组与四区，并绑定场景的 View / 输入宿主。牌区验证窗口只观察当前牌局，旧 Bake / Play Card Zone / Preview Mouse Interaction 菜单已移除。
 
-固化将完整卡牌顺序、身份、定义、效果、禁用、可见性、Tint、初始选中和图集 ID 写入场景中的 `CardMatchHost`，牌区宿主只保存绑定；瞬时悬停会清除。`CardZoneView` 序列化共用布局、摆动、相机和外观配置，`HandZoneView` 补充上浮、抽牌/弃牌及音效配置。根对象为普通 Untagged 场景对象，临时卡面仍使用 DontSave；Play 时由宿主根据数据重新生成并自动绑定鼠标，关闭验证窗口也可运行。
+卡牌顺序、身份、定义和效果由玩法权威提供；场景保存表现资源、输入引用与宿主配置。CardZoneView 序列化布局、摆动、相机和外观，HandZoneView 补充上浮、发牌/弃牌与音效参数。临时卡面使用 DontSave；关闭验证工具不影响实战输入或动画。
 
-每次进入 Play 都复制初始卡牌数据。运行时的悬停/选中写入这份逐牌副本，不改写编辑时的初始快照；退出后再次进入可从相同状态验证。打开验证窗口时，可从宿主恢复原始卡牌身份和顺序。点击“固化当前牌区”或编辑器配置更新都会同步快照；工具不自动保存整个场景，保存场景即可将快照保留到磁盘。这里是本地场景启动配置；纯卡牌权威状态另由 CardTableSnapshotCodec 保存，完整回合规则仍由玩法引擎维护。
+Runtime Managed 场景每场由玩法生成或恢复状态，验证窗口不读取旧 initialZones 或自身缓存、不写入运行时牌列表。悬停/选择仍属于本地逐牌交互数据；权威牌区状态另由玩法引擎维护。旧启动快照只保留给资源迁移与隔离测试。
 
 出牌区的五张上限由展示契约声明；Capture 与 BeginSession 会在替换初始数据或停止旧会话前验证容量，超限保持原会话。ReplaceCards 在展示提交前同样拒绝超限输入。
 
-正式接入使用 `match.StartMatch(state, observerCards)`、`host.Bind(...)` 和 `BeginSession()`，`StopSession()` 仅解绑。编辑器可使用 UNITY_EDITOR 限定的 `Capture` / `ReplaceCards` 配置与调试，验证窗口通过这些入口编辑完整列表；玩法调用正式 Match 命令，不能依赖 Editor API。新增身份驱动入列动画和逐张音效。`Cards` 是当前运行时逐牌数据，`InitialCards` 是初始快照；读取 `card.Interaction` 或控制器的 `GetSelectedViewIds()` 获取选择。
+正式实战接入使用 `match.StartExternalMatch(authority, state, observerCards)`、`host.Bind(...)` 和 `BeginSession()`，`StopSession()` 仅解绑。验证工具只读取 `Cards` 与相关牌区，不调用 Capture / ReplaceCards；这些 Editor API 留给迁移和隔离测试。新增身份仍驱动入列动画及音效。当前选择来自 `card.Interaction` 或控制器的 `GetSelectedViewIds()`。
 
-测试归入 `CardPresentation.Tests.Editor`，使用轻量入口 `Poker > Tests > Run Card Presentation In Current Scene`。9 项鼠标测试覆盖数据写回、Z 偏移、稳定悬停、重叠优先级、禁用/失效、取消手势、排序/移除、变换/牌背、入列屏蔽及运行时解绑，并验证点击选中的上浮惯性、回稳与鼠标离开不中断；另有 8 项上浮/固化测试覆盖 Tween 连续性与清理、场景快照序列化、运行时副本、重启恢复及编辑器重新载入。
+测试归入 `CardPresentation.Tests.Editor`，使用轻量入口 `测试面板 > 编辑模式测试 > 更多模块 / 全量回归 > 卡牌表现全模块`。9 项鼠标测试覆盖数据写回、Z 偏移、稳定悬停、重叠优先级、禁用/失效、取消手势、排序/移除、变换/牌背、入列屏蔽及运行时解绑，并验证点击选中的上浮惯性、回稳与鼠标离开不中断；另有 8 项上浮/固化测试覆盖 Tween 连续性与清理、场景快照序列化、运行时副本、重启恢复及编辑器重新载入。
 
 ## 弃牌命令
 
@@ -156,7 +158,7 @@ var remainingHand = host.Zone;
 var discardPile = host.DiscardZone;
 ```
 
-验证窗口“手牌列表 / 抽牌实验”页均提供“弃掉选中”，也可用 `Tools > Cards > Discard Selected Cards`。动画和音效属于 HandZoneView；每张弃牌开始飞出时播放独立配置的弃牌音效，默认使用与抽牌相同的占位资源，详见 CardPresentation README。
+弃牌通过 Game 内真实 UI 和玩法权威执行，验证工具只观察结果。动画和音效属于 HandZoneView；每张弃牌开始飞出时播放独立配置的弃牌音效，详见 CardPresentation README。
 
 
 ## 出牌命令与两区数据
@@ -171,7 +173,7 @@ int playedCount = handHost.PlaySelected(playedHost, route);
 // handHost.Zone / playedHost.Zone 此时已经是提交后的列表。
 ```
 
-`PlaySelectedPreview` 是编辑器验证的初始快照版本，仅限非 Play 且两个宿主均未开始会话；在共享 Match 启动快照中一次提交两区变化，验证窗口记录 Match 的 Undo 和场景 dirty 标记。它不绑定鼠标、不从 CardView 反推数据。路径参数和验证操作见 CardPresentation README。新增 `Runtime/CardZonePlayBatch.cs` 与 `Runtime/CardZonePlayHost.Transfer.cs`，沿用首包运行时程序集；完整回合/归属/资源消耗与计分仍交给玩法引擎，此命令只验证本地牌区转移。
+`PlaySelectedPreview` 是旧启动快照 API，仅保留给资源迁移/隔离测试，实战验证窗口不再调用。运行时出牌通过玩法权威和既有 TransferPresenter；规则与计分属于玩法引擎。
 
 ## Canvas 牌组检查
 
@@ -186,3 +188,5 @@ DrawPilePresenter 只管理本地预览、固定显示与关闭意图：DrawPile
 CardHoverPresenter 仍拥有唯一提示实例，新增独立 DOTween 显隐倍率。有效目标出现时 OutBack 放大，离开时 InBack 缩小结束再停用；重复刷新不重播，快速反向接续当前倍率。IsVisible 表示当前有有效展示目标，退场阶段实例可暂时保持活动；Hide(false) 与停用立即回收自身动画。Canvas/World Space 切换继续复用模板、数据内容和实例，不改变权威卡牌或手牌交互。
 
 DrawPilePresenter 持有 DeckSummary Prefab 和唯一局部实例；通过 DeckOverviewPresenter.ReadData 消费同一只读牌组投影，缓存按 Match State 更新，完整页面关闭时也可读取。不创建另一份逻辑牌堆，统计表不写入卡牌交互且不抢占悬停来源，只有点击打开的完整页沿用 ICardHoverScope。悬停统计表、点击完整页和返回关闭的意图独立，切换只改变本地展示状态。
+
+实战场景可将 CardMatchHost 配置为 Runtime Managed（编辑器 API ConfigureRuntimeManaged），并用 CardZonePlayHost.ConfigureRuntimeBinding 保留宿主引用、清空验证用牌区 ID。此模式不从 initialZones 自动启动，未绑定时为无牌无区的展示占位；只接受 StartExternalMatch 提供的权威状态，拒绝编辑器固化、预览出牌和本地重开。牌区验证工具已统一为实战观察与表现参数调整，不再维护编辑器牌区或卡牌快照。SingleBattleDemo 使用此模式；旧快照 API 仅保留给旧资源迁移与隔离测试。

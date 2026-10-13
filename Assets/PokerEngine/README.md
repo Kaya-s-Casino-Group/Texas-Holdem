@@ -2,25 +2,34 @@
 
 共享 C# 卡牌基础层，以及相互独立的德州、出牌计分和 Run 构筑模块。Unity 只负责宿主与表现；这些 Runtime 程序集均不引用 UnityEngine，不访问文件、网络或时钟。
 
+生命战单位直接持有 Health/MaxHealth/Block，不依赖 ResourceState；玩家行动能量属于玩家玩法状态，筹码留在使用筹码的玩法中。公共战斗单位及最小牌型生命战见 [Combat README](Runtime/Combat/README.md)。当前 Draw/Run 仍按原分数目标推进；独立生命战已通过 Composition.CardDuelEngine 接入 [SingleBattle Demo](../SingleBattle/README.md)，完整 Run 结果账本尚未接入。
+
 ## 模块与依赖
 
 ```text
 Assets/PokerEngine/Runtime/
 ├── Core/          PokerEngine.Core：ID、卡牌/牌区、资源、随机、标准牌组、牌型分类
+├── Encounters/    PokerEngine.Encounters：通用战局配置、实例绑定、进度投影与终局摘要
 ├── Abilities/     PokerEngine.Abilities：内容目录、能力世界、执行/选择/知识/记忆
+├── Combat/        PokerEngine.Combat：共用战斗单位、生命/格挡、原子伤害结算
 ├── Scoring/       PokerEngine.Scoring：加分、倍率、重触发、顺序与计分明细
 ├── Holdem/        PokerEngine.Holdem：座位、盲注、下注街、摊牌、底池、德州存档
 ├── Draw/          PokerEngine.Draw：抽牌、选牌、出牌/弃牌、积分目标、独立存档
 ├── Runs/          PokerEngine.Runs：持久构筑、关卡、奖励、商店、泛型 Run 存档
 ├── Progression/   PokerEngine.Progression：跨 Run 解锁、局外货币、永久升级、结算与存档
 ├── Composition/   PokerEngine.Composition：玩法适配器与可执行示例内容
-└── link.xml       首包保留上述八个程序集
+└── link.xml       首包保留上述十个程序集
 ```
 
 ```mermaid
 graph TD
     Composition --> Runs
     Composition --> Progression
+    Composition --> Combat
+    Combat --> Core
+    Combat --> Abilities
+    Composition --> Encounters
+    Encounters --> Core
     Progression --> Core
     Composition --> Holdem
     Composition --> Draw
@@ -45,8 +54,10 @@ graph TD
 | 卡牌 | 定义、实例、OriginId、牌区、随机洗牌 | 初始牌组、牌区形状、发牌/补牌时机 |
 | 牌型 | PokerHandClassifier 识别 1–5 张的牌型及组成牌 | 德州从 5–7 张选最佳五张；Draw 使用玩家提交的 1–5 张 |
 | 能力 | 条件、费用、效果、替换、选择、暂停恢复、预算 | 时机/动作键、参与者执行顺序、资源与牌区限制 |
+| Combat | 战斗单位、生命、格挡、伤害/治疗事件 | 回合/控制器、牌型换伤害、胜负、Run 写回 |
 | 计分 | 有序 Points/Multiplier 变换和明细 | 计分牌子集、何时计分、分数与胜负的关系 |
 | Run | 构筑、金币、商品、成长、关卡和账本 | 具体关卡对局、合法行动、玩法存档校验 |
+| Encounters | 通用配置、参与者槽位绑定、进度投影与各方终局结果 | 回合/卡牌规则、目标判定、结果生成与具体状态 |
 | Progression | 跨 Run 解锁、货币、升级等级、幂等结算、统计和存档 | 解锁条件、奖励公式、升级效果、开局内容过滤 |
 | 表现/网络 | 类型化命令和确定性结果 | 宿主认证、玩家视图、动画、I/O、请求收据 |
 
@@ -352,13 +363,19 @@ RunSnapshotCodec<TState> schema **v4** 将当前楼层、每层节点路线及�
 
 ## 验证与首包
 
-`bash Tools/test-poker-engine.sh` 按 asmdef 的依赖图逐个独立编译八个 DLL（Mono C# 7.2，warnings-as-errors），然后执行同一套同步 NUnit 测试。`POKER_CSC`、`POKER_MONO`、`POKER_NUNIT` 可覆盖本机工具路径。
+统一入口为 `测试面板`，界面为中文。编辑模式专项显示实际用例数量，实战验证要求对应玩法场景处于 Play，截图独立分页；全量回归收进折叠区，不自动执行。面板显示进度、通过/失败数量并可打开报告，编辑模式测试可停止；进入 Play 或脚本编译时停止剩余用例并释放重载锁。
 
 ModuleBoundaryTests 检查真实程序集引用，防止基础层反向依赖、德州/Draw互相引用或 Run 引入具体模式。保留原德州规则/随机守恒/恢复测试，新增独立能力、牌型子集、Draw 存档/续执行、模式无关 Run 和跨玩法集成测试。
 
-Unity Test Runner 可正常运行 EditMode；若当前场景有未保存修改，可用 `Poker > Tests > Run Core In Current Scene` 在当前 Editor 场景逐项执行同步 NUnit 方法，结果写入 `Library/PokerEngineTests/status.json` 与 `results.xml`。该轻量运行器不保存或替换场景，不支持协程/参数化/setup/teardown；遇到这些测试会拒绝，需改用完整 Test Runner。
+Unity Test Runner 可正常运行 EditMode；若当前场景有未保存修改，可用 `测试面板 > 编辑模式测试 > 更多模块 / 全量回归 > GameCore 全模块` 在当前 Editor 场景逐项执行同步 NUnit 方法，结果写入 `Library/PokerEngineTests/status.json` 与 `results.xml`。该轻量运行器不保存或替换场景，不支持协程/参数化/setup/teardown；遇到这些测试会拒绝，需改用完整 Test Runner。
 
-PackagingTests 验证所有八个模块出现在 Player 编译列表、linker 保留和资源 GUID 唯一。具体本轮结果见根 CHANGELOG。本轮未进行完整 Player 或 IL2CPP 构建；目标平台仍须验证泛型 DataContract 序列化与 AOT 行为。
+PackagingTests 验证所有十个模块出现在 Player 编译列表、linker 保留和资源 GUID 唯一。具体本轮结果见根 CHANGELOG。本轮未进行完整 Player 或 IL2CPP 构建；目标平台仍须验证泛型 DataContract 序列化与 AOT 行为。
+
+## 通用战局数据
+
+独立 Encounters 模块仅引用 Core。EncounterDefinition 保存玩法/规则版本、目标、回合预算、参与者模板与特殊规则 ID；EncounterContext 保存本次 ID、实际参与者绑定和可选 Run/楼层/节点归属。EncounterSetup<TSettings> 保持玩法配置强类型，DrawRunAdapter.Describe / HoldemRunAdapter.Describe 可从真实 Run 输入生成对应描述。
+
+EncounterProgress 是粗粒度进度投影，EncounterResult 是含各参与者胜负与结束原因的终局摘要。卡牌、牌区、资源、效果、随机与具体阶段仍由已有 DrawState / HoldemEncounterState 拥有；这些新对象不额外保存权威运行状态，不改变 IRunEncounter 的计分推进或既有快照 schema。数据结构、代码和后续接入边界见 [Encounters README](Runtime/Encounters/README.md)。
 
 ## 跨 Run 局外成长
 
@@ -377,3 +394,5 @@ Core 的 `CardTableState` 保存 MatchId、Revision、完整 CardInstance 注册
 `CardTableSnapshotCodec` 的独立 schema 1 保存完整卡牌状态，限制 16 MiB 严格 UTF-8，并在反序列化后验证所有归属和属性。存档可恢复为新的 Session 并继续命令；不包含 Unity 美术、观察者可见性、鼠标悬停或选中，也不改变原 Holdem/Draw/Run 存档格式。此快照包含隐藏牌，属于可信玩法/服务器存档，不能直接当作 PVP 观察者网络消息；网络仍需玩法层构建授权投影。
 
 Unity 的 CardMatchHost 消费此基础层，运行时及编辑器围绕同一对局数据读取/操作；编辑器调试 API 使用 UNITY_EDITOR 宏，不进入 Player。新增 Core 类型沿现有 Core asmdef/link.xml 进入首包。
+
+所有项目测试 asmdef（包括 CardPresentation.Tests.Support）显式限定 Editor，关闭 autoReferenced；Player 编译列表检查不包含任何项目测试程序集。测试面板及实战验证逻辑均留在 Tests/Editor。Tools 的旧离线辅助脚本位于 Unity Assets 之外，不参与游戏构建，也不作为编辑器面板的入口；日常改动只运行对应专项。

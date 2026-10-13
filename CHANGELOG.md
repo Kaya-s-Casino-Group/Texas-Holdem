@@ -4,6 +4,137 @@
 
 ## [Unreleased]
 
+### 2026-10-13 — 中文测试面板与 Editor 隔离
+
+- 项目全部测试程序集显式限定 Editor 并关闭自动引用，补齐 CardPresentation.Tests.Support 的平台边界；发布边界测试检查 Player 不包含项目测试程序集。
+- 新增统一中文入口“测试面板”，移除原分散的 Poker / Tests 菜单。按编辑模式专项、实战验证与截图分类，显示真实用例数量；全量模块和旧场景验证默认折叠，旧本地测试禁止在实战权威存在时运行。
+- 面板提供进度、通过/失败、模式条件提示、停止编辑模式测试及报告定位。进入 Play 或编译时取消队列，不把未执行项记为通过，并释放重载锁；实战报告只接受本次新增结果，避免误用旧报告。
+- 顶栏一级菜单直接命名为“测试面板”，仅保留“打开面板”入口。实际点验发牌规则 17 项、Editor 隔离 4 项与实战发牌专项通过，编译零警告/错误，不运行全量回归。
+
+### 2026-10-13 — 牌区验证工具简化为实战观察
+
+- 移除窗口持有的卡牌模型、测试牌堆与抽牌记录、编辑器造牌/改牌/固化/预览命令及牌区创建菜单；不再从启动快照或旧窗口缓存恢复牌区。
+- 改为实战卡牌、表现参数、视觉诊断、出牌路径四页。卡牌直接读取 Play 中外部玩法权威绑定的宿主，只读；Edit 仅调整现有 View，Play 在可交互且动画落位时调整表现参数。
+- 移除编辑器动画时钟、强制完成过渡与窗口驱动排序。生命周期、切换目标和撤销不清空视觉、不提交卡牌数据；保留仅导出表现设置的 View Prefab 工具。
+- HandActionPanel 配置不再调用牌区固化入口，使用现有场景绑定；旧快照 API 保留给资源迁移和隔离测试。
+- 针对性验证：窗口/绑定/派生 View 共 18 项通过；真实 Play 检查确认读到当前牌局、表现参数修改不改变牌区状态、切换及关闭不替换视觉，窗口打开时实战发牌动画专项通过。编译零警告/错误。
+
+### 2026-10-13 — 空手初始化、发牌策略与实战牌区数据接管
+
+- CardDuel 创建时 52 张牌全部位于抽牌堆、手牌为 0；新增一次性 Start 和 HasStarted，进入首个玩家回合才自动发 8 张。首回合前拒绝操作，重复发牌拒绝，发牌不消耗能量或弃牌次数。
+- SingleBattleHost 先绑定空区，再投影首回合发牌；保留现有牌型/能量和表现等待。
+- 新增只读发牌策略接口 ICardDuelDealPolicy，开局、出牌后、弃牌后、玩家回合开始共用安全发牌路径。Hand Size 默认 8，出牌与弃牌分别选择立刻补满或下个玩家回合补满，默认出牌延后、弃牌立刻；固定抽 N 张通过策略注入验证，终局不补牌。
+- Demo CardMatchHost 改为 Runtime Managed，清除编辑器测试牌、初始四区、绑定 ID 和牌库 roster；保留 View、输入、相机、锚点和 UI，运行时由战局重新绑定。牌区验证器对这些目标只读，独立验证场景仍可编辑。新增 Prepare Runtime Card Zones 清理菜单。
+- 针对性验证：CardDuel 17/17、角色与表现 14/14、旧验证器缓存恢复 1/1 通过，真实 UI 与发牌专项动画均通过；新增 Validate Single Battle Dealing In Play 可仅检查发牌流程。编译零警告/错误，场景保留原有布局与配置。
+
+### 2026-10-13 — 独立动作能耗与能量超上限
+
+- 按用户澄清，调整的是出牌与弃牌，不新增主动抽牌。PlayEnergyCost / DiscardEnergyCost 独立配置、默认各 1；弃牌整次动作计费一次，自动发牌/补牌免费，能量不足时保留卡牌、次数、随机状态和能量。
+- MaxEnergy / InitialEnergy 独立配置，PlayerTurnState 允许当前能量超过名义上限而不截断；后续回合恢复到 MaxEnergy。耗尽到 0 自动结束，剩余能量不足出牌但能支付弃牌时保留行动机会，仍可手动结束。
+- ScoredDuel 记录付费弃牌并按账本校验能量，定义指纹包含最大/初始能量与两种消耗；规则与快照更新为 scored-duel.4 / schema v4，拒绝旧 v1–v3 快照，Combat 仍为 combat.2，其他模式契约保持。
+- Demo Inspector 拆出四项设置，HUD 显示当前/上限及两种消耗，保留旧 energyPerTurn 场景字段到 MaxEnergy 的迁移。已有模型、表现协议和音效空槽位保持。
+- 验证：离线 286/286、Unity 引擎 289/289、角色/表现 12/12 通过。真实按钮/动画检查覆盖 5/3 超上限余额、不同动作费用、余额不足的权限、弃牌耗尽后单次敌人行动、回合恢复、胜负与重开；HUD 截图检查通过，编译零警告/错误，退出 Play 无异常。
+
+### 2026-10-13 — 角色音效空槽位与表现层解耦
+
+- 新增可选 IBattlePresentationAudio 与独立 BattleActorAudio，表现组件在攻击/受击/死亡开始时调用；角色逻辑和纯规则层不持有音频资源或 AudioSource。空 Clip 不加载默认音频、不播放、不阻塞动作完成。
+- Demo 双方 Model/Audio 各留 Attack、Hit、Death 三个独立声源，Clip 全为空。每类保留音量、音高、延迟、2D/3D 混合、最小/最大距离参数，声源子物体可调整发声位置，保留可选混音器输出；默认不自动播放、不循环。
+- 音效与动作时长分离，音效错误不改变战局流程；取消/重开/禁用停止声音及延迟播放，Snap/复位静默。独立声源允许不同动作尾音重叠，重复编辑器连接保留已有音效绑定与配置。
+- 验证：基础角色/协议/裂纹 11/11 回归通过；真实对局验证通过，检查双方六个空 Clip、声源无自动播放/循环且全程静默，动作和回合正常完成。编译零警告/错误，退出 Play 无异常，重复连接后场景仍为五组。
+
+### 2026-10-13 — DOTween 攻击/受击与生命裂纹分档
+
+- 当前石像表现固化为 DOTween 前冲/回位攻击、Punch 受击、完整 VAT 死亡。双方在各自 Model 上独立配置方向、时长和振幅；动作的真实完成仍通过表现协议控制流程，取消/重开清理旧 Tween。
+- 新增 HealthCrackPresenter，按只读单位生命比例瞬间切换四档：>75% 无裂纹，≤75% / ≤50% / ≤25% 分别使用 0.35 / 0.7 / 1 的裂纹显现和原材质凹陷深度倍数。阈值、显现和深度倍数可在 Inspector 调整；治疗可降档，格挡不改变生命档位。
+- IBattleActorPresentation 增加同步快照投影 Synchronize；绑定、恢复、重新启用与效果检查点更新裂纹。Renderer 级 MaterialPropertyBlock 保留 VAT 与其他属性，不修改共享材质，沿用 Fox / Dragon 各自的最大裂纹深度。
+- 验证：角色/协议/裂纹 11/11 通过，含阈值边界、恢复、共享材质不变、裂纹与 VAT 属性互不覆盖；真实场景按钮/动画回归通过，覆盖 DOTween、生命分档、死亡 VAT 完成及重开复位。编译零警告/错误，纯规则与存档契约保持。
+
+### 2026-10-13 — 可等待的角色表现协议
+
+- 新增 IBattleActorPresentation（Play / Snap / CancelPresentation / ResetPresentation）、只读 BattlePresentationCue 与一次终态的 BattlePresentationOperation。表现组件自行报告真实完成、取消或失败；迟到回调不能再次完成旧句柄，表现不持有战局命令权限。
+- BattleActor 移除模型变换、协程、计时和提前死亡反馈，保留角色身份/状态与协议桥接。独立 BattleActorPresenter 负责预备、攻击、受击和倒伏；VatBattleActorPresenter 按各自 RigidVATPlayer 实际结束状态完成死亡，重开/禁用取消并复位。
+- SingleBattleHost 逐阶段等待卡牌落位、攻击、受击、死亡及敌人预备操作；完成后才推进敌人调度、收牌/补牌、输入释放和终局展示，移除固定 scoreHoldSeconds / enemyTellSeconds。规则仍同步提交确定性结果，表现耗时只控制 Unity 流程检查点。
+- Demo 双方 Model 挂独立 VAT Presenter，VAT 不再开局自动崩塌。编辑器连接默认实现时保留已选择的其他协议组件。Snap/失败恢复同步到当前权威状态，不重复提交已结算伤害；支持取消旧操作和重开复位。
+- 验证：角色/协议 9/9 回归通过；真实场景按钮/动画回归通过，包含能量、连续出牌、自动/主动结束、胜负、VAT 完成及重开进度复位；Unity 编译零警告/错误，退出 Play 无异常。尚未实现 Animator/Timeline 适配器、命中时刻标记或多人并发演出。
+
+### 2026-10-13 — Fox 英雄与 VAT prefab / Demo 层级整理
+
+- 英雄 Model 接入已摆放的 FoxStatue_Collapse_VAT prefab；DragonGargoyle 从 FBX 实例转为独立 DragonGargoyle_Collapse_VAT prefab 实例，保留原有网格、材质、VAT 参数、场景覆盖和对象引用。美术 prefab 不持有战局宿主，逻辑组件仍在 Player / Enemy 根节点。
+- 场景整理为 Battle、Card Table、Environment、Cameras、UI 五个根分组；手牌与出牌区重命名为 Hand Zone / Played Zone，旧空敌人定位点移入 Environment / Markers。整理校验原有世界姿态，保存时保留 UI 和相机绑定。
+- 新增可重复执行的 Organize Demo Scene 菜单；角色连接与 HUD 配置支持分组后的场景。修复 DrawPilePresenter 在宿主先配置、随后 OnEnable 时重复订阅点击事件的问题，牌库按钮不再因初始化顺序而切换两次。
+- SingleBattleHost 停止/复位时显式检查 Unity 对象有效性，退出 Play 或卸载场景时不再访问已销毁的手牌组件。
+- 验证：Unity 编译零警告/错误；场景整理与角色连接重复执行后仍为五个根分组，原有世界姿态检查通过。完整按钮/动画回归通过，覆盖出牌、能量、主动/自动结束回合、牌库、胜负及重开；控制台无错误。攻击/受击/死亡反馈目前仍在 BattleActor 内，VAT 未接入战斗事件驱动。
+
+### 2026-10-13 — 玩家/怪物派生组件与模型子物体
+
+- 新增抽象 BattleActor 场景组件，负责 ParticipantId 绑定、读取宿主最新 CombatantState、行动/受击/死亡表现事件及姿态复位。玩家与怪物分别派生 PlayerBattleActor / EnemyBattleActor；共用战斗数据不派生，也不在角色组件中复制生命/格挡。
+- PlayerBattleActor 独立接收 ICardMatchCommands、选牌/能量许可与主动结束回合请求；EnemyBattleActor 独立生成攻击意图、检查本方行动许可并向宿主提交固定攻击。SingleBattleHost 保留战局创建、统一命令校验/结算、卡牌镜像与表现顺序，HUD 从绑定角色读取单位状态。
+- Demo 创建 Battle Actors/Player 和 Enemy 逻辑根节点；模型放 Model 子树，当前可见的 DragonGargoyle 保留 MeshFilter/MeshRenderer/RigidVATPlayer，并保持重挂载前的世界姿态。角色根不放渲染/VAT组件，基础表现只作用于子物体；玩家 Model 是第一人称视角下的预留人物模型挂点。保留当前场景中用户已调整的布局与美术。
+- 新增 Connect Battle Actors 编辑器菜单，连接角色时保留 HUD；按实际可见 Renderer 选取模型，避免将空定位点或隐藏的旧占位模型作为怪物表现。角色槽位、跨场景绑定和根物体作为模型均拒绝，重开重新绑定怪物身份并恢复模型姿态。
+- 验证：角色专用 5/5 回归通过（命令所有权、最新快照、目标反馈、单次行动、错误槽位/禁用输入、死亡及重开复位、逻辑根姿态不变）。完整场景按钮/动画验证通过，含能量、连续出牌、自动/主动/空过回合、牌库/排序、胜负与重开；Unity 编译零警告，Game View 已检查。纯引擎规则与快照格式保持，未执行完整 Player/IL2CPP 构建。
+
+### 2026-10-13 — 玩家能量与主动结束回合
+
+- ScoredDuelState 新增独立 PlayerTurnState（MaxEnergy / Energy），定义配置每回合能量和出牌消耗；玩家/怪物共用 CombatantState 保持无筹码/能量。Demo 默认每回合 3 点能量、每次出牌消耗 1 点，弃牌仍使用整场次数预算并不消耗能量。
+- 玩家可以同回合连续出牌，能量不足以继续出牌自动进入怪物阶段；EndPlayerTurn 可主动放弃剩余能量，支持零次出牌空过。怪物阶段只攻击一次，战斗继续时恢复全部能量；击杀优先于回合结束，不再反击。
+- 完成回合数独立于出牌次数；新增出牌/主动结束/怪物行动的 Actions 账本，ScoredDuel.Revision 独立于 Combat.Revision，恢复时重放核对生命、能量、回合、阶段和版本。ScoredDuelSnapshot 升级 schema v3 / scored-duel.3，v1/v2 明确拒绝；Combat 仍为 combat.2，既有 Draw/Run 格式保持。
+- CardDuel 协调器增加 EndTurn 与 CollectPlayed 检查点：每次计分动画结束后清理出牌区再开放下一手牌，同回合不自动补牌；怪物行动后补满手牌，未打出的牌保留。手牌打空仍可结束回合，动画/计分检查点、怪物阶段及终局拒绝重复输入。
+- SingleBattleDemo 已保存能量显示和“结束回合”按钮；SingleBattleHost 串联多次出牌与手动/自动结束的动画，按钮在开局发牌/本地理牌落位后刷新可用性。玩家能量上限和单次出牌消耗可在 Inspector 配置。
+- 验证：新增 10 项规则回归；离线 282/282、Unity Editor 285/285 通过，Unity Test Runner 玩家回合专项 7/7 通过，编译零警告。真实场景按钮/动画覆盖开局空过、能量扣除、同回合连续出牌、自动/主动/零出牌回合结束、单次反击、能量恢复、补牌、重复点击、牌库/排序、胜负和重开；Game View 已检查，控制台无错误。未执行完整 Player/IL2CPP 构建。
+
+### 2026-10-13 — 独立单场生命战 Demo
+
+- 将当前 CardRenderingValidation 场景（含当时未保存布置）另存为 Assets/Scenes/SingleBattleDemo.unity，原场景文件未覆盖。专用场景移除 DrawBattleHost，使用独立 SingleBattleHost，保留原有桌面、相机、四牌区交互和美术；不修改 Build Settings。
+- Composition 新增 CardDuelEngine/CardDuelState，统一拥有 CardTableState、ScoredDuelState、洗牌状态和弃牌预算。默认独立 52 张、8 张手牌；选牌由权威协调器校验和计分，一次出牌后怪物反击，清理出牌区再补牌；弃牌不消耗回合，抽牌堆耗尽时确定性洗回弃牌堆。可显式传入当前 DeckEntry 构筑并保留 OriginId。
+- 新增 SingleBattle 独立 Runtime/Editor 模块，复用原有选择、出牌/弃牌按钮、卡牌飞行、理牌、牌堆统计、单牌提示和牌库总览；生命战 HUD 显示双方生命/格挡、怪物意图、回合、得分伤害、弃牌预算、胜负与重开。动画期间拦截重复提交，击杀跳过反击，失败或胜利后锁定行动。
+- 初始数值：玩家 40 生命、守卫 75 生命、敌人攻击 7、每 5 分转 1 伤害、8 回合上限、整场 3 次弃牌。规则可在 SingleBattleHost Inspector 调整，未进行数值平衡。新增结构说明、配置与 Game View 截图菜单。
+- CardDuel 组合状态目前仅在内存运行，不提供完整战局快照、Run 结果账本/奖励/跨节点生命写回。独立 ScoredDuel 快照不能用于恢复本 Demo 的卡牌状态；现有 Draw/Run 玩法与格式保持。
+- 验证：新增 8 项协调器规则回归；离线引擎 272/272、Unity Editor 275/275 通过，Unity 编译零警告。真实场景按钮/动画验证通过：弃牌补牌、分数扣血、怪物反击、输入锁、牌库、排序、胜负和重新开始；控制台无错误。已检查 Game View 并调整重开按钮避让抽牌堆；未执行完整 Player/IL2CPP 构建。
+
+### 2026-10-12 — 生命战单位拆离通用资源包
+
+- CombatantState 直接持有必填 Health、MaxHealth、Block，移除 ResourceState；玩家和怪物均不再携带未使用的筹码/能量，公共结算和死亡判定沿用同一份生命值。玩家能量归未来玩家行动状态，本轮不引入没有消费规则的空结构。
+- EncounterParticipantDefinition 新增仅声明槽位/阵营的构造方式，InitialResources 可缺省；ScoredDuel 描述不再构造零筹码/零能量包。既有 Draw/Holdem 的显式资源描述及玩法行为保持不变，原 ResourceState 保留给其能力流程。
+- ScoredDuel 快照升级 schema v2，单位序列化直接保存 Health；combat.2 / scored-duel.2 同步冻结新指纹，v1 旧档明确拒绝，不自动迁移。补充无筹码/能量存档往返、恢复后双方伤害、必填生命/越界生命/旧嵌套形状拒绝回归，并更新模块边界文档。
+- 验证：离线十程序集编译与测试 264/264、Unity Editor 测试 267/267 通过；Unity 编译零警告，控制台无错误。未执行完整 Player/IL2CPP 构建，未保存或替换场景。
+
+### 2026-10-12 — 共用战斗单位与牌型伤害基建
+
+- 新增纯 C# PokerEngine.Combat，仅依赖 Core/Abilities。玩家与怪物共用 CombatantDefinition/CombatantState，生命沿用唯一的 ResourceState.Health；死亡派生，格挡独立，状态效果复用 StatusInstance。基础单位不持有牌组、AI、回合、奖励或 Run。
+- CombatEngine 提供 Damage/Heal/GainBlock/ClearBlock 的不可变原子批量结算；格挡优先、生命上下限、吸收/实际损失/溢出伤害/死亡事件、Revision 拒重及失败回滚。状态数据集中保存并校验，触发/过期策略留在模式层。
+- Composition 新增 ScoredDuelEngine 最小一对一流程：宿主权威牌型分数经可配置整数比例转伤害，存活敌人固定攻击，击杀跳过反击，死亡/回合预算产生通用 EncounterProgress/Result。分数、伤害与胜负各自有明确责任；示例暂拒绝尚未执行的状态效果。
+- ScoredDuelSnapshotCodec schema v1 冻结规则指纹，保存初始生命、单位、阶段与积分账本；恢复重放验证生命/格挡/阶段/Revision 一致性，支持等待怪物行动处恢复。未连接磁盘 I/O。
+- 新模块加入 asmdef、linker、首包依赖和离线编译检查，补齐元数据与边界文档。现有 Draw 场景和 Run 仍按分数目标运行；后续生命战接入需要 Run 结果账本及快照升级，本轮不修改 Run v4/Draw v2/Match v5。
+- 验证：新增 18 项回归，十程序集独立 warnings-as-errors 编译及离线测试 262/262 通过；Unity Editor 同步测试 265/265 通过（含 Player 编译列表/linker/元数据检查），编译 0 警告，控制台无错误。未执行完整 Player/IL2CPP 构建，未保存或替换场景。
+
+### 2026-10-12 — Run 持有牌组，战局使用当前构筑
+
+- 明确标准 52 张是新 Run 的基础牌组；Run.Deck 的复制、删牌、转换和强化经既有 DrawRunAdapter.Create 传到下一场，战局实例牌使用独立 ID 并以 OriginId 关联持久 RunCard。常规弃牌只移动区域，不永久删牌。
+- StartBattle 限于独立验证；已绑定外部提交委托时拒绝直接重置为 52 张。正式 Run 的换战局和恢复继续通过 StartEncounter。补充 53/51 张显式构筑、强化/OriginId 保留和误重置拒绝的桥接回归；更新接入说明。未扩展 Run 场景管理。
+- 验证：Draw 桥接测试 13/13 通过，Unity 编译 0 警告。
+
+### 2026-10-12 — 单次 Draw 战局的标准牌组
+
+- StartBattle 固定创建一套独立标准 52 张牌（四种花色各 13 张，不含大小王）；场景预览仅提供美术映射，不再决定玩法牌组的数量、牌面、效果或禁用状态。每场卡牌 ID 归属于该战局，出牌/弃牌/补牌保持身份与唯一牌区位置。
+- 默认开局为手牌 8 张、抽牌堆 44 张、出牌区和弃牌区为空；已有 StartEncounter 显式构筑/恢复入口继续支持 Run 的牌组。新增回归覆盖残缺/重复/禁用/大小王预览不污染基础牌组，以及区间移动守恒和重开牌组独立性。
+- 验证：Draw 桥接测试 12/12 通过，Unity 编译 0 警告，控制台无错误。
+
+### 2026-10-10 — Draw 战局接入卡牌区和现有 UI
+
+- 新增独立 Unity 桥接模块 DrawBattle：DrawBattleHost 以 DrawState 为权威，将四牌区及移除区投影到既有 CardMatchHost；StartEncounter 支持独立 Draw、快照恢复、新战局重绑定和 Run 提交委托。核心快照格式保持。
+- 既有出牌/弃牌按钮提交真实 DrawCommand，检查阶段、上限和剩余次数；复用出牌手递交、弃牌飞行与补牌动画，出牌计分后清理 Played，未结束自动 Continue。动画期间阻止重复提交，胜负后停止补牌；理牌只改本地顺序，沿用当前方式在补牌落位后整理。
+- CardMatchHost 增加 ICardMatchCommands 外部权威模式，旧的自由移动/调试编辑/重启命令拒绝越过玩法。继续复用牌堆余量、悬停统计、牌库总览与单牌提示。Tools > Cards > Connect Draw Battle In Current Scene 配置当前验证场景，支持 Undo，不自动保存。
+- 全 Run 场景管理、奖励/商店/地图界面、能力选择 UI 及存档 I/O 尚待接入；提供强类型命令委托、状态及计分事件，不额外新增相关 UI。
+- 验证：新增 Draw 桥接回归 10/10、既有卡牌/UI 185/185 通过；当前场景 Play 真实按钮与指针事件验证通过，动画期间重复出牌拒绝、补牌/计分/次数与四区一致、悬停统计及牌库总览同步。Unity 编译 0 警告，控制台无错误；未保存或替换当前场景，未执行完整 Player/IL2CPP 构建。
+
+### 2026-10-09 — 通用战局数据结构
+
+- 新增独立纯 C# PokerEngine.Encounters，仅引用 Core。EncounterDefinition 保存版本、玩法、目标、回合预算、参与者模板与特殊规则 ID；EncounterContext 精确绑定参与者槽位和实际身份，支持独立战局或可选 Run/楼层/节点来源。EncounterSetup<TSettings> 保持模式配置强类型。
+- EncounterProgress 为粗粒度进度投影，检查行动者、待选择、检查点及终局摘要一致性；EncounterResult 按参与者保存胜/负/平局/中止、结束原因、回合与最终 Revision。复用 Core.ResourceState；卡牌、牌区、效果、随机和具体阶段仍由既有玩法状态持有，不额外序列化通用投影。
+- DrawRunAdapter / HoldemRunAdapter 新增 Describe 入口，从真实 Run 输入生成通用描述及 DrawDefinition / MatchDefinition。现有战斗与 Run 推进规则保持，Run v4 / Draw v2 / Match v5 无 schema 升级；通用进度/结果自动生成、生命战/AI/特殊规则执行及场景宿主后续接入。
+- 九程序集依赖、Player 编译列表、linker 保留与离线编译脚本同步更新；补齐 .meta 和模块/根/RunFlow 文档。9 项数据回归覆盖单人/对抗/合作、集合隔离、目标/参与者约束、阶段/结果一致性及两种玩法实际描述与旧快照恢复。未保存或替换场景，未执行完整 Player/IL2CPP 构建。
+- 验证：九程序集独立 warnings-as-errors 编译及离线测试 244/244 通过；Unity 当前场景同步测试 247/247 通过，编译 0 警告，控制台无错误。
+
 ### 2026-10-07 — 跨 Run 玩家成长结构与结算
 
 - 新增纯 C# PokerEngine.Progression，仅引用 Core。PlayerProgressionState 保存玩家身份/Revision、成长规则版本及指纹、局外货币、类型化解锁、永久升级等级和已结算 Run 记录；全局/分玩法统计由记录汇总。本局卡牌、小丑实例及地图继续由 Run/策划资产持有。

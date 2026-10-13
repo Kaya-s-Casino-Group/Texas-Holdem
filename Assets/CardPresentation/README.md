@@ -33,7 +33,7 @@
 
 基类新增 `CardCapacity`（默认不限制）与 `ValidateCardCount`，在 Present 修改视觉前检查；本地 CardZonePlayHost 在 Capture/BeginSession 替换原会话前检查，ReplaceCards 沿用 Present 的原子拒绝。该上限是出牌区展示契约，不改变通用 Core CardZone，也不替代引擎的出牌规则。
 
-验证窗口“创建出牌区 · 五个固定槽位”或 `Tools > Cards > Create Played Zone In Current Scene` 新建独立出牌区和五张基础样例牌，保留现有手牌对象。窗口显示 `0–5 / 5` 容量，满槽禁用新增/复制，禁用 8/12 张预设，隐藏不适用的弧度/摆动设置。Scene 选中出牌区时用 Gizmo 标出全部五个槽位；空槽没有游戏内占位模型。可沿用“导出 View Prefab…”保存配置，实例化后再由宿主提供卡牌数据。
+出牌区在实际玩法场景中配置，窗口不再创建出牌区或样例牌。工具读取当前 PlayedZoneView 的容量与实战数据；Scene Gizmo 保留五个槽位，空槽不创建占位模型。可用“导出 View Prefab…”保存表现配置，实例化后由玩法宿主提供数据。
 
 ## 手牌到出牌区的路径
 
@@ -50,7 +50,7 @@
 
 底层 `CardZoneView.Prepared` 在修改任一牌区前预校验两区布局、外观、材质及更新策略，暂存待创建实例；源更新排除本批转交实例的释放，目标导入相同实例。两区提交后才通知表现事件。`PresentTransfer(sourceAfter, targetAfter, ids, animate, commitData)` 的可选回调仅用于赋值已验证的宿主状态，不得调用外部事件或修改 View；正式对局可先在引擎中提交，再提供投影驱动动画。
 
-验证窗口增加独立 **出牌路径** 页。选择手牌与出牌区，或点“新建空出牌区并连接”；调节飞行时间/间隔/弧高/控制点，以及全员落位停顿和整理时间；在手牌列表勾选待提交，再“打出选中的牌”。Play 中在 Game 选牌后使用相同按钮；编辑模式支持两区数据一起撤销、暂停和单步。`Tools > Cards > Configure Hand To Played Route` 可为选定手牌创建空目标并连接；Scene 选中路径组件时，绿色 Gizmo 展示交叉飞行，黄色线段展示落位后的整理方向。工具只标记场景修改，不自动保存。
+验证窗口的 **出牌路径** 页只查看实战已有的手牌/出牌区绑定，调整飞行时间、间隔、弧高、控制点、落位停顿及整理时间，不创建目标、不重连路径、不提交出牌或手动推进飞行。实际出牌使用 Game UI；Scene Gizmo 继续显示交叉和整理路径。
 
 新增资产：`Runtime/CardZoneTransferPresenter.cs`、`CardZoneTransferSettings.cs`、`CardInstanceView.Transfer.cs`、`CardZoneView.Prepared.cs`；验证页位于 `Editor/CardZoneValidationWindow.Transfer.cs`，测试位于 `Tests/Editor/CardZoneTransferTests.cs`，各有独立 .meta。运行时延续首包程序集/link.xml。单区 View Prefab 导出仍只保存展示配置，跨区场景引用由路径组件保存。
 
@@ -104,7 +104,7 @@ HandZoneView : CardZoneView             通用区域布局 + 手牌抽取/弃牌
 
 实现位于 `Runtime/CardInstanceView.Hover.cs` 及独立 .meta，沿用首包运行时程序集。层级为 `Face → Hover → DealFlip → Sway → Card`，缩放、选中位移、翻面和自转各自组合；跨区转移仍捕获完整世界姿态，弃牌保留起飞时的实际大小。
 
-验证窗口“牌区样式 → 动画”提供上浮/回落时长、惯性强度和“应用快速惯性”按钮；也可选中手牌区后使用 `Tools > Cards > Preview Snappy Lift`。旧场景保留已有时长，未序列化的惯性强度为 0，可用该预设一次应用新参数；操作支持撤销，场景保存由编辑器常规流程处理。
+验证窗口“表现参数 → 动画”提供上浮/回落时长、惯性强度和快速惯性预设。Edit 参数支持 Undo；Play 只在实战允许交互且落位时修改，退出后 Unity 恢复。
 
 ```csharp
 var interaction = new CardInteractionState(isHovered: true, isSelected: false);
@@ -182,7 +182,7 @@ Prefab 应有一个已配置的 CardView 和对应 MeshFilter/MeshRenderer，不
 
 重复发布剩余列表不会重播或取消已有离场；连续弃牌可重叠，整手弃空后仍推进并清理动画。尚未起飞、不可见的排队入列视觉直接取消；已经飞入中的视觉从当前翻面角度接续飞出。重新加入同身份、静默恢复、换 ZoneId、CompleteTransitions、Clear、停用和销毁会清理相应离场视觉与私有 Tween，不影响其他牌区的动画。
 
-验证窗口“手牌列表”和“抽牌实验”页提供“弃掉选中”按钮；Play 中先在 Game 选牌，或在单牌数据面板设置待提交，再点按钮。禁用牌阻止整批提交，失效牌允许弃牌。编辑模式支持撤销/重做，Play 使用独立会话副本；“牌区样式 → 动画 → 弃牌 / 离场动画”配置终点与参数，“诊断”显示逻辑弃牌身份和飞出实例。
+弃牌使用 Game 内实际按钮，经玩法权威校验禁用牌、能量和次数。验证窗口观察结果；“表现参数 → 动画 → 弃牌 / 离场动画”调整终点与参数，“视觉诊断”查看飞出实例，不提交数据或生成编辑器副本。
 
 ## 手牌：从牌堆增加牌与列表同步
 
@@ -277,43 +277,24 @@ HandZoneView 消费外部悬停/选中状态；独立 [CardInteraction](../CardI
 
 手牌及其进一步派生类自动显示抽牌、弃牌、悬停缩放与选中上浮和三组音效；普通牌区保留卡牌列表、布局、相机、摆动、外观和诊断。切换目标读取各自的 CardZonePlayHost 卡牌快照及样式，保留 ZoneId、Kind 与 ControllerId，牌堆来源由绑定 Match/ZoneId 决定，共享堆按同一数据读取；进入/退出 Play 仍定位同一目标。未提供卡牌源且已绑定外部展示数据的牌区只读，不能从隐藏牌投影重建或覆盖真实卡牌。
 
-`Tools > Cards > Card Zone Validator` 打开统一验证窗口，`Create Card Zone In Current Scene` 在当前场景创建测试牌区。顶部固定显示编辑 / Play 状态、手牌/牌堆/视觉数量、定位与进入/退出 Play；四个页面可在小窗口折成两行，正文独立滚动。
+`Tools > Cards > Card Zone Validator` 打开实战牌区验证窗口，跟随场景选择现有 CardZoneView。工具不创建牌区、不维护测试牌、不固化初始快照，也不提交出牌、弃牌、抽牌或排序。牌区、卡牌身份及归属由玩法权威管理。
 
 | 页面 | 职责 |
 | --- | --- |
-| 手牌列表 | 从图集中指定牌面、数量和插入位置；有序列表内直接编辑每张卡牌的全部属性 |
-| 抽牌实验 | 指定新牌直接抽取；或管理测试牌堆、从牌顶/任意实例牌抽取；预览动画时钟 |
-| 牌区样式 | 布局 / 动画 / 音效 / 外观四个子页；包含相机朝向、悬停缩放与选中上浮、飞入惯性、摆动和 Shader 样式 |
-| 诊断 | Core → 投影 → Shader 对照、实例复用检查、最近一次抽牌列表及逐牌视觉状态 |
+| 实战卡牌 | Play 中直接读取外部玩法权威绑定的 CardZonePlayHost，查看当前区、抽牌堆与弃牌堆；身份、牌面、效果、选择与顺序只读 |
+| 表现参数 | 修改现有 View 的布局、相机朝向、交互上浮、发牌/弃牌动画、摆动、音效及外观 |
+| 视觉诊断 | 对照当前实例牌和对应视觉，查看实例 ID、位置、翻面与过渡状态，不重新投影或推进动画 |
+| 出牌路径 | 查看既有源/目标并调整 TransferPresenter 的表现参数；不创建/重连路径或强制完成飞行 |
 
-手牌与测试牌堆复用同一套列表编辑器，支持任意位置插入、修改牌面、复制、删除、上下移动、直接指定最终序号、反转、打乱、花色/点数排序、全部正面/牌背及清空。每行直接提供牌面下拉、正面（观察者可见）、强化、塑封、失效、禁用、悬停、选中和 Tint，行尾提供最终序号、上下移动、复制、清除效果、抽出（测试牌堆）及删除；无需先点选再到下方修改。表头与控件共用列坐标，窄窗口通过横向滚动查看完整一行。点击序号只标记当前编辑行，悬停可查看实例 ID，不等于游戏里的“选中待提交”。禁用牌不能新选中，但允许取消已有选中。所有修改仍经过既有 `Mutate` 与 `SetCardProperties → CardInstance` 数据链路，继续支持 Undo/Redo 和 Play 副本，不直接写 CardView。复制保留效果、禁用、可见性、Tint 和来源信息，生成新身份并清空悬停/待提交。
+编辑模式只调展示组件，卡牌列表为空；不读取 initialZones 或旧窗口缓存来造牌。Play 需同时存在运行中的宿主与外部 ICardMatchCommands 权威，再直接查询当前牌局，不保存第二套牌列表。出牌、弃牌、排序用 Game 内 UI，发牌由玩法策略触发。窗口以 10 Hz 刷新观察结果，动画时间完全由运行时推进；关闭窗口、切换目标、Undo 或进入/退出 Play 均不清除视觉、不重建牌区、不改变牌局。
 
-插入位置可选末尾或任意现有卡之前，移动使用从 1 开始的最终序号；底层继续用 Core 的零基索引。手牌和牌堆分别最多 64 张，同牌面允许多张。花色/点数排序使用 Core 规则，非标准美术样例归尾。5 张基础示例、12 张重叠示例、8 张 Shader 对照收进手牌页的“示例预设”折叠区，只有点击才替换列表。
+Edit 的参数修改支持 Undo、标记场景 dirty；Play 中只在允许交互且当前过渡结束后调整参数，退出后由 Unity 恢复。工具不自动保存场景。`Card Zone Animation Lab` 现在直接打开表现参数的动画页。旧造牌、指定抽牌、编辑测试牌堆、固化/预览出牌、手动时钟和创建牌区菜单已移除。
 
-抽牌页分为两种来源：
-
-- **指定牌面**：选择图集中的任意牌、数量、可见性与手牌插入位置，生成独立实例，经临时来源 Zone 和 Core 转移操作进入手牌，不消耗测试牌堆；牌堆为空也可以使用。动画和音效仍由新增身份触发。
-- **从测试牌堆抽取**：列表从牌顶到牌底显示，第一行标记“牌顶（下一张）”；抽 1 张取第一行，抽 N 张依次取前 N 行。也可点击任意列表行的“抽出”将该原始实例转移到指定手牌位置，保留其属性和身份。牌堆可任意编辑，支持重建 12 张测试牌或完整标准牌堆，不会自动补满。 新窗口、动画实验菜单默认打开此来源；“指定牌面”仍是显式生成新牌，不消耗测试牌堆。
-
-测试牌堆通过 `Editor/CardZonePreviewList.cs`（含独立 .meta）映射显示序号与底层序号；上下移动、“移动到第几张”、“复制到后面”和插入位置都按屏幕顺序解释。花色/点数排序也按显示顺序生效，相同牌面及无点数图案保持稳定顺序。Core 与序列化仍以列表末尾为牌顶，不迁移既有牌堆数据；手牌仍按自然列表顺序显示。该适配器仅属于 Editor 程序集。
-
-手牌默认选择点数排序。抽牌时保持原提交顺序，整批飞入和惯性回稳结束后，才调用当前选择的 `SortByRank` 或 `SortBySuit` 更新 Card 层列表，再由 View 播放重排动画；不在飞行中提前改落点。点数顺序为 A、K、Q、J、10…2，花色顺序为黑桃、红桃、梅花、方块，非标准美术样例归尾。原有两个排序按钮同时设置此牌区后续抽牌的整理方式；飞行中选择排序只排队，采用最后一次选择。没有过渡时下一次刷新即执行，不等待固定秒数。
-
-牌顶/批量/指定牌面/抽出任意牌共用同一调度入口，Edit 和 Play 一致。追加抽牌会继续等待所有过渡完成；暂停保持等待，单步或立即完成后可整理。Play 由 `CardZonePlayHost.RequestSortAfterLanding` / `TryCompletePendingSort` 在 LateUpdate 驱动，关闭验证窗口仍会完成；停用/停止/重启宿主清除请求。编辑预览由窗口推进后调用同样的 Card 层排序并固化新顺序，支持 Undo。手动移动/反转/打乱保留到下一次抽牌；牌堆排序仍直接操作牌堆数据，出牌区不自动整理。
-
-最近一次抽牌记录移到诊断页；牌堆之前/之后统一按牌顶到牌底显示，“手牌之后”先记录抽牌提交顺序，窗口观察到整理完成提交时更新为重排顺序。区分“指定生成 / 测试牌堆”，指定生成时牌堆前后列表保持不变，Drawn 始终保留逐张抽取身份顺序。记录序列化后仍保留。新增/复制/抽牌只通过数据列表驱动 View，重排复用原有视觉身份；期间仍可继续增删、移动及改属性。
-
-编辑模式数据变更支持 Unity Undo/Redo，恢复时读取 Match 启动快照并静默重建视觉。进入 Play 后各页仍可操作：局内 `CardMatchHost` 持有共享 `CardTableSession`，牌区宿主只转发 Match 查询。编辑器每次刷新和提交前读取对局，再通过 UNITY_EDITOR 限定的 Debug API 原子提交受影响的列表；玩法、Game UI 和验证窗口读同一份运行数据。空堆不自动补牌，关闭窗口不影响对局；退出 Play 恢复 Match 初始编辑快照，Play 内调试不加入 Undo、不写入初始快照。`CardZoneDrawExperimentStore` 只保存缓冲/抽取诊断；切换目标会重新读取 Match，不将缓存当作牌堆权威。
-
-编辑模式可播放/暂停、调速及单步推进自己的动画；Play 跟随游戏时间，暂停使用 Unity 工具栏。音效只在 Play 中播放。立即完成过渡不会补播排队音效。所有样式集中在样式页，诊断不再混入常用操作。
-
-`Tools > Cards > Card Zone Animation Lab` 打开抽牌页；`Deal Three Cards To Zone` 从测试牌顶抽取 3 张；`Preview Gentle Row Motion` 和 `Preview Soft Landing` 转到样式/动画页应用对应预设。`Bake Card Zone For Play` / `Preview Mouse Interaction` 兼容原菜单，固化当前编辑数据后打开手牌页；`Play Card Zone` 固化并进入 Play。
-
-场景中的测试根对象为普通 Untagged 对象，保存具体 ZoneView 子类配置、CardZonePlayHost 的对局绑定和 CardMatchHost 初始卡牌数据，临时卡面使用 DontSave。工具不自动保存整个场景；需保存场景以持久化配置。运行时卡牌归属使用 Core CardTableState；观察者美术/本地交互仍属于 Unity 投影，不混入权威卡牌存档。`CardZonePreviewCatalog` 显式映射 Core 的 52 张标准定义与图集，王等额外牌面仍标记为美术样例。
+`测试面板 > 实战验证 > 实战牌区窗口` 专项检查真实牌局读取、参数修改不触及卡牌状态、切换目标和关闭窗口保持视觉身份，报告 `Library/CardPresentationTests/live-validator.json`。直接打开 SingleBattleDemo 并进入 Play 即可，无需编辑器预置卡牌。
 
 ### 导出 View 设置为 Prefab
 
-验证窗口顶部的“导出 View Prefab…”将当前目标牌区的展示配置保存为普通 Prefab，默认目录为 `Assets/CardPresentation/Prefabs`，默认名称使用实际子类名。适用于 CardZoneView、HandZoneView 及其进一步派生类；也可导出 Play 中调好的组件参数。导出读取组件当前值，不依赖或重写窗口里的卡牌列表。完成后可点“定位 Prefab”。
+验证窗口顶部的“导出 View Prefab…”将当前目标牌区的展示配置保存为普通 Prefab，默认目录为 `Assets/CardPresentation/Prefabs`，默认名称使用实际子类名。适用于 CardZoneView、HandZoneView 及其进一步派生类；也可导出 Play 中调好的组件参数。导出读取组件当前值，不依赖或重写任何卡牌列表。完成后可点“定位 Prefab”。
 
 - 保留实际组件类型、所有可序列化的展示设置、卡牌 Prefab 引用、布局/摆动/外观、上浮/飞入/弃牌参数，以及三组音效。资源继续共享，不复制材质或音频。
 - 导出仅包含牌区展示组件。CardZonePlayHost、鼠标组件、测试手牌/弃牌、临时 CardInstanceView、音源及场景中的其他子对象不随之导出。实例化后由宿主调用 Present 提供真实数据。
@@ -328,7 +309,7 @@ HandZoneView 消费外部悬停/选中状态；独立 [CardInteraction](../CardI
 
 运行时由独立 asmdef 和 link.xml 纳入 Player，asmdef 显式引用 DOTween.dll；`CardPresentation.Editor` 与测试程序集仅在编辑器中使用，不进入 Player。Editor 测试主要使用隔离 Preview Scene 和现有美术 Prefab；生命周期测试使用当前场景内临时 DontSave 根对象验证真实停用/销毁回调，完成后销毁，不保存或替换当前场景。
 
-`Poker > Tests > Run Card Presentation In Current Scene` 执行本模块同步 NUnit 测试，报告写入 `Library/CardPresentationTests/status.json` 与 `results.xml`。该入口复用已有轻量运行器，完整 Unity Test Runner 也能发现此测试程序集。共 162 项测试，覆盖实例身份、增删重排、未知牌揭示/恢复牌背、资产共享、布局约束、生命周期、打包元数据，以及属性投影、本地上浮状态转换、无累积位移和编辑器样例序列化。Shader 测试读取真实 Prefab 实例的 MaterialPropertyBlock，检查全部 16 种效果/禁用组合、完整重置、HDR 参数、样式刷新、非法配置与缺失材质能力/贴图的原子拒绝，以及共享资产未被改写。编辑器属性测试另覆盖同牌面的独立身份修改、重排后编辑、隐藏时修改再揭示、清除状态、非法属性拒绝、序列化保留，以及全部 52 张标准定义与真实图集的映射。
+`测试面板 > 编辑模式测试 > 更多模块 / 全量回归 > 卡牌表现全模块` 执行本模块同步 NUnit 测试，报告写入 `Library/CardPresentationTests/status.json` 与 `results.xml`。该入口复用已有轻量运行器，完整 Unity Test Runner 也能发现此测试程序集。共 162 项测试，覆盖实例身份、增删重排、未知牌揭示/恢复牌背、资产共享、布局约束、生命周期、打包元数据，以及属性投影、本地上浮状态转换、无累积位移和编辑器样例序列化。Shader 测试读取真实 Prefab 实例的 MaterialPropertyBlock，检查全部 16 种效果/禁用组合、完整重置、HDR 参数、样式刷新、非法配置与缺失材质能力/贴图的原子拒绝，以及共享资产未被改写。编辑器属性测试另覆盖同牌面的独立身份修改、重排后编辑、隐藏时修改再揭示、清除状态、非法属性拒绝、序列化保留，以及全部 52 张标准定义与真实图集的映射。
 
 动效测试覆盖牌面阅读方向在正负弧高/直排/单牌/翻面间保持一致、正负弧高、同圆等半径及 +Z 朝圆心、旋转后对齐边界、奇偶/空/单牌/密集牌列、极限角度下实际 Mesh 顶点边界、随机数隔离、刷新与重排相位连续、翻面/选中组合、停用/销毁/Tween 清理及外部手动 Tween 不受影响。相机测试覆盖空牌区/关闭摆动时跟随、父级变换、恢复原朝向、退化观察方向、禁用/启用，以及牌面/属性/实例/Tween 相位不受影响。测试按帧手动推进同一运行时动效入口，未执行完整 Player/IL2CPP 构建。
 
@@ -378,7 +359,7 @@ Prefab 导出新增 5 项回归，覆盖完整手牌参数/共享资源/虚拟�
 
 UI Camera 新增 5 项回归，覆盖独立 Forward Renderer 的精简配置、重复注册和保留其他 Overlay、透视/正交投影同步及销毁清理、左下角两行 Prefab、主场景复古后处理先于 UI 执行，以及主相机排除 UI 后悬停提示仍由 UI Camera 显示。
 
-`Poker > Tests > Validate Hand Action Buttons In Play` 可在已有手牌和出牌路径的场景中检查 Play 反序列化后的出/弃/两种理牌事件绑定，报告写入 `Library/CardPresentationTests/hand-actions-play.json`；检查后完成转移并恢复两区启动数据与牌堆。此检查不注入系统鼠标，真实鼠标输入需在 Game 手动验证。
+`测试面板 > 实战验证 > 旧验证场景 > 旧场景手牌按钮` 可在已有手牌和出牌路径的场景中检查 Play 反序列化后的出/弃/两种理牌事件绑定，报告写入 `Library/CardPresentationTests/hand-actions-play.json`；检查后完成转移并恢复两区启动数据与牌堆。此检查不注入系统鼠标，真实鼠标输入需在 Game 手动验证。
 
 所有 Editor 工具源码显式使用 `#if UNITY_EDITOR`；运行目录内的 Editor partial（启动配置/迁移/Debug 编辑）也整文件限定。Player 的抽牌、出/弃、排序调用正式 Match 命令。`CardZoneView.PresentCommitted` / `HandZoneView.PresentDiscardCommitted` 允许先验证并准备视觉，再回调提交 Match，最后提交并通知视觉；跨区动画继续复用既有 TransferPresenter，不要求引擎提供动画时长。
 
@@ -392,7 +373,7 @@ UI Camera 新增 5 项回归，覆盖独立 Forward Renderer 的精简配置、�
 
 DeckOverviewData 明确区分 IsRemaining 与规则效果，按规则定义计算花色及数字/JQK/A 统计，同牌面多份按身份分别展示。CardUIItemView 持有本页逐牌悬停，不从原投影携带手牌选中。可见性、未知定义与美术缺失边界均在投影/提交时校验；坏牌面不替换已有视图。详见 [UI 资源与接入](UI/README.md#原生-canvas-牌组总览)。
 
-新增回归验证原生 Canvas/共享资源、全局余量与规则状态、完整图集区域/HDR 顶点参数、隐藏信息过滤、独立悬停/摆动/复用、坏牌面原子拒绝、重载孤儿清理及 Match/成员范围同步；另验证固定行宽的多牌数圆弧边界、正立/重叠、无效布局原子拒绝、分类与点数余量及图标导入。Play 菜单 `Poker > Tests > Validate Canvas Deck Overview In Play` 验证事件、抽牌后的统计/身份复用和返回关闭，恢复测试前对局，报告写入 Library/DeckOverviewValidation/play.json；不注入系统鼠标。
+新增回归验证原生 Canvas/共享资源、全局余量与规则状态、完整图集区域/HDR 顶点参数、隐藏信息过滤、独立悬停/摆动/复用、坏牌面原子拒绝、重载孤儿清理及 Match/成员范围同步；另验证固定行宽的多牌数圆弧边界、正立/重叠、无效布局原子拒绝、分类与点数余量及图标导入。Play 菜单 `测试面板 > 实战验证 > 旧验证场景 > 旧场景牌库交互` 验证事件、抽牌后的统计/身份复用和返回关闭，恢复测试前对局，报告写入 Library/DeckOverviewValidation/play.json；不注入系统鼠标。
 
 牌组总览补充回归覆盖纵向重叠、悬停跨行置顶与恢复、逐牌独立持续摆动，以及 1280×720 / 1920×1080 / 800×450 原生 UI 输出、普通 Overlay 共存、单像素条纹与 UI 停用后的场景保留。
 
