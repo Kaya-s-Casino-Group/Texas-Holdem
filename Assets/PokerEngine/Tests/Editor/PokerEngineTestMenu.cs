@@ -31,6 +31,9 @@ namespace PokerEngine.Tests
         [MenuItem("Poker/Tests/Run Card Presentation In Current Scene")]
         public static void RunPresentation() => RunSuite(Assembly.Load("CardPresentation.Tests.Editor"), "CardPresentationTests");
 
+        [MenuItem("Poker/Tests/Run Flow Editor In Current Scene")]
+        public static void RunFlowEditor() => RunSuite(Assembly.Load("Poker.RunFlow.Tests.Editor"), "RunFlowEditorTests");
+
         private static void RunSuite(Assembly assembly, string folder)
         {
             if (pending != null) throw new InvalidOperationException("An Editor test run is already pending.");

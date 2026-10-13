@@ -1,0 +1,3 @@
+<linker>
+  <assembly fullname="Poker.RunFlow.Runtime" preserve="all" />
+</linker>
