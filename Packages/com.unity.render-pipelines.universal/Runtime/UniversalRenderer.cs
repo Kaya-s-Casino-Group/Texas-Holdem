@@ -792,7 +792,8 @@ namespace UnityEngine.Rendering.Universal
             colorDescriptor.useMipMap = false;
             colorDescriptor.autoGenerateMips = false;
             colorDescriptor.depthBufferBits = (int)DepthBits.None;
-            m_ColorBufferSystem.SetCameraSettings(colorDescriptor, cameraData.customRenderResolution ? FilterMode.Point : FilterMode.Bilinear);
+            if (!cameraData.nativeResolutionOverlay)
+                m_ColorBufferSystem.SetCameraSettings(colorDescriptor, cameraData.customRenderResolution ? FilterMode.Point : FilterMode.Bilinear);
 
             // Configure all settings require to start a new camera stack (base camera only)
             if (cameraData.renderType == CameraRenderType.Base)
@@ -837,6 +838,19 @@ namespace UnityEngine.Rendering.Universal
                 m_ActiveCameraColorAttachment = createColorTexture ? m_ColorBufferSystem.PeekBackBuffer() : m_XRTargetHandleAlias;
                 m_ActiveCameraDepthAttachment = createDepthTexture ? m_CameraDepthAttachment : m_XRTargetHandleAlias;
             }
+            else if (cameraData.nativeResolutionOverlay)
+            {
+                // Scene overlays have already resolved (and upscaled) to the output. Load that color;
+                // do not borrow or resize their low-resolution color/depth buffer system.
+                var target = RenderingUtils.GetCameraTargetIdentifier(ref renderingData);
+                if (m_XRTargetHandleAlias == null) m_XRTargetHandleAlias = RTHandles.Alloc(target);
+                else if (m_XRTargetHandleAlias.nameID != target)
+                    RTHandleStaticHelpers.SetRTHandleUserManagedWrapper(ref m_XRTargetHandleAlias,target);
+                m_ActiveCameraColorAttachment = m_ActiveCameraDepthAttachment = m_XRTargetHandleAlias;
+                m_RenderOpaqueForwardPass.m_IsActiveTargetBackBuffer = true;
+                m_RenderTransparentForwardPass.m_IsActiveTargetBackBuffer = true;
+                createColorTexture = createDepthTexture = false;
+            }
             else
             {
                 cameraData.baseCamera.TryGetComponent<UniversalAdditionalCameraData>(out var baseCameraData);
@@ -865,11 +879,14 @@ namespace UnityEngine.Rendering.Universal
                 outputSize = new Vector2Int(cameraData.pixelWidth, cameraData.pixelHeight),
                 renderSize = new Vector2Int(cameraTargetDescriptor.width, cameraTargetDescriptor.height),
                 colorTargetSize = m_ActiveCameraColorAttachment.rt != null
-                    ? new Vector2Int(m_ActiveCameraColorAttachment.rt.width, m_ActiveCameraColorAttachment.rt.height) : Vector2Int.zero,
+                    ? new Vector2Int(m_ActiveCameraColorAttachment.rt.width, m_ActiveCameraColorAttachment.rt.height) :
+                        cameraData.nativeResolutionOverlay ? new Vector2Int(cameraData.pixelWidth,cameraData.pixelHeight) : Vector2Int.zero,
                 depthTargetSize = m_ActiveCameraDepthAttachment.rt != null
-                    ? new Vector2Int(m_ActiveCameraDepthAttachment.rt.width, m_ActiveCameraDepthAttachment.rt.height) : Vector2Int.zero,
+                    ? new Vector2Int(m_ActiveCameraDepthAttachment.rt.width, m_ActiveCameraDepthAttachment.rt.height) :
+                        cameraData.nativeResolutionOverlay ? new Vector2Int(cameraData.pixelWidth,cameraData.pixelHeight) : Vector2Int.zero,
                 lowResolution = cameraData.customRenderResolution,
-                finalFilter = cameraData.customRenderResolution ? "Point" : m_ActiveCameraColorAttachment.rt?.filterMode.ToString()
+                finalFilter = cameraData.nativeResolutionOverlay ? "Native" :
+                    cameraData.customRenderResolution ? "Point" : m_ActiveCameraColorAttachment.rt?.filterMode.ToString()
             };
 
             // Assign camera targets (color and depth)
@@ -1117,7 +1134,8 @@ namespace UnityEngine.Rendering.Universal
 
 
                 // make sure we store the depth only if following passes need it.
-                RenderBufferStoreAction opaquePassDepthStoreAction = (copyColorPass || requiresDepthCopyPass || !lastCameraInTheStack) ? RenderBufferStoreAction.Store : RenderBufferStoreAction.DontCare;
+                // Native overlays clear their own output depth; preserve it for world-space Canvas transparents.
+                RenderBufferStoreAction opaquePassDepthStoreAction = (cameraData.nativeResolutionOverlay || copyColorPass || requiresDepthCopyPass || !lastCameraInTheStack) ? RenderBufferStoreAction.Store : RenderBufferStoreAction.DontCare;
 #if ENABLE_VR && ENABLE_XR_MODULE
                 if (cameraData.xr.enabled && cameraData.xr.copyDepth)
                 {
@@ -1249,7 +1267,7 @@ namespace UnityEngine.Rendering.Universal
             }
             EnqueuePass(m_OnRenderObjectCallbackPass);
 
-            bool shouldRenderUI = cameraData.rendersOverlayUI;
+            bool shouldRenderUI = cameraData.rendersOverlayUI && !cameraData.hasNativeOverlayAfter;
             bool outputToHDR = cameraData.isHDROutputActive;
             if (shouldRenderUI && outputToHDR)
             {

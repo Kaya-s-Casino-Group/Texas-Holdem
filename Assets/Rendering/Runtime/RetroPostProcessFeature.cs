@@ -59,7 +59,8 @@ namespace RetroRendering
 
         public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
         {
-            if (!Applies(in renderingData.cameraData) || !renderingData.cameraData.resolveFinalTarget) return;
+            // Grade the scene before a UI-only overlay. A Base camera need not resolve the final stack target.
+            if (!Applies(in renderingData.cameraData) || renderingData.cameraData.renderType == CameraRenderType.Overlay) return;
             pass.renderPassEvent = injectionPoint;
             renderer.EnqueuePass(pass);
         }

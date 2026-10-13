@@ -325,6 +325,7 @@ namespace UnityEngine.Rendering.Universal
         [SerializeField] bool m_StopNaN = false;
         [SerializeField] bool m_Dithering = false;
         [SerializeField] bool m_ClearDepth = true;
+        [SerializeField] bool m_RenderOverlayAtNativeResolution;
         [SerializeField] bool m_AllowXRRendering = true;
         [SerializeField] bool m_AllowHDROutput = true;
 
@@ -420,6 +421,13 @@ namespace UnityEngine.Rendering.Universal
         {
             get => m_CameraType;
             set => m_CameraType = value;
+        }
+
+        /// <summary>Unlit, non-XR overlays at the end of a stack draw after scene presentation at output resolution.</summary>
+        public bool renderOverlayAtNativeResolution
+        {
+            get => m_RenderOverlayAtNativeResolution;
+            set => m_RenderOverlayAtNativeResolution = value;
         }
 
         /// <summary>

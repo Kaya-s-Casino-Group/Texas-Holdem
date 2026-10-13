@@ -741,6 +741,7 @@ namespace UnityEngine.Rendering.Universal
             // rendering to screen when rendering it. The last camera in the stack is not
             // necessarily the last active one as it users might disable it.
             int lastActiveOverlayCameraIndex = -1;
+            Camera lastActiveOverlayCamera = null, firstNativeOverlay = null, lastSceneOverlay = null;
             if (cameraStack != null)
             {
                 var baseCameraRendererType = baseCameraAdditionalData?.scriptableRenderer.GetType();
@@ -790,11 +791,18 @@ namespace UnityEngine.Rendering.Universal
 
                         anyPostProcessingEnabled |= data.renderPostProcessing;
                         lastActiveOverlayCameraIndex = i;
+                        lastActiveOverlayCamera = currCamera;
+                        if (data.renderOverlayAtNativeResolution && !data.renderPostProcessing)
+                        {
+                            if (firstNativeOverlay == null) firstNativeOverlay = currCamera;
+                        }
+                        else { firstNativeOverlay = null; lastSceneOverlay = currCamera; }
                     }
                 }
                 if (shouldUpdateCameraStack)
                 {
                     baseCameraAdditionalData.UpdateCameraStack();
+                    lastActiveOverlayCameraIndex = cameraStack.IndexOf(lastActiveOverlayCamera);
                 }
             }
 
@@ -812,6 +820,9 @@ namespace UnityEngine.Rendering.Universal
             // With XR multi-pass enabled, each camera can be rendered multiple times with different parameters
             foreach ((Camera _, XRPass xrPass) in xrLayout.GetActivePasses())
             {
+                bool nativeOverlayTail = firstNativeOverlay != null && !xrPass.enabled;
+                int nativeOverlayStart = nativeOverlayTail ? cameraStack.IndexOf(firstNativeOverlay) : -1;
+                bool resolveBaseTarget = !isStackedRendering || (nativeOverlayTail && lastSceneOverlay == null);
                 if (xrPass.enabled)
                 {
                     xrActive = true;
@@ -825,7 +836,7 @@ namespace UnityEngine.Rendering.Universal
                 }
                 // Update volumeframework before initializing additional camera data
                 UpdateVolumeFramework(baseCamera, baseCameraAdditionalData);
-                InitializeCameraData(baseCamera, baseCameraAdditionalData, !isStackedRendering, out var baseCameraData);
+                InitializeCameraData(baseCamera, baseCameraAdditionalData, resolveBaseTarget, out var baseCameraData);
                 RenderTextureDescriptor originalTargetDesc = baseCameraData.cameraTargetDescriptor;
 
 #if ENABLE_VR && ENABLE_XR_MODULE
@@ -844,7 +855,8 @@ namespace UnityEngine.Rendering.Universal
 #endif
                 // InitializeAdditionalCameraData needs to be initialized after the cameraTargetDescriptor is set because it needs to know the
                 // msaa level of cameraTargetDescriptor and XR modifications.
-                InitializeAdditionalCameraData(baseCamera, baseCameraAdditionalData, !isStackedRendering, ref baseCameraData);
+                InitializeAdditionalCameraData(baseCamera, baseCameraAdditionalData, resolveBaseTarget, ref baseCameraData);
+                baseCameraData.hasNativeOverlayAfter = nativeOverlayTail;
 
 #if VISUAL_EFFECT_GRAPH_0_0_1_OR_NEWER
                 //It should be called before culling to prepare material. When there isn't any VisualEffect component, this method has no effect.
@@ -912,11 +924,15 @@ namespace UnityEngine.Rendering.Universal
 #endif
                             UpdateVolumeFramework(currCamera, currAdditionalCameraData);
 
-                            bool lastCamera = i == lastActiveOverlayCameraIndex;
+                            bool nativeOverlay = nativeOverlayTail && i >= nativeOverlayStart;
+                            bool lastCamera = nativeOverlay ? i == lastActiveOverlayCameraIndex :
+                                nativeOverlayTail ? currCamera == lastSceneOverlay : i == lastActiveOverlayCameraIndex;
                             InitializeAdditionalCameraData(currCamera, currAdditionalCameraData, lastCamera, ref overlayCameraData);
                             
                             overlayCameraData.stackAnyPostProcessingEnabled = anyPostProcessingEnabled;
                             overlayCameraData.stackLastCameraOutputToHDR = finalOutputHDR;
+                            overlayCameraData.hasNativeOverlayAfter = nativeOverlayTail && !nativeOverlay;
+                            if (nativeOverlay) overlayCameraData.SetNativeOverlayResolution();
 
                             xrLayout.ReconfigurePass(overlayCameraData.xr, currCamera);
 

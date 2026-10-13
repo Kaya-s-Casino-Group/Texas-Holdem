@@ -348,16 +348,28 @@ namespace UnityEngine.Rendering.Universal
         /// By obtaining the pixelWidth of the camera and taking into account the render scale
         /// The min dimension is 1.
         /// </summary>
-        public int scaledWidth => customRenderResolution ? cameraTargetDescriptor.width : Mathf.Max(1, (int)(camera.pixelWidth * renderScale));
+        public int scaledWidth => customRenderResolution || nativeResolutionOverlay ? cameraTargetDescriptor.width : Mathf.Max(1, (int)(camera.pixelWidth * renderScale));
 
         /// <summary>
         /// Returns the scaled height of the Camera
         /// By obtaining the pixelHeight of the camera and taking into account the render scale
         /// The min dimension is 1.
         /// </summary>
-        public int scaledHeight => customRenderResolution ? cameraTargetDescriptor.height : Mathf.Max(1, (int)(camera.pixelHeight * renderScale));
+        public int scaledHeight => customRenderResolution || nativeResolutionOverlay ? cameraTargetDescriptor.height : Mathf.Max(1, (int)(camera.pixelHeight * renderScale));
 
         internal bool customRenderResolution;
+        internal bool nativeResolutionOverlay;
+        internal bool hasNativeOverlayAfter;
+
+        internal void SetNativeOverlayResolution()
+        {
+            SetPointRenderResolution(pixelWidth,pixelHeight);
+            customRenderResolution = false;
+            nativeResolutionOverlay = true;
+            renderScale = 1;
+            imageScalingMode = ImageScalingMode.None;
+            requiresDepthTexture = requiresOpaqueTexture = false;
+        }
 
         /// <summary>
         /// Embedded URP extension for ConfigureCameraRendering: set internal target dimensions while

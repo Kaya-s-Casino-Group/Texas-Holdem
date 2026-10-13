@@ -24,6 +24,7 @@ namespace UnityEngine.Rendering.Universal
         public void ConfigureCamera(ref CameraData data)
         {
             if (data.camera == null || data.camera.stereoEnabled) return;
+            if (data.nativeResolutionOverlay) return;
             // A stack is owned by its base renderer; even an overlay using another renderer inherits it.
             if (data.renderType == CameraRenderType.Overlay)
             {
