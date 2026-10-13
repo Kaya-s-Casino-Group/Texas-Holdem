@@ -11,7 +11,8 @@ namespace CardPresentation
     public partial class HandZoneView : CardZoneView
     {
         [SerializeField] private Vector3 raisedOffset = new Vector3(0, 0, 0.02f);
-        [SerializeField] private Vector3 hoveredOffset = new Vector3(0, 0, 0.01f);
+        // Retained only for old scene/prefab serialization and API compatibility; hover no longer translates.
+        [SerializeField, HideInInspector] private Vector3 hoveredOffset;
         [SerializeField] private CardZoneLiftSettings liftSettings = CardZoneLiftSettings.Default;
         [SerializeField] private CardZoneTransitionSettings transitionSettings = CardZoneTransitionSettings.Default;
         [SerializeField] private Vector3 deckLocalPosition = new Vector3(0.38f, 0.035f, 0);
@@ -20,7 +21,8 @@ namespace CardPresentation
         public override string DefaultZoneKind => CardZoneKinds.Hand;
         public Vector3 RaisedOffset => raisedOffset;
         public Vector3 SelectedOffset => raisedOffset;
-        public Vector3 HoveredOffset => hoveredOffset;
+        public Vector3 HoveredOffset => Vector3.zero;
+        public const float HoverAreaMultiplier = 1.2f;
         public CardZoneLiftSettings LiftSettings => liftSettings;
         public CardZoneTransitionSettings TransitionSettings => transitionSettings;
         public Vector3 DeckLocalPosition => deckLocalPosition;
@@ -42,6 +44,9 @@ namespace CardPresentation
 
         public void Present(CardZoneViewData data, bool animate, IEnumerable<string> discardedIds) =>
             ApplyPresentation(data, () => new HandPresentationUpdate(this, data, animate, discardedIds));
+
+        public void PresentDiscardCommitted(CardZoneViewData data, IEnumerable<string> discardedIds, Action commitData, bool animate = true) =>
+            ApplyPresentation(data, () => new HandPresentationUpdate(this, data, animate, discardedIds), commitData);
 
         public void Present(CardZone zone, Func<CardInstanceId, CardVisualData> project, bool animate,
             IEnumerable<string> discardedViewIds) => Present(CardZoneViewData.FromZone(zone, project), animate, discardedViewIds);
@@ -96,7 +101,7 @@ namespace CardPresentation
             public override void PresentCard(CardInstanceView view, CardVisualData card, CardShaderAppearance appearance,
                 CardZoneCardPose pose, int index, bool created)
             {
-                view.Present(card, hand.hoveredOffset, hand.raisedOffset, appearance, hand.liftSettings, animateInteraction);
+                view.Present(card, hand.hoveredOffset, hand.raisedOffset, appearance, hand.liftSettings, animateInteraction, hoverScaling: true);
                 // Lost visuals for an existing identity are restored without replaying the deal.
                 view.SetPose(pose, hand.transitionSettings, animate && (arrivals[index] || !created), arrivals[index], source, delays[index]);
             }
@@ -132,7 +137,7 @@ namespace CardPresentation
         protected override void ApplyLayoutPose(CardInstanceView view, CardZoneCardPose pose, bool animate)
         {
             view.SetPose(pose, transitionSettings, animate && transitionSettings.Enabled && isActiveAndEnabled);
-            view.ApplyInteractionOffset(hoveredOffset, raisedOffset, liftSettings, animate);
+            view.ApplyInteractionOffset(hoveredOffset, raisedOffset, liftSettings, animate, hoverScaling: true);
         }
 
         public void SetTransitionSettings(CardZoneTransitionSettings settings)
@@ -144,7 +149,7 @@ namespace CardPresentation
         public void SetLiftSettings(CardZoneLiftSettings settings)
         {
             settings.Validate(); liftSettings = settings;
-            foreach (var view in ordered) if (view != null) view.ApplyInteractionOffset(hoveredOffset, raisedOffset, liftSettings);
+            foreach (var view in ordered) if (view != null) view.ApplyInteractionOffset(hoveredOffset, raisedOffset, liftSettings, hoverScaling: true);
         }
 
         /// <summary>Fallback deck source in zone-local coordinates; an optional scene anchor takes precedence.</summary>
@@ -153,15 +158,15 @@ namespace CardPresentation
             ValidateOffset(localPosition); deckLocalPosition = localPosition; deckAnchor = anchor;
         }
 
-        /// <summary>Legacy convenience for giving hover and selection the same zone-local offset.</summary>
+        /// <summary>Sets the selection offset. Hover is always an area enlargement without translation.</summary>
         public void SetRaisedOffset(Vector3 offset) => SetInteractionOffsets(offset, offset);
 
-        /// <summary>Independent zone-local offsets. Selection takes precedence over hover, without adding them.</summary>
+        /// <summary>Legacy offset API: hovered is validated for compatibility but has no visual effect; selected is zone-local.</summary>
         public void SetInteractionOffsets(Vector3 hovered, Vector3 selected)
         {
             ValidateOffset(hovered); ValidateOffset(selected);
             hoveredOffset = hovered; raisedOffset = selected;
-            foreach (var view in ordered) if (view != null) view.ApplyInteractionOffset(hoveredOffset, raisedOffset, liftSettings);
+            foreach (var view in ordered) if (view != null) view.ApplyInteractionOffset(hoveredOffset, raisedOffset, liftSettings, hoverScaling: true);
         }
 
         public override void CompleteTransitions()

@@ -52,7 +52,8 @@ namespace CardPresentation
             FaceRoot = new GameObject("Face").transform;
             FaceRoot.SetParent(TransitionRoot, false);
             DealFlipRoot = new GameObject("DealFlip").transform;
-            DealFlipRoot.SetParent(FaceRoot, false);
+            InitializeHoverRoot();
+            DealFlipRoot.SetParent(HoverRoot, false);
             SwayRoot = new GameObject("Sway").transform;
             SwayRoot.SetParent(DealFlipRoot, false);
             var visual = Instantiate(prefab, SwayRoot, false);
@@ -68,7 +69,7 @@ namespace CardPresentation
             foreach (var collider in visual.GetComponentsInChildren<Collider>(true)) collider.enabled = false;
         }
 
-        internal void Present(CardVisualData data, Vector3 hoveredOffset, Vector3 selectedOffset, CardShaderAppearance appearance, CardZoneLiftSettings lift, bool animate)
+        internal void Present(CardVisualData data, Vector3 hoveredOffset, Vector3 selectedOffset, CardShaderAppearance appearance, CardZoneLiftSettings lift, bool animate, bool hoverScaling = false)
         {
             bool initialized = Data != null;
             // Unknown faces never retain an old known front texture, even when the same view is reused.
@@ -76,7 +77,7 @@ namespace CardPresentation
             ApplyAppearance(appearance);
             Data = data;
             ApplyFaceRotation();
-            ApplyInteractionOffset(hoveredOffset, selectedOffset, lift, animate && initialized);
+            ApplyInteractionOffset(hoveredOffset, selectedOffset, lift, animate && initialized, hoverScaling);
         }
 
         internal void ApplyLayoutPose(CardZoneCardPose pose)
@@ -98,7 +99,7 @@ namespace CardPresentation
         internal void BeginDiscard(Vector3 destination, float delay, CardZoneDiscardSettings settings)
         {
             // Preserve the displayed lift and sway, including selection interrupted midway through its rise.
-            KillLift(); KillSwayTween();
+            KillLift(); KillHoverScale(); KillSwayTween();
             transition.Exit(destination, delay, settings, swayAngle);
         }
 
@@ -154,12 +155,13 @@ namespace CardPresentation
         }
 
         // Offset belongs to the visual child, so zone reflow and flip rotation cannot accumulate or invert it.
-        internal void ApplyInteractionOffset(Vector3 hoveredOffset, Vector3 selectedOffset, CardZoneLiftSettings settings, bool animate = true)
+        internal void ApplyInteractionOffset(Vector3 hoveredOffset, Vector3 selectedOffset, CardZoneLiftSettings settings, bool animate = true, bool hoverScaling = false)
         {
+            ApplyHoverScale(hoverScaling && Data != null && Data.Interaction.IsHovered, settings, animate);
             bool selected = Data != null && Data.Interaction.IsSelected;
             bool selectionChanged = selected != interactionSelected;
             interactionSelected = selected;
-            var next = selected ? selectedOffset : Data != null && Data.Interaction.IsHovered ? hoveredOffset : Vector3.zero;
+            var next = selected ? selectedOffset : Vector3.zero;
             if (selected)
             {
                 KillSwayTween(); // Stop idle motion at its actual angle, then let the lift bring it to zero.
@@ -207,7 +209,7 @@ namespace CardPresentation
 
         internal void CompleteLift()
         {
-            KillLift(); interactionOffset = interactionTarget;
+            KillLift(); CompleteHoverScale(); interactionOffset = interactionTarget;
             if (interactionSelected) SetSwayAngle(0);
             RefreshInteractionPose();
         }
@@ -225,6 +227,7 @@ namespace CardPresentation
             AdvanceTransfer(deltaTime);
             if (IsExiting) return;
             if (IsLifting) liftTween.ManualUpdate(deltaTime, deltaTime);
+            if (IsHoverScaling) hoverTween.ManualUpdate(deltaTime, deltaTime);
             // During selection the lift owns sway centering; idle motion resumes only after deselection.
             if (Data.Interaction.IsSelected || !motionSettings.Enabled || motionSettings.MaxSwayAngle == 0) return;
             if (swayTween == null || !swayTween.IsActive())

@@ -3,6 +3,7 @@
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/UnityGBuffer.hlsl"
+#include "CardSurfaceCommon.hlsl"
 
 TEXTURE2D(_RedCrossMap);
 SAMPLER(sampler_RedCrossMap);
@@ -66,10 +67,7 @@ half4 SampleCard(CardVaryings input)
     {
         float4 rect = input.surface.x > 0.5 ? _BackUVRect
             : UNITY_ACCESS_INSTANCED_PROP(CardInstances, _FrontUVRect);
-        float2 uv = rect.xy + saturate(input.localUV) * rect.zw;
-        // Stay within this card even when the shared atlas uses bilinear filtering.
-        float2 inset = min(_BaseMap_TexelSize.xy * 0.5, rect.zw * 0.5);
-        uv = clamp(uv, rect.xy + inset, rect.xy + rect.zw - inset);
+        float2 uv = CardAtlasSampleUV(input.localUV, rect, _BaseMap_TexelSize.xy);
         color = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, uv);
     }
     color *= _BaseColor * UNITY_ACCESS_INSTANCED_PROP(CardInstances, _ColorTint);
@@ -94,14 +92,9 @@ void ApplyCardFoil(CardVaryings input, InputData lighting, inout SurfaceData sur
     float facing = saturate(dot(lighting.normalWS, lighting.viewDirectionWS));
     // Pattern stays attached to the card; time animates the illumination across its facets.
     float pattern = SAMPLE_TEXTURE2D(_FoilMap, sampler_FoilMap, input.localUV * float2(2, 3)).r;
-    float phase = dot(input.localUV, float2(1.25, 0.7)) + dot(view, float2(0.8, -0.6)) +
-        (1 - facing) * 0.35 + pattern * 0.65 + _Time.y * _FoilSpeed;
-    float3 rainbow = 0.5 + 0.5 * cos(6.2831853 * (phase + float3(0, 0.333333, 0.666667)));
-    float band = pow(saturate(0.5 + 0.5 * cos(6.2831853 * (phase * 0.7))), 3);
-    // Suppress foil on dark ink so rank, suit and illustration remain readable.
-    float inkMask = smoothstep(0.015, 0.3, dot(surface.albedo, float3(0.2126, 0.7152, 0.0722)));
-    float amount = strength * inkMask * (0.2 + 0.8 * band) * lerp(0.4, 1, pattern);
-    float3 foil = rainbow * max(0, UNITY_ACCESS_INSTANCED_PROP(CardInstances, _FoilColor).rgb);
+    float3 foil; float amount;
+    CardFoilSpectrum(input.localUV, view, facing, pattern, _Time.y, _FoilSpeed, strength,
+        surface.albedo, UNITY_ACCESS_INSTANCED_PROP(CardInstances, _FoilColor).rgb, foil, amount);
     surface.albedo *= lerp(1.0.xxx, 0.2 + foil * 1.1, saturate(amount * 0.65));
     surface.specular = lerp(surface.specular, foil * 0.35, saturate(amount));
     surface.smoothness = lerp(surface.smoothness, 0.7, saturate(amount));
@@ -111,12 +104,7 @@ void ApplyCardFoil(CardVaryings input, InputData lighting, inout SurfaceData sur
 // The seal is a material overlay, not a hole or transparent geometry.
 float2 CardSealUV(CardVaryings input)
 {
-    // Rotate in seal space to preserve the circular footprint on a non-square card.
-    float2 centered = (input.localUV - _SealRect.xy) / max(_SealRect.zw, 0.0001);
-    float sine, cosine;
-    sincos(radians(_SealRotation), sine, cosine);
-    return float2(cosine * centered.x + sine * centered.y,
-        -sine * centered.x + cosine * centered.y) + 0.5;
+    return CardSealSampleUV(input.localUV, _SealRect, _SealRotation);
 }
 
 half4 SampleCardSeal(CardVaryings input)

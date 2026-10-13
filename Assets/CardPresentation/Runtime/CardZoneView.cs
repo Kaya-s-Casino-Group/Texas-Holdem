@@ -90,6 +90,10 @@ namespace CardPresentation
         public virtual void Present(CardZoneViewData data, bool animate = true) =>
             ApplyPresentation(data, () => CreatePresentationUpdate(data, animate));
 
+        /// <summary>Validate visuals first, then commit the prepared match command before publishing visual notifications.</summary>
+        public void PresentCommitted(CardZoneViewData data, Action commitData, bool animate = true) =>
+            ApplyPresentation(data, () => CreatePresentationUpdate(data, animate), commitData);
+
         /// <summary>One validated update owns its transient effects; base owns instance reuse and snapshot commit.</summary>
         protected internal class PresentationUpdate : IDisposable
         {
@@ -107,11 +111,11 @@ namespace CardPresentation
 
         protected virtual PresentationUpdate CreatePresentationUpdate(CardZoneViewData data, bool animate) => new PresentationUpdate();
 
-        protected void ApplyPresentation(CardZoneViewData data, Func<PresentationUpdate> createUpdate)
+        protected void ApplyPresentation(CardZoneViewData data, Func<PresentationUpdate> createUpdate, Action commitData = null)
         {
             using (var prepared = new PreparedPresentation(this, data, createUpdate, null, null))
             {
-                prepared.Commit(); prepared.NotifyCommitted();
+                prepared.ValidateCurrent(); commitData?.Invoke(); prepared.Commit(); prepared.NotifyCommitted();
             }
         }
 
