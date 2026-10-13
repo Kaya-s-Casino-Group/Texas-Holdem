@@ -68,6 +68,13 @@ def publish(source, name, settings):
         for filename in files:
             shutil.copyfile(source/filename, staging/filename)
         metadata['unity_export'] = {'runtime_files_sha256': {f:digest(staging/f) for f in files}}
+        material = settings.unity_source_material.strip().replace('\\', '/')
+        if material:
+            material_path = (project/material).resolve()
+            if not material.startswith('Assets/') or not material_path.is_relative_to((project/'Assets').resolve()) or material_path.suffix != '.mat':
+                raise RuntimeError('Unity 源材质必须是 Assets 内的 .mat 相对路径。')
+            metadata['unity_export']['source_material'] = material
+        metadata['unity_export']['bind_reference'] = (source/metadata['files']['bind_mesh']).relative_to(project).as_posix() if source.is_relative_to(project) else None
         (staging/manifest_name).write_text(json.dumps(metadata, indent=2)+'\n')
         folder.mkdir(parents=True, exist_ok=True)
         # Manifest is the commit marker; publish it last. Never touch .meta,

@@ -465,7 +465,11 @@ def begin_fracture(source=None):
     bmesh.ops.remove_doubles(bm, verts=list(bm.verts), dist=1e-6)
     bmesh.ops.recalc_face_normals(bm, faces=list(bm.faces))
     bm.to_mesh(obj.data); bm.free()
-    if check_before['nonmanifold_edges']:
+    # Even a watertight triangulated source may contain needle triangles that
+    # make successive BMesh cuts numerically nonmanifold. In preservation mode
+    # use a voxel reference for seeds/mass, while clipping the untouched source
+    # for display and fitting collision hulls to that display surface.
+    if check_before['nonmanifold_edges'] or cfg.preserve_surface:
         mod = obj.modifiers.new('Repair Solid', 'REMESH')
         enum_set(mod, 'mode', 'VOXEL')
         mod.voxel_size = cfg.voxel_size
@@ -763,6 +767,8 @@ class SF_Settings(bpy.types.PropertyGroup):
     unity_directory:StringProperty(name='Unity 资源目录覆盖',subtype='DIR_PATH',
         options={'PATH_SUPPORTS_BLEND_RELATIVE'},
         description='留空使用插件首选项中的 Unity 项目和资源目录')
+    unity_source_material:StringProperty(name='Unity 源材质',
+        description='可选，Unity 项目内原表面 .mat 的 Assets 相对路径；留空按 Blender 材质名称查找')
     source_name:StringProperty(name='源模型')
     status:StringProperty(name='状态',default='选择雕像模型后生成碎块')
 
@@ -875,6 +881,7 @@ class SF_PT_Panel(bpy.types.Panel):
         box.prop(cfg,'vat_open_preview');box.prop(cfg,'unity_export')
         if cfg.unity_export:
             box.prop(cfg,'unity_directory')
+            box.prop(cfg,'unity_source_material')
             if __package__:
                 from . import unity_export
                 prefs=unity_export.preferences()

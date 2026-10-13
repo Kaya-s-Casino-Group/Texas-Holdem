@@ -1,0 +1,1235 @@
+{
+  "schema": "statue-rigid-vat-v1",
+  "reference_implementation": "https://github.com/sharpen3d/openvat/tree/43b519620c710c9081a72eba253222d6fe6f931f/Development/openvat",
+  "encoding": "rigid piece transforms",
+  "frame_start": 1,
+  "frame_end": 110,
+  "frame_count": 110,
+  "fps": 30.0,
+  "piece_count": 36,
+  "vertex_count": 14144,
+  "triangle_count": 8732,
+  "position_min": [
+    -0.5657699704170227,
+    -0.5237135887145996,
+    0.026441598311066628
+  ],
+  "position_max": [
+    0.6817666888237,
+    0.4012032151222229,
+    0.9171109795570374
+  ],
+  "position_max_minus_min": [
+    1.2475366592407227,
+    0.9249168038368225,
+    0.8906693812459707
+  ],
+  "texture": {
+    "width": 64,
+    "height": 128,
+    "component_bits": 16,
+    "format": "OpenEXR RGBA",
+    "linear": true,
+    "alpha": "independent data channel",
+    "mipmaps": false,
+    "filter": "point/nearest",
+    "wrap": "clamp",
+    "row_origin": "bottom-left",
+    "first_frame_row": 127,
+    "frame_row_formula": "height - 1 - (frame - frame_start)",
+    "piece_column_formula": "piece_id",
+    "padding": "unused piece columns; remaining time rows repeat final pose"
+  },
+  "rotation": {
+    "channels": "XYZW",
+    "encoding": "rgba = quaternion_xyzw * 0.5 + 0.5",
+    "reference": "rotation delta from saved rest pose",
+    "signs": "adjacent frames same hemisphere",
+    "interpolation": "shortest-path normalized linear interpolation"
+  },
+  "uv_channels": [
+    {
+      "name": "UVMap",
+      "index": 0
+    },
+    {
+      "name": "VAT_UV",
+      "index": 1
+    },
+    {
+      "name": "VAT_PIVOT_XY",
+      "index": 2
+    },
+    {
+      "name": "VAT_PIVOT_Z_ID",
+      "index": 3
+    }
+  ],
+  "pivot": "VAT_PIVOT_XY.xy, VAT_PIVOT_Z_ID.x; all in bind mesh local coordinates",
+  "lookup": "VAT_UV.xy is texel center of piece_id at first frame; subtract frame_offset/height from y",
+  "decode": "P = pivot_current + rotate(q_delta, P_rest - pivot_rest); N/T = rotate(q_delta, N/T_rest)",
+  "coordinates": {
+    "space": "bind mesh local XYZ, Blender right-handed Z-up",
+    "unit": "Blender scene units",
+    "unit_scale_metres": 1.0,
+    "anchor_world_row_major": [
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ],
+    "fbx_axis_forward": "-Z",
+    "fbx_axis_up": "Y",
+    "fbx_bake_space_transform": false,
+    "note": "Keep mesh-local axes for decoding. If importer bakes an axis conversion, apply the same basis to pivots, positions, rotations, normals and tangents."
+  },
+  "animations": {
+    "FoxStatue_Collapse": {
+      "startFrame": 1,
+      "endFrame": 110,
+      "framerate": 30.0,
+      "looping": false,
+      "end_behavior": "hold last frame",
+      "duration_seconds": 3.6333333333333333
+    }
+  },
+  "pieces": [
+    {
+      "id": 0,
+      "source": "SF_Piece_000",
+      "vertex_start": 0,
+      "vertex_count": 732,
+      "pivot_rest": [
+        -0.10443012416362762,
+        -0.06969500333070755,
+        0.4613719582557678
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        -0.10443012416362762,
+        0.0,
+        1.0,
+        0.0,
+        -0.06969500333070755,
+        0.0,
+        0.0,
+        1.0,
+        0.4613719582557678,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 30
+    },
+    {
+      "id": 1,
+      "source": "SF_Piece_001",
+      "vertex_start": 732,
+      "vertex_count": 202,
+      "pivot_rest": [
+        0.09585823118686676,
+        0.17839191854000092,
+        0.04529809579253197
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        0.09585823118686676,
+        0.0,
+        1.0,
+        0.0,
+        0.17839191854000092,
+        0.0,
+        0.0,
+        1.0,
+        0.04529809579253197,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 36
+    },
+    {
+      "id": 2,
+      "source": "SF_Piece_002",
+      "vertex_start": 934,
+      "vertex_count": 325,
+      "pivot_rest": [
+        0.07006402313709259,
+        -0.006527116987854242,
+        0.9159818291664124
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        0.07006402313709259,
+        0.0,
+        1.0,
+        0.0,
+        -0.006527116987854242,
+        0.0,
+        0.0,
+        1.0,
+        0.9159818291664124,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 24
+    },
+    {
+      "id": 3,
+      "source": "SF_Piece_003",
+      "vertex_start": 1259,
+      "vertex_count": 361,
+      "pivot_rest": [
+        -0.07579614967107773,
+        -0.1785738170146942,
+        0.06105533614754677
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        -0.07579614967107773,
+        0.0,
+        1.0,
+        0.0,
+        -0.1785738170146942,
+        0.0,
+        0.0,
+        1.0,
+        0.06105533614754677,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 36
+    },
+    {
+      "id": 4,
+      "source": "SF_Piece_004",
+      "vertex_start": 1620,
+      "vertex_count": 255,
+      "pivot_rest": [
+        0.12628500163555145,
+        -0.08679798990488052,
+        0.21637482941150665
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        0.12628500163555145,
+        0.0,
+        1.0,
+        0.0,
+        -0.08679798990488052,
+        0.0,
+        0.0,
+        1.0,
+        0.21637482941150665,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 33
+    },
+    {
+      "id": 5,
+      "source": "SF_Piece_005",
+      "vertex_start": 1875,
+      "vertex_count": 262,
+      "pivot_rest": [
+        -0.1508733630180359,
+        0.07236900925636292,
+        0.17515641450881958
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        -0.1508733630180359,
+        0.0,
+        1.0,
+        0.0,
+        0.07236900925636292,
+        0.0,
+        0.0,
+        1.0,
+        0.17515641450881958,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 34
+    },
+    {
+      "id": 6,
+      "source": "SF_Piece_006",
+      "vertex_start": 2137,
+      "vertex_count": 498,
+      "pivot_rest": [
+        -0.02972658909857273,
+        0.08901070803403854,
+        0.6949169635772705
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        -0.02972658909857273,
+        0.0,
+        1.0,
+        0.0,
+        0.08901070803403854,
+        0.0,
+        0.0,
+        1.0,
+        0.6949169635772705,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 27
+    },
+    {
+      "id": 7,
+      "source": "SF_Piece_007",
+      "vertex_start": 2635,
+      "vertex_count": 238,
+      "pivot_rest": [
+        0.1165330782532692,
+        0.05178392678499222,
+        0.41897186636924744
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        0.1165330782532692,
+        0.0,
+        1.0,
+        0.0,
+        0.05178392678499222,
+        0.0,
+        0.0,
+        1.0,
+        0.41897186636924744,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 31
+    },
+    {
+      "id": 8,
+      "source": "SF_Piece_008",
+      "vertex_start": 2873,
+      "vertex_count": 613,
+      "pivot_rest": [
+        0.07795483618974686,
+        -0.05542606860399246,
+        0.6648381948471069
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        0.07795483618974686,
+        0.0,
+        1.0,
+        0.0,
+        -0.05542606860399246,
+        0.0,
+        0.0,
+        1.0,
+        0.6648381948471069,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 27
+    },
+    {
+      "id": 9,
+      "source": "SF_Piece_009",
+      "vertex_start": 3486,
+      "vertex_count": 217,
+      "pivot_rest": [
+        0.1855291724205017,
+        -0.04408428817987442,
+        0.06250201910734177
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        0.1855291724205017,
+        0.0,
+        1.0,
+        0.0,
+        -0.04408428817987442,
+        0.0,
+        0.0,
+        1.0,
+        0.06250201910734177,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 36
+    },
+    {
+      "id": 10,
+      "source": "SF_Piece_010",
+      "vertex_start": 3703,
+      "vertex_count": 675,
+      "pivot_rest": [
+        -0.06159326806664467,
+        -0.06087818741798401,
+        0.7693547010421753
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        -0.06159326806664467,
+        0.0,
+        1.0,
+        0.0,
+        -0.06087818741798401,
+        0.0,
+        0.0,
+        1.0,
+        0.7693547010421753,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 26
+    },
+    {
+      "id": 11,
+      "source": "SF_Piece_011",
+      "vertex_start": 4378,
+      "vertex_count": 163,
+      "pivot_rest": [
+        -0.03217758983373642,
+        0.04028574004769325,
+        0.026843125000596046
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        -0.03217758983373642,
+        0.0,
+        1.0,
+        0.0,
+        0.04028574004769325,
+        0.0,
+        0.0,
+        1.0,
+        0.026843125000596046,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 36
+    },
+    {
+      "id": 12,
+      "source": "SF_Piece_012",
+      "vertex_start": 4541,
+      "vertex_count": 601,
+      "pivot_rest": [
+        -0.04589655622839928,
+        -0.1417582482099533,
+        0.24142226576805115
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        -0.04589655622839928,
+        0.0,
+        1.0,
+        0.0,
+        -0.1417582482099533,
+        0.0,
+        0.0,
+        1.0,
+        0.24142226576805115,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 33
+    },
+    {
+      "id": 13,
+      "source": "SF_Piece_013",
+      "vertex_start": 5142,
+      "vertex_count": 774,
+      "pivot_rest": [
+        0.07004792243242264,
+        -0.1475469172000885,
+        0.38469481468200684
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        0.07004792243242264,
+        0.0,
+        1.0,
+        0.0,
+        -0.1475469172000885,
+        0.0,
+        0.0,
+        1.0,
+        0.38469481468200684,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 31
+    },
+    {
+      "id": 14,
+      "source": "SF_Piece_014",
+      "vertex_start": 5916,
+      "vertex_count": 1133,
+      "pivot_rest": [
+        -0.00647869473323226,
+        -0.16692781448364258,
+        0.5364189743995667
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        -0.00647869473323226,
+        0.0,
+        1.0,
+        0.0,
+        -0.16692781448364258,
+        0.0,
+        0.0,
+        1.0,
+        0.5364189743995667,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 29
+    },
+    {
+      "id": 15,
+      "source": "SF_Piece_015",
+      "vertex_start": 7049,
+      "vertex_count": 180,
+      "pivot_rest": [
+        0.11018344759941101,
+        -0.1691211611032486,
+        0.05459556728601456
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        0.11018344759941101,
+        0.0,
+        1.0,
+        0.0,
+        -0.1691211611032486,
+        0.0,
+        0.0,
+        1.0,
+        0.05459556728601456,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 36
+    },
+    {
+      "id": 16,
+      "source": "SF_Piece_016",
+      "vertex_start": 7229,
+      "vertex_count": 135,
+      "pivot_rest": [
+        0.08358880877494812,
+        0.14357809722423553,
+        0.2161235809326172
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        0.08358880877494812,
+        0.0,
+        1.0,
+        0.0,
+        0.14357809722423553,
+        0.0,
+        0.0,
+        1.0,
+        0.2161235809326172,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 33
+    },
+    {
+      "id": 17,
+      "source": "SF_Piece_017",
+      "vertex_start": 7364,
+      "vertex_count": 148,
+      "pivot_rest": [
+        -0.12920330464839935,
+        0.15489216148853302,
+        0.0443684458732605
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        -0.12920330464839935,
+        0.0,
+        1.0,
+        0.0,
+        0.15489216148853302,
+        0.0,
+        0.0,
+        1.0,
+        0.0443684458732605,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 36
+    },
+    {
+      "id": 18,
+      "source": "SF_Piece_018",
+      "vertex_start": 7512,
+      "vertex_count": 234,
+      "pivot_rest": [
+        -0.19299592077732086,
+        -0.02825366146862507,
+        0.04929065704345703
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        -0.19299592077732086,
+        0.0,
+        1.0,
+        0.0,
+        -0.02825366146862507,
+        0.0,
+        0.0,
+        1.0,
+        0.04929065704345703,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 36
+    },
+    {
+      "id": 19,
+      "source": "SF_Piece_019",
+      "vertex_start": 7746,
+      "vertex_count": 277,
+      "pivot_rest": [
+        -0.04827366769313812,
+        0.10723093897104263,
+        0.5154037475585938
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        -0.04827366769313812,
+        0.0,
+        1.0,
+        0.0,
+        0.10723093897104263,
+        0.0,
+        0.0,
+        1.0,
+        0.5154037475585938,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 29
+    },
+    {
+      "id": 20,
+      "source": "SF_Piece_020",
+      "vertex_start": 8023,
+      "vertex_count": 226,
+      "pivot_rest": [
+        -0.0796600803732872,
+        0.09439428895711899,
+        0.3359249234199524
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        -0.0796600803732872,
+        0.0,
+        1.0,
+        0.0,
+        0.09439428895711899,
+        0.0,
+        0.0,
+        1.0,
+        0.3359249234199524,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 32
+    },
+    {
+      "id": 21,
+      "source": "SF_Piece_021",
+      "vertex_start": 8249,
+      "vertex_count": 670,
+      "pivot_rest": [
+        -0.08635642379522324,
+        -0.04507412388920784,
+        0.6165211796760559
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        -0.08635642379522324,
+        0.0,
+        1.0,
+        0.0,
+        -0.04507412388920784,
+        0.0,
+        0.0,
+        1.0,
+        0.6165211796760559,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 28
+    },
+    {
+      "id": 22,
+      "source": "SF_Piece_022",
+      "vertex_start": 8919,
+      "vertex_count": 378,
+      "pivot_rest": [
+        0.10740785300731659,
+        0.07490305602550507,
+        0.5799620747566223
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        0.10740785300731659,
+        0.0,
+        1.0,
+        0.0,
+        0.07490305602550507,
+        0.0,
+        0.0,
+        1.0,
+        0.5799620747566223,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 29
+    },
+    {
+      "id": 23,
+      "source": "SF_Piece_023",
+      "vertex_start": 9297,
+      "vertex_count": 508,
+      "pivot_rest": [
+        -0.04547274485230446,
+        0.010188345797359943,
+        0.8938451409339905
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        -0.04547274485230446,
+        0.0,
+        1.0,
+        0.0,
+        0.010188345797359943,
+        0.0,
+        0.0,
+        1.0,
+        0.8938451409339905,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 24
+    },
+    {
+      "id": 24,
+      "source": "SF_Piece_024",
+      "vertex_start": 9805,
+      "vertex_count": 197,
+      "pivot_rest": [
+        -0.025981666520237923,
+        0.17967312037944794,
+        0.11105241626501083
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        -0.025981666520237923,
+        0.0,
+        1.0,
+        0.0,
+        0.17967312037944794,
+        0.0,
+        0.0,
+        1.0,
+        0.11105241626501083,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 35
+    },
+    {
+      "id": 25,
+      "source": "SF_Piece_025",
+      "vertex_start": 10002,
+      "vertex_count": 587,
+      "pivot_rest": [
+        0.11254476010799408,
+        -0.09043870121240616,
+        0.5191996693611145
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        0.11254476010799408,
+        0.0,
+        1.0,
+        0.0,
+        -0.09043870121240616,
+        0.0,
+        0.0,
+        1.0,
+        0.5191996693611145,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 29
+    },
+    {
+      "id": 26,
+      "source": "SF_Piece_026",
+      "vertex_start": 10589,
+      "vertex_count": 251,
+      "pivot_rest": [
+        0.17539185285568237,
+        0.08245319873094559,
+        0.11127916723489761
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        0.17539185285568237,
+        0.0,
+        1.0,
+        0.0,
+        0.08245319873094559,
+        0.0,
+        0.0,
+        1.0,
+        0.11127916723489761,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 35
+    },
+    {
+      "id": 27,
+      "source": "SF_Piece_027",
+      "vertex_start": 10840,
+      "vertex_count": 110,
+      "pivot_rest": [
+        0.013869261369109154,
+        0.015833642333745956,
+        0.17792077362537384
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        0.013869261369109154,
+        0.0,
+        1.0,
+        0.0,
+        0.015833642333745956,
+        0.0,
+        0.0,
+        1.0,
+        0.17792077362537384,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 34
+    },
+    {
+      "id": 28,
+      "source": "SF_Piece_028",
+      "vertex_start": 10950,
+      "vertex_count": 731,
+      "pivot_rest": [
+        0.05902790650725365,
+        0.018598647788167,
+        0.7529324889183044
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        0.05902790650725365,
+        0.0,
+        1.0,
+        0.0,
+        0.018598647788167,
+        0.0,
+        0.0,
+        1.0,
+        0.7529324889183044,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 26
+    },
+    {
+      "id": 29,
+      "source": "SF_Piece_029",
+      "vertex_start": 11681,
+      "vertex_count": 483,
+      "pivot_rest": [
+        0.018747635185718536,
+        -0.16490405797958374,
+        0.12354515492916107
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        0.018747635185718536,
+        0.0,
+        1.0,
+        0.0,
+        -0.16490405797958374,
+        0.0,
+        0.0,
+        1.0,
+        0.12354515492916107,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 35
+    },
+    {
+      "id": 30,
+      "source": "SF_Piece_030",
+      "vertex_start": 12164,
+      "vertex_count": 708,
+      "pivot_rest": [
+        -0.07742978632450104,
+        -0.14807799458503723,
+        0.38434135913848877
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        -0.07742978632450104,
+        0.0,
+        1.0,
+        0.0,
+        -0.14807799458503723,
+        0.0,
+        0.0,
+        1.0,
+        0.38434135913848877,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 31
+    },
+    {
+      "id": 31,
+      "source": "SF_Piece_031",
+      "vertex_start": 12872,
+      "vertex_count": 247,
+      "pivot_rest": [
+        -0.14469824731349945,
+        -0.09143266081809998,
+        0.13213567435741425
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        -0.14469824731349945,
+        0.0,
+        1.0,
+        0.0,
+        -0.09143266081809998,
+        0.0,
+        0.0,
+        1.0,
+        0.13213567435741425,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 35
+    },
+    {
+      "id": 32,
+      "source": "SF_Piece_032",
+      "vertex_start": 13119,
+      "vertex_count": 180,
+      "pivot_rest": [
+        0.02684120647609234,
+        0.10841283202171326,
+        0.610791027545929
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        0.02684120647609234,
+        0.0,
+        1.0,
+        0.0,
+        0.10841283202171326,
+        0.0,
+        0.0,
+        1.0,
+        0.610791027545929,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 28
+    },
+    {
+      "id": 33,
+      "source": "SF_Piece_033",
+      "vertex_start": 13299,
+      "vertex_count": 185,
+      "pivot_rest": [
+        0.14694999158382416,
+        0.047246597707271576,
+        0.29444411396980286
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        0.14694999158382416,
+        0.0,
+        1.0,
+        0.0,
+        0.047246597707271576,
+        0.0,
+        0.0,
+        1.0,
+        0.29444411396980286,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 32
+    },
+    {
+      "id": 34,
+      "source": "SF_Piece_034",
+      "vertex_start": 13484,
+      "vertex_count": 114,
+      "pivot_rest": [
+        -0.0515323206782341,
+        -0.013832015916705132,
+        0.3426973521709442
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        -0.0515323206782341,
+        0.0,
+        1.0,
+        0.0,
+        -0.013832015916705132,
+        0.0,
+        0.0,
+        1.0,
+        0.3426973521709442,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 32
+    },
+    {
+      "id": 35,
+      "source": "SF_Piece_035",
+      "vertex_start": 13598,
+      "vertex_count": 546,
+      "pivot_rest": [
+        0.035152874886989594,
+        -0.08886124193668365,
+        0.8172186613082886
+      ],
+      "rest_local_row_major": [
+        1.0,
+        0.0,
+        0.0,
+        0.035152874886989594,
+        0.0,
+        1.0,
+        0.0,
+        -0.08886124193668365,
+        0.0,
+        0.0,
+        1.0,
+        0.8172186613082886,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "release_frame": 25
+    }
+  ],
+  "materials": [
+    "FoxStatue_Material_VAT"
+  ],
+  "source_materials": [
+    "FoxStatue_Material",
+    "SF_StoneInterior"
+  ],
+  "surface_mask": {
+    "attribute": "VAT_SURFACE",
+    "semantic": "COLOR.r",
+    "exterior": 0,
+    "interior": 1,
+    "storage": "linear vertex color RGBA; R=surface type, G/B=0, A=1",
+    "constant_per_triangle": true,
+    "material_slots": 1
+  },
+  "files": {
+    "mesh": "FoxStatue_Collapse.fbx",
+    "position": "FoxStatue_Collapse_position.exr",
+    "rotation": "FoxStatue_Collapse_rotation.exr",
+    "bind_mesh": "FoxStatue_Collapse_bind_mesh.json",
+    "validation": "FoxStatue_Collapse_validation.json"
+  },
+  "animation_bounds": {
+    "min": [
+      -0.6909073728587389,
+      -0.627989618981394,
+      -0.0018901212334347939
+    ],
+    "max": [
+      0.8076391301100818,
+      0.5212973013276591,
+      0.9973031688552316
+    ],
+    "padding": 0.003
+  },
+  "unity_export": {
+    "runtime_files_sha256": {
+      "FoxStatue_Collapse.fbx": "41309912da747d6e5afc1401edfb5aa7cf6d89244530539731af898aab7cacff",
+      "FoxStatue_Collapse_position.exr": "7783eb161606b1fefab51da79ce32cdf0336fd61ecb028fbc57794fb20f8cbf1",
+      "FoxStatue_Collapse_rotation.exr": "d1708a34f5ebb22858663af2a7a891f5d1ede5a41b0560f594f9f9a6767d9dd6"
+    },
+    "source_material": "Assets/Art/Models/Creatures/FoxStatue/FoxStatue_Material.mat",
+    "bind_reference": "Blender/FoxStatue/Fracture/VAT/FoxStatue_Collapse/FoxStatue_Collapse_bind_mesh.json"
+  }
+}

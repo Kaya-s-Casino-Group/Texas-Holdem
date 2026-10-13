@@ -14,6 +14,11 @@ public static class GargoyleCrackValidation
     public static void Validate()
     {
         var filter=UnityEngine.Object.FindObjectsOfType<MeshFilter>(true).Single(x=>x.name=="DragonGargoyle" && x.gameObject.scene.IsValid());
+        Validate(filter,"Library/GargoyleCrackValidation");
+    }
+
+    public static JObject Validate(MeshFilter filter,string outputFolder,Vector3? focus=null,int? cullingMask=null)
+    {
         var renderer=filter.GetComponent<MeshRenderer>();var materials=renderer.sharedMaterials;
         var originalBlock=new MaterialPropertyBlock();renderer.GetPropertyBlock(originalBlock);
         var scene=filter.gameObject.scene;bool dirty=scene.isDirty;
@@ -28,12 +33,17 @@ public static class GargoyleCrackValidation
         var camera=go.AddComponent<Camera>();if(Camera.main!=null)camera.CopyFrom(Camera.main);
         camera.enabled=false;camera.clearFlags=CameraClearFlags.SolidColor;camera.backgroundColor=new Color(.16f,.18f,.21f,1);
         camera.allowHDR=false;camera.orthographic=true;camera.orthographicSize=.175f;camera.aspect=1;camera.nearClipPlane=.01f;camera.farClipPlane=10;
-        camera.cullingMask=~(1<<LayerMask.NameToLayer("UI"));
+        camera.cullingMask=cullingMask ?? ~(1<<LayerMask.NameToLayer("UI"));
+        if(UnityEditor.SceneManagement.EditorSceneManager.IsPreviewScene(filter.gameObject.scene))
+        {
+            UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(go,filter.gameObject.scene);
+            camera.scene=filter.gameObject.scene;
+        }
         var additional=go.AddComponent<UniversalAdditionalCameraData>();additional.SetRenderer(0);additional.renderPostProcessing=false;additional.renderShadows=true;
-        var center=filter.transform.TransformPoint(new Vector3(.10f,.40f,0));go.transform.position=center+new Vector3(.45f,.27f,-.60f);go.transform.LookAt(center);
+        var center=filter.transform.TransformPoint(focus ?? new Vector3(.10f,.40f,0));go.transform.position=center+new Vector3(.45f,.27f,-.60f);go.transform.LookAt(center);
         var rt=new RenderTexture(768,768,24,RenderTextureFormat.ARGB32,RenderTextureReadWrite.sRGB);rt.Create();
         var readback=new Texture2D(768,768,TextureFormat.RGB24,false);var active=RenderTexture.active;
-        Directory.CreateDirectory("Library/GargoyleCrackValidation");
+        Directory.CreateDirectory(outputFolder);
         try
         {
             foreach(float vat in new[]{0f,50.25f/109})
@@ -47,7 +57,7 @@ public static class GargoyleCrackValidation
                     RenderTexture.active=rt;readback.ReadPixels(new Rect(0,0,768,768),0,0);readback.Apply();
                     var pixels=readback.GetPixels32();
                     string name=(vat==0?"rest":"mid")+"_"+(cracks==0?"intact":"cracked");
-                    File.WriteAllBytes("Library/GargoyleCrackValidation/"+name+".png",readback.EncodeToPNG());
+                    File.WriteAllBytes(outputFolder+"/"+name+".png",readback.EncodeToPNG());
                     if(baseline==null)baseline=pixels;
                     else
                     {
@@ -77,7 +87,7 @@ public static class GargoyleCrackValidation
                 }
             }
             finally {UnityEngine.Object.DestroyImmediate(freshMesh);raw.Release();UnityEngine.Object.DestroyImmediate(raw);UnityEngine.Object.DestroyImmediate(rawRead);UnityEngine.Object.DestroyImmediate(diagnostic);}
-            File.WriteAllText("Library/GargoyleCrackValidation/report.json",report.ToString());
+            File.WriteAllText(outputFolder+"/report.json",report.ToString());
             if ((int)report["restChangedPixels"]<100 || (int)report["midChangedPixels"]<100 ||
                 (int)report["raw1"]["exterior"]==0 || (float)report["raw1"]["maxMask"]<.2f ||
                 (int)report["raw1"]["exterior"]!=(int)report["freshMesh"]["exterior"] ||
@@ -92,5 +102,6 @@ public static class GargoyleCrackValidation
             SceneView.RepaintAll();
         }
         if(scene.isDirty!=dirty)throw new Exception("Crack validation changed scene dirty state.");
+        return report;
     }
 }

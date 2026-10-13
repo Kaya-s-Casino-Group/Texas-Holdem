@@ -14,7 +14,7 @@ public static class GargoyleVATValidation
     static float Distance(Vector3 a, Vector3 b) => (a-b).magnitude;
     static string Key(float u, float v, float id) => $"{Mathf.RoundToInt(u*100000)}:{Mathf.RoundToInt(v*100000)}:{Mathf.RoundToInt(id)}";
     static Vector3 XYZ(Color c) => new Vector3(c.r,c.g,c.b);
-    static Vector3 Swap(Vector3 v) => GargoyleVATImport.ToUnity(v);
+    static Vector3 Swap(Vector3 v) => RigidVATAssetImport.ToUnity(v);
     static Quaternion QuaternionFrom(Color c)
     {
         var q = new Quaternion(c.r*2-1,c.g*2-1,c.b*2-1,c.a*2-1);
@@ -22,16 +22,21 @@ public static class GargoyleVATValidation
     }
 
     [MenuItem("Tools/Art Assets/Dragon Gargoyle VAT/Validate GPU Decode")]
-    public static void Validate()
+    public static void Validate() => Validate(GargoyleVATImport.Stem+"_vat.json","Library/GargoyleVATValidation",BindReference);
+
+    public static void Validate(string manifestPath,string reportFolder=null,string referencePath=null)
     {
-        var data = GargoyleVATImport.Metadata;
-        var mesh = AssetDatabase.LoadAssetAtPath<Mesh>(GargoyleVATImport.MeshPath);
-        var exterior = AssetDatabase.LoadAssetAtPath<Material>(GargoyleVATImport.SurfacePath);
+        string stem=manifestPath.Substring(0,manifestPath.Length-"_vat.json".Length);
+        var data=JObject.Parse(File.ReadAllText(manifestPath));
+        reportFolder=reportFolder ?? "Library/StatueVATValidation/"+Path.GetFileName(stem);
+        referencePath=referencePath ?? (string)data["unity_export"]?["bind_reference"];
+        var mesh = AssetDatabase.LoadAssetAtPath<Mesh>(stem+"_Unity.asset");
+        var exterior = AssetDatabase.LoadAssetAtPath<Material>(stem+"_Surface.mat");
         Require(mesh != null && exterior != null, "Configure VAT assets first.");
-        GargoyleVATImport.ValidateChannels(mesh,data);
+        RigidVATAssetImport.ValidateChannels(mesh,data);
         foreach (var m in new[] {exterior})
         {
-            Require(m.shader.name == GargoyleVATImport.ShaderName && m.passCount == 4 && m.shaderKeywords.Length == 0,"Invalid VAT material shader.");
+            Require(m.shader.name == RigidVATAssetImport.ShaderName && m.passCount == 4 && m.shaderKeywords.Length == 0,"Invalid VAT material shader.");
             bool async = ShaderUtil.allowAsyncCompilation;
             try { ShaderUtil.allowAsyncCompilation = false; for (int pass=0;pass<m.passCount;++pass) ShaderUtil.CompilePass(m,pass,true); }
             finally { ShaderUtil.allowAsyncCompilation = async; }
@@ -49,17 +54,17 @@ public static class GargoyleVATValidation
             Require(!ti.sRGBTexture && ti.alphaSource == TextureImporterAlphaSource.FromInput && !ti.alphaIsTransparency,
                 "VAT must be linear RGBA data with independent alpha.");
         }
-        var report = new JObject { ["graphicsDevice"] = SystemInfo.graphicsDeviceType.ToString(),
+        var report = new JObject { ["manifest"] = manifestPath, ["graphicsDevice"] = SystemInfo.graphicsDeviceType.ToString(),
             ["subMeshes"] = mesh.subMeshCount, ["materialSlots"] = 1,
             ["surfaceMarker"] = "COLOR.r: exterior=0, interior=1; every triangle constant",
             ["vertices"] = mesh.vertexCount, ["triangles"] = mesh.triangles.Length/3,
             ["textures"] = $"{w}x{h}, {position.format}, linear RGBA, point, clamp, no mips",
             ["shaderPasses"] = "GBuffer, ShadowCaster, DepthOnly, DepthNormals compiled",
             ["coordinateBasis"] = "Blender XYZ -> Unity XZY; quaternion xyz -> -XZY" };
-        ValidateReference(mesh,report);
+        ValidateReference(mesh,report,referencePath,data);
         var p = mesh.vertices; var n = mesh.normals; var tng = mesh.tangents;
         var xy = mesh.uv3; var zid = mesh.uv4;
-        var min = GargoyleVATImport.Vector(data["position_min"]); var range = GargoyleVATImport.Vector(data["position_max_minus_min"]);
+        var min = RigidVATAssetImport.Vector(data["position_min"]); var range = RigidVATAssetImport.Vector(data["position_max_minus_min"]);
         var posPixels = position.GetPixels(); var rotPixels = rotation.GetPixels();
         Action<float,Vector3[],Vector3[],Vector4[]> decode = (frame,po,no,to) => {
             float f = Mathf.Clamp(frame,0,count-1); int lo = Mathf.FloorToInt(f), hi = Mathf.Min(lo+1,count-1); float b = f-lo;
@@ -85,7 +90,7 @@ public static class GargoyleVATValidation
         float firstPivotError = 0, firstRotationError = 0;
         for (int id=0;id<(int)data["piece_count"];++id)
         {
-            var pivot = GargoyleVATImport.Vector(data["pieces"][id]["pivot_rest"]);
+            var pivot = RigidVATAssetImport.Vector(data["pieces"][id]["pivot_rest"]);
             firstPivotError = Mathf.Max(firstPivotError,Distance(min+Vector3.Scale(XYZ(posPixels[(h-1)*w+id]),range),pivot));
             firstRotationError = Mathf.Max(firstRotationError,Quaternion.Angle(QuaternionFrom(rotPixels[(h-1)*w+id]),Quaternion.identity));
         }
@@ -106,7 +111,7 @@ public static class GargoyleVATValidation
         var readback = new Texture2D(width,height,TextureFormat.RGBAFloat,false,true);
         var active = RenderTexture.active;
         float maxP=0,maxN=0,maxT=0;
-        float[] frames = {-5,0,23,23.5f,50.25f,109,130};
+        float[] frames = {-5,0,Mathf.Min(23,count-1),Mathf.Min(23.5f,count-1),(count-1)*.46100917f,count-1,count+20};
         try
         {
             foreach (float frame in frames)
@@ -152,27 +157,33 @@ public static class GargoyleVATValidation
                 report["restSample"] = JArray.FromObject(restPixels.Take(5).Select(c=>new[]{c.r,c.g,c.b,c.a}));
                 report["expectedRestSample"] = JArray.FromObject(p.Take(5).Select(c=>new[]{c.x,c.y,c.z}));
             }
-            Directory.CreateDirectory("Library/GargoyleVATValidation");
-            File.WriteAllText("Library/GargoyleVATValidation/report.json",report.ToString());
+            Directory.CreateDirectory(reportFolder);
+            File.WriteAllText(reportFolder+"/report.json",report.ToString());
             Require(disabledError<.00001f,"Disabled VAT readback mismatch: " + disabledError);
         }
         finally
         { RenderTexture.active=active; rt.Release(); UnityEngine.Object.DestroyImmediate(rt); UnityEngine.Object.DestroyImmediate(readback); UnityEngine.Object.DestroyImmediate(mat); UnityEngine.Object.DestroyImmediate(probeMesh); }
         report["gpuFrameOffsets"] = new JArray(frames);
         report["gpuMaximumPositionErrorMetres"] = maxP; report["gpuMaximumNormalError"] = maxN; report["gpuMaximumTangentError"] = maxT;
-        Directory.CreateDirectory("Library/GargoyleVATValidation");
-        File.WriteAllText("Library/GargoyleVATValidation/report.json",report.ToString());
+        Directory.CreateDirectory(reportFolder);
+        File.WriteAllText(reportFolder+"/report.json",report.ToString());
         Require(maxP<.00001f && maxN<.00001f && maxT<.00001f,"GPU VAT readback mismatch: " + report);
         Debug.Log("Gargoyle VAT GPU validation passed: " + report);
     }
 
-    static void ValidateReference(Mesh mesh, JObject report)
+    [MenuItem("Tools/Art Assets/Statue VAT/Validate Selected GPU Decode")]
+    static void ValidateSelected() => Validate(AssetDatabase.GetAssetPath(Selection.activeObject));
+
+    [MenuItem("Tools/Art Assets/Statue VAT/Validate Selected GPU Decode",true)]
+    static bool CanValidateSelected() => AssetDatabase.GetAssetPath(Selection.activeObject).EndsWith("_vat.json");
+
+    static void ValidateReference(Mesh mesh, JObject report,string referencePath,JObject data)
     {
-        if (!File.Exists(BindReference)) { report["blenderBindReference"] = "Not present; texture, channel and GPU checks still run"; return; }
-        var reference = JObject.Parse(File.ReadAllText(BindReference));
-        var sourceP = reference["positions"].Select(GargoyleVATImport.Vector).ToArray();
-        var sourceN = reference["normals"].Select(GargoyleVATImport.Vector).ToArray();
-        var sourceUV = reference["uv_channels"]["UVMap"]; var ids=reference["piece_ids"];
+        if (string.IsNullOrEmpty(referencePath) || !File.Exists(referencePath)) { report["blenderBindReference"] = "Not present; texture, channel and GPU checks still run"; return; }
+        var reference = JObject.Parse(File.ReadAllText(referencePath));
+        var sourceP = reference["positions"].Select(RigidVATAssetImport.Vector).ToArray();
+        var sourceN = reference["normals"].Select(RigidVATAssetImport.Vector).ToArray();
+        var sourceUV = reference["uv_channels"][(string)data["uv_channels"][0]["name"]]; var ids=reference["piece_ids"];
         var dict = new Dictionary<string,List<int>>();
         for (int i=0;i<sourceP.Length;++i)
         {

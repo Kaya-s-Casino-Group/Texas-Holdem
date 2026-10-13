@@ -1,6 +1,6 @@
 """Installable Statue Fracture addon. Source lives in this package only."""
 bl_info = {
-    'name': 'Statue Fracture', 'author': 'Project Tools', 'version': (1, 4, 0),
+    'name': 'Statue Fracture', 'author': 'Project Tools', 'version': (1, 5, 0),
     'blender': (4, 5, 0), 'location': 'View3D > Sidebar > Destruction',
     'description': 'Preserve statue surfaces, bake rigid VAT and export to Unity',
     'category': 'Object',

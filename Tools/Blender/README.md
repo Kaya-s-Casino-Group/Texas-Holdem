@@ -29,16 +29,20 @@ Blender 的 Preferences → Add-ons → Install from Disk 选择这个 ZIP 并�
 Blender 工作目录使用 `//VAT/`，相对于当前 `.blend`。勾选 **同时导出到 Unity**，
 点击 **导出刚体 VAT + 验证**：完整工作包验证通过后，只发布 `.fbx`、
 `_position.exr`、`_rotation.exr`、`_vat.json` 四个文件到 Unity 目录。
-保持名称 **DragonGargoyle_Collapse**，这是当前 Unity 雕像导入器识别的资源。
+VAT 名称按资产区分，例如 **DragonGargoyle_Collapse** / **FoxStatue_Collapse**。
+Unity 自动按 `statue-rigid-vat-v1` manifest 识别，不再绑定某个雕像名称。
 **Unity 资源目录覆盖** 留空使用插件首选项；移动项目后只需更改首选项的项目路径。
 工作包必须放在 Assets 外；大体积 bind JSON、报告和 `.blend` 不会进入 Unity。
 
 Unity 检测最后发布的 `_vat.json` 后自动执行资源配置，校验三个输入文件的 SHA256，
-更新 `_Unity.asset` 与 `_Surface.mat`，保持 GUID 和已有材质参数。
+更新 `_Unity.asset`、`_Surface.mat` 并生成带 `RigidVATPlayer` 的 `_VAT.prefab`，保持 GUID 和已有材质参数。
 同内容重复导出不会改写文件。更新不调用场景替换菜单，不保存场景或重置播放进度。
-自动导入可在 `Tools → Art Assets → Dragon Gargoyle VAT → Auto Import Blender Exports`
+自动导入可在 `Tools → Art Assets → Statue VAT → Auto Import Blender Exports`
 开关；关闭 Unity 或 Auto Refresh 时，在打开项目 / Refresh 后导入。
-手动补导入使用同目录下的 **Configure Assets**。
+手动补导入可选中 `_vat.json`，使用 `Tools → Art Assets → Statue VAT → Configure Selected Manifest`；
+同处的 **Validate Selected GPU Decode** 验证纹理、所有顶点通道、四个 pass 和 GPU 读回。
+**Unity 源材质** 可填写 Assets 内原表面 `.mat` 路径；留空时会在 VAT 相邻的资产目录按
+Blender 原材质名称查找，必须唯一。表面纹理及参数从该材质继承。
 
 已有雕像引用准备好的 `_Unity.asset` 和 `_Surface.mat`，后续导出会就地更新。
 首次接入其他场景才需要 **Apply To Current Scene**，这个菜单会保存场景。
@@ -60,6 +64,8 @@ Unity 检测最后发布的 `_vat.json` 后自动执行资源配置，校验三�
    wing shells and small holes. Original nonmanifold features are retained; render
    fragments are not promised to become watertight by changing exterior triangles.
    A welded/voxel-repaired copy is used only for seeds and reference mass/volume.
+   In preservation mode this reference is voxelized even for watertight sources:
+   long thin triangles otherwise make successive BMesh cuts numerically fragile.
    Hidden convex collision hulls enclose each actual render fragment, including wing
    tips. The voxel resolution affects this reference copy, not the visible surface.
    Disabling the preservation option explicitly selects the older remeshed prototype.
@@ -108,7 +114,7 @@ need only rotate with the pieces. A future VAT/mesh exporter must preserve these
 normals, UV seams and piece IDs; generic exporters need separate verification.
 The procedural crack texture remains independent of the cutting boundaries.
 
-## Rigid VAT export (v1.4)
+## Rigid VAT export (v1.5)
 
 The tool now exports textures and a bind mesh, in addition to the optional motion
 JSON. The installed addon loads both modules from its package.
@@ -141,7 +147,7 @@ standard format stores per-vertex position/normal data. Our two textures store
 piece pivot positions and rotation deltas, so rigidly transformed original
 normals and tangents are preserved without separate per-vertex normal textures.
 The package has its own `statue-rigid-vat-v1` schema; it cannot be decoded directly
-by the OpenVAT standard shader. Unity shader/importer integration is provided by `Assets/Editor/GargoyleVATImport.cs`.
+by the OpenVAT standard shader. Unity shader/importer integration is provided by `Assets/Editor/RigidVATAssetImport.cs`; the existing Gargoyle menus delegate to this shared importer.
 
 ### Package and decode contract
 
@@ -237,3 +243,31 @@ VAT is outside this tool's scope. Source render meshes and physics caches are
 preserved during export. Unity integration and GPU validation are available under
 `Tools → Art Assets → Dragon Gargoyle VAT`. Crack rendering validation is under
 `Tools → Art Assets → Dragon Gargoyle Cracks → Validate Rendering`.
+
+## FoxStatue 闭环验证（v1.5）
+
+工程：`Blender/FoxStatue/Fracture/FoxStatue_Fracture_VAT.blend`；当前 Blender 已打开 VAT 预览。
+源 FBX / 原贴图：`Assets/Art/Models/Creatures/FoxStatue/`。
+在新资产上先命名模型、设置 VAT 名称和独立 Unity 资源目录，配置原表面 `.mat`，再导出。
+狐狸保存的设置是：
+
+- VAT 名称：`FoxStatue_Collapse`
+- 工作目录：`//VAT/`
+- Unity 资源目录覆盖：`//../../../Assets/Art/Models/Creatures/FoxStatue/VAT/`
+- Unity 源材质：`Assets/Art/Models/Creatures/FoxStatue/FoxStatue_Material.mat`
+
+`FoxStatue_Collapse_VAT.prefab` 可直接拖入场景，绑定单个 mesh / 材质 / 播放器。
+调节材质的 **裂痕程度**，在播放器 **Progress** 中预览崩塌；Play Mode 调用 `Play()`。
+当前保留原始 2,976 个三角面的表面归属，切割后 5,304 个外表面三角形 + 3,428 个断面；
+UV 和角法线插值误差为 0，36 块 / 110 帧 / 30 fps，两张 64×128 EXR16。
+Blender 量化后最大位置误差约 0.463 mm，Unity GPU / CPU 解码差约 1.24e-7 m。
+
+Unity 菜单 `Tools → Art Assets → Fox Statue` 提供源资产配置、VAT 导入、GPU 和渲染验证。
+验证在独立临时预览场景运行，不需要把测试对象放入游戏场景。
+`Reexport Probe → Begin` 保持一个已加载 mesh 的实例，并临时将材质裂痕设为 .37、实例进度设为 .35；
+随后在 Blender 返回模拟场景导出，再用 `Finish` 验证 GUID、实例进度、材质调节值和实际 GPU 顶点流。
+Finish 恢复裂痕原值并关闭临时预览场景。这个步骤验证同一资源多次更新后的 GPU 状态。
+
+检查报告及画面对照在 `Library/FoxStatueValidation/`：`blender.json`、`GPU/report.json`、
+`rendering.json`、`reexport.json`、`reexport-unity.json` 和 `comparison.png`。
+原 DragonGargoyle 在共享导入器上的 GPU 回归同样通过。
