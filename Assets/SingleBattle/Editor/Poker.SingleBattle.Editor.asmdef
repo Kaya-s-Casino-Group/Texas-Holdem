@@ -1,0 +1,5 @@
+{
+  "name": "Poker.SingleBattle.Editor",
+  "references": ["Poker.SingleBattle.Runtime", "Poker.DrawBattle.Runtime", "CardInteraction.Runtime", "CardPresentation.Runtime", "RetroRendering.Runtime", "Unity.TextMeshPro", "Unity.ugui"],
+  "includePlatforms": ["Editor"]
+}
