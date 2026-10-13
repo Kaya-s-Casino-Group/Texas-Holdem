@@ -1,127 +1,97 @@
 #if UNITY_EDITOR
 using System;
+using System.Collections.Generic;
 using System.Linq;
-using CardArt;
 using CardInteraction;
-using PokerEngine;
 using Poker.EditorTools;
 using UnityEditor;
-using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace CardPresentation.Editor
 {
+    /// <summary>Observes a live gameplay table and edits presentation settings only. Never owns cards or zones.</summary>
     public sealed partial class CardZoneValidationWindow : EditorWindow
     {
         private readonly ToolWindowChrome windowChrome = new ToolWindowChrome();
-        public const string PreviewName = "CardZoneView Preview";
-        private const string DefaultPrefab = "Assets/CardArt/Prefabs/Card.prefab";
         [SerializeField] private CardZoneView target;
-        [SerializeField] private GameObject prefab;
-        [SerializeField] private CardZonePreviewModel model = new CardZonePreviewModel();
         [SerializeField] private CardZoneLayoutSettings layout = CardZoneLayoutSettings.Default;
-        [SerializeField] private Vector3 raisedOffset = new Vector3(0, 0, 0.02f);
-        [SerializeField] private Vector3 hoveredOffset = new Vector3(0, 0, 0.01f);
+        [SerializeField] private Vector3 raisedOffset = new Vector3(0, 0, .02f), hoveredOffset;
         [SerializeField] private CardAppearanceSettings appearanceSettings = CardAppearanceSettings.Default;
         [SerializeField] private CardZoneLiftSettings liftSettings = CardZoneLiftSettings.Default;
         [SerializeField] private CardZoneMotionSettings motionSettings = CardZoneMotionSettings.Default;
         [SerializeField] private CardZoneTransitionSettings transitionSettings = CardZoneTransitionSettings.Default;
-        [SerializeField] private bool drawSoundEnabled = true;
-        [SerializeField] private AudioClip drawSound;
-        [SerializeField] private float drawSoundVolume = 1;
-        [SerializeField] private bool discardSoundEnabled = true;
-        [SerializeField] private AudioClip discardSound;
-        [SerializeField] private float discardSoundVolume = 1;
-        [SerializeField] private bool selectionSoundEnabled = true;
-        [SerializeField] private AudioClip selectionSound;
-        [SerializeField] private float selectionSoundVolume = 1;
-        [SerializeField] private Vector3 deckLocalPosition = new Vector3(0.38f, 0.035f, 0);
+        [SerializeField] private bool drawSoundEnabled = true, discardSoundEnabled = true, selectionSoundEnabled = true;
+        [SerializeField] private AudioClip drawSound, discardSound, selectionSound;
+        [SerializeField] private float drawSoundVolume = 1, discardSoundVolume = 1, selectionSoundVolume = 1;
+        [SerializeField] private Vector3 deckLocalPosition = new Vector3(.38f, .035f, 0);
         [SerializeField] private Transform deckAnchor;
-        [SerializeField] private bool previewMotion = true;
-        [SerializeField] private bool faceCamera;
-        [SerializeField] private Camera facingCamera;
-        private double lastMotionTime;
-        [SerializeField] private string inspectedCardId;
         [SerializeField] private int page;
-        [SerializeField] private bool initialized;
         private Vector2 scroll;
-        private string error;
-        private string status;
-
-        private bool restoringUndo;
-        [SerializeField] private CardZoneSortOrder handSortOrder = CardZoneSortOrder.RankFirst;
-        [SerializeField] private bool pendingHandSort;
-        private bool requestHandSort;
-        private CardZonePreviewModel CurrentModel => model;
+        private string error, status, inspectedCardId;
+        private double lastRepaint;
         private CardZonePlayHost Host => target != null ? target.GetComponent<CardZonePlayHost>() : null;
         private HandZoneView Hand => target as HandZoneView;
-        private int CurrentCapacity => Math.Min(CardZonePreviewModel.MaximumCards, target?.CardCapacity ?? CardZonePreviewModel.MaximumCards);
-        private bool CanEdit => target != null && hasEditableSnapshot && (!Application.isPlaying || (Host != null && Host.IsRunning));
+        private bool ChangingMode => EditorApplication.isPlayingOrWillChangePlaymode != Application.isPlaying;
+        public bool HasLiveBattle => Application.isPlaying && !ChangingMode && Host != null && Host.IsRunning &&
+            Host.Match != null && Host.Match.Commands != null;
+        public IReadOnlyList<CardZoneCardState> CurrentCards => HasLiveBattle ? Host.Cards : Array.Empty<CardZoneCardState>();
+        private bool CanEdit => target != null && !ChangingMode && (!Application.isPlaying ||
+            (HasLiveBattle && Host.Match.Commands.CanInteract && !target.IsTransitioning));
+        private int CurrentCapacity => target != null ? target.CardCapacity ?? 0 : 0;
 
         [MenuItem("Tools/Cards/Card Zone Validator")]
         public static void Open()
         {
-            var window = GetWindow<CardZoneValidationWindow>("牌区验证");
-            window.ConfigureWindowSize(); window.Show();
+            var window = GetWindow<CardZoneValidationWindow>("实战牌区验证");
+            window.minSize = new Vector2(360, 300); window.Show();
         }
-        [MenuItem("Tools/Cards/Create Card Zone In Current Scene")]
-        public static void CreateInCurrentScene()
+        [MenuItem("Tools/Cards/Card Zone Animation Lab")]
+        public static void OpenAnimationLab()
         {
-            Open(); var window = GetWindow<CardZoneValidationWindow>();
-            window.Run(() => { window.CreatePreview(); window.Frame(); }); window.Focus();
+            Open(); var window = GetWindow<CardZoneValidationWindow>(); window.page = 1; window.stylePage = 1;
         }
-        [MenuItem("Tools/Cards/Preview Gentle Row Motion")]
-        public static void PreviewGentleMotion()
-        {
-            Open(); var window = GetWindow<CardZoneValidationWindow>();
-            window.Run(() => { if (window.target == null) window.CreatePreview(); });
-            window.ApplyGentleMotionPreset(); window.Focus();
-        }
-        [MenuItem("Tools/Cards/Deal Three Cards To Zone")]
-        public static void DealThreeCards()
-        {
-            Open(); var window = GetWindow<CardZoneValidationWindow>();
-            window.Run(() => { if (window.target == null) window.CreatePreview(); });
-            window.SyncRuntimeState(); window.page = 1; window.drawMode = 1; window.scroll = Vector2.zero; window.DealFromDeck(3);
-        }
-        private void DealFromDeck(int count) { if (Hand == null) return; Mutate("从牌堆抽牌", () => {
-            CurrentExperiment.EnsureDeck(ArtIds());
-            CurrentExperiment.Draw(CurrentModel, count, DrawInsertIndex);
-            InspectDrawnCard();
-        }); }
-        private void ApplyGentleMotionPreset() => Mutate("应用轻弧摆动", () => {
-            layout.ArcHeight = 0.008f; motionSettings = CardZoneMotionSettings.Default;
-            previewMotion = true; page = 2; stylePage = 1; scroll = Vector2.zero;
-        });
-
         private void OnEnable()
         {
-            ConfigureWindowSize();
-            if (prefab == null) prefab = AssetDatabase.LoadAssetAtPath<GameObject>(DefaultPrefab);
-            if (model == null) model = new CardZonePreviewModel();
-            if (!initialized) { ResetSample(); initialized = true; }
-            if (target == null) target = RestoreTarget() ?? ResolveTarget(Selection.activeGameObject) ?? FindPreview();
-            RefreshTargetSource();
-            ReadSettings();
-            InitializeDrawExperiments();
-            if (!Application.isPlaying) LoadInitialSnapshot();
-            SyncRuntimeState();
+            minSize = new Vector2(360, 300); titleContent = new GUIContent("实战牌区验证");
+            if (target == null) target = RestoreTarget() ?? ResolveTarget(Selection.activeGameObject) ?? FindTarget();
+            page = Mathf.Clamp(page, 0, 3); ReadSettings();
             Selection.selectionChanged += OnSelectionChanged;
             Undo.undoRedoPerformed += OnUndo;
             EditorApplication.playModeStateChanged += OnPlayMode;
-            EditorApplication.delayCall += RestorePreview;
-            lastMotionTime = EditorApplication.timeSinceStartup;
-            EditorApplication.update += UpdateMotionPreview;
+            EditorApplication.update += Observe;
+        }
+        private void OnDisable()
+        {
+            windowChrome.Release(); Selection.selectionChanged -= OnSelectionChanged;
+            Undo.undoRedoPerformed -= OnUndo; EditorApplication.playModeStateChanged -= OnPlayMode;
+            EditorApplication.update -= Observe;
+        }
+        private void OnLostFocus() => windowChrome.Release();
+        private void OnUndo() { ReadSettings(); Repaint(); }
+        private void OnHierarchyChange() => Repaint();
+        private void Observe()
+        {
+            if (EditorApplication.timeSinceStartup - lastRepaint < .1) return;
+            lastRepaint = EditorApplication.timeSinceStartup; Repaint();
+        }
+        private void OnPlayMode(PlayModeStateChange state)
+        {
+            if (state == PlayModeStateChange.ExitingEditMode) RememberTarget();
+            if (state == PlayModeStateChange.EnteredPlayMode || state == PlayModeStateChange.EnteredEditMode)
+            {
+                if (target == null) target = RestoreTarget() ?? FindTarget();
+                inspectedCardId = null; ReadSettings();
+            }
+            Repaint();
         }
         private void ReadSettings()
         {
             if (target == null) return;
-            prefab = target.CardPrefab != null ? target.CardPrefab : AssetDatabase.LoadAssetAtPath<GameObject>(DefaultPrefab); layout = target.Layout;
+            layout = target.Layout;
             appearanceSettings = target.AppearanceSettings; motionSettings = target.MotionSettings;
             faceCamera = target.FaceCamera; facingCamera = target.FacingCamera;
             if (Hand == null) return;
-            handSortOrder = Host != null ? Host.SortOrder : CardZoneSortOrder.RankFirst;
             raisedOffset = Hand.SelectedOffset; hoveredOffset = Hand.HoveredOffset; liftSettings = Hand.LiftSettings;
             transitionSettings = Hand.TransitionSettings; deckLocalPosition = Hand.DeckLocalPosition; deckAnchor = Hand.DeckAnchor;
             discardSettings = Hand.DiscardSettings; discardLocalPosition = Hand.DiscardLocalPosition; discardAnchor = Hand.DiscardAnchor;
@@ -129,125 +99,19 @@ namespace CardPresentation.Editor
             discardSoundEnabled = Hand.DiscardSoundEnabled; discardSound = Hand.DiscardSoundOverride; discardSoundVolume = Hand.DiscardSoundVolume;
             selectionSoundEnabled = Hand.SelectionSoundEnabled; selectionSound = Hand.SelectionSoundOverride; selectionSoundVolume = Hand.SelectionSoundVolume;
         }
-        private void OnDisable()
-        {
-            windowChrome.Release();
-            Selection.selectionChanged -= OnSelectionChanged;
-            Undo.undoRedoPerformed -= OnUndo;
-            EditorApplication.playModeStateChanged -= OnPlayMode;
-            EditorApplication.delayCall -= RestorePreview;
-            EditorApplication.update -= UpdateMotionPreview;
-            if (target != null && hasEditableSnapshot && !Application.isPlaying) target.Clear();
-            ClearTransferPreviews(); SceneView.RepaintAll();
-        }
-        private void OnUndo()
-        {
-            if (target == null) target = RestoreTarget() ?? FindPreview();
-            restoringUndo = true;
-            try { SyncRuntimeState(); RestorePreview(); EnsureTransferPreviews(true); if (target == transferSource || target == transferDestination) LoadInitialSnapshot(); } finally { restoringUndo = false; }
-            Repaint();
-        }
-        private void OnLostFocus() => windowChrome.Release();
-        private void ConfigureWindowSize() { minSize = new Vector2(360, 300); maxSize = new Vector2(10000, 10000); }
-        private void OnHierarchyChange() => Repaint();
-        private void OnPlayMode(PlayModeStateChange state)
-        {
-            if (state == PlayModeStateChange.ExitingEditMode)
-            {
-                SyncRuntimeState();
-                RememberTarget();
-                if (target != null && hasEditableSnapshot) target.Clear();
-                ClearTransferPreviews();
-            }
-            if (state == PlayModeStateChange.EnteredPlayMode || state == PlayModeStateChange.EnteredEditMode)
-            { if (target == null) target = RestoreTarget() ?? FindPreview(); ReadSettings(); }
-            if (state == PlayModeStateChange.EnteredPlayMode)
-            {
-                SyncRuntimeState();
-                if (pendingHandSort && Host != null && Host.IsRunning) Host.RequestSortAfterLanding(handSortOrder);
-            }
-            if (state == PlayModeStateChange.EnteredEditMode)
-            {
-                pendingHandSort = false; requestHandSort = false;
-                SyncRuntimeState();
-                LoadInitialSnapshot();
-                EditorApplication.delayCall += RestorePreview;
-            }
-            Repaint();
-        }
-        private void SyncRuntimeState()
-        {
-            if (Host != null && Host.HasSnapshot && (!Application.isPlaying || Host.IsRunning))
-            {
-                CurrentModel.Load(Application.isPlaying ? Host.Cards : Host.InitialCards, clearHover: false);
-                discardedCards = (Application.isPlaying ? Host.DiscardedCards : Host.InitialDiscardedCards).Select(card => card.Copy()).ToList();
-                if (Host.HasDeckSnapshot) CurrentExperiment.LoadDeck(Application.isPlaying ? Host.DeckCards : Host.InitialDeckCards);
-                handSortOrder = Host.SortOrder;
-            }
-        }
-        private void RestorePreview()
-        {
-            if (this != null && target != null && Host != null && Host.HasSnapshot && hasEditableSnapshot && !EditorApplication.isPlayingOrWillChangePlaymode)
-                Run(() => { target.Present(BuildPreviewZone(), model.Project, animate: false); EnsureTransferPreviews(false); });
-        }
-        private void UpdateMotionPreview()
-        {
-            double now = EditorApplication.timeSinceStartup;
-            float delta = (float)Math.Min(Math.Max(now - lastMotionTime, 0), 0.05); lastMotionTime = now;
-            if (!EditorApplication.isPlayingOrWillChangePlaymode && target != null && target.isActiveAndEnabled)
-            {
-                target.RefreshCameraFacing();
-                if (previewMotion && (target.Views.Count > 0 || target.IsTransitioning)) target.AdvanceMotion(delta * previewSpeed);
-                if (previewMotion || target.FaceCamera) SceneView.RepaintAll();
-            }
-            AdvanceTransferPreviews(delta);
-            TryCompleteHandSort();
-            if (now - lastAnimationRepaint > 0.1) { lastAnimationRepaint = now; Repaint(); }
-        }
-        private static CardZoneView FindPreview()
+
+        private static CardZoneView FindTarget()
         {
             var scene = SceneManager.GetActiveScene();
             if (!scene.IsValid() || !scene.isLoaded) return null;
-            return scene.GetRootGameObjects().SelectMany(o => o.GetComponentsInChildren<CardZoneView>(true))
-                .OrderByDescending(v => v.name == PreviewName).FirstOrDefault();
+            return scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<CardZonePlayHost>(true))
+                .OrderByDescending(host => host.Match != null && host.Match.IsRuntimeManaged)
+                .Select(host => host.GetComponent<CardZoneView>()).FirstOrDefault(view => view != null);
         }
-        private string[] ArtIds()
+        // Settings are applied to the existing view; its identity, Data and gameplay table are never projected or replaced here.
+        private void Apply(bool animate = true)
         {
-            var surface = prefab != null ? prefab.GetComponentInChildren<CardView>(true) : null;
-            return surface?.Atlas == null ? new string[0] : surface.Atlas.cards
-                .Where(c => !c.clipped && c.id != "card_back").Select(c => c.id).ToArray();
-        }
-        private void ResetSample()
-        {
-            var available = ArtIds(); CurrentModel.Clear();
-            foreach (var id in new[] { "spades_a", "hearts_q", "clubs_j", "diamonds_a", "joker_big" })
-                if (available.Contains(id)) CurrentModel.Add(id);
-            if (CurrentModel.Cards.Count == 0) foreach (var id in available.Take(5)) CurrentModel.Add(id);
-            inspectedCardId = CurrentModel.Cards.FirstOrDefault()?.Id;
-        }
-        private void CreatePreview()
-        {
-            if (EditorApplication.isPlayingOrWillChangePlaymode) throw new InvalidOperationException("请退出 Play 后创建牌区。");
-            var scene = SceneManager.GetActiveScene();
-            if (!scene.IsValid() || !scene.isLoaded || EditorSceneManager.IsPreviewScene(scene)) throw new InvalidOperationException("请先打开一个普通场景。");
-            if (target != null && target.gameObject.scene != scene) SelectTarget(null);
-            if (target == null)
-            {
-                var root = new GameObject(PreviewName); SceneManager.MoveGameObjectToScene(root, scene);
-                Undo.RegisterCreatedObjectUndo(root, "创建测试牌区"); root.transform.position = new Vector3(0, 0.012f, -0.23f);
-                target = Undo.AddComponent<HandZoneView>(root);
-                hasEditableSnapshot = true; previewZoneId = "editor/hand/" + Guid.NewGuid().ToString("N");
-                try { target.Configure(prefab, CardZoneLayoutSettings.Default); ReadSettings(); }
-                catch { Undo.DestroyObjectImmediate(root); target = null; throw; }
-            }
-            RememberTarget(); Apply(false); Selection.activeGameObject = target.gameObject;
-        }
-        private void Apply(bool animate = true, string[] discardedViewIds = null)
-        {
-            bool sortAfterLanding = requestHandSort; requestHandSort = false;
-            if (target == null || !hasEditableSnapshot) return;
-            target.ValidateCardCount(CurrentModel.Cards.Count);
-            if (target.CardPrefab != prefab) { target.Clear(); target.Configure(prefab, layout); }
+            if (!CanEdit) return;
             if (Hand != null)
             {
                 Hand.SetLiftSettings(liftSettings); Hand.SetTransitionSettings(transitionSettings);
@@ -257,136 +121,75 @@ namespace CardPresentation.Editor
                 Hand.SetDiscardSettings(discardSettings); Hand.SetDiscardDestination(discardLocalPosition, discardAnchor);
                 Hand.SetInteractionOffsets(hoveredOffset, raisedOffset);
             }
-            target.SetLayout(layout, motionSettings, animate);
-            layout = target.Layout; motionSettings = target.MotionSettings;
-            target.SetCameraFacing(faceCamera, facingCamera);
-            target.SetAppearanceSettings(appearanceSettings);
-            if (Application.isPlaying)
-            {
-                if (Host == null || !Host.IsRunning) throw new InvalidOperationException("没有运行中的测试牌区。");
-                Host.ReplaceCardsAndDeck(CurrentModel.Cards.Select(card => new CardZoneCardState(
-                    card.ToCard(), card.ArtId, card.FaceUp, card.Tint, card.Interaction)),
-                    Hand != null ? CurrentExperiment.DeckCards.Select(card => new CardZoneCardState(
-                    card.ToCard(), card.ArtId, card.FaceUp, card.Tint, card.Interaction)) : Host.DeckCards, animate);
-                if (Hand != null) Host.SetSortOrder(handSortOrder);
-            }
-            else
-            {
-                var data = CardZoneViewData.FromZone(BuildPreviewZone(), model.Project);
-                if (Hand != null && discardedViewIds != null)
-                    Hand.PresentDiscardCommitted(data, discardedViewIds, BakeCurrentZone, animate);
-                else target.PresentCommitted(data, BakeCurrentZone, animate);
-                EditorUtility.SetDirty(target);
-            }
-            if (sortAfterLanding && Hand != null)
-            {
-                pendingHandSort = true;
-                if (Application.isPlaying) Host.RequestSortAfterLanding(handSortOrder);
-            }
-            SceneView.RepaintAll();
+            target.SetLayout(layout, motionSettings, animate); layout = target.Layout; motionSettings = target.MotionSettings;
+            target.SetCameraFacing(faceCamera, facingCamera); target.SetAppearanceSettings(appearanceSettings);
+        }
+        private void Mutate(string description, Action change)
+        {
+            if (!CanEdit) return;
+            Run(() => {
+                if (!Application.isPlaying) Undo.RecordObject(target, description);
+                try { change(); Apply(Application.isPlaying); status = null; }
+                catch { ReadSettings(); throw; }
+                if (!Application.isPlaying)
+                {
+                    PrefabUtility.RecordPrefabInstancePropertyModifications(target); EditorUtility.SetDirty(target);
+                    UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(target.gameObject.scene);
+                }
+            });
         }
         private void Frame()
         {
             if (target == null) return;
             Selection.activeGameObject = target.gameObject;
-            var view = SceneView.lastActiveSceneView ?? GetWindow<SceneView>(); view.drawGizmos = true;
-            view.LookAt(target.transform.position, Quaternion.Euler(65, 0, 0), Mathf.Max(layout.Size.x, layout.Size.y) * 0.85f); view.Repaint();
-        }
-        private void Mutate(string description, Action change, string[] discardedViewIds = null)
-        {
-            Run(() => {
-                SyncRuntimeState();
-                int undoGroup = -1;
-                if (!Application.isPlaying)
-                {
-                    Undo.IncrementCurrentGroup(); undoGroup = Undo.GetCurrentGroup();
-                    Undo.RecordObject(this, description);
-                    if (Host != null && Host.Match != null) Undo.RecordObject(Host.Match, description);
-                    if (target != null) { Undo.RecordObject(target, description); Undo.RecordObject(target.transform, description); }
-                }
-                try { change(); status = null; Apply(discardedViewIds: discardedViewIds); }
-                finally
-                {
-                    if (undoGroup >= 0) { Undo.SetCurrentGroupName(description); Undo.CollapseUndoOperations(undoGroup); }
-                }
-            });
-        }
-        private void CheckReuse()
-        {
-            var before = target.Views.ToDictionary(v => v.ViewId, v => v.gameObject.GetInstanceID()); Apply();
-            bool same = before.Count == target.Views.Count && target.Views.All(v => before.TryGetValue(v.ViewId, out int id) && id == v.gameObject.GetInstanceID());
-            if (!same) throw new InvalidOperationException("发现视觉实例被替换。");
-            status = "复用检查通过：" + before.Count + " 张牌。";
+            var sceneView = SceneView.lastActiveSceneView ?? GetWindow<SceneView>();
+            sceneView.Frame(new Bounds(target.transform.position, new Vector3(layout.Size.x, .1f, layout.Size.y)), false);
         }
         private void Run(Action action)
         {
-            try { action(); error = null; } catch (Exception e) { error = e.Message; }
+            try { action(); error = null; } catch (Exception exception) { error = exception.Message; }
             Repaint();
         }
         public static void RefreshMatchInCurrentWindow()
         {
-            foreach (var window in Resources.FindObjectsOfTypeAll<CardZoneValidationWindow>())
-            { window.RefreshTargetSource(); window.SyncRuntimeState(); window.RestorePreview(); window.Repaint(); }
+            foreach (var window in Resources.FindObjectsOfTypeAll<CardZoneValidationWindow>()) { window.ReadSettings(); window.Repaint(); }
         }
-
         private void OnGUI()
         {
-            SyncRuntimeState(); windowChrome.Draw(this);
+            windowChrome.Draw(this);
             GUILayout.BeginArea(new Rect(0, 0, position.width, Mathf.Max(0, position.height - ToolWindowChrome.FooterHeight)));
-            var oldLabelWidth = EditorGUIUtility.labelWidth;
+            float previousLabelWidth = EditorGUIUtility.labelWidth;
             try
             {
-                EditorGUIUtility.labelWidth = Mathf.Min(150, position.width * 0.4f);
-                DrawHeader();
-                using (var content = new EditorGUILayout.ScrollViewScope(scroll))
+                EditorGUIUtility.labelWidth = Mathf.Min(150, position.width * .4f);
+                EditorGUILayout.LabelField("实战牌区验证", EditorStyles.boldLabel); DrawTargetSelector();
+                using (new EditorGUILayout.HorizontalScope())
                 {
-                    scroll = content.scrollPosition;
-                    var artIds = ArtIds();
-                    if (page == 4) DrawTransferPage();
-                    else using (new EditorGUI.DisabledScope(!CanEdit || artIds.Length == 0))
+                    using (new EditorGUI.DisabledScope(target == null)) if (GUILayout.Button("定位牌区")) Frame();
+                    if (GUILayout.Button("读取表现参数")) ReadSettings();
+                }
+                if (!HasLiveBattle) EditorGUILayout.HelpBox("进入实际牌局的 Play 后读取卡牌。编辑模式只调整表现参数；出牌、弃牌和排序请使用 Game 内的 UI。", MessageType.Info);
+                DrawPrefabExport();
+                page = GUILayout.Toolbar(page, new[] { "实战卡牌", "表现参数", "视觉诊断", "出牌路径" });
+                using (var area = new EditorGUILayout.ScrollViewScope(scroll))
+                {
+                    scroll = area.scrollPosition;
+                    if (page == 0) DrawLiveCards();
+                    else if (page == 1)
                     {
-                        if (page == 0) DrawHandPage(artIds);
-                        else if (page == 1) DrawAnimationExperiment(artIds);
-                        else if (page == 2) DrawStylePage();
-                        else DrawDiagnostics();
+                        if (Application.isPlaying && !CanEdit) EditorGUILayout.HelpBox("等待实战动画结束且允许交互时调整参数。", MessageType.Info);
+                        using (new EditorGUI.DisabledScope(!CanEdit)) DrawStylePage();
                     }
+                    else if (page == 2) DrawDiagnostics();
+                    else DrawTransferPage();
                 }
                 if (!string.IsNullOrEmpty(error)) EditorGUILayout.HelpBox(error, MessageType.Error);
                 else if (!string.IsNullOrEmpty(status)) EditorGUILayout.LabelField(status, EditorStyles.wordWrappedMiniLabel);
             }
-            finally { EditorGUIUtility.labelWidth = oldLabelWidth; GUILayout.EndArea(); }
+            finally { EditorGUIUtility.labelWidth = previousLabelWidth; GUILayout.EndArea(); }
         }
-        private void DrawHeader()
-        {
-            EditorGUILayout.LabelField("牌区验证", EditorStyles.boldLabel);
-            DrawTargetSelector();
-            EditorGUILayout.LabelField(Application.isPlaying ? "Play · 编辑运行时副本，退出后恢复" : "编辑模式 · 自动固化初始数据，支持撤销", EditorStyles.miniLabel);
-            using (new EditorGUILayout.HorizontalScope())
-            {
-                if (target == null)
-                {
-                    using (new EditorGUI.DisabledScope(Application.isPlaying))
-                        if (GUILayout.Button("创建牌区")) Run(CreatePreview);
-                }
-                else
-                {
-                    if (GUILayout.Button("定位牌区")) Frame();
-                    using (new EditorGUI.DisabledScope(!CanEdit))
-                        if (GUILayout.Button(Application.isPlaying ? "退出 Play" : "进入 Play"))
-                        { if (Application.isPlaying) EditorApplication.isPlaying = false; else PlayCardZone(); }
-                }
-            }
-            using (new EditorGUI.DisabledScope(EditorApplication.isPlayingOrWillChangePlaymode))
-                if (GUILayout.Button("创建出牌区 · 五个固定槽位")) Run(CreatePlayedPreview);
-            DrawPrefabExport();
-            if (target == null || target.CardPrefab == null) prefab = (GameObject)EditorGUILayout.ObjectField("卡牌 Prefab", prefab, typeof(GameObject), false);
-            EditorGUILayout.LabelField((Hand != null ? "手牌 " : "卡牌 ") + CurrentModel.Cards.Count + " / " + CurrentCapacity +
-                "    牌堆 " + CurrentExperiment.DeckCards.Count + "    弃牌 " + DiscardCount + "    飞出 " + (Hand != null ? Hand.DepartingViews.Count : 0), EditorStyles.miniLabel);
-            var labels = new[] { Hand != null ? "手牌列表" : "卡牌列表", "抽牌实验", "牌区样式", "诊断", "出牌路径" };
-            int next = position.width < 440 ? GUILayout.SelectionGrid(page, labels, 2) : GUILayout.Toolbar(page, labels);
-            if (next != page) { page = next; scroll = Vector2.zero; GUI.FocusControl(null); }
-            EditorGUILayout.Space(6);
-        }
+        [SerializeField] private bool faceCamera;
+        [SerializeField] private Camera facingCamera;
         [SerializeField] private int stylePage;
         private void DrawStylePage()
         {
@@ -407,7 +210,7 @@ namespace CardPresentation.Editor
             if (!(target is PlayedZoneView)) next.OverlapLift = EditorGUILayout.FloatField("重叠抬高", next.OverlapLift);
             if (target == null || target.SupportsArc) next.ArcHeight = EditorGUILayout.FloatField("弧高（正值中间凸向 +Z）", next.ArcHeight);
             next.Alignment = (CardZoneAlignment)EditorGUILayout.EnumPopup("对齐", next.Alignment);
-            if (EditorGUI.EndChangeCheck()) Mutate("调整测试牌区布局", () => layout = next);
+            if (EditorGUI.EndChangeCheck()) Mutate("调整牌区布局", () => layout = next);
             EditorGUILayout.HelpBox(target is PlayedZoneView
                 ? "固定五个直排槽位，按列表顺序从左向右占位；空位保留。宽度至少容纳五张完整卡牌，间距可压缩，卡牌不重叠。弧度和持续摆动固定关闭。"
                 : "布局根节点 +Z 指向圆心；牌面保持与直排相同的阅读方向。正弧高圆心在 −Z，负弧高在 +Z；摆动独立叠加。", MessageType.None);
@@ -444,5 +247,4 @@ namespace CardPresentation.Editor
         }
     }
 }
-
 #endif

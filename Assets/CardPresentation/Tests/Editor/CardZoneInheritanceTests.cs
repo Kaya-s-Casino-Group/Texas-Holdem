@@ -33,7 +33,7 @@ namespace CardPresentation.Tests
         private static T Field<T>(CardZoneValidationWindow window, string name) =>
             (T)typeof(CardZoneValidationWindow).GetField(name, BindingFlags.Instance | BindingFlags.NonPublic).GetValue(window);
         private static void Apply(CardZoneValidationWindow window) =>
-            typeof(CardZoneValidationWindow).GetMethod("Apply", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(window, new object[] { false, null });
+            typeof(CardZoneValidationWindow).GetMethod("Apply", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(window, new object[] { false });
         private static CardZonePlayHost Capture(CardZoneView view, string id, string art, bool selected = false)
         {
             var model = new CardZonePreviewModel(); model.Add(art); model.Cards[0].IsSelected = selected;
@@ -112,7 +112,7 @@ namespace CardPresentation.Tests
             }
         }
 
-        [Test] public void EditorSwitchLoadsEachZonesCardsSettingsAndMetadataWithoutCrossContamination()
+        [Test] public void EditorSwitchReadsOnlySettingsWithoutLoadingOrWritingSeedCards()
         {
             using (var f = new Fixture())
             {
@@ -123,9 +123,9 @@ namespace CardPresentation.Tests
                 try
                 {
                     window.SelectTarget(common);
-                    Assert.AreEqual(a.InitialCards[0].Id, Field<CardZonePreviewModel>(window, "model").Cards[0].Id);
+                    Assert.That(window.CurrentCards, Is.Empty); Assert.That(common.Data, Is.Null);
                     window.SelectTarget(hand);
-                    Assert.AreEqual(b.InitialCards[0].Id, Field<CardZonePreviewModel>(window, "model").Cards[0].Id);
+                    Assert.That(window.CurrentCards, Is.Empty); Assert.That(hand.Data, Is.Null);
                     Assert.AreEqual(hand.SelectedOffset, Field<Vector3>(window, "raisedOffset"));
                     Assert.AreEqual("hearts_q", a.InitialCards[0].ArtId);
                     Assert.AreEqual("spades_a", b.InitialCards[0].ArtId);
@@ -147,7 +147,7 @@ namespace CardPresentation.Tests
                 var window = ScriptableObject.CreateInstance<CardZoneValidationWindow>();
                 try
                 {
-                    window.SelectTarget(zone); Assert.IsFalse(Field<bool>(window, "hasEditableSnapshot"));
+                    window.SelectTarget(zone); Assert.That(window.HasLiveBattle, Is.False); Assert.That(window.CurrentCards, Is.Empty);
                     Apply(window); Assert.AreSame(data, zone.Data);
                     Assert.IsNull(zone.GetComponent<CardZonePlayHost>());
                 }

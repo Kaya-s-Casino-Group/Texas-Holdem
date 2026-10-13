@@ -17,6 +17,46 @@ namespace CardPresentation.Tests
     [TestFixture]
     public sealed class CardMatchHostTests
     {
+
+        public static void ValidateLiveWindow()
+        {
+            CardZoneValidationWindow window = null;
+            Exception failure = null;
+            try
+            {
+                if (!Application.isPlaying) throw new InvalidOperationException("Enter a real battle in Play first.");
+                var hand = Object.FindObjectsOfType<CardZonePlayHost>().First(host => host.IsRunning && host.Match.Commands != null &&
+                    host.Match.Commands.CanInteract && host.GetComponent<HandZoneView>() != null);
+                var view = hand.GetComponent<HandZoneView>(); var table = hand.Match.State; var data = view.Data;
+                var instances = view.Views.ToDictionary(card => card.ViewId, card => card.gameObject.GetInstanceID());
+                var layout = view.Layout;
+                window = ScriptableObject.CreateInstance<CardZoneValidationWindow>(); window.SelectTarget(view);
+                Assert.That(window.HasLiveBattle, Is.True);
+                CollectionAssert.AreEqual(hand.Cards.Select(card => card.Id), window.CurrentCards.Select(card => card.Id));
+                const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
+                var next = layout; next.Size.x += .001f;
+                typeof(CardZoneValidationWindow).GetField("layout", flags).SetValue(window, next);
+                try { typeof(CardZoneValidationWindow).GetMethod("Apply", flags).Invoke(window, new object[] { false }); }
+                finally { view.SetLayout(layout, view.MotionSettings, false); }
+                Assert.That(hand.Match.State, Is.SameAs(table)); Assert.That(view.Data, Is.SameAs(data));
+                var played = view.GetComponent<CardZoneTransferPresenter>()?.Destination;
+                if (played != null)
+                {
+                    window.SelectTarget(played);
+                    CollectionAssert.AreEqual(played.GetComponent<CardZonePlayHost>().Cards.Select(card => card.Id), window.CurrentCards.Select(card => card.Id));
+                }
+                Object.DestroyImmediate(window); window = null;
+                Assert.That(hand.Match.State, Is.SameAs(table)); Assert.That(view.Data, Is.SameAs(data));
+                foreach (var item in view.Views) Assert.That(item.gameObject.GetInstanceID(), Is.EqualTo(instances[item.ViewId]));
+            }
+            catch (Exception exception) { failure = exception; }
+            finally { if (window != null) Object.DestroyImmediate(window); }
+            System.IO.Directory.CreateDirectory("Library/CardPresentationTests");
+            System.IO.File.WriteAllText("Library/CardPresentationTests/live-validator.json", JsonUtility.ToJson(new LiveWindowReport {
+                status = failure == null ? "Passed" : "Failed", error = failure?.ToString() }, true));
+            if (failure != null) Debug.LogException(failure); else Debug.Log("Live card window passed: real table reads, settings-only edits, target switching and safe close.");
+        }
+        [Serializable] private sealed class LiveWindowReport { public string status, error; }
         private sealed class Fixture : IDisposable
         {
             public readonly Scene Scene = EditorSceneManager.NewPreviewScene();
@@ -89,23 +129,44 @@ namespace CardPresentation.Tests
             }
         }
 
-        [Test] public void ValidationWindowReadsCurrentMatchInsteadOfRestoringItsCachedPile()
+        [Test] public void WindowNeverImportsEditSeedsOrClearsLiveViewsOnClose()
         {
             using (var f = new Fixture())
             {
+                f.Left.DrawCards(1, false); var view = f.Left.GetComponent<HandZoneView>();
+                var table = f.Match.State; var data = view.Data; var instance = view.Views[0];
                 var window = ScriptableObject.CreateInstance<CardZoneValidationWindow>();
                 try
                 {
-                    window.SelectTarget(f.Left.GetComponent<HandZoneView>());
-                    var sync = typeof(CardZoneValidationWindow).GetMethod("SyncRuntimeState", BindingFlags.Instance | BindingFlags.NonPublic);
-                    var experiment = typeof(CardZoneValidationWindow).GetProperty("CurrentExperiment", BindingFlags.Instance | BindingFlags.NonPublic);
-                    f.Right.DrawCards(1, false); sync.Invoke(window, null);
-                    // Editor reads the authoring seed in Edit mode; it never overwrites a live session from its cache.
-                    Assert.AreEqual(1, ((CardZoneDrawExperiment)experiment.GetValue(window)).DeckCards.Count);
-                    Assert.IsEmpty(f.Match.GetCards(new ZoneId("deck"))); Assert.AreEqual(1, f.Right.Cards.Count);
-                    window.SelectTarget(f.Right.GetComponent<HandZoneView>()); Assert.IsEmpty(f.Left.DeckCards);
+                    window.SelectTarget(view); Assert.That(window.CurrentCards, Is.Empty); Assert.That(window.HasLiveBattle, Is.False);
+                    typeof(CardZoneValidationWindow).GetMethod("Apply", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(window, new object[] { false });
+                    CardZoneValidationWindow.RefreshMatchInCurrentWindow();
+                    Assert.That(f.Match.State, Is.SameAs(table)); Assert.That(view.Data, Is.SameAs(data)); Assert.That(view.Views[0], Is.SameAs(instance));
                 }
-                finally { window.SelectTarget(null); Object.DestroyImmediate(window); }
+                finally { Object.DestroyImmediate(window); }
+                Assert.That(f.Match.State, Is.SameAs(table)); Assert.That(view.Data, Is.SameAs(data)); Assert.That(view.Views[0], Is.SameAs(instance));
+            }
+        }
+        [Test] public void OldSerializedWindowCardsCannotPopulateRuntimeManagedBindings()
+        {
+            using (var f = new Fixture())
+            {
+                f.Match.ConfigureRuntimeManaged(); f.Left.ConfigureRuntimeBinding(f.Match); f.Right.ConfigureRuntimeBinding(f.Match);
+                var window = ScriptableObject.CreateInstance<CardZoneValidationWindow>();
+                try
+                {
+                    // Simulate an old persisted window containing fake cards and deck IDs. Removed fields are ignored.
+                    EditorJsonUtility.FromJsonOverwrite("{\"hasEditableSnapshot\":true,\"previewZoneId\":\"editor/old\",\"model\":{\"cards\":[{\"id\":\"fake-card\",\"artId\":\"hearts_q\"}]}}", window);
+                    var view = f.Left.GetComponent<HandZoneView>(); window.SelectTarget(view);
+                    const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
+                    typeof(CardZoneValidationWindow).GetMethod("Apply", flags).Invoke(window, new object[] { false });
+                    typeof(CardZoneValidationWindow).GetMethod("OnPlayMode", flags).Invoke(window, new object[] { PlayModeStateChange.EnteredEditMode });
+                    typeof(CardZoneValidationWindow).GetMethod("OnPlayMode", flags).Invoke(window, new object[] { PlayModeStateChange.ExitingEditMode });
+                    Assert.That(view.Views, Is.Empty); Assert.That(f.Match.InitialState.Cards, Is.Empty); Assert.That(f.Match.InitialState.Zones, Is.Empty);
+                    Assert.That(window.CurrentCards, Is.Empty); Assert.That(f.Left.HasSnapshot, Is.False);
+                    Assert.Throws<InvalidOperationException>(() => f.Match.ConfigureInitial(Array.Empty<CardMatchZoneSnapshot>()));
+                }
+                finally { Object.DestroyImmediate(window); }
             }
         }
     }

@@ -137,11 +137,10 @@ namespace CardPresentation.Editor
         {
             if (EditorApplication.isPlayingOrWillChangePlaymode) throw new InvalidOperationException("请退出 Play 后配置操作按钮。");
             Prepare();
-            CardZoneValidationWindow.BakeCardZoneForPlay();
             var selected = Selection.activeGameObject?.GetComponentInParent<HandZoneView>(true)?.GetComponent<CardZonePlayHost>();
             var host = selected ?? SceneManager.GetActiveScene().GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<CardZonePlayHost>(true))
-                .FirstOrDefault(item => item.HasSnapshot && item.GetComponent<HandZoneView>() != null);
-            if (host == null) throw new InvalidOperationException("请先固化一个手牌区。");
+                .FirstOrDefault(item => item.Match != null && item.GetComponent<HandZoneView>() != null);
+            if (host == null) throw new InvalidOperationException("请先在玩法场景中绑定手牌 View 和 CardZonePlayHost。");
             var presenter = Register(host); Selection.activeGameObject = presenter.gameObject;
             Debug.Log("Player hand UI configured: 出牌 / 弃牌 / 点数理牌 / 花色理牌，右下角抽牌堆只展示。进入 Play 后在 Game 操作。");
         }

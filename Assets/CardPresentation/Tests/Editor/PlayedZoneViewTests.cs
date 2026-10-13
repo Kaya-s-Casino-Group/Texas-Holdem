@@ -144,11 +144,10 @@ namespace CardPresentation.Tests
                     window.SelectTarget(f.Zone);
                     var type = typeof(CardZoneValidationWindow); const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
                     Assert.AreEqual(5, type.GetProperty("CurrentCapacity", flags).GetValue(window));
-                    type.GetMethod("ResetSample", flags).Invoke(window, null);
-                    type.GetMethod("Apply", flags).Invoke(window, new object[] { false, null });
-                    var host = f.Zone.GetComponent<CardZonePlayHost>(); Assert.NotNull(host);
-                    Assert.AreEqual(CardZoneKinds.Played, host.Zone.Kind); Assert.AreEqual(5, host.InitialCards.Count);
-                    Assert.AreSame(f.Zone, CardZoneValidationWindow.ResolveTarget(f.Zone.Views[0].gameObject));
+                    type.GetMethod("Apply", flags).Invoke(window, new object[] { false });
+                    Assert.That(window.CurrentCards, Is.Empty);
+                    Assert.That(f.Zone.GetComponent<CardZonePlayHost>(), Is.Null);
+                    Assert.AreSame(f.Zone, CardZoneValidationWindow.ResolveTarget(f.Zone.gameObject));
                     Assert.AreSame(original, hand.Data); Assert.AreEqual(8, hand.Views.Count);
                     Assert.IsFalse(f.Zone.MotionSettings.Enabled); Assert.AreEqual(0, f.Zone.Layout.ArcHeight);
                 }
