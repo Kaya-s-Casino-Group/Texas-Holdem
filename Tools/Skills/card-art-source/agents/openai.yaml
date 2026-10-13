@@ -1,0 +1,4 @@
+interface:
+  display_name: "Card Art 原始卡牌"
+  short_description: "生成符合项目尺寸、命名与方向约定的原始卡牌 PNG，供现有图集工具扫描"
+  default_prompt: "使用 $card-art-source 按本次指定风格和项目资产约定生成原始卡牌，仅交付原始 PNG 文件夹和配置文本。"
