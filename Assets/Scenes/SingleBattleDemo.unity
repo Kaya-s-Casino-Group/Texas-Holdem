@@ -627,21 +627,11 @@ MonoBehaviour:
   actions: {fileID: 1593941721}
   overview: {fileID: 728451353}
   drawPile: {fileID: 1777998051}
-  playerActor: {fileID: 1126122755}
-  enemyActor: {fileID: 273413156}
-  playerHealth: 40
-  enemyHealth: 75
-  enemyDamage: 7
-  pointsPerDamage: 5
-  roundLimit: 445
-  discards: 3
-  maxEnergy: 3
-  initialEnergy: 3
-  playEnergyCost: 1
-  discardEnergyCost: 1
-  handSize: 8
-  playRefillTiming: 0
-  discardRefillTiming: 1
+  playerActors:
+  - {fileID: 1126122755}
+  enemyActors:
+  - {fileID: 273413156}
+  rulesProfile: {fileID: 11400000, guid: 62cac3ad4ef84ec5bf166c38deef433e, type: 2}
 --- !u!1 &188274531
 GameObject:
   m_ObjectHideFlags: 0
@@ -1537,6 +1527,7 @@ MonoBehaviour:
   battle: {fileID: 151945506}
   visual: {fileID: 1237585821}
   presentation: {fileID: 1237585822}
+  profile: {fileID: 11400000, guid: bf97fba0c49a4af0a8eb7d74e16c5ead, type: 2}
 --- !u!1 &278159045
 GameObject:
   m_ObjectHideFlags: 0
@@ -4386,6 +4377,7 @@ MonoBehaviour:
   battle: {fileID: 151945506}
   visual: {fileID: 691192565}
   presentation: {fileID: 691192566}
+  profile: {fileID: 11400000, guid: f7a583984ab242f88ca2f8b8b2a57d61, type: 2}
 --- !u!1 &1186815307
 GameObject:
   m_ObjectHideFlags: 0

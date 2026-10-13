@@ -29,6 +29,7 @@ namespace PokerEngine.Tests
             Suite("CardArtworkPreview", "卡牌实例预览与光源", "自由参数组合、最小 Shader 协议、实例渲染与可控光源。", "CardArt.Tests.Editor", "CardArtworkPreviewTests", "CardShaderCombinationTests"),
             Suite("CardArtworkIntegration", "卡牌属性与共享美术", "状态映射、组合叠加、Run/战局投影、Canvas 与跨区保留。", "CardPresentation.Tests.Editor", "CardAppearanceTests", "CanvasDeckOverviewTests", "CardZoneViewPrefabExporterTests"),
             Suite("CardDuelTests", "战局发牌与四牌区", "空手初始化、补牌策略、牌区守恒、出牌与弃牌。", "PokerEngine.Tests.Editor", "CardDuelTests"),
+            Suite("TeamBattleTests", "多人战局与阵营回合", "独立牌组、共享玩家阶段、怪物队列、死亡跳过与目标接口。", "PokerEngine.Tests.Editor", "TeamBattleTests"),
             Suite("PlayerTurnTests", "能量与回合", "独立能耗、超上限能量、自动与主动结束回合。", "PokerEngine.Tests.Editor", "PlayerTurnTests"),
             Suite("BattleSettlementTests", "生命、伤害与结算", "共用战斗状态、伤害换算、胜负及动作账本。", "PokerEngine.Tests.Editor", "CombatTests", "ScoredDuelTests"),
             Suite("CardZoneWindowTests", "实战牌区工具", "只读数据、表现参数、派生 View 和安全关闭。", "CardPresentation.Tests.Editor", "CardMatchHostTests", "CardZoneInheritanceTests", "PlayedZoneViewTests"),
@@ -36,6 +37,7 @@ namespace PokerEngine.Tests
             Suite("EditorIsolationTests", "编辑器隔离与打包边界", "测试程序集限定 Editor、Player 不引用测试、资源元数据。", "PokerEngine.Tests.Editor", "PackagingTests")
         };
         private static readonly Entry[] LiveChecks = {
+            Live("team-battle-ui", "多人战局 2v3", "切换玩家、独立手牌、全员结束、怪物依次演出与整轮恢复。", "Poker.SingleBattle.Tests.Editor", "Poker.SingleBattle.Tests.TeamBattlePlayValidation", "Run", "Library/SingleBattleTests/team-play.json", "Poker.SingleBattle.SingleBattleHost"),
             Live("dealing", "单战局发牌专项", "真实按钮与动画：动作后立刻补满、下回合补满。", "Poker.SingleBattle.Tests.Editor", "Poker.SingleBattle.Tests.SingleBattlePlayValidation", "RunDealing", "Library/SingleBattleTests/dealing.json", "Poker.SingleBattle.SingleBattleHost"),
             Live("battle-ui", "单战局完整流程", "能量、连续出牌、怪物回合、胜负与重开。", "Poker.SingleBattle.Tests.Editor", "Poker.SingleBattle.Tests.SingleBattlePlayValidation", "Run", "Library/SingleBattleTests/play.json", "Poker.SingleBattle.SingleBattleHost"),
             Live("live-window", "实战牌区窗口", "读取当前牌局、调整表现参数、切换与关闭。", "CardPresentation.Tests.Editor", "CardPresentation.Tests.CardMatchHostTests", "ValidateLiveWindow", "Library/CardPresentationTests/live-validator.json", "Poker.SingleBattle.SingleBattleHost"),

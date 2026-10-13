@@ -28,7 +28,8 @@ namespace Poker.SingleBattle.Tests
             public readonly CardZonePlayHost Hand, Played;
             public readonly HandZoneView HandView;
             public readonly HandActionPresenter Actions;
-            public Fixture(bool start = true)
+            private readonly List<ScriptableObject> profiles = new List<ScriptableObject>();
+            public Fixture(bool start = true, int playerCount = 1, int enemyCount = 1)
             {
                 var root = New("Match"); Match = root.AddComponent<CardMatchHost>();
                 Match.ConfigureRuntimeManaged();
@@ -43,11 +44,17 @@ namespace Poker.SingleBattle.Tests
                     panel.PlayButton.GetComponentInChildren<TMP_Text>(), panel.DiscardButton.GetComponentInChildren<TMP_Text>(), panel.RankSortButton.GetComponentInChildren<TMP_Text>(), panel.SuitSortButton.GetComponentInChildren<TMP_Text>());
                 Actions = ui.GetComponent<HandActionPresenter>() ?? ui.AddComponent<HandActionPresenter>(); Actions.Configure(Hand, panel, route);
                 Host = root.AddComponent<SingleBattleHost>(); Host.Configure(Match, Actions, null, null);
+                var rules = ScriptableObject.CreateInstance<BattleRulesProfile>(); profiles.Add(rules); Host.ConfigureRules(rules);
                 Player = New("Player").AddComponent<PlayerBattleActor>(); Enemy = New("Enemy").AddComponent<EnemyBattleActor>();
                 var visual = New("Enemy Visual").transform; visual.SetParent(Enemy.transform, false);
                 visual.localScale = new Vector3(1, 2, 3); Player.Configure(Host); Enemy.Configure(Host, visual);
                 var presenter = visual.gameObject.AddComponent<BattleActorPresenter>(); presenter.Configure(visual); Enemy.ConfigurePresentation(presenter);
-                Host.ConfigureActors(Player, Enemy); if (start) Host.StartBattle();
+                var players = new List<PlayerBattleActor> { Player }; var enemies = new List<EnemyBattleActor> { Enemy };
+                for (int i = 1; i < playerCount; i++) { var actor = New("Player " + i).AddComponent<PlayerBattleActor>(); actor.Configure(Host); players.Add(actor); }
+                for (int i = 1; i < enemyCount; i++) { var actor = New("Enemy " + i).AddComponent<EnemyBattleActor>(); actor.Configure(Host); enemies.Add(actor); }
+                foreach (var actor in players) { var profile = ScriptableObject.CreateInstance<PlayerBattleProfile>(); profiles.Add(profile); actor.ConfigureProfile(profile); }
+                foreach (var actor in enemies) { var profile = ScriptableObject.CreateInstance<EnemyBattleProfile>(); profiles.Add(profile); actor.ConfigureProfile(profile); SetProperty(profile, "maxHealth", 75); }
+                Host.ConfigureActors(players, enemies); if (start) Host.StartBattle();
             }
             private GameObject New(string name) { var go = new GameObject(name); SceneManager.MoveGameObjectToScene(go, Scene); return go; }
             public void Select()
@@ -56,11 +63,18 @@ namespace Poker.SingleBattle.Tests
                 Hand.SetInteraction(Hand.Cards[0].Id, new CardInteractionState(isSelected: true));
                 Hand.Publish(); HandView.CompleteTransitions(); Actions.Refresh();
             }
-            public void Set(string field, int value) => typeof(SingleBattleHost).GetField(field, BindingFlags.Instance | BindingFlags.NonPublic).SetValue(Host, value);
+            private static void SetProperty(ScriptableObject profile, string field, int value)
+            { var serialized = new SerializedObject(profile); serialized.FindProperty(field).intValue = value; serialized.ApplyModifiedPropertiesWithoutUndo(); }
+            public void Set(string field, int value)
+            {
+                if (field == "enemyHealth" || field == "enemyDamage") SetProperty(Enemy.Profile, field == "enemyHealth" ? "maxHealth" : "attackDamage", value);
+                else SetProperty(Player.Profile, field == "playerHealth" ? "maxHealth" : field, value);
+            }
             public void Dispose()
             {
                 Host.enabled = false; Player.enabled = false; Enemy.enabled = false;
                 Hand.StopSession(); Played.StopSession(); EditorSceneManager.ClosePreviewScene(Scene);
+                foreach (var profile in profiles) UnityEngine.Object.DestroyImmediate(profile);
             }
         }
         [Test] public void DerivedActorsBindDistinctSlotsAndOnlyPlayerOwnsCardCommands()
@@ -244,6 +258,80 @@ namespace Poker.SingleBattle.Tests
                 Assert.That(f.Host.State.Revision, Is.EqualTo(1)); Assert.That(f.Player.Unit.Health, Is.EqualTo(40));
             }
         }
+        [Test] public void SwitchingObserverKeepsIndependentCardsAndCommandAuthority()
+        {
+            using (var f = new Fixture(playerCount: 2, enemyCount: 3))
+            {
+                var p2 = f.Host.Players[1]; var hand1 = f.Host.State.Zone(CardZoneKinds.Hand, f.Player.ParticipantId).Cards.ToArray();
+                var hand2 = f.Host.State.Zone(CardZoneKinds.Hand, p2.ParticipantId).Cards.ToArray();
+                f.HandView.CompleteTransitions(); long revision = f.Host.State.Revision;
+                Assert.That(f.Host.SelectPlayer(p2), Is.True); f.HandView.CompleteTransitions();
+                Assert.That(f.Match.Commands, Is.SameAs(p2)); Assert.That(f.Player.CanInteract, Is.False); Assert.That(p2.CanInteract, Is.True);
+                Assert.That(f.Host.State.Revision, Is.EqualTo(revision)); CollectionAssert.AreEqual(hand2, f.Hand.Zone.Cards);
+                f.Select(); Assert.That(p2.Discard(f.Hand, false), Is.EqualTo(1));
+                Assert.That(p2.Turn.Energy, Is.EqualTo(2)); Assert.That(f.Player.Turn.Energy, Is.EqualTo(3));
+                CollectionAssert.AreEqual(hand1, f.Host.State.Zone(CardZoneKinds.Hand, f.Player.ParticipantId).Cards);
+                Assert.That(f.Host.SelectPlayer(f.Player), Is.True); f.HandView.CompleteTransitions();
+                CollectionAssert.AreEqual(hand1, f.Hand.Zone.Cards);
+                Assert.That(f.Player.EndTurn(false), Is.True); f.HandView.CompleteTransitions();
+                Assert.That(f.Host.Player, Is.SameAs(p2)); Assert.That(f.Host.State.Duel.CompletedRounds, Is.Zero);
+                Assert.That(p2.EndTurn(false), Is.True); f.HandView.CompleteTransitions();
+                Assert.That(f.Host.State.Duel.CompletedRounds, Is.EqualTo(1)); Assert.That(f.Player.Unit.Health, Is.EqualTo(19));
+                foreach (var zone in f.Host.State.Table.Zones) CollectionAssert.AreEquivalent(zone.Cards, f.Match.State.GetZone(zone.Id).Cards);
+            }
+        }
+        [Test] public void ActorProfilesAreIndependentAndCapturedAtBattleCreation()
+        {
+            using (var f = new Fixture(playerCount: 2, enemyCount: 2))
+            {
+                var player = f.Host.Players[1]; var enemy = f.Host.Enemies[1];
+                var p = new SerializedObject(player.Profile); p.FindProperty("maxHealth").intValue = 70;
+                p.FindProperty("initialEnergy").intValue = 6; p.FindProperty("playEnergyCost").intValue = 2;
+                p.FindProperty("handSize").intValue = 5; p.ApplyModifiedPropertiesWithoutUndo();
+                var e = new SerializedObject(enemy.Profile); e.FindProperty("maxHealth").intValue = 120;
+                e.FindProperty("attackDamage").intValue = 11; e.ApplyModifiedPropertiesWithoutUndo();
+                Assert.That(player.Turn.Energy, Is.EqualTo(3)); Assert.That(enemy.Unit.Health, Is.EqualTo(75));
+                f.Host.StartBattle(); f.HandView.CompleteTransitions();
+                Assert.That(player.Unit.Health, Is.EqualTo(70)); Assert.That(player.Turn.Energy, Is.EqualTo(6));
+                Assert.That(player.Rules.PlayEnergyCost, Is.EqualTo(2)); Assert.That(enemy.Unit.Health, Is.EqualTo(120));
+                Assert.That(enemy.ReadIntent().Damage, Is.EqualTo(11)); Assert.That(f.Player.Unit.Health, Is.EqualTo(40));
+                Assert.That(f.Host.SelectPlayer(player), Is.True); f.HandView.CompleteTransitions(); Assert.That(f.Hand.Cards.Count, Is.EqualTo(5));
+            }
+        }
+        [Test] public void EnemyQueueWaitsForEachUnitsPresentationBeforeCommittingNextAttack()
+        {
+            using (var f = new Fixture(playerCount: 2, enemyCount: 3))
+            {
+                f.HandView.CompleteTransitions(); Assert.That(f.Player.EndTurn(false), Is.True); f.HandView.CompleteTransitions();
+                var actors = f.Host.Players.Cast<BattleActor>().Concat(f.Host.Enemies).ToArray();
+                var probes = actors.ToDictionary(actor => actor, Probe);
+                var selected = f.Host.Player;
+                var result = f.Host.Engine.Execute(f.Host.State, f.Host.State.Revision, selected.ParticipantId, CardDuelAction.EndTurn);
+                typeof(SingleBattleHost).GetProperty("State").SetValue(f.Host, result.State);
+                const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
+                typeof(SingleBattleHost).GetField("busy", flags).SetValue(f.Host, true);
+                var sequence = (IEnumerator)typeof(SingleBattleHost).GetMethod("RunPresentation", flags).Invoke(f.Host,
+                    new object[] { typeof(SingleBattleHost).GetMethod("Present", flags).Invoke(f.Host, new object[] { result }) });
+                try
+                {
+                    for (int i = 0; i < 3; i++)
+                    {
+                        var prepare = NextPending(f, sequence);
+                        Assert.That(probes[f.Host.Enemies[i]].Cues.Last().Kind, Is.EqualTo(BattlePresentationKind.PrepareAttack));
+                        Assert.That(f.Player.Unit.Health, Is.EqualTo(40 - i * 7));
+                        Assert.That(f.Host.SelectPlayer(f.Player), Is.False); prepare.Complete();
+                        var attack = NextPending(f, sequence);
+                        Assert.That(probes[f.Host.Enemies[i]].Cues.Last().Kind, Is.EqualTo(BattlePresentationKind.Attack));
+                        Assert.That(f.Player.Unit.Health, Is.EqualTo(40 - (i + 1) * 7)); attack.Complete();
+                        var hit = NextPending(f, sequence); Assert.That(probes[f.Player].Cues.Last().Kind, Is.EqualTo(BattlePresentationKind.Hit)); hit.Complete();
+                    }
+                    Assert.That(NextPending(f, sequence), Is.Null); Assert.That(f.Host.IsPresenting, Is.False);
+                    Assert.That(f.Host.State.Duel.CompletedRounds, Is.EqualTo(1));
+                    Assert.That(f.Host.Players.All(actor => actor.Turn.Energy == 3), Is.True);
+                }
+                finally { (sequence as IDisposable)?.Dispose(); }
+            }
+        }
         [Test] public void OperationHasExactlyOneTerminalOutcomeAndCarriesFailureReason()
         {
             var operation = new BattlePresentationOperation(); var reason = new InvalidOperationException("Timeline interrupted");
@@ -271,9 +359,8 @@ namespace Poker.SingleBattle.Tests
         {
             using (var f = new Fixture())
             {
-                const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
-                typeof(SingleBattleHost).GetField("playRefillTiming", flags).SetValue(f.Host, CardDuelRefillTiming.AfterAction);
-                typeof(SingleBattleHost).GetField("discardRefillTiming", flags).SetValue(f.Host, CardDuelRefillTiming.NextPlayerTurn);
+                f.Set("playRefillTiming", (int)CardDuelRefillTiming.AfterAction);
+                f.Set("discardRefillTiming", (int)CardDuelRefillTiming.NextPlayerTurn);
                 f.Host.StartBattle(); f.Select(); f.Player.Play(f.Hand, f.Played, f.Actions.PlayRoute, false);
                 Assert.That(f.Hand.Cards.Count, Is.EqualTo(8)); Assert.That(f.Played.Cards, Is.Empty);
                 f.Select(); f.Player.Discard(f.Hand, false); Assert.That(f.Hand.Cards.Count, Is.EqualTo(7));

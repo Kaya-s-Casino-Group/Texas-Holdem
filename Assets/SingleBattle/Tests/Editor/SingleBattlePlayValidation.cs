@@ -18,6 +18,8 @@ namespace Poker.SingleBattle.Tests
     public static class SingleBattlePlayValidation
     {
         private static SingleBattleHost host;
+        private static PlayerBattleProfile originalPlayer, testPlayer;
+        private static EnemyBattleProfile originalEnemy, testEnemy;
         private static int stage, playerHealth, enemyHealth, enemyDamage, automaticPlays;
         private static int maxEnergy, initialEnergy, playEnergyCost, discardEnergyCost;
         private static long scoreRevision;
@@ -37,15 +39,17 @@ namespace Poker.SingleBattle.Tests
             SetTiming("discardRefillTiming", CardDuelRefillTiming.NextPlayerTurn);
             host.StartBattle(); stage = -8;
         }
-        private static CardDuelRefillTiming GetTiming(string field) => (CardDuelRefillTiming)typeof(SingleBattleHost)
-            .GetField(field, BindingFlags.Instance | BindingFlags.NonPublic).GetValue(host);
-        private static void SetTiming(string field, CardDuelRefillTiming value) => typeof(SingleBattleHost)
-            .GetField(field, BindingFlags.Instance | BindingFlags.NonPublic).SetValue(host, value);
+        private static CardDuelRefillTiming GetTiming(string field) => (CardDuelRefillTiming)Get(field);
+        private static void SetTiming(string field, CardDuelRefillTiming value) => Set(field, (int)value);
 
         public static void Run()
         {
             if (!Application.isPlaying || host != null) throw new InvalidOperationException("Enter Play and finish any previous validation first.");
-            host = Object.FindObjectsOfType<SingleBattleHost>().Single(item => item.State != null);
+            var candidate = Object.FindObjectsOfType<SingleBattleHost>().Single(item => item.State != null);
+            if (candidate.Players.Count != 1 || candidate.Enemies.Count != 1) throw new InvalidOperationException("此项验证需要 1v1 的 SingleBattleDemo 场景。");
+            host = candidate; originalPlayer = host.Player.Profile; originalEnemy = host.Enemy.Profile;
+            testPlayer = Object.Instantiate(originalPlayer); testEnemy = Object.Instantiate(originalEnemy);
+            host.Player.ConfigureProfile(testPlayer); host.Enemy.ConfigureProfile(testEnemy);
             playerHealth = Get("playerHealth"); enemyHealth = Get("enemyHealth"); enemyDamage = Get("enemyDamage");
             maxEnergy = Get("maxEnergy"); initialEnergy = Get("initialEnergy"); playEnergyCost = Get("playEnergyCost"); discardEnergyCost = Get("discardEnergyCost");
             enemyRestScale = host.Enemy.Visual.localScale;
@@ -60,8 +64,11 @@ namespace Poker.SingleBattle.Tests
             }
             catch (Exception error) { Finish(error); }
         }
-        private static int Get(string field) => (int)typeof(SingleBattleHost).GetField(field, BindingFlags.Instance | BindingFlags.NonPublic).GetValue(host);
-        private static void Set(string field, int value) => typeof(SingleBattleHost).GetField(field, BindingFlags.Instance | BindingFlags.NonPublic).SetValue(host, value);
+        private static SerializedObject Configuration(string field) => new SerializedObject(field == "enemyHealth" || field == "enemyDamage" ? (Object)testEnemy : testPlayer);
+        private static string PropertyName(string field) => field == "playerHealth" || field == "enemyHealth" ? "maxHealth" : field == "enemyDamage" ? "attackDamage" : field;
+        private static int Get(string field) => Configuration(field).FindProperty(PropertyName(field)).intValue;
+        private static void Set(string field, int value)
+        { var configuration = Configuration(field); configuration.FindProperty(PropertyName(field)).intValue = value; configuration.ApplyModifiedPropertiesWithoutUndo(); }
         private static void Select()
         {
             foreach (var card in host.Actions.Hand.Cards) host.Actions.Hand.SetInteraction(card.Id, default);
@@ -278,8 +285,9 @@ namespace Poker.SingleBattle.Tests
             if (host != null && Application.isPlaying)
             {
                 if (dealingOnly) { SetTiming("playRefillTiming", savedPlayRefill); SetTiming("discardRefillTiming", savedDiscardRefill); }
-                Set("playerHealth", playerHealth); Set("enemyHealth", enemyHealth); Set("enemyDamage", enemyDamage); RestoreEnergy(); host.SnapToState(); host.StartBattle();
+                host.Player.ConfigureProfile(originalPlayer); host.Enemy.ConfigureProfile(originalEnemy); host.SnapToState(); host.StartBattle();
             }
+            if (testPlayer != null) Object.DestroyImmediate(testPlayer); if (testEnemy != null) Object.DestroyImmediate(testEnemy);
             host = null; dealingOnly = false;
             if (error != null) Debug.LogException(error); else Debug.Log(wasDealing ? "SingleBattle dealing passed: immediate/deferred play and discard, actual draw animations, input lock and turn-start refill." :
                 "SingleBattle UI passed: player energy, several plays per turn, automatic/manual/zero-play end, one enemy action, refill, input lock, overview, win/loss and restart.");

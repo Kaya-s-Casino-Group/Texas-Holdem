@@ -1,4 +1,7 @@
+using System;
+using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 using CardInteraction;
 using CardPresentation;
 using PokerEngine;
@@ -8,17 +11,23 @@ namespace Poker.SingleBattle
     /// <summary>Player-only input/energy access. Submits requests to the battle owner, never resolves damage itself.</summary>
     public sealed class PlayerBattleActor : BattleActor, ICardMatchCommands
     {
-        protected override bool OwnsParticipant(CardDuelState state, ParticipantId id) => state.Duel.PlayerId == id;
-        public PlayerTurnState Turn => IsBound ? Battle.State.Duel.PlayerTurn : null;
-        public bool CanInteract => isActiveAndEnabled && IsBound && IsAlive && Battle.CanReceivePlayerInput;
+        [SerializeField, InspectorName("玩家配置")] private PlayerBattleProfile profile;
+        public PlayerBattleProfile Profile => profile;
+        public void ConfigureProfile(PlayerBattleProfile configuration) => profile = configuration != null ? configuration : throw new ArgumentNullException(nameof(configuration));
+        public BattlePlayerSetup CreateSetup(ParticipantId id, IEnumerable<DeckEntry> deck = null, int? initialHealth = null) =>
+            profile != null ? profile.BuildSetup(id, deck, initialHealth) : throw new InvalidOperationException("Bind a player profile first.");
+        public BattlePlayerRules Rules => IsBound ? Battle.State.Duel.Player(ParticipantId).Rules : profile?.BuildRules();
+        protected override bool OwnsParticipant(CardDuelState state, ParticipantId id) => Battle.OwnsPlayer(this, id);
+        public PlayerTurnState Turn => IsBound ? Battle.State.Duel.Player(ParticipantId).Energy : null;
+        public bool CanInteract => isActiveAndEnabled && IsBound && IsAlive && Battle.Player == this && Battle.CanReceivePlayerInput;
         public bool CanEndTurn => CanInteract;
         internal CardInstanceId[] SelectedCards() => Battle.Actions.Hand.Cards.Where(card => card.Interaction.IsSelected).Select(card => card.Card.Id).ToArray();
         private bool CanSubmit(CardZonePlayHost hand, bool discard)
         {
-            if (!CanInteract || hand != Battle.Actions.Hand || discard && Battle.State.DiscardsRemaining == 0 ||
-                Turn.Energy < (discard ? Battle.Engine.Duel.Definition.DiscardEnergyCost : Battle.Engine.Duel.Definition.PlayEnergyCost)) return false;
+            if (!CanInteract || hand != Battle.Actions.Hand || discard && Battle.State.DiscardsFor(ParticipantId) == 0 ||
+                Turn.Energy < (discard ? Rules.DiscardEnergyCost : Rules.PlayEnergyCost)) return false;
             var ids = SelectedCards();
-            return ids.Length >= 1 && ids.Length <= Battle.Engine.MaxSelection && ids.All(id => Battle.State.Zone(CardZoneKinds.Hand).Cards.Contains(id) &&
+            return ids.Length >= 1 && ids.Length <= Rules.MaxSelection && ids.All(id => Battle.State.Zone(CardZoneKinds.Hand, ParticipantId).Cards.Contains(id) &&
                 (discard ? Battle.State.Table.GetCard(id).CanDiscard : Battle.State.Table.GetCard(id).CanPlay));
         }
         public bool CanPlay(CardZonePlayHost hand) => CanSubmit(hand, false);

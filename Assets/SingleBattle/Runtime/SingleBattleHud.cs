@@ -1,3 +1,4 @@
+using System.Linq;
 using PokerEngine;
 using TMPro;
 using UnityEngine;
@@ -15,6 +16,30 @@ namespace Poker.SingleBattle
         [SerializeField] private Button restart, resultRestart;
         [SerializeField] private TMP_Text energy;
         [SerializeField] private Button endTurn;
+        private Button switchPlayer;
+        public Button SwitchPlayerButton => switchPlayer;
+        private void EnsurePlayerSwitch()
+        {
+            if (!Application.isPlaying || switchPlayer != null || host.Players.Count < 2 || restart == null) return;
+            switchPlayer = Instantiate(restart, restart.transform.parent);
+            switchPlayer.name = "Switch Player";
+            switchPlayer.onClick = new Button.ButtonClickedEvent();
+            switchPlayer.onClick.AddListener(SelectNextPlayer);
+            var rect = switchPlayer.GetComponent<RectTransform>();
+            rect.anchoredPosition += new Vector2(0, -52);
+            rect.sizeDelta = new Vector2(245, rect.sizeDelta.y);
+            var label = switchPlayer.GetComponentInChildren<TMP_Text>(); label.text = "切换玩家（Tab）";
+            label.rectTransform.anchorMin = Vector2.zero; label.rectTransform.anchorMax = Vector2.one;
+            label.rectTransform.offsetMin = new Vector2(4, 2); label.rectTransform.offsetMax = new Vector2(-4, -2);
+        }
+        private void SelectNextPlayer()
+        {
+            if (host == null || !host.CanSwitchPlayer) return;
+            var players = host.Players.ToList(); int current = players.IndexOf(host.Player);
+            for (int offset = 1; offset < players.Count; offset++)
+                if (host.State.Duel.CanAct(players[(current + offset) % players.Count].ParticipantId))
+                { host.SelectPlayer(players[(current + offset) % players.Count]); return; }
+        }
         public Button RestartButton => restart;
         public Button EndTurnButton => endTurn;
         public string EnergyText => energy.text;
@@ -36,20 +61,22 @@ namespace Poker.SingleBattle
             var state = host.State; var duel = state.Duel; var rules = host.Engine.Duel.Definition;
             var hero = host.Player.Unit; var monster = host.Enemy.Unit;
             if (hero == null || monster == null) return;
-            player.text = "你   " + hero.Health + " / " + hero.MaxHealth + "\n格挡 " + hero.Block;
-            enemy.text = "守卫   " + monster.Health + " / " + monster.MaxHealth + "\n格挡 " + monster.Block;
-            if (energy != null) energy.text = "能量 " + duel.PlayerTurn.Energy + " / " + duel.PlayerTurn.MaxEnergy +
-                "\n出牌 " + rules.PlayEnergyCost + " · 弃牌 " + rules.DiscardEnergyCost;
+            EnsurePlayerSwitch();
+            player.text = "玩家 " + (host.Players.ToList().IndexOf(host.Player) + 1) + "   " + hero.Health + " / " + hero.MaxHealth + "\n格挡 " + hero.Block;
+            enemy.text = string.Join("\n", host.Enemies.Select((actor, i) => "怪物 " + (i + 1) + "  " + actor.Unit.Health + " / " + actor.Unit.MaxHealth));
+            enemy.fontSize = host.Enemies.Count > 2 ? 16 : 21;
+            if (energy != null) energy.text = "能量 " + host.Player.Turn.Energy + " / " + host.Player.Turn.MaxEnergy +
+                "\n出牌 " + host.Player.Rules.PlayEnergyCost + " · 弃牌 " + host.Player.Rules.DiscardEnergyCost;
             if (endTurn != null) endTurn.interactable = host.CanEndTurn;
             playerBar.rectTransform.anchorMax = new Vector2((float)hero.Health / hero.MaxHealth, 1);
-            enemyBar.rectTransform.anchorMax = new Vector2((float)monster.Health / monster.MaxHealth, 1);
+            enemyBar.rectTransform.anchorMax = new Vector2((float)host.Enemies.Sum(actor => actor.Unit.Health) / host.Enemies.Sum(actor => actor.Unit.MaxHealth), 1);
             int round = duel.IsFinished ? duel.CompletedRounds : duel.CompletedRounds + 1;
             turn.text = "第 " + round + " / " + rules.RoundLimit + " 回合 · " + (duel.IsFinished ? "战斗结束" :
-                duel.Phase == ScoredDuelPhase.AwaitingPlayerHand ? "玩家行动" : "敌人行动");
-            intent.text = duel.IsFinished ? "" : "敌人意图：攻击 " + host.Enemy.ReadIntent().Damage;
+                duel.Phase == ScoredDuelPhase.AwaitingPlayerHand ? "玩家行动（待结束 " + duel.Players.Count(p => duel.CanAct(p.Id)) + "）" : "敌人行动");
+            intent.text = duel.IsFinished ? "" : "敌方意图：" + string.Join(" · ", host.Enemies.Where(actor => actor.IsAlive).Select(actor => "攻击 " + actor.ReadIntent().Damage));
             message.text = host.Message;
-            counts.text = "抽牌堆 " + state.Zone(CardZoneKinds.Deck).Cards.Count + "  ·  弃牌堆 " + state.Zone(CardZoneKinds.Discard).Cards.Count +
-                "  ·  剩余弃牌 " + state.DiscardsRemaining;
+            counts.text = "抽牌堆 " + host.PlayerZone(CardZoneKinds.Deck).Cards.Count + "  ·  弃牌堆 " + host.PlayerZone(CardZoneKinds.Discard).Cards.Count +
+                "  ·  剩余弃牌 " + host.PlayerDiscards;
             score.text = host.LastScore == null ? "牌型得分 ÷ " + rules.DamagePolicy.PointsPerDamage + " = 伤害（向下取整）" :
                 "上次：" + HandName(host.LastScore.Category) + "  " + host.LastScore.Total + " 分 / " + host.LastDamage + " 伤害";
             bool showResult = duel.IsFinished && !host.IsPresenting;
@@ -60,7 +87,7 @@ namespace Poker.SingleBattle
                 bool won = duel.Phase == ScoredDuelPhase.Won;
                 resultTitle.text = won ? "战斗胜利" : "战斗失败";
                 resultTitle.color = won ? new Color32(233, 193, 112, 255) : new Color32(237, 125, 123, 255);
-                resultDetails.text = (won ? "你击败了守卫" : result.Reason == EncounterEndReason.RoundLimit ? "回合已用尽" : "你的生命值已耗尽") +
+                resultDetails.text = (won ? "全部怪物已被击败" : result.Reason == EncounterEndReason.RoundLimit ? "回合已用尽" : "全部玩家已阵亡") +
                     "\n完成 " + duel.CompletedRounds + " 回合 · 总得分 " + duel.TotalScore;
             }
         }
@@ -103,6 +130,8 @@ namespace Poker.SingleBattle
         private void LateUpdate()
         {
             if (host != null && endTurn != null) endTurn.interactable = host.CanEndTurn;
+            if (switchPlayer != null) switchPlayer.interactable = host.CanSwitchPlayer && host.State.Duel.Players.Count(p => host.State.Duel.CanAct(p.Id)) > 1;
+            if (Input.GetKeyDown(KeyCode.Tab)) SelectNextPlayer();
         }
     }
 }
