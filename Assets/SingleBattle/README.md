@@ -8,13 +8,24 @@ Host 不再保存生命、攻击、能量、牌数等数值，仅持有玩家/�
 
 | 位置 | 内容 | 默认 Demo 资产 |
 | --- | --- | --- |
-| PlayerBattleActor → 玩家配置 | 单位 ID、最大生命、初始格挡、能量上限/初始值、出牌/弃牌费用、手牌上限、弃牌次数、两种补牌时机 | `Assets/SingleBattle/Profiles/DemoPlayer.asset` |
+| PlayerBattleActor → 玩家配置 | 单位 ID、最大生命、初始格挡、能量上限/初始值、出牌/弃牌费用、手牌上限、弃牌次数及无限开关、独立出/弃牌张数上限、两种补牌时机 | `Assets/SingleBattle/Profiles/DemoPlayer.asset` |
 | EnemyBattleActor → 怪物配置 | 单位 ID、最大生命、初始格挡、基础攻击伤害；没有能量或牌组字段 | `Assets/SingleBattle/Profiles/DemoEnemy.asset` |
-| SingleBattleHost → 公共战局规则 | 规则版本、回合上限、独立牌型计分、出牌伤害与弃牌收益资产引用 | `Assets/SingleBattle/Profiles/DemoBattleRules.asset` |
+| SingleBattleHost → 公共战局规则 | 规则版本、回合上限、玩家格挡清除时机、独立牌型计分、出牌伤害与弃牌收益资产引用 | `Assets/SingleBattle/Profiles/DemoBattleRules.asset` |
 
 使用 Assets/Create/玩法/战局 创建不同角色/怪物的配置，分别拖到对应 Actor。多个 Actor 可复用同一模板，但需要不同数值时应复制或另建配置再绑定。共享资产不是角色当前状态：开战时转成不可变的 BattlePlayerSetup / BattleEnemySetup / BattlePlayerRules，当前 HP、格挡、能量、手牌仅由战局状态持有；修改配置应用于下一场战斗。
 
 已迁移原场景数值，Demo 公共配置的回合上限保留原值 **445**，没有重置为代码默认的 8。Player 40 HP、怪物 75 HP/攻击 7、默认 3 能量，出牌和弃牌各耗 1。初始能量独立设置，允许超过上限；后续回合恢复到该玩家的上限。
+
+### 可选基础规则接口
+
+这些选项在开战时形成不可变快照；新增接口没有修改现有 Demo 资产、场景或收益绑定。
+
+- `PlayerBattleProfile.unlimitedDiscards` → `BattlePlayerRules.UnlimitedDiscards`：默认 false，仍按整场预算扣次数；true 时不检查、不扣该计数，但仍检查能量、手牌、阶段与张数合法性。`discards = 0` 单独使用仍表示不能弃牌。`CardDuelState.RemainingDiscardBudgetFor(player)` 返回 null 表示不限，`HasDiscardBudgetFor(player)` 查询次数条件；旧 `DiscardsFor/DiscardsRemaining` 仅保留有限计数，在无限模式下保持初始值，不能用它判断可否弃牌。
+- `maxPlayCards/maxDiscardCards` → `MaxPlayCards/MaxDiscardCards`：默认各 5。出牌配置范围 1–5（现有分类器的提交牌数范围）；弃牌范围 1–52；实际均取与手牌上限的较小值。`MaxSelection` 仅表示 UI 可选择范围的最大值，不能替代动作各自的上限。正式提交、预览、玩家按钮校验使用同一动作上限；绑定玩家时同步手牌选择上限。
+- `BattleRulesProfile.playerBlockExpiry` → `BattleRules.PlayerBlockExpiry`：默认 `Retain`，格挡保留至被消耗。选 `AfterEnemyPhase` 时，最后一个敌人结算完伤害后，清除所有仍存活玩家的剩余格挡；不会在两个敌人之间清除，不修改怪物格挡。到达回合上限时同样清除，但不恢复下一轮能量；玩家提前击杀全部敌人不会触发不存在的敌人阶段。清除通过 CombatEngine 生成 ClearBlock 事件，按伤害事件后顺序追加，0 格挡不生成空事件。
+- 新建 `玩法/战局/弃牌收益配置（每张格挡）` 可得到 `PerCardBlockRewardProfile`，独立配置 `blockPerCard`（新建默认 8，允许 0）；引用到公共规则的弃牌收益槽位后才启用。纯 C# 对应 `PerCardBlockRewardRule`。每个选定存活友方获得 `实际弃牌张数 × 每张格挡`，默认目标策略为自己；多友方目标时每人各获得全额，非均分。规则不计牌型，0 收益不生成战斗事件，溢出拒绝整次动作。
+
+离线验证：`Assets/PokerEngine/Tests/Editor/BattleConfigurationTests.cs` 覆盖默认兼容、独立上限、次数/能量约束、实际弃牌计数、预览与执行、回滚、多敌人格挡时序与基础方案组合；这是规则正确性验证，不代表这些参数已经完成平衡验证。Windows 可运行 `Tools/test-poker-engine.ps1 -Compiler <csc.exe> -Runtime <mono.exe> -NUnit <已有的 NUnit3 DLL> -Fixtures BattleConfigurationTests,CardDuelTests,TeamBattleTests,DiscardRewardTests,CombatTests,AttackContextTests,ScoredHandDamageTests,ModuleBoundaryTests`。脚本按模块分别编译，不启动 Unity、不下载依赖；编译输出默认保存在系统临时目录。已有 bash 脚本也支持将测试类名作为参数传入。
 
 ## 牌型计分
 
@@ -22,10 +33,10 @@ Host 不再保存生命、攻击、能量、牌数等数值，仅持有玩家/�
 
 ## 独立弃牌收益与只读验算
 
-- `BattleRulesProfile` 的「弃牌收益配置」引用独立 `DiscardRewardProfile`。Demo 绑定 `DemoDiscardReward.asset`（NoDiscardRewardProfile）；未绑定时也明确使用 `NoDiscardRewardRule`，默认不产生额外收益。`Tools/Poker/战局/打开默认弃牌收益配置` 可查看；当前仅有规则版本，不预设收益数值或公式。
+- `BattleRulesProfile` 的「弃牌收益配置」引用独立 `DiscardRewardProfile`。Demo 绑定 `DemoDiscardReward.asset`（NoDiscardRewardProfile）；未绑定时也明确使用 `NoDiscardRewardRule`，默认不产生额外收益。`Tools/Poker/战局/打开默认弃牌收益配置` 可查看该无收益资产；可选按张数格挡配置见上文。
 - 配置的 `BuildRule()` 在开局生成不可变、纯 C# 的 `IDiscardRewardRule`。未来规则通过独立实现及派生配置接入，Host、牌区和验算面板不承担收益计算。费用、次数、移牌和补牌由战局原流程管理，收益规则不能自行修改它们。
 - `DiscardRewardContext` 包含弃牌前的只读 TeamBattleState、弃牌者、实际弃掉的卡牌/有效牌面快照及已验证的友方目标。不会调用牌型分类、ScoreEngine、出牌伤害或攻击/承伤修正，也不伪造攻击来源；弃牌分数不进入战斗总分。直接调用 TeamBattle 的 Discard 时须提供真实弃牌快照；CardDuel 会自动构建。
-- `DiscardRewardPlan` 返回版本、说明和效果列表；默认列表为空，不调用 CombatEngine、不增加 Combat revision、不生成 0 点收益事件。当前效果通路只允许 Combat 已有的 GainBlock / Heal，来源必须是弃牌者，目标必须属于选定的存活友方；具体生产用收益规则尚未实现。非法输出、版本不匹配或数值溢出原子拒绝整次弃牌，不扣费、不移牌、不消耗随机数。
+- `DiscardRewardPlan` 返回版本、说明和效果列表；默认列表为空，不调用 CombatEngine、不增加 Combat revision、不生成 0 点收益事件。当前效果通路只允许 Combat 已有的 GainBlock / Heal，来源必须是弃牌者，目标必须属于选定的存活友方；按张数格挡是一个可选具体实现。非法输出、版本不匹配或数值溢出原子拒绝整次弃牌，不扣费、不移牌、不消耗随机数。
 - `Tools/Poker/战局/弃牌收益验算` 是独立中文只读面板，展示弃牌快照、收益目标、原有费用/次数/过牌结果、规则说明以及额外收益和实际结算。默认明确显示“无额外收益”。「当前选牌预计结果」调用 `Host.PreviewSelectedDiscard → CardDuelEngine.PreviewDiscard → Execute`，不提交返回状态；「最近一次实际弃牌」读取 Host 缓存的已提交返回值，重新开局清空。
 - 测试入口 `Tools/测试面板` →「弃牌收益与友方边界」。规则与目标策略必须纯函数，不能读取外部随机源、改变状态或触发表现，保证预览与实际执行一致。
 

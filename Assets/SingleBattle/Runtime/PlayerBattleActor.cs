@@ -24,10 +24,10 @@ namespace Poker.SingleBattle
         internal CardInstanceId[] SelectedCards() => Battle.Actions.Hand.Cards.Where(card => card.Interaction.IsSelected).Select(card => card.Card.Id).ToArray();
         private bool CanSubmit(CardZonePlayHost hand, bool discard)
         {
-            if (!CanInteract || hand != Battle.Actions.Hand || discard && Battle.State.DiscardsFor(ParticipantId) == 0 ||
+            if (!CanInteract || hand != Battle.Actions.Hand || discard && !Battle.State.HasDiscardBudgetFor(ParticipantId) ||
                 Turn.Energy < (discard ? Rules.DiscardEnergyCost : Rules.PlayEnergyCost)) return false;
             var ids = SelectedCards();
-            return ids.Length >= 1 && ids.Length <= Rules.MaxSelection && ids.All(id => Battle.State.Zone(CardZoneKinds.Hand, ParticipantId).Cards.Contains(id) &&
+            return ids.Length >= 1 && ids.Length <= (discard ? Rules.MaxDiscardCards : Rules.MaxPlayCards) && ids.All(id => Battle.State.Zone(CardZoneKinds.Hand, ParticipantId).Cards.Contains(id) &&
                 (discard ? Battle.State.Table.GetCard(id).CanDiscard : Battle.State.Table.GetCard(id).CanPlay));
         }
         public bool TryGetCardBasePoints(CardInstanceId card, out long points)

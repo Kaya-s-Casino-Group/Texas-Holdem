@@ -53,7 +53,10 @@ namespace PokerEngine
         public RandomState Random { get; }
         private readonly Dictionary<ParticipantId, int> discards;
         public int DiscardsRemaining => DiscardsFor(Duel.PlayerId);
+        // Finite counter is unchanged in unlimited mode; use RemainingDiscardBudgetFor for display/query.
         public int DiscardsFor(ParticipantId player) => discards[player];
+        public int? RemainingDiscardBudgetFor(ParticipantId player) => Duel.Player(player).Rules.UnlimitedDiscards ? (int?)null : discards[player];
+        public bool HasDiscardBudgetFor(ParticipantId player) => Duel.Player(player).Rules.UnlimitedDiscards || discards[player] > 0;
         public bool HasStarted { get; }
         public long Revision => Table.Revision;
         public CardZone Zone(string kind) => Zone(kind, Duel.PlayerId);
@@ -159,7 +162,7 @@ namespace PokerEngine
             if (!state.HasStarted || !state.Duel.Players.Any(player => player.Id == actor)) return new CardDuelTransition(state, CardDuelError.InvalidPhase);
             var ids = (selected ?? new CardInstanceId[0]).ToArray();
             var hand = state.Zone(CardZoneKinds.Hand, actor);
-            if (ids.Length < 1 || ids.Length > state.Duel.Player(actor).Rules.MaxSelection || ids.Distinct().Count() != ids.Length ||
+            if (ids.Length < 1 || ids.Length > state.Duel.Player(actor).Rules.MaxPlayCards || ids.Distinct().Count() != ids.Length ||
                 ids.Any(id => !hand.Cards.Contains(id) || state.Table.GetCard(id).IsDisabled))
                 return new CardDuelTransition(state, CardDuelError.InvalidSelection);
             try
@@ -195,10 +198,11 @@ namespace PokerEngine
             if (action == CardDuelAction.CollectPlayed ? !hasPlayed : !enemy && hasPlayed)
                 return new CardDuelTransition(state, CardDuelError.InvalidPhase);
             var ids = (selected ?? new CardInstanceId[0]).ToArray();
-            if (action != CardDuelAction.Play && action != CardDuelAction.Discard ? ids.Length != 0 : ids.Length < 1 || ids.Length > state.Duel.Player(actor).Rules.MaxSelection ||
+            if (action != CardDuelAction.Play && action != CardDuelAction.Discard ? ids.Length != 0 : ids.Length < 1 ||
+                ids.Length > (action == CardDuelAction.Play ? state.Duel.Player(actor).Rules.MaxPlayCards : state.Duel.Player(actor).Rules.MaxDiscardCards) ||
                 ids.Distinct().Count() != ids.Length || ids.Any(id => !state.Zone(CardZoneKinds.Hand, actor).Cards.Contains(id) || state.Table.GetCard(id).IsDisabled))
                 return new CardDuelTransition(state, CardDuelError.InvalidSelection);
-            if (action == CardDuelAction.Discard && state.DiscardsFor(actor) == 0) return new CardDuelTransition(state, CardDuelError.NoDiscards);
+            if (action == CardDuelAction.Discard && !state.HasDiscardBudgetFor(actor)) return new CardDuelTransition(state, CardDuelError.NoDiscards);
             if ((action == CardDuelAction.Play && state.Duel.Player(actor).Energy.Energy < state.Duel.Player(actor).Rules.PlayEnergyCost) ||
                 (action == CardDuelAction.Discard && state.Duel.Player(actor).Energy.Energy < state.Duel.Player(actor).Rules.DiscardEnergyCost))
                 return new CardDuelTransition(state, CardDuelError.InsufficientEnergy);
@@ -232,7 +236,8 @@ namespace PokerEngine
                     if (!spent.Accepted) return new CardDuelTransition(state, spent.Error);
                     duel = spent.State; events = spent.Events; discardReward = spent.DiscardReward;
                     Move(zones, actor, CardZoneKinds.Hand, CardZoneKinds.Discard, state.Zone(CardZoneKinds.Hand, actor).Cards.Where(ids.Contains));
-                    discards[actor]--; Deal(state.Table, zones, actor, duel.Player(actor).Rules, CardDuelDealTrigger.AfterDiscard, ref random);
+                    if (!duel.Player(actor).Rules.UnlimitedDiscards) discards[actor]--;
+                    Deal(state.Table, zones, actor, duel.Player(actor).Rules, CardDuelDealTrigger.AfterDiscard, ref random);
                 }
                 else if (action == CardDuelAction.EndTurn)
                 {

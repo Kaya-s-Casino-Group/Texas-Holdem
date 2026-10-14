@@ -66,7 +66,8 @@ namespace Poker.SingleBattle.Editor
             var before = context.State.Player(context.Source); var after = report.State.Duel.Player(context.Source);
             Row("能量消耗", before.Rules.DiscardEnergyCost.ToString());
             Row("能量", before.Energy.Energy + " → " + after.Energy.Energy);
-            Row("弃牌次数消耗", "1"); Row("执行后剩余次数", report.State.DiscardsFor(context.Source).ToString());
+            Row("弃牌次数消耗", before.Rules.UnlimitedDiscards ? "0（不限次数）" : "1");
+            Row("执行后剩余次数", report.State.RemainingDiscardBudgetFor(context.Source)?.ToString() ?? "不限");
             Row("执行后手牌数量", report.State.Zone(CardZoneKinds.Hand, context.Source).Cards.Count.ToString());
             EditorGUILayout.Space(); EditorGUILayout.LabelField("三、额外收益", EditorStyles.boldLabel);
             EditorGUILayout.LabelField(plan.Explanation, EditorStyles.wordWrappedLabel);

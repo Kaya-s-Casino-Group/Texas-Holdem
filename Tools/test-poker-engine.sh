@@ -34,4 +34,4 @@ tests=()
 while IFS= read -r -d '' file; do tests+=("$file"); done < <(find Assets/PokerEngine/Tests/Editor -name '*Tests.cs' ! -name 'PackagingTests.cs' -print0)
 "$compiler" -langversion:7.2 -warnaserror -r:System.Runtime.Serialization "${all_refs[@]}" -r:"$test_dir/nunit.framework.dll" \
   -out:"$test_dir/PokerEngine.Tests.exe" "${tests[@]}" Tools/PokerEngineTestRunner.cs
-"$runtime" "$test_dir/PokerEngine.Tests.exe"
+"$runtime" "$test_dir/PokerEngine.Tests.exe" "$@"

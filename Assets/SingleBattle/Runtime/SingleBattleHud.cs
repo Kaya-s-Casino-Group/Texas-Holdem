@@ -74,7 +74,7 @@ namespace Poker.SingleBattle
             RefreshEnemyIntents();
             message.text = "玩家 " + host.Players.Count(actor => actor.IsAlive) + " · 怪物 " + host.Enemies.Count(actor => actor.IsAlive);
             counts.text = "牌库 " + host.PlayerZone(CardZoneKinds.Deck).Cards.Count + " · 弃牌堆 " + host.PlayerZone(CardZoneKinds.Discard).Cards.Count +
-                "\n弃牌次数 " + host.PlayerDiscards;
+                "\n弃牌次数 " + (host.State.RemainingDiscardBudgetFor(host.Player.ParticipantId)?.ToString() ?? "不限");
             score.text = host.LastScore == null ? "总得分 " + duel.TotalScore :
                 "上次 " + HandName(host.LastScore.Category) + " · " + host.LastScore.Total + " 分\n伤害 " + host.LastDamage;
             bool showResult = duel.IsFinished && !host.IsPresenting;

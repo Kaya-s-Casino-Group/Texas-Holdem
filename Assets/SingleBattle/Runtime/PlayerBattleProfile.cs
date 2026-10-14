@@ -15,10 +15,13 @@ namespace Poker.SingleBattle
         [Header("玩家牌组与发牌")]
         [SerializeField, Range(1, 52), InspectorName("手牌上限")] private int handSize = 8;
         [SerializeField, Range(0, 1000), InspectorName("战局弃牌次数")] private int discards = 3;
+        [SerializeField, InspectorName("不限制战局弃牌次数（仍消耗能量）")] private bool unlimitedDiscards;
+        [SerializeField, Range(1, 5), InspectorName("单次出牌张数上限")] private int maxPlayCards = 5;
+        [SerializeField, Range(1, 52), InspectorName("单次弃牌张数上限")] private int maxDiscardCards = 5;
         [SerializeField, InspectorName("出牌后补牌时机")] private CardDuelRefillTiming playRefillTiming = CardDuelRefillTiming.NextPlayerTurn;
         [SerializeField, InspectorName("弃牌后补牌时机")] private CardDuelRefillTiming discardRefillTiming = CardDuelRefillTiming.AfterAction;
         public BattlePlayerRules BuildRules() => new BattlePlayerRules(maxEnergy, initialEnergy, playEnergyCost, discardEnergyCost,
-            handSize, discards, new CardDuelDealPolicy(playRefillTiming, discardRefillTiming));
+            handSize, discards, new CardDuelDealPolicy(playRefillTiming, discardRefillTiming), unlimitedDiscards, maxPlayCards, maxDiscardCards);
         // Null deck means an independent standard 52-card deck. A Run supplies this player's current entries.
         public BattlePlayerSetup BuildSetup(ParticipantId id, IEnumerable<DeckEntry> deck = null, int? initialHealth = null) =>
             new BattlePlayerSetup(id, BuildCombatant(), deck, initialHealth, BuildRules());

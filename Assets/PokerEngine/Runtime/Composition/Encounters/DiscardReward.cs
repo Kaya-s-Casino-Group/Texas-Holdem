@@ -32,7 +32,7 @@ namespace PokerEngine
         {
             State = state ?? throw new ArgumentNullException(nameof(state)); Source = source;
             var copy = Guard.Copy(cards, nameof(cards)); var allies = Guard.Copy(targets, nameof(targets));
-            if (!state.CanAct(source) || copy.Length < 1 || copy.Length > state.Player(source).Rules.MaxSelection ||
+            if (!state.CanAct(source) || copy.Length < 1 || copy.Length > state.Player(source).Rules.MaxDiscardCards ||
                 copy.Any(card => card == null || !card.Card.CanDiscard) || copy.Select(card => card.Id).Distinct().Count() != copy.Length ||
                 allies.Length < 1 || allies.Length > 64 || allies.Distinct().Count() != allies.Length ||
                 allies.Any(id => !Combat.Get(id).IsAlive || Combat.Get(id).TeamId != Combat.Get(source).TeamId))
@@ -73,7 +73,9 @@ namespace PokerEngine
         public DiscardRewardPlan Resolve(DiscardRewardContext context)
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
-            return new DiscardRewardPlan(Version, "无额外收益；仅按战局规则支付弃牌费用、消耗次数并过牌。");
+            return new DiscardRewardPlan(Version, context.State.Player(context.Source).Rules.UnlimitedDiscards
+                ? "无额外收益；按战局规则支付弃牌费用并过牌，不限制次数。"
+                : "无额外收益；仅按战局规则支付弃牌费用、消耗次数并过牌。");
         }
     }
 }

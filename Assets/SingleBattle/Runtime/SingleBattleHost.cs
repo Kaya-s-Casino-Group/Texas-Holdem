@@ -129,7 +129,9 @@ namespace Poker.SingleBattle
                 Players.Select((actor, index) => actor.CreateSetup(new ParticipantId(index == 0 ? "player" : id + "/player/" + index))),
                 Enemies.Select((actor, index) => actor.CreateSetup(new ParticipantId(id + "/enemy/" + index))));
             Engine = nextEngine; State = nextState;
-            LastScore = null; LastDamage = 0; LastPlayResolution = null; LastPlayedBy = default; LastDiscardResolution = null; LastDiscardedBy = default; Message = "选择 1–5 张牌组成牌型 · 能量用尽或手动结束回合";
+            LastScore = null; LastDamage = 0; LastPlayResolution = null; LastPlayedBy = default; LastDiscardResolution = null; LastDiscardedBy = default;
+            var limits = State.Duel.Player(State.Duel.PlayerId).Rules;
+            Message = "出牌 1–" + limits.MaxPlayCards + " 张 · 弃牌 1–" + limits.MaxDiscardCards + " 张 · 能量用尽或手动结束回合";
             // Bind the empty table before the first turn deals, so opening cards use the normal draw presentation.
             BindActors(); Bind();
             var opening = Engine.Execute(State, State.Revision, CardDuelAction.Start);
@@ -144,6 +146,7 @@ namespace Poker.SingleBattle
             actions.Hand.Bind(match, PlayerZone(CardZoneKinds.Hand).Id, deck, discard, actions.Hand.GetComponent<HandZoneView>().FacingCamera);
             actions.Played.Bind(match, PlayerZone(CardZoneKinds.Played).Id, deck, discard);
             actions.Hand.BeginSession(); actions.Played.BeginSession();
+            actions.Hand.GetComponent<HandZoneView>().SetMaxSelectedCards(playerActor.Rules.MaxSelection);
             // Rebinding an observer also restores the selected ordering for an already dealt hand.
             actions.Hand.RequestSortAfterLanding(actions.Hand.SortOrder);
             if (overview != null) { overview.BindArtwork(actions.Hand.GetComponent<HandZoneView>().CardPrefab); overview.Configure(match, overview.View, deck, State.Table.Zones.Where(zone => zone.ControllerId == playerActor.ParticipantId).SelectMany(zone => zone.Cards)); overview.Close(false); }

@@ -4,6 +4,8 @@ using System.Linq;
 
 namespace PokerEngine
 {
+    public enum PlayerBlockExpiry { Retain = 0, AfterEnemyPhase = 1 }
+
     /// <summary>Shared encounter rules only. No character stats, player energy or enemy attacks.</summary>
     public sealed class BattleRules
     {
@@ -13,12 +15,16 @@ namespace PokerEngine
         public IAttackDamageModifier AttackDamage { get; }
         public IIncomingDamageModifier IncomingDamage { get; }
         public IDiscardRewardRule DiscardReward { get; }
+        public PlayerBlockExpiry PlayerBlockExpiry { get; }
         public BattleRules(string version, IScoredHandDamageRule damagePolicy, int roundLimit,
-            IAttackDamageModifier attackDamage = null, IIncomingDamageModifier incomingDamage = null, IDiscardRewardRule discardReward = null)
+            IAttackDamageModifier attackDamage = null, IIncomingDamageModifier incomingDamage = null, IDiscardRewardRule discardReward = null,
+            PlayerBlockExpiry playerBlockExpiry = PlayerBlockExpiry.Retain)
         {
             Version = Guard.Text(version, nameof(version)); DamagePolicy = damagePolicy ?? throw new ArgumentNullException(nameof(damagePolicy));
             if (roundLimit < 1 || roundLimit > 1000) throw new ArgumentOutOfRangeException(nameof(roundLimit));
+            if (!Enum.IsDefined(typeof(PlayerBlockExpiry), playerBlockExpiry)) throw new ArgumentOutOfRangeException(nameof(playerBlockExpiry));
             RoundLimit = roundLimit;
+            PlayerBlockExpiry = playerBlockExpiry;
             AttackDamage = attackDamage ?? new IdentityAttackDamageModifier();
             IncomingDamage = incomingDamage ?? new IdentityIncomingDamageModifier();
             DiscardReward = discardReward ?? new NoDiscardRewardRule();
@@ -33,15 +39,25 @@ namespace PokerEngine
         public int DiscardEnergyCost { get; }
         public int HandSize { get; }
         public int Discards { get; }
-        public int MaxSelection => Math.Min(5, HandSize);
+        public bool UnlimitedDiscards { get; }
+        public int MaxPlayCards { get; }
+        public int MaxDiscardCards { get; }
+        // Selection envelope for views/legacy callers. Each action validates its own limit.
+        public int MaxSelection => Math.Max(MaxPlayCards, MaxDiscardCards);
         public ICardDuelDealPolicy DealPolicy { get; }
         public BattlePlayerRules(int maxEnergy = 3, int initialEnergy = 3, int playEnergyCost = 1, int discardEnergyCost = 1,
-            int handSize = 8, int discards = 3, ICardDuelDealPolicy dealPolicy = null)
+            int handSize = 8, int discards = 3, ICardDuelDealPolicy dealPolicy = null,
+            bool unlimitedDiscards = false, int maxPlayCards = 5, int maxDiscardCards = 5)
         {
             if (maxEnergy < 1 || initialEnergy < 0 || playEnergyCost < 1 || discardEnergyCost < 1 || handSize < 1 || handSize > 52 || discards < 0 || discards > 1000)
                 throw new ArgumentException("Invalid player card/action budget.");
+            // Poker classification accepts at most five submitted cards. Discard has no poker-pattern constraint.
+            if (maxPlayCards < 1 || maxPlayCards > 5 || maxDiscardCards < 1 || maxDiscardCards > 52)
+                throw new ArgumentException("Invalid play/discard card limit.");
             MaxEnergy = maxEnergy; InitialEnergy = initialEnergy; PlayEnergyCost = playEnergyCost; DiscardEnergyCost = discardEnergyCost;
             HandSize = handSize; Discards = discards; DealPolicy = dealPolicy ?? new CardDuelDealPolicy();
+            UnlimitedDiscards = unlimitedDiscards;
+            MaxPlayCards = Math.Min(maxPlayCards, handSize); MaxDiscardCards = Math.Min(maxDiscardCards, handSize);
         }
     }
     /// <summary>Encounter input. Deck entries belong to this player; no Unity or presentation references.</summary>
@@ -294,6 +310,19 @@ namespace PokerEngine
                     players[index] = new BattlePlayerTurn(actor, new PlayerTurnState(players[index].Energy.MaxEnergy, energy), energy == 0, players[index].Rules);
                 }
                 var pending = enemy ? state.PendingEnemies.Where(id => id != actor && combat.Get(id).IsAlive).ToArray() : state.PendingEnemies.ToArray();
+                // Expire only after the entire enemy phase, including its final round. Enemy block is independent.
+                if (enemy && pending.Length == 0 && Definition.PlayerBlockExpiry == PlayerBlockExpiry.AfterEnemyPhase)
+                {
+                    var clear = players.Select(x => combat.Get(x.Id)).Where(x => x.IsAlive && x.Block > 0)
+                        .Select(x => new CombatEffect(CombatEffectKind.ClearBlock, x.Id, x.Id)).ToArray();
+                    if (clear.Length > 0)
+                    {
+                        var expired = CombatEngine.Resolve(combat, combat.Revision, clear);
+                        if (!expired.Accepted) return new TeamBattleTransition(state,
+                            expired.Error == CombatError.Overflow ? CardDuelError.Overflow : CardDuelError.InvalidTarget);
+                        combat = expired.State; events = events.Concat(expired.Events).ToArray();
+                    }
+                }
                 int rounds = state.CompletedRounds;
                 var phase = state.Phase;
                 if (state.Enemies.All(x => !combat.Get(x.Id).IsAlive)) { phase = ScoredDuelPhase.Won; rounds++; }
