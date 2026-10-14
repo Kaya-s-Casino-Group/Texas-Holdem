@@ -8,17 +8,19 @@ Host 不再保存生命、攻击、能量、牌数等数值，仅持有玩家/�
 
 | 位置 | 内容 | 默认 Demo 资产 |
 | --- | --- | --- |
-| PlayerBattleActor → 玩家配置 | 单位 ID、最大生命、初始格挡、能量上限/初始值、出牌/弃牌费用、手牌上限、弃牌次数及无限开关、独立出/弃牌张数上限、两种补牌时机 | `Assets/SingleBattle/Profiles/DemoPlayer.asset` |
-| EnemyBattleActor → 怪物配置 | 单位 ID、最大生命、初始格挡、基础攻击伤害；没有能量或牌组字段 | `Assets/SingleBattle/Profiles/DemoEnemy.asset` |
-| SingleBattleHost → 公共战局规则 | 规则版本、回合上限、玩家格挡清除时机、独立牌型计分、出牌伤害与弃牌收益资产引用 | `Assets/SingleBattle/Profiles/DemoBattleRules.asset` |
+| PlayerBattleActor → 玩家配置 | 单位 ID、最大生命、初始格挡、能量上限/初始值、出牌/弃牌费用、手牌上限、弃牌次数及无限开关、独立出/弃牌张数上限、两种补牌时机 | `Assets/SingleBattle/Profiles/SingleBattlePlayer.asset` |
+| EnemyBattleActor → 怪物配置 | 单位 ID、最大生命、初始格挡、基础攻击伤害；没有能量或牌组字段 | `Assets/SingleBattle/Profiles/SingleBattleEnemy.asset` |
+| SingleBattleHost → 公共战局规则 | 规则版本、回合上限、玩家格挡清除时机、独立牌型计分、出牌伤害与弃牌收益资产引用 | `Assets/SingleBattle/Profiles/SingleBattleRules.asset` |
 
 使用 Assets/Create/玩法/战局 创建不同角色/怪物的配置，分别拖到对应 Actor。多个 Actor 可复用同一模板，但需要不同数值时应复制或另建配置再绑定。共享资产不是角色当前状态：开战时转成不可变的 BattlePlayerSetup / BattleEnemySetup / BattlePlayerRules，当前 HP、格挡、能量、手牌仅由战局状态持有；修改配置应用于下一场战斗。
 
-已迁移原场景数值，Demo 公共配置的回合上限保留原值 **445**，没有重置为代码默认的 8。Player 40 HP、怪物 75 HP/攻击 7、默认 3 能量，出牌和弃牌各耗 1。初始能量独立设置，允许超过上限；后续回合恢复到该玩家的上限。
+单局 `SingleBattleDemo` 使用独立的 `SingleBattle*.asset` 配置：玩家 **800 HP、8 张手牌、3 能量**，怪物 **1200 HP、攻击 240**；双方初始格挡为 0。出牌和弃牌各耗 1 能量、每次最多 5 张、均立即补满，弃牌不限额外次数。`SingleBattleDiscardReward.asset` 提供每张弃牌 **8 格挡**，敌人阶段结束清空玩家剩余格挡；公共回合上限为 **20**。采用标准 52 张牌、1 级牌型与等分数伤害，无强化或反击能力，与离线模拟基础档一致。
+
+现有多人 `TeamBattleDemo` 继续引用原 `DemoPlayer/DemoEnemy/DemoBattleRules/DemoDiscardReward.asset`，保留 40 HP、75 HP/攻击 7、445 回合上限及无弃牌收益的旧配置；单局调整不会修改这些共享资产。初始能量独立设置，允许超过上限；后续回合恢复到该玩家的上限。
 
 ### 可选基础规则接口
 
-这些选项在开战时形成不可变快照；新增接口没有修改现有 Demo 资产、场景或收益绑定。
+这些选项在开战时形成不可变快照。以下“默认”指新建配置/规则的代码默认值；单局 Demo 的显式配置见上文。
 
 - `PlayerBattleProfile.unlimitedDiscards` → `BattlePlayerRules.UnlimitedDiscards`：默认 false，仍按整场预算扣次数；true 时不检查、不扣该计数，但仍检查能量、手牌、阶段与张数合法性。`discards = 0` 单独使用仍表示不能弃牌。`CardDuelState.RemainingDiscardBudgetFor(player)` 返回 null 表示不限，`HasDiscardBudgetFor(player)` 查询次数条件；旧 `DiscardsFor/DiscardsRemaining` 仅保留有限计数，在无限模式下保持初始值，不能用它判断可否弃牌。
 - `maxPlayCards/maxDiscardCards` → `MaxPlayCards/MaxDiscardCards`：默认各 5。出牌配置范围 1–5（现有分类器的提交牌数范围）；弃牌范围 1–52；实际均取与手牌上限的较小值。`MaxSelection` 仅表示 UI 可选择范围的最大值，不能替代动作各自的上限。正式提交、预览、玩家按钮校验使用同一动作上限；绑定玩家时同步手牌选择上限。
@@ -29,15 +31,15 @@ Host 不再保存生命、攻击、能量、牌数等数值，仅持有玩家/�
 
 ## 牌型计分
 
-`Tools/Poker/牌型计分/打开默认配置` 编辑默认筹码与倍率。DemoBattleRules 的「牌型计分配置」引用此独立资产，开战后使用不可变快照。支持牌型基础值/等级成长、单牌点数筹码与指定牌面覆盖；手牌、牌库悬停读取当前战局相同配置。默认参考小丑牌，示例一对 K（带不计分的 A）为 `(10 + 10 + 10) × 2 = 60` 分，默认等额产生 60 点基础伤害。新战局仍固定 1 级牌型；玩家成长接线另行扩展。详见 `Assets/PokerScoring/README.md`。
+`Tools/Poker/牌型计分/打开默认配置` 编辑默认筹码与倍率。SingleBattleRules 与 DemoBattleRules 的「牌型计分配置」引用此独立资产，开战后使用不可变快照。支持牌型基础值/等级成长、单牌点数筹码与指定牌面覆盖；手牌、牌库悬停读取当前战局相同配置。默认参考小丑牌，示例一对 K（带不计分的 A）为 `(10 + 10 + 10) × 2 = 60` 分，默认等额产生 60 点基础伤害。新战局仍固定 1 级牌型；玩家成长接线另行扩展。详见 `Assets/PokerScoring/README.md`。
 
 ## 独立弃牌收益与只读验算
 
-- `BattleRulesProfile` 的「弃牌收益配置」引用独立 `DiscardRewardProfile`。Demo 绑定 `DemoDiscardReward.asset`（NoDiscardRewardProfile）；未绑定时也明确使用 `NoDiscardRewardRule`，默认不产生额外收益。`Tools/Poker/战局/打开默认弃牌收益配置` 可查看该无收益资产；可选按张数格挡配置见上文。
+- `BattleRulesProfile` 的「弃牌收益配置」引用独立 `DiscardRewardProfile`。单局绑定 `SingleBattleDiscardReward.asset`（PerCardBlockRewardProfile）；多人保留 `DemoDiscardReward.asset`（NoDiscardRewardProfile）。未绑定时使用 `NoDiscardRewardRule`。`Tools/Poker/战局/打开默认弃牌收益配置` 打开单局公共规则当前绑定的收益资产。
 - 配置的 `BuildRule()` 在开局生成不可变、纯 C# 的 `IDiscardRewardRule`。未来规则通过独立实现及派生配置接入，Host、牌区和验算面板不承担收益计算。费用、次数、移牌和补牌由战局原流程管理，收益规则不能自行修改它们。
 - `DiscardRewardContext` 包含弃牌前的只读 TeamBattleState、弃牌者、实际弃掉的卡牌/有效牌面快照及已验证的友方目标。不会调用牌型分类、ScoreEngine、出牌伤害或攻击/承伤修正，也不伪造攻击来源；弃牌分数不进入战斗总分。直接调用 TeamBattle 的 Discard 时须提供真实弃牌快照；CardDuel 会自动构建。
 - `DiscardRewardPlan` 返回版本、说明和效果列表；默认列表为空，不调用 CombatEngine、不增加 Combat revision、不生成 0 点收益事件。当前效果通路只允许 Combat 已有的 GainBlock / Heal，来源必须是弃牌者，目标必须属于选定的存活友方；按张数格挡是一个可选具体实现。非法输出、版本不匹配或数值溢出原子拒绝整次弃牌，不扣费、不移牌、不消耗随机数。
-- `Tools/Poker/战局/弃牌收益验算` 是独立中文只读面板，展示弃牌快照、收益目标、原有费用/次数/过牌结果、规则说明以及额外收益和实际结算。默认明确显示“无额外收益”。「当前选牌预计结果」调用 `Host.PreviewSelectedDiscard → CardDuelEngine.PreviewDiscard → Execute`，不提交返回状态；「最近一次实际弃牌」读取 Host 缓存的已提交返回值，重新开局清空。
+- `Tools/Poker/战局/弃牌收益验算` 是独立中文只读面板，展示弃牌快照、收益目标、原有费用/次数/过牌结果、规则说明以及额外收益和实际结算，按当前战局绑定规则显示格挡或“无额外收益”。「当前选牌预计结果」调用 `Host.PreviewSelectedDiscard → CardDuelEngine.PreviewDiscard → Execute`，不提交返回状态；「最近一次实际弃牌」读取 Host 缓存的已提交返回值，重新开局清空。
 - 测试入口 `Tools/测试面板` →「弃牌收益与友方边界」。规则与目标策略必须纯函数，不能读取外部随机源、改变状态或触发表现，保证预览与实际执行一致。
 
 ## 出牌伤害与只读验算

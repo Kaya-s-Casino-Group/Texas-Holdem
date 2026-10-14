@@ -32,7 +32,7 @@ namespace Poker.SingleBattle.Editor
             var overview = roots.SelectMany(root => root.GetComponentsInChildren<DeckOverviewPresenter>(true)).FirstOrDefault(item => item.Match == match);
             var pile = roots.SelectMany(root => root.GetComponentsInChildren<DrawPilePresenter>(true)).FirstOrDefault(item => item.Source == actions.Hand);
             host.Configure(match, actions, overview, pile);
-            if (host.RulesProfile == null) host.ConfigureRules(AssetDatabase.LoadAssetAtPath<BattleRulesProfile>("Assets/SingleBattle/Profiles/DemoBattleRules.asset"));
+            if (host.RulesProfile == null) host.ConfigureRules(AssetDatabase.LoadAssetAtPath<BattleRulesProfile>("Assets/SingleBattle/Profiles/SingleBattleRules.asset"));
             PrepareRuntimeCardZones(scene, host);
             ConnectActors(scene, host);
             var oldHud = roots.SelectMany(root => root.GetComponentsInChildren<SingleBattleHud>(true)).SingleOrDefault();
@@ -128,8 +128,8 @@ namespace Poker.SingleBattle.Editor
             }
             var enemy = enemyRoot.GetComponent<EnemyBattleActor>() ?? enemyRoot.gameObject.AddComponent<EnemyBattleActor>();
             player.Configure(host, playerModel); enemy.Configure(host, enemyModel);
-            if (player.Profile == null) player.ConfigureProfile(AssetDatabase.LoadAssetAtPath<PlayerBattleProfile>("Assets/SingleBattle/Profiles/DemoPlayer.asset"));
-            if (enemy.Profile == null) enemy.ConfigureProfile(AssetDatabase.LoadAssetAtPath<EnemyBattleProfile>("Assets/SingleBattle/Profiles/DemoEnemy.asset"));
+            if (player.Profile == null) player.ConfigureProfile(AssetDatabase.LoadAssetAtPath<PlayerBattleProfile>("Assets/SingleBattle/Profiles/SingleBattlePlayer.asset"));
+            if (enemy.Profile == null) enemy.ConfigureProfile(AssetDatabase.LoadAssetAtPath<EnemyBattleProfile>("Assets/SingleBattle/Profiles/SingleBattleEnemy.asset"));
             ConnectPresentation(player, playerModel); ConnectPresentation(enemy, enemyModel);
             host.ConfigureActors(player, enemy);
             EditorUtility.SetDirty(player); EditorUtility.SetDirty(enemy);

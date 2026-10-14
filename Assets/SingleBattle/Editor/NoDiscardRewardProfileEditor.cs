@@ -10,7 +10,8 @@ namespace Poker.SingleBattle.Editor
         [MenuItem("Tools/Poker/战局/打开默认弃牌收益配置")]
         public static void OpenDefault()
         {
-            var asset = AssetDatabase.LoadAssetAtPath<NoDiscardRewardProfile>("Assets/SingleBattle/Profiles/DemoDiscardReward.asset");
+            var rules = AssetDatabase.LoadAssetAtPath<BattleRulesProfile>("Assets/SingleBattle/Profiles/SingleBattleRules.asset");
+            var asset = rules != null ? rules.DiscardReward : null;
             if (asset == null) throw new InvalidOperationException("未找到默认弃牌收益配置。");
             Selection.activeObject = asset; EditorGUIUtility.PingObject(asset);
         }
