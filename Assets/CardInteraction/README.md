@@ -18,6 +18,10 @@ Play 中的鼠标 → CardZonePointerController → ICardInteractionSource
 
 成功选中后，展示层比较前后卡牌快照，在 `IsSelected` 从 false 变为 true 时播放一次选中音效；取消选中、悬停和没有成功选中的点击不播放。`HandZoneView.SetSelectionSound` 独立配置开关、音量与音频，验证窗口“牌区样式 → 音效 → 选中音效”提供对应设置。鼠标控制器不直接播放音效，保持卡牌数据驱动表现。
 
+手牌默认最多选中 **5 张**，由 `HandZoneView.MaxSelectedCards / SetMaxSelectedCards` 配置。达到上限后拒绝新增选择，已有选择仍可取消；降低上限不强制清除已有选择。鼠标控制器对任意手牌数据源检查上限，CardZonePlayHost 的权限查询与直接新增选中也遵守相同边界。
+
+完整点击但未能选中新牌时，HandZoneView 统一触发 `CardSelectionDenied`：超限、禁用牌、权威阶段锁定及可见的入列飞行卡牌都使用同一套小幅上升/回弹动画。默认局部 +Z 0.004、上升 0.08 秒、回弹 0.18 秒。效果与正常选中/悬停独立，重复点击从当前位移续接，不累加高度；成功选中、收牌、重开或禁用会清理。UI 遮挡/失焦、跨牌松开、已移除或不可见卡牌属于未完成点击，不触发反馈。`SetSelectionDeniedSound` 配置独立的拒绝音效，默认空 Clip 为静默，不加载占位资源；Inspector 和实战牌区工具均可配置。
+
 本地交互状态与 Core 规则卡牌关联，但不写入权威对局存档，不影响其他观察者。编辑器中的 `PreviewCard.IsHovered / IsSelected` 是实际状态来源，`CardZonePreviewModel` 实现数据接口；运行时 `CardZoneCardState` 持有逐牌数据，`CardZonePlayHost` 实现同样的接口；正式对局宿主也可使用自己的客户端模型。
 
 ## 当前行为
@@ -32,7 +36,7 @@ Play 中的鼠标 → CardZonePointerController → ICardInteractionSource
 
 `CardZoneRaycaster.TryHit` 将世界射线变换到每张牌实际渲染 Mesh 的局部空间，与 bounds 相交。支持区域旋转、缩放、圆弧、翻面、上浮和摆动；使用距离最近的牌，等深度时后面的列表元素优先。美术 Prefab 的 Collider 保持关闭，不依赖 Physics.Raycast。
 
-命中使用实际缩放后的卡牌几何。当前悬停牌若处于选中上浮，还按实际动画偏移保留未上浮时的命中范围，防止沿 Z 位移后在静止鼠标下反复进出。入列飞行/回稳中的牌、未渲染牌和停用牌区不参与命中；已有牌让位时按实际位置命中。命中范围是矩形包围盒，不逐像素裁切圆角；只处理绑定牌区，场景遮挡和多个牌区的输入仲裁由宿主负责。
+命中使用实际缩放后的卡牌几何。当前悬停牌若处于选中上浮，还按实际动画偏移保留未上浮时的命中范围，防止沿 Z 位移后在静止鼠标下反复进出。默认命中排除入列飞行卡牌；鼠标控制器通过 includeEntering 识别可见飞行牌的拒绝点击，不允许其选中/悬停。未渲染牌和停用牌区不参与命中；已有牌让位时按实际位置命中。命中范围是矩形包围盒，不逐像素裁切圆角；只处理绑定牌区，场景遮挡和多个牌区的输入仲裁由宿主负责。
 
 ## 运行时接入
 

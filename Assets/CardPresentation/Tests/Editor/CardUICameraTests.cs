@@ -77,7 +77,14 @@ namespace CardPresentation.Tests
             ValidateNativeUIStack(800,450,false);
         }
 
-        private static void ValidateNativeUIStack(int width, int height, bool sceneOverlay)
+        [Test]
+        public void OverlaysAppendedAfterUIStayBeforeNativeUIOnTheirFirstRender()
+        {
+            ValidateNativeUIStack(1280, 720, true, appendAfterUI: true);
+            ValidateNativeUIStack(1920, 1080, true, appendAfterUI: true);
+        }
+
+        private static void ValidateNativeUIStack(int width, int height, bool sceneOverlay, bool appendAfterUI = false)
         {
             var scene = EditorSceneManager.NewPreviewScene();
             var target = new RenderTexture(width,height,24,RenderTextureFormat.ARGB32);
@@ -117,7 +124,30 @@ namespace CardPresentation.Tests
                 ((RectTransform)probe.transform).sizeDelta = new Vector2(64,32);
                 probe.GetComponent<UnityEngine.UI.RawImage>().texture = stripe;
                 target.Create(); Canvas.ForceUpdateCanvases();
-                RenderPipeline.SubmitRenderRequest(camera,new UniversalRenderPipeline.StandardRequest { destination = target });
+                if (appendAfterUI)
+                {
+                    // Render once, then mutate the stack without Configure/Synchronize/LateUpdate.
+                    // The very next render must classify UI as native, not just reorder it after classification.
+                    RenderPipeline.SubmitRenderRequest(camera,new UniversalRenderPipeline.StandardRequest { destination = target });
+                    var stack = camera.GetUniversalAdditionalCameraData().cameraStack;
+                    var expected = stack.Where(item => item != ui).ToList();
+                    for (int index = 0; index < 2; ++index)
+                    {
+                        var addedRoot = new GameObject("Runtime overlay " + index);
+                        SceneManager.MoveGameObjectToScene(addedRoot,scene);
+                        var added = addedRoot.AddComponent<Camera>(); added.scene = scene; added.cullingMask = 0;
+                        var data = added.GetUniversalAdditionalCameraData();
+                        data.renderType = CameraRenderType.Overlay; data.SetRenderer(1);
+                        stack.Add(added); expected.Add(added);
+                    }
+                    expected.Add(ui);
+                    RenderPipeline.SubmitRenderRequest(camera,new UniversalRenderPipeline.StandardRequest { destination = target });
+                    CollectionAssert.AreEqual(expected,stack,"Runtime overlays must retain their order ahead of native UI.");
+                }
+                else
+                {
+                    RenderPipeline.SubmitRenderRequest(camera,new UniversalRenderPipeline.StandardRequest { destination = target });
+                }
                 var info = ((UniversalRenderer)ui.GetUniversalAdditionalCameraData().scriptableRenderer).lastCameraRenderTargetInfo;
                 Assert.AreEqual(new Vector2Int(width,height),info.renderSize); Assert.AreEqual(info.outputSize,info.colorTargetSize);
                 Assert.IsFalse(info.lowResolution); Assert.AreEqual("Native",info.finalFilter);

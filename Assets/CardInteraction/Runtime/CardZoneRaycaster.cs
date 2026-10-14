@@ -6,7 +6,7 @@ namespace CardInteraction
     /// <summary>Ray tests against rendered card bounds in mesh space; no Collider or physics-world dependency.</summary>
     public static class CardZoneRaycaster
     {
-        public static bool TryHit(CardZoneView zone, Ray ray, string hoveredViewId, out CardInstanceView hit)
+        public static bool TryHit(CardZoneView zone, Ray ray, string hoveredViewId, out CardInstanceView hit, bool includeEntering = false)
         {
             hit = null;
             if (zone == null || !zone.isActiveAndEnabled || !Finite(ray.origin) || !Finite(ray.direction) || ray.direction.sqrMagnitude < 0.000001f)
@@ -15,7 +15,7 @@ namespace CardInteraction
             float nearest = float.PositiveInfinity;
             foreach (var view in zone.Views)
             {
-                if (view == null || !view.isActiveAndEnabled || view.IsEntering || view.Surface == null) continue;
+                if (view == null || !view.isActiveAndEnabled || (!includeEntering && view.IsEntering) || view.Surface == null) continue;
                 var surface = view.Surface.transform;
                 var renderer = view.Surface.GetComponent<MeshRenderer>();
                 var mesh = view.Surface.GetComponent<MeshFilter>().sharedMesh;

@@ -24,6 +24,12 @@ namespace CardPresentation.Editor
         [SerializeField] private bool drawSoundEnabled = true, discardSoundEnabled = true, selectionSoundEnabled = true;
         [SerializeField] private AudioClip drawSound, discardSound, selectionSound;
         [SerializeField] private float drawSoundVolume = 1, discardSoundVolume = 1, selectionSoundVolume = 1;
+        [SerializeField] private int maxSelectedCards = 5;
+        [SerializeField] private Vector3 selectionDeniedOffset = new Vector3(0, 0, .004f);
+        [SerializeField] private float selectionDeniedRiseSeconds = .08f, selectionDeniedReturnSeconds = .18f;
+        [SerializeField] private bool selectionDeniedSoundEnabled = true;
+        [SerializeField] private AudioClip selectionDeniedSound;
+        [SerializeField] private float selectionDeniedSoundVolume = 1;
         [SerializeField] private Vector3 deckLocalPosition = new Vector3(.38f, .035f, 0);
         [SerializeField] private Transform deckAnchor;
         [SerializeField] private int page;
@@ -98,6 +104,9 @@ namespace CardPresentation.Editor
             drawSoundEnabled = Hand.DrawSoundEnabled; drawSound = Hand.DrawSoundOverride; drawSoundVolume = Hand.DrawSoundVolume;
             discardSoundEnabled = Hand.DiscardSoundEnabled; discardSound = Hand.DiscardSoundOverride; discardSoundVolume = Hand.DiscardSoundVolume;
             selectionSoundEnabled = Hand.SelectionSoundEnabled; selectionSound = Hand.SelectionSoundOverride; selectionSoundVolume = Hand.SelectionSoundVolume;
+            maxSelectedCards = Hand.MaxSelectedCards; selectionDeniedOffset = Hand.SelectionDeniedOffset;
+            selectionDeniedRiseSeconds = Hand.SelectionDeniedRiseSeconds; selectionDeniedReturnSeconds = Hand.SelectionDeniedReturnSeconds;
+            selectionDeniedSoundEnabled = Hand.SelectionDeniedSoundEnabled; selectionDeniedSound = Hand.SelectionDeniedSound; selectionDeniedSoundVolume = Hand.SelectionDeniedSoundVolume;
         }
 
         private static CardZoneView FindTarget()
@@ -118,6 +127,9 @@ namespace CardPresentation.Editor
                 Hand.SetDrawSound(drawSound, drawSoundVolume, drawSoundEnabled); Hand.SetDeckSource(deckLocalPosition, deckAnchor);
                 Hand.SetDiscardSound(discardSound, discardSoundVolume, discardSoundEnabled);
                 Hand.SetSelectionSound(selectionSound, selectionSoundVolume, selectionSoundEnabled);
+                Hand.SetMaxSelectedCards(maxSelectedCards);
+                Hand.SetSelectionDeniedAnimation(selectionDeniedOffset, selectionDeniedRiseSeconds, selectionDeniedReturnSeconds);
+                Hand.SetSelectionDeniedSound(selectionDeniedSound, selectionDeniedSoundVolume, selectionDeniedSoundEnabled);
                 Hand.SetDiscardSettings(discardSettings); Hand.SetDiscardDestination(discardLocalPosition, discardAnchor);
                 Hand.SetInteractionOffsets(hoveredOffset, raisedOffset);
             }

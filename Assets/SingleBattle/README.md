@@ -84,6 +84,16 @@ Host 不再保存生命、攻击、能量、牌数等数值，仅持有玩家/�
 - `ICardDuelDealPolicy` 上下文含 PlayerId，只返回抽牌数量，不能移动或创建卡牌。每位玩家可独立注入策略。
 - `ScoredDuelEngine` / 旧快照协议保留给原有独立 1v1 规则调用；新 Demo 使用 TeamBattleEngine。完整多人战局存档、Run 奖励写回、复活和增援尚未实现。
 
+## 战局信息层
+
+左侧新增候选牌型面板，根据当前观察玩家选中的手牌显示牌型、选中/计分牌数、整数筹码 × 整数倍率。候选使用 CardDuelEngine.PreviewHand，与正式 Play 共用判型计分；不进入费用、伤害或目标策略，未选牌显示零值。两个数字各自使用白色矩形背景，居中显示整数，不显示结果行。选择、取消和观察玩家变化后更新数字目标。
+
+数字显示由独立 UIFoundation.Runtime 的 RollingNumberText 完成，仅接收 decimal 数字；增减均从当前显示值追向新 target，相同 target 不重启，最终值精确落位。候选面板是唯一游戏数据适配层。
+
+战局 HUD 是只读信息层：小尺寸信息栏位于屏幕右侧，展示生命、格挡、能量与动作费用、回合、牌堆数量及最近得分/伤害；不显示操作教学或内部计算流程。结束回合、重开及多人切换保留为紧凑按钮，胜负信息也显示在右侧。
+
+每个存活怪物的攻击意图使用独立 World Space Canvas，统一放在 HUD 运行时创建的场景根节点 `WorldUIRoot` 下，不继承怪物或 HUD 的缩放与旋转。LateUpdate 跟随模型底部锚点，朝向统一与摄像机画面平行，透视模式下也不会因偏离画面中心而倾斜。标签采用固定世界尺寸，保留近大远小，死亡/终局隐藏；HUD 的“敌人意图（世界空间）”可调整世界单位/像素与世界偏移。HUD 销毁时清理其创建的 WorldUIRoot 与标签。Scene 视图开启 Gizmos 可见黄色面板范围、青色模型底部与偏移连线、蓝色朝向箭头；Edit 模式也能预览，使用与实际 Canvas 相同的世界尺寸和摄像机朝向，不叠加怪物缩放。意图来自 EnemyBattleActor 的只读结果，标签不持有战局命令权限。`Tools > Poker > 战局 > 整理信息层 HUD` 可仅更新当前场景的 HUD 布局，保留阵容、模型、牌区和相机配置；新建 Demo 使用相同布局。
+
 ## 可等待的表现协议
 
 逻辑角色绑定任意实现 `IBattleActorPresentation` 的子物体组件，宿主通过角色调用协议，不依赖具体 Presenter 类型、动画名称或持续时间。协议只接收已结算的只读 `BattlePresentationCue`（PrepareAttack / Attack / Hit / Death、ActorId、可选 CombatEvent）；表现不获得战局命令权限。

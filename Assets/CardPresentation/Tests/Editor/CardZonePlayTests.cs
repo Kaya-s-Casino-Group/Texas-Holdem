@@ -42,6 +42,24 @@ namespace CardPresentation.Tests
             { Host.StopSession(); View.Clear(); Object.DestroyImmediate(Root); EditorSceneManager.ClosePreviewScene(Scene); }
         }
 
+        [Test] public void HostPermissionAndDirectSelectionRespectTheHandLimitWithoutClearingExistingChoices()
+        {
+            using (var f = new Fixture())
+            {
+                var first = f.Host.Cards[0].Id; var second = f.Host.Cards[1].Id;
+                f.View.SetMaxSelectedCards(1); int denied = 0; f.View.CardSelectionDenied += _ => denied++;
+                var state = f.Host.Match.State;
+                f.Host.SetInteraction(first, new CardInteractionState(isSelected: true)); f.Host.Publish();
+                Assert.IsFalse(f.Host.CanSelect(second));
+                f.Host.SetInteraction(second, new CardInteractionState(isSelected: true));
+                Assert.IsTrue(f.Host.Cards[0].Interaction.IsSelected); Assert.IsFalse(f.Host.Cards[1].Interaction.IsSelected);
+                Assert.AreEqual(1, denied); Assert.AreSame(state, f.Host.Match.State);
+                f.View.SetMaxSelectedCards(2); f.Host.SetInteraction(second, new CardInteractionState(isSelected: true)); f.Host.Publish();
+                f.View.SetMaxSelectedCards(1); Assert.AreEqual(2, f.Host.Cards.Count(card => card.Interaction.IsSelected));
+                f.Host.SetInteraction(first, default); Assert.IsFalse(f.Host.Cards[0].Interaction.IsSelected);
+            }
+        }
+
         [Test] public void SelectionCuesFollowCardStateEdgesAndSkipHoverDeselectRefreshAndRestores()
         {
             using (var f = new Fixture())

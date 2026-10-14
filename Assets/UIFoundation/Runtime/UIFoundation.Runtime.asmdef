@@ -1,0 +1,7 @@
+{
+  "name": "UIFoundation.Runtime",
+  "rootNamespace": "UIFoundation",
+  "references": ["Unity.TextMeshPro", "Unity.ugui"],
+  "overrideReferences": true,
+  "precompiledReferences": ["DOTween.dll"]
+}

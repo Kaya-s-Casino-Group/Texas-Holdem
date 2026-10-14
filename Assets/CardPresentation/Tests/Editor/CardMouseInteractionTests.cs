@@ -49,6 +49,100 @@ namespace CardPresentation.Tests
             }
         }
 
+        [Test] public void DefaultSelectionLimitRejectsSixthCardAndDeselectingFreesASlot()
+        {
+            using (var f = new Fixture(6))
+            {
+                int denied = 0, selected = 0;
+                f.Zone.CardSelectionDenied += _ => denied++; f.Zone.CardSelected += _ => selected++;
+                Assert.AreEqual(5, f.Zone.MaxSelectedCards); Assert.IsNull(f.Zone.SelectionDeniedSound);
+                for (int i = 0; i < 5; i++) f.Click(f.RayAt(f.Zone.Views[i]));
+                var sixth = f.Zone.Views[5]; f.Click(f.RayAt(sixth));
+                Assert.AreEqual(5, f.Pointer.GetSelectedViewIds().Count); Assert.IsFalse(f.Model.Cards[5].IsSelected);
+                Assert.AreEqual(1, denied); Assert.AreEqual(5, selected); Assert.IsTrue(sixth.IsSelectionDeniedAnimating);
+                f.Zone.AdvanceMotion(.04f); Assert.Greater(sixth.SelectionDeniedOffset.z, 0);
+                var offset = sixth.SelectionDeniedOffset; f.Publish(); Assert.AreEqual(offset, sixth.SelectionDeniedOffset);
+                f.Click(f.RayAt(sixth)); Assert.AreEqual(offset, sixth.SelectionDeniedOffset); Assert.AreEqual(2, denied);
+                f.Zone.AdvanceMotion(.08f); Assert.AreEqual(f.Zone.SelectionDeniedOffset.z, sixth.SelectionDeniedOffset.z, .000001f);
+                f.Zone.AdvanceMotion(.11f); Assert.Less(sixth.SelectionDeniedOffset.z, 0);
+                f.Zone.AdvanceMotion(.1f); Assert.AreEqual(Vector3.zero, sixth.SelectionDeniedOffset); Assert.IsFalse(sixth.IsSelectionDeniedAnimating);
+                f.Click(f.RayAt(f.Zone.Views[0])); f.Click(f.RayAt(sixth));
+                Assert.IsTrue(f.Model.Cards[5].IsSelected); Assert.AreEqual(5, f.Pointer.GetSelectedViewIds().Count);
+                Assert.AreEqual(2, denied); Assert.AreEqual(6, selected);
+                Assert.IsEmpty(f.Root.GetComponentsInChildren<AudioSource>());
+            }
+        }
+
+        private sealed class GatedSource : ICardInteractionSource
+        {
+            private readonly ICardInteractionSource source;
+            public GatedSource(ICardInteractionSource source) { this.source = source; }
+            public bool TryGetInteraction(string id, out CardInteractionState state) => source.TryGetInteraction(id, out state);
+            public bool CanSelect(string id) => false;
+            public void SetInteraction(string id, CardInteractionState state) => source.SetInteraction(id, state);
+        }
+
+        [Test] public void LimitDisabledCardAndAuthorityRefusalUseTheSameBounceWithoutSelecting()
+        {
+            using (var f = new Fixture())
+            {
+                int denied = 0; f.Zone.CardSelectionDenied += _ => denied++;
+                f.Zone.SetMaxSelectedCards(1); f.Click(f.RayAt(f.Zone.Views[0]));
+                var card = f.Zone.Views[1]; f.Click(f.RayAt(card)); f.Zone.AdvanceMotion(.04f);
+                var displacement = card.SelectionDeniedOffset; Assert.Greater(displacement.z, 0);
+                f.Zone.CompleteTransitions(); f.Click(f.RayAt(f.Zone.Views[0]));
+                f.Model.Cards[1].IsDisabled = true; f.Publish(); f.Click(f.RayAt(card)); f.Zone.AdvanceMotion(.04f);
+                Assert.AreEqual(displacement, card.SelectionDeniedOffset); Assert.IsFalse(f.Model.Cards[1].IsSelected);
+                f.Zone.CompleteTransitions(); f.Model.Cards[1].IsDisabled = false; f.Publish();
+                var gate = new CardZonePointerController(f.Zone, new GatedSource(f.Model)); gate.StateChanged += f.Publish;
+                gate.ProcessPointer(f.RayAt(card), pressed: true); gate.ProcessPointer(f.RayAt(card), released: true);
+                f.Zone.AdvanceMotion(.04f); Assert.AreEqual(displacement, card.SelectionDeniedOffset);
+                Assert.IsFalse(f.Model.Cards.Any(item => item.IsSelected)); Assert.AreEqual(3, denied);
+                f.Zone.enabled = false;
+                Assert.IsFalse(card.IsSelectionDeniedAnimating); Assert.AreEqual(Vector3.zero, card.SelectionDeniedOffset);
+            }
+        }
+
+        [Test] public void VisibleIncomingCardGetsRefusalFeedbackAndBecomesSelectableAfterLanding()
+        {
+            using (var f = new Fixture(1))
+            {
+                var tuning = f.Zone.TransitionSettings; tuning.Enabled = true; f.Zone.SetTransitionSettings(tuning);
+                f.Model.Add("clubs_k"); f.Publish(); f.Zone.AdvanceMotion(.1f);
+                var card = f.Zone.Views[1]; Assert.IsTrue(card.IsEntering);
+                int denied = 0; f.Zone.CardSelectionDenied += _ => denied++;
+                f.Click(f.RayAt(card)); Assert.AreEqual(1, denied); Assert.IsFalse(f.Model.Cards[1].IsSelected);
+                Assert.IsFalse(f.Model.Cards[1].IsHovered); Assert.IsTrue(card.IsSelectionDeniedAnimating);
+                f.Zone.CompleteTransitions(); f.Click(f.RayAt(card));
+                Assert.IsTrue(f.Model.Cards[1].IsSelected); Assert.AreEqual(1, denied);
+            }
+        }
+
+        [Test] public void RejectionSettingsSerializeAndInvalidUpdatesLeaveTheirPreviousValues()
+        {
+            using (var f = new Fixture(1))
+            {
+                var clip = AudioClip.Create("Denied", 256, 1, 48000, false);
+                try
+                {
+                    f.Zone.SetMaxSelectedCards(3); f.Zone.SetSelectionDeniedSound(clip, .4f, false);
+                    f.Zone.SetSelectionDeniedAnimation(new Vector3(0, 0, .003f), .06f, .15f);
+                    string json = JsonUtility.ToJson(f.Zone);
+                    f.Zone.SetMaxSelectedCards(1); f.Zone.SetSelectionDeniedSound(null);
+                    JsonUtility.FromJsonOverwrite(json, f.Zone);
+                    Assert.AreEqual(3, f.Zone.MaxSelectedCards); Assert.AreSame(clip, f.Zone.SelectionDeniedSound);
+                    Assert.AreEqual(.4f, f.Zone.SelectionDeniedSoundVolume); Assert.IsFalse(f.Zone.SelectionDeniedSoundEnabled);
+                    Assert.AreEqual(.003f, f.Zone.SelectionDeniedOffset.z); Assert.AreEqual(.06f, f.Zone.SelectionDeniedRiseSeconds);
+                    Assert.Throws<ArgumentOutOfRangeException>(() => f.Zone.SetMaxSelectedCards(0));
+                    Assert.Throws<ArgumentOutOfRangeException>(() => f.Zone.SetSelectionDeniedSound(null, float.NaN));
+                    Assert.Throws<ArgumentException>(() => f.Zone.SetSelectionDeniedAnimation(Vector3.zero, float.NaN));
+                    Assert.AreEqual(3, f.Zone.MaxSelectedCards); Assert.AreSame(clip, f.Zone.SelectionDeniedSound);
+                    Assert.AreEqual(.003f, f.Zone.SelectionDeniedOffset.z);
+                }
+                finally { Object.DestroyImmediate(clip); }
+            }
+        }
+
         [Test] public void ClickedSelectionOvershootsThenSettlesWithoutPointerRefreshCancellingIt()
         {
             using (var f = new Fixture(1))

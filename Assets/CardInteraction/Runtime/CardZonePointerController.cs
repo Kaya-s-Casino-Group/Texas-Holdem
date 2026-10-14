@@ -27,16 +27,19 @@ namespace CardInteraction
             string context = zone != null && zone.Data != null ? zone.Data.ZoneId.Value : null;
             if (context != zoneContext) { pressedViewId = null; zoneContext = context; }
             if (blocked || zone == null || !zone.isActiveAndEnabled) { CancelPointer(); return; }
-            string hitId = CardZoneRaycaster.TryHit(zone, ray, HoveredViewId, out var hit) &&
+            string hitId = CardZoneRaycaster.TryHit(zone, ray, HoveredViewId, out var hit, includeEntering: true) &&
                 source.TryGetInteraction(hit.ViewId, out _) ? hit.ViewId : null;
-            bool changed = UpdateHover(hitId);
+            bool changed = UpdateHover(hit != null && hit.IsEntering ? null : hitId);
             if (pressed) pressedViewId = hitId;
             if (released)
             {
-                if (hitId != null && hitId == pressedViewId && source.TryGetInteraction(hitId, out var state) &&
-                    (state.IsSelected || source.CanSelect(hitId)))
+                if (hitId != null && hitId == pressedViewId && source.TryGetInteraction(hitId, out var state))
                 {
-                    source.SetInteraction(hitId, state.WithSelected(!state.IsSelected)); changed = true;
+                    bool canSelect = state.IsSelected || !hit.IsEntering && source.CanSelect(hitId) &&
+                        (!(zone is HandZoneView hand) || GetSelectedViewIds().Count < hand.MaxSelectedCards);
+                    if (canSelect)
+                    { source.SetInteraction(hitId, state.WithSelected(!state.IsSelected)); changed = true; }
+                    else if (zone is HandZoneView rejectedHand) rejectedHand.PlaySelectionDenied(hitId);
                 }
                 pressedViewId = null;
             }

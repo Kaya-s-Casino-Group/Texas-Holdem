@@ -88,10 +88,18 @@ namespace CardInteraction
         private CardZoneCardState Find(string id) => Cards.FirstOrDefault(card => card.Id == id);
         public bool TryGetInteraction(string viewId, out CardInteractionState state)
         { var card = Find(viewId); state = card == null ? default : card.Interaction; return card != null; }
-        public bool CanSelect(string viewId) { var card = Find(viewId); return card != null && card.Card.CanPlay && (match.Commands == null || match.Commands.CanInteract); }
+        public bool CanSelect(string viewId)
+        {
+            var card = Find(viewId); var hand = GetComponent<HandZoneView>();
+            return card != null && card.Card.CanPlay && (match.Commands == null || match.Commands.CanInteract) &&
+                (hand == null || card.Interaction.IsSelected || Cards.Count(item => item.Interaction.IsSelected) < hand.MaxSelectedCards);
+        }
         public void SetInteraction(string viewId, CardInteractionState state)
         {
             var card = Find(viewId) ?? throw new ArgumentException("Card is outside this match zone.", nameof(viewId));
+            if (state.IsSelected && !card.Interaction.IsSelected && GetComponent<HandZoneView>() is HandZoneView hand &&
+                Cards.Count(item => item.Interaction.IsSelected) >= hand.MaxSelectedCards)
+            { hand.PlaySelectionDenied(viewId); return; }
             match.SetInteraction(card.Card.Id, state);
         }
         public void Publish() { if (IsRunning && view != null) view.Present(Project()); }

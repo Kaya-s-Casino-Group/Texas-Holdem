@@ -27,7 +27,7 @@ namespace CardPresentation
         internal void BeginTransfer(WorldPose start, CardZoneTransferSettings settings, float delay,
             Vector3 up, Vector3? control, Transform landingAnchor = null, float waitForBatch = 0, float reorderLift = 0)
         {
-            CompleteTransfer();
+            CompleteTransfer(); CancelSelectionDenied();
             transferStart = start; transferClock = 0; transferHeight = settings.ArcHeight;
             transferUp = up; hasTransferControl = control.HasValue; transferControl = control.GetValueOrDefault();
             transferLandingAnchor = landingAnchor;

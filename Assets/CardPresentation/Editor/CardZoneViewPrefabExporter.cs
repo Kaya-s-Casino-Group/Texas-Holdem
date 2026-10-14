@@ -61,6 +61,9 @@ namespace CardPresentation.Editor
                     exportedHand.SetDrawSound(exportedHand.DrawSoundOverride, exportedHand.DrawSoundVolume, exportedHand.DrawSoundEnabled);
                     exportedHand.SetDiscardSound(exportedHand.DiscardSoundOverride, exportedHand.DiscardSoundVolume, exportedHand.DiscardSoundEnabled);
                     exportedHand.SetSelectionSound(exportedHand.SelectionSoundOverride, exportedHand.SelectionSoundVolume, exportedHand.SelectionSoundEnabled);
+                    exportedHand.SetMaxSelectedCards(exportedHand.MaxSelectedCards);
+                    exportedHand.SetSelectionDeniedAnimation(exportedHand.SelectionDeniedOffset, exportedHand.SelectionDeniedRiseSeconds, exportedHand.SelectionDeniedReturnSeconds);
+                    exportedHand.SetSelectionDeniedSound(exportedHand.SelectionDeniedSound, exportedHand.SelectionDeniedSoundVolume, exportedHand.SelectionDeniedSoundEnabled);
                 }
                 // Position belongs to the placement of each instance. The asset starts at its own origin.
                 root.transform.localPosition = Vector3.zero;

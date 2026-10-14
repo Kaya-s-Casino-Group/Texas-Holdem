@@ -72,8 +72,11 @@ namespace Poker.SingleBattle.Editor
             var details = Label(result, "Details", "", 20, new Vector2(16, -96), new Vector2(418, 62), Paper, true);
             var resultButton = Panel(result, "Again", new Vector2(.5f, 0), new Vector2(0, 22), new Vector2(190, 44));
             var again = MakeButton(resultButton, "再战一场");
-            go.AddComponent<SingleBattleHud>().Configure(host, player, enemy, turn, intent, message, counts, score,
+            var hud = go.AddComponent<SingleBattleHud>();
+            hud.Configure(host, player, enemy, turn, intent, message, counts, score,
                 playerBar, enemyBar, result.gameObject, resultTitle, details, restart, again, energy, endTurn);
+            BattleHudLayout.Apply(hud);
+            HandCandidateSetup.Apply(hud);
             result.gameObject.SetActive(false);
             EditorUtility.SetDirty(host); EditorSceneManager.MarkSceneDirty(scene); EditorSceneManager.SaveScene(scene);
             Selection.activeObject = host;

@@ -12,6 +12,7 @@
     "RetroRendering.Runtime",
     "Unity.TextMeshPro",
     "Unity.ugui",
-    "Poker.Scoring.Runtime"
+    "Poker.Scoring.Runtime",
+    "UIFoundation.Runtime"
   ]
 }

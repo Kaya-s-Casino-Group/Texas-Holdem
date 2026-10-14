@@ -11,7 +11,8 @@
     "PokerEngine.Core",
     "PokerEngine.Scoring",
     "PokerEngine.Combat",
-    "PokerEngine.Composition"
+    "PokerEngine.Composition",
+    "UIFoundation.Runtime"
   ],
   "includePlatforms": [
     "Editor"

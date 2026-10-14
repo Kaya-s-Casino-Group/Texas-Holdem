@@ -394,3 +394,10 @@ DeckOverviewData 明确区分 IsRemaining 与规则效果，按规则定义计�
 牌堆图标、牌组面板和共用筹码提示都使用独立 DOTween：图标惯性缩放，总览 Frame 从下方快速上移回稳，提示以显隐倍率放大出现/缩小消失。详细参数、当前图集/指定顶层牌和预览固定行为见 UI README；播放验证覆盖实际事件、上移回弹、反向与原对局不变。
 
 牌堆悬停改用 DeckSummaryView 原生统计片段，上方十三列点数余量，下方四行花色交叉余量及花色总数；0 压暗，隐藏/未知仅汇总。点击仍进入完整 DeckOverview。两者共用 DeckOverviewData 与 Presenter.ReadData，PixelPanelGraphic 生成阶梯边框并沿用 Canvas 默认材质，无新增纹理。详见 UI README 的“牌堆悬停统计表”；全部运行脚本、Prefab、字体引用和 .meta 沿现有 Runtime/link.xml 进入首包。
+
+
+### 选牌上限与无法选中反馈
+
+HandZoneView 默认最多选中 5 张，由 `SetMaxSelectedCards` 调整；此限制属于本地交互，正式提交仍使用玩法的权威校验。无法选中新牌共用独立 DOTween 反馈：默认沿局部 +Z 上升 0.004，0.08 秒到峰值、0.18 秒回弹归零，期间不改变选中状态，也不锁定正常手牌操作。`SetSelectionDeniedAnimation` 可调整偏移和时长，重复点击不累加高度，悬停/重排刷新不中断，成功选中或生命周期清理后归位。
+
+`SetSelectionDeniedSound(clip, volume, enabled)` 与成功选中音效独立，默认空 Clip 静默。拒绝事件为 `CardSelectionDenied`；音效只在 Play/Player 播放，空槽位不创建声源或加载占位音效。实战牌区工具的交互/音效页及 Inspector 均可编辑，View Prefab 导出保留并校验全部新设置。

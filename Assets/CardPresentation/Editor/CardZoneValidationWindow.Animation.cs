@@ -42,19 +42,21 @@ namespace CardPresentation.Editor
                 (enabled, clip, volume) => { discardSoundEnabled = enabled; discardSound = clip; discardSoundVolume = volume; });
             DrawAudioSection("选中音效", selectionSoundEnabled, selectionSound, selectionSoundVolume, Hand.SelectionSound,
                 (enabled, clip, volume) => { selectionSoundEnabled = enabled; selectionSound = clip; selectionSoundVolume = volume; });
-            EditorGUILayout.HelpBox("三组音效独立设置，留空均使用默认占位音效。抽牌在新牌飞入结束、入列开始回稳时播放；弃牌在开始飞出时播放。选中在未选中 → 选中时播放，取消选中和悬停不播放。在 Play 中试听。", MessageType.None);
+            DrawAudioSection("无法选中音效", selectionDeniedSoundEnabled, selectionDeniedSound, selectionDeniedSoundVolume, Hand.SelectionDeniedSound,
+                (enabled, clip, volume) => { selectionDeniedSoundEnabled = enabled; selectionDeniedSound = clip; selectionDeniedSoundVolume = volume; }, emptyIsSilent: true);
+            EditorGUILayout.HelpBox("抽牌、弃牌、成功选中的音效独立设置，留空使用默认占位音效。无法选中音效留空为静默，任意拒绝原因共用此槽位；仅完整点击新牌且未能选中时触发。在 Play 中试听。", MessageType.None);
         }
 
         private void DrawAudioSection(string label, bool enabled, AudioClip clip, float volume, AudioClip current,
-            Action<bool, AudioClip, float> apply)
+            Action<bool, AudioClip, float> apply, bool emptyIsSilent = false)
         {
             EditorGUILayout.Space(); EditorGUILayout.LabelField(label, EditorStyles.boldLabel);
             EditorGUI.BeginChangeCheck();
             enabled = EditorGUILayout.Toggle("启用" + label, enabled);
-            clip = (AudioClip)EditorGUILayout.ObjectField("替换音效（空为默认）", clip, typeof(AudioClip), false);
+            clip = (AudioClip)EditorGUILayout.ObjectField(emptyIsSilent ? "音效（空为静默）" : "替换音效（空为默认）", clip, typeof(AudioClip), false);
             volume = EditorGUILayout.Slider("音量", volume, 0, 1);
             if (EditorGUI.EndChangeCheck()) Mutate("调整" + label, () => apply(enabled, clip, volume));
-            EditorGUILayout.LabelField("当前音效", current != null ? current.name : "未找到音效");
+            EditorGUILayout.LabelField("当前音效", current != null ? current.name : emptyIsSilent ? "未配置（静默）" : "未找到音效");
         }
 
         private void DrawMotion()

@@ -17,10 +17,14 @@ namespace CardPresentation
         [SerializeField] private bool selectionSoundEnabled = true;
         [SerializeField] private AudioClip selectionSound;
         [SerializeField, Range(0, 1)] private float selectionSoundVolume = 1;
+        [SerializeField] private bool selectionDeniedSoundEnabled = true;
+        [SerializeField] private AudioClip selectionDeniedSound;
+        [SerializeField, Range(0, 1)] private float selectionDeniedSoundVolume = 1;
         private AudioClip defaultDrawSound;
         private AudioSource drawAudioSource;
         private AudioSource discardAudioSource;
         private AudioSource selectionAudioSource;
+        private AudioSource selectionDeniedAudioSource;
 
         public bool DrawSoundEnabled => drawSoundEnabled;
         public AudioClip DrawSoundOverride => drawSound;
@@ -36,6 +40,9 @@ namespace CardPresentation
         public AudioClip SelectionSoundOverride => selectionSound;
         public AudioClip SelectionSound => selectionSound != null ? selectionSound : DefaultCardSound;
         public float SelectionSoundVolume => selectionSoundVolume;
+        public bool SelectionDeniedSoundEnabled => selectionDeniedSoundEnabled;
+        public AudioClip SelectionDeniedSound => selectionDeniedSound;
+        public float SelectionDeniedSoundVolume => selectionDeniedSoundVolume;
 
         /// <summary>Launch notification only; draw audio now belongs to CardEnteredZone.</summary>
         public event Action<CardInstanceView> CardDealStarted;
@@ -75,6 +82,15 @@ namespace CardPresentation
                 throw new ArgumentOutOfRangeException(nameof(volume), "Selection volume must be finite and between 0 and 1.");
             selectionSound = clip; selectionSoundVolume = volume; selectionSoundEnabled = enabled;
             if (!enabled || volume == 0) StopSelectionAudio();
+        }
+
+        /// <summary>A null clip is silent; refused selection never loads a placeholder sound.</summary>
+        public void SetSelectionDeniedSound(AudioClip clip, float volume = 1, bool enabled = true)
+        {
+            if (!CardZoneRowLayout.Finite(volume) || volume < 0 || volume > 1)
+                throw new ArgumentOutOfRangeException(nameof(volume));
+            selectionDeniedSound = clip; selectionDeniedSoundVolume = volume; selectionDeniedSoundEnabled = enabled;
+            if (!enabled || volume == 0 || clip == null) StopSelectionDeniedAudio();
         }
 
         private void ConsumeDealSounds()
@@ -137,9 +153,10 @@ namespace CardPresentation
         private void StopDrawAudio() { if (drawAudioSource != null) drawAudioSource.Stop(); }
         private void StopDiscardAudio() { if (discardAudioSource != null) discardAudioSource.Stop(); }
         private void StopSelectionAudio() { if (selectionAudioSource != null) selectionAudioSource.Stop(); }
-        private void StopCardAudio() { StopDrawAudio(); StopDiscardAudio(); StopSelectionAudio(); }
+        private void StopSelectionDeniedAudio() { if (selectionDeniedAudioSource != null) selectionDeniedAudioSource.Stop(); }
+        private void StopCardAudio() { StopDrawAudio(); StopDiscardAudio(); StopSelectionAudio(); StopSelectionDeniedAudio(); }
         private void ReleaseCardAudio()
-        { ReleaseAudio(ref drawAudioSource); ReleaseAudio(ref discardAudioSource); ReleaseAudio(ref selectionAudioSource); }
+        { ReleaseAudio(ref drawAudioSource); ReleaseAudio(ref discardAudioSource); ReleaseAudio(ref selectionAudioSource); ReleaseAudio(ref selectionDeniedAudioSource); }
         private static void ReleaseAudio(ref AudioSource source)
         {
             if (source == null) return;

@@ -8,7 +8,7 @@
 
 UI Camera 为 Overlay，开启项目自定义 URP 的 `renderOverlayAtNativeResolution`，清除输出目标的深度并保留已绘制的场景颜色；关闭阴影、后处理、HDR、MSAA、抗锯齿、NaN 处理、抖动、XR、遮挡剔除、动态分辨率以及深度/颜色纹理请求。Volume Layer Mask 为 0，Volume 更新采用 Via Scripting。UI 不再借用场景的低分辨率颜色/深度附件。
 
-组件在编辑器和 Play 同步主相机位置、旋转、透视/正交参数、视口、Display 与投影矩阵，在主相机开始渲染前再次同步。Screen Space Camera 按钮与 World Space 悬停提示可共用这台相机；提示的位置仍按场景相机和卡牌几何计算。销毁 UI Camera 时移除自己的 Stack 引用。
+组件在编辑器和 Play 同步主相机位置、旋转、透视/正交参数、视口、Display 与投影矩阵，在主相机开始渲染前再次同步。非 XR 管线在每次分析 Camera Stack 前，将开启原生分辨率且无后处理的 Overlay 稳定移到尾部，保留普通 Overlay 与原生 Overlay 各自的相对顺序；运行时追加普通 Overlay 后的第一帧，UI 仍使用原生分辨率。这一步早于 `beginCameraRendering`，避免调整列表后当帧的最终解析标记仍使用旧顺序。Screen Space Camera 按钮与 World Space 悬停提示可共用这台相机；提示的位置仍按场景相机和卡牌几何计算。销毁 UI Camera 时移除自己的 Stack 引用。
 
 ## Renderer 和资产
 
@@ -25,6 +25,20 @@ UI Camera 为 Overlay，开启项目自定义 URP 的 `renderOverlayAtNativeReso
 ## 验证
 
 `Tools > 测试面板 > 编辑模式测试 > 更多模块 / 全量回归 > 卡牌表现全模块` 覆盖 UI Renderer、Stack 注册/复用/销毁、投影、按钮 Prefab、悬停提示和后处理执行顺序；原生 UI 检查使用不同尺寸输出与普通 Overlay，验证实际单像素条纹、场景颜色保留及关闭 UI。`Tools > Cards > Capture UI Camera Stack In Play` 在 UI Camera 完成渲染后记录真实目标尺寸和主场景复古输入尺寸，输出 `Library/CardUICameraValidation/frame.json` 与 `game.png`，用于检查实际 Game 布局及叠加结果。
+
+## 低分辨率 SSAO
+
+`LowResolutionSSAOFeature` 已安装在 `MainDeferredRenderer`，Feature 列表中位于复古后处理之前。两者都在 `BeforeUpscaling` 执行，同事件按列表顺序执行：低分辨率场景 → SSAO → 复古调色 → Point 放大 → 原生 UI。关闭复古 Feature 不会关闭 SSAO；关闭 Renderer 降分后，SSAO 使用管线当前内部尺寸。
+
+AO 和滤波缓冲直接使用 `cameraTargetDescriptor`，无额外半分辨率步骤。只请求深度，从深度重建几何法线，适配项目自定义 Deferred 材质，不依赖额外 DepthNormals Pass。采用固定屏幕采样旋转与 8/16/32 次半球采样，双向深度引导滤波后乘到场景 RGB；合成保留颜色目标与 alpha，不申请 Opaque Color 拷贝。共三个全屏 Pass、两张线性 R8 缓冲（设备不支持时回退 RGBA8），无跨帧历史。
+
+中文 Inspector 可调遮蔽强度、世界空间半径、深度偏移、采样数及深度边缘锐度。初始强度 1.2、半径 0.06、偏移 0.001、16 次采样，按项目桌面尺度设置。强度为 0 时完全跳过。RenderTexture 默认开启，Scene View 默认关闭；只在 Base 执行，Overlay、Preview、Reflection、XR、深度专用目标不执行。普通 Overlay 后绘制的物体不参与该次 AO。
+
+这是升采样前的颜色合成效果，会同时压暗已绘制的直接光、间接光和自发光；不向 URP 光照注入环境遮蔽关键字。透明物体不贡献深度遮蔽，但已经混合的透明颜色可能被后方深度产生的 AO 压暗。只覆盖当前常规非 XR 路径，不支持实验性 Render Graph。
+
+- `Tools/Rendering/Install Low Resolution SSAO`：重复执行会复用已有 Feature、保留参数并恢复推荐顺序，只保存主 Renderer。
+- `Tools/Rendering/Validate Low Resolution SSAO`：独立 Preview Scene 中验证透视/正交、1080p/竖屏/小窗口，检查 AO 尺寸、接触暗化、alpha、强度归零等价于禁用，以及 2×2 Point 像素块。结束恢复 Renderer 参数和 Feature 开关；报告、开关对照 PNG 位于 `Library/LowResolutionSSAOValidation/`。
+- `LowResolutionSSAOTests`：验证资产顺序、Shader 持久引用、深度输入和 Base/Overlay/零强度/离屏范围。
 
 ## 雕像裂痕与刚体 VAT
 

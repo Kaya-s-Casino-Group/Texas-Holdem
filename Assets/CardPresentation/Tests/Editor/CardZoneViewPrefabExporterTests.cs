@@ -55,6 +55,8 @@ namespace CardPresentation.Tests
                 var transition = source.TransitionSettings; transition.SettleSeconds = .82f; source.SetTransitionSettings(transition);
                 source.SetInteractionOffsets(new Vector3(0, 0, .011f), new Vector3(0, 0, .023f));
                 source.SetDrawSound(source.DrawSound, .31f); source.SetDiscardSound(null, .54f, false); source.SetSelectionSound(null, .67f);
+                source.SetMaxSelectedCards(3); source.SetSelectionDeniedAnimation(new Vector3(0, 0, .006f), .09f, .2f);
+                source.SetSelectionDeniedSound(null, .45f, false);
                 source.gameObject.AddComponent<CardZonePlayHost>(); source.gameObject.AddComponent<CardZoneMouseInput>();
                 var unrelated = new GameObject("Authored Child"); unrelated.transform.SetParent(source.transform, false);
                 source.Present(Data(new CardVisualData("a", "spades_a"), new CardVisualData("b")));
@@ -69,6 +71,9 @@ namespace CardPresentation.Tests
                 Assert.AreEqual(source.SelectedOffset, hand.SelectedOffset); Assert.AreEqual(source.HoveredOffset, hand.HoveredOffset);
                 Assert.AreEqual(.31f, hand.DrawSoundVolume); Assert.AreSame(source.DrawSoundOverride, hand.DrawSoundOverride);
                 Assert.AreEqual(.54f, hand.DiscardSoundVolume); Assert.IsFalse(hand.DiscardSoundEnabled); Assert.AreEqual(.67f, hand.SelectionSoundVolume);
+                Assert.AreEqual(3, hand.MaxSelectedCards); Assert.AreEqual(.006f, hand.SelectionDeniedOffset.z);
+                Assert.AreEqual(.09f, hand.SelectionDeniedRiseSeconds); Assert.AreEqual(.2f, hand.SelectionDeniedReturnSeconds);
+                Assert.IsNull(hand.SelectionDeniedSound); Assert.AreEqual(.45f, hand.SelectionDeniedSoundVolume); Assert.IsFalse(hand.SelectionDeniedSoundEnabled);
                 Assert.IsNull(hand.DeckAnchor); Assert.IsNull(hand.DiscardAnchor); Assert.IsNull(hand.FacingCamera); Assert.IsTrue(hand.FaceCamera);
                 Near(deckLocal, hand.DeckLocalPosition); Near(discardLocal, hand.DiscardLocalPosition);
                 Assert.Less(Quaternion.Angle(authoredRotation, asset.transform.localRotation), .001f);

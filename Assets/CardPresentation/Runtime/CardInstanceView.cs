@@ -32,7 +32,7 @@ namespace CardPresentation
         private Tween liftTween;
         private readonly object liftTweenId = new object();
         private const float SelectionOvershootScale = 1.35f;
-        public Vector3 InteractionOffset => interactionOffset;
+        public Vector3 InteractionOffset => interactionOffset + selectionDeniedOffset;
         public bool IsLifting => liftTween != null && liftTween.IsActive();
         public bool IsTransitioning => IsTransferring || (transition != null && transition.IsAnimating);
         public bool IsEntering => IsTransferring || (transition != null && transition.IsEntering);
@@ -99,7 +99,7 @@ namespace CardPresentation
         internal void BeginDiscard(Vector3 destination, float delay, CardZoneDiscardSettings settings)
         {
             // Preserve the displayed lift and sway, including selection interrupted midway through its rise.
-            KillLift(); KillHoverScale(); KillSwayTween();
+            KillLift(); KillHoverScale(); KillSwayTween(); CancelSelectionDenied();
             transition.Exit(destination, delay, settings, swayAngle);
         }
 
@@ -135,7 +135,7 @@ namespace CardPresentation
         }
 
         internal void SetTransitionVisible(bool visible) { if (surfaceRenderer != null) surfaceRenderer.enabled = visible; }
-        internal void CompleteTransition() { transition?.Complete(); CompleteTransfer(); }
+        internal void CompleteTransition() { transition?.Complete(); CompleteTransfer(); CancelSelectionDenied(); }
         internal bool ConsumeDealStart() => transition != null && transition.ConsumeStart();
         internal bool ConsumeDealArrival() => transition != null && transition.ConsumeArrival();
         internal bool ConsumeDiscardStart() => transition != null && transition.ConsumeDiscardStart();
@@ -167,6 +167,8 @@ namespace CardPresentation
             ApplyHoverScale(hoverScaling && Data != null && Data.Interaction.IsHovered, settings, animate);
             bool selected = Data != null && Data.Interaction.IsSelected;
             bool selectionChanged = selected != interactionSelected;
+            if (selected && selectionChanged)
+            { interactionOffset += selectionDeniedOffset; CancelSelectionDenied(); }
             interactionSelected = selected;
             var next = selected ? selectedOffset : Vector3.zero;
             if (selected)
@@ -205,7 +207,7 @@ namespace CardPresentation
         private void RefreshInteractionPose()
         {
             if (FaceRoot != null && TransitionRoot != null)
-                FaceRoot.localPosition = Quaternion.Inverse(transform.localRotation * TransitionRoot.localRotation) * interactionOffset;
+                FaceRoot.localPosition = Quaternion.Inverse(transform.localRotation * TransitionRoot.localRotation) * (interactionOffset + selectionDeniedOffset);
         }
 
         private void KillLift()
@@ -235,6 +237,7 @@ namespace CardPresentation
             if (IsExiting) return;
             if (IsLifting) liftTween.ManualUpdate(deltaTime, deltaTime);
             if (IsHoverScaling) hoverTween.ManualUpdate(deltaTime, deltaTime);
+            if (IsSelectionDeniedAnimating) selectionDeniedTween.ManualUpdate(deltaTime, deltaTime);
             // During selection the lift owns sway centering; idle motion resumes only after deselection.
             if (Data.Interaction.IsSelected || !motionSettings.Enabled || motionSettings.MaxSwayAngle == 0) return;
             if (swayTween == null || !swayTween.IsActive())

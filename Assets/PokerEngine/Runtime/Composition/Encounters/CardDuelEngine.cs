@@ -150,6 +150,29 @@ namespace PokerEngine
             IEnumerable<CardInstanceId> selected, IEnumerable<ParticipantId> targets = null) =>
             Execute(state, expectedRevision, actor, CardDuelAction.Discard, selected, targets);
 
+        /// <summary>Read-only candidate classification/scoring, independent of action costs and target/damage policies.
+        /// Authoritative Play uses this same scoring path. State, random and all resources remain unchanged.</summary>
+        public CardDuelTransition PreviewHand(CardDuelState state, ParticipantId actor, IEnumerable<CardInstanceId> selected)
+        {
+            if (state == null) throw new ArgumentNullException(nameof(state));
+            if (!ReferenceEquals(state.Duel.Rules, Duel.Definition)) return new CardDuelTransition(state, CardDuelError.InvalidState);
+            if (!state.HasStarted || !state.Duel.Players.Any(player => player.Id == actor)) return new CardDuelTransition(state, CardDuelError.InvalidPhase);
+            var ids = (selected ?? new CardInstanceId[0]).ToArray();
+            var hand = state.Zone(CardZoneKinds.Hand, actor);
+            if (ids.Length < 1 || ids.Length > state.Duel.Player(actor).Rules.MaxSelection || ids.Distinct().Count() != ids.Length ||
+                ids.Any(id => !hand.Cards.Contains(id) || state.Table.GetCard(id).IsDisabled))
+                return new CardDuelTransition(state, CardDuelError.InvalidSelection);
+            try
+            {
+                var ordered = hand.Cards.Where(ids.Contains).Select(state.Table.GetCard).ToArray();
+                var pattern = PokerHandClassifier.Classify(ordered.Select(card => new EffectiveCard(card.Id, Face(card).Rank, Face(card).Suit)));
+                var score = ScoreEngine.EvaluatePattern(Duel.NextScoreId(state.Duel), Scoring, pattern, 1,
+                    ordered.Select(card => new ScoringCard(card.Id.Value, new CardFace(Face(card).Rank, Face(card).Suit), effects: card.Effects)), new ScoringJoker[0]);
+                return new CardDuelTransition(state, score: score, pattern: pattern);
+            }
+            catch (OverflowException) { return new CardDuelTransition(state, CardDuelError.Overflow); }
+        }
+
         // Compatibility overload: first player, or the next enemy. Multiplayer commands always identify their actor.
         public CardDuelTransition Execute(CardDuelState state, long expectedRevision, CardDuelAction action, IEnumerable<CardInstanceId> selected = null) =>
             Execute(state, expectedRevision, action == CardDuelAction.EnemyAction ? state.Duel.NextEnemy : state.Duel.PlayerId, action, selected);
@@ -191,9 +214,9 @@ namespace PokerEngine
                 {
                     // Authority determines both submitted membership and score, never accepting a UI-provided numeric score.
                     var ordered = state.Zone(CardZoneKinds.Hand, actor).Cards.Where(ids.Contains).Select(state.Table.GetCard).ToArray();
-                    pattern = PokerHandClassifier.Classify(ordered.Select(card => new EffectiveCard(card.Id, Face(card).Rank, Face(card).Suit)));
-                    score = ScoreEngine.EvaluatePattern(Duel.NextScoreId(duel), Scoring, pattern, 1,
-                        ordered.Select(card => new ScoringCard(card.Id.Value, new CardFace(Face(card).Rank, Face(card).Suit), effects: card.Effects)), new ScoringJoker[0]);
+                    var candidate = PreviewHand(state, actor, ids);
+                    if (!candidate.Accepted) return candidate;
+                    pattern = candidate.Pattern; score = candidate.Score;
                     var hand = new HandAttackInfo(pattern, ordered.Select(card => new AttackCardSnapshot(card,
                         new EffectiveCard(card.Id, Face(card).Rank, Face(card).Suit))));
                     var hit = Duel.Execute(duel, duel.Revision, actor, ScoredDuelActionKind.ScoredHand, score, targets, hand);

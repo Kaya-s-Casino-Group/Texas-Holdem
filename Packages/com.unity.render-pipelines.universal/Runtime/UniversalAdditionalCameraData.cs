@@ -423,7 +423,7 @@ namespace UnityEngine.Rendering.Universal
             set => m_CameraType = value;
         }
 
-        /// <summary>Unlit, non-XR overlays at the end of a stack draw after scene presentation at output resolution.</summary>
+        /// <summary>Unlit, non-XR overlays without post-processing are kept at the end of the stack and draw after scene presentation at output resolution.</summary>
         public bool renderOverlayAtNativeResolution
         {
             get => m_RenderOverlayAtNativeResolution;

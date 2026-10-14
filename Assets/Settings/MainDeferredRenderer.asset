@@ -24,8 +24,8 @@ MonoBehaviour:
     vignette: 0.4
     vignetteSoftness: 0.21
     colorLevels: 8
-    posterization: 0.873
-    dither: 0.51
+    posterization: 0.966
+    dither: 0.393
     chromaticOffset: 3
   injectionPoint: 1001
   postShader: {fileID: 4800000, guid: a6c4b4b14be464680b808eb2a672d809, type: 3}
@@ -45,8 +45,9 @@ MonoBehaviour:
     debugReplacementPS: {fileID: 4800000, guid: cf852408f2e174538bcd9b7fda1c5ae7, type: 3}
     hdrDebugViewPS: {fileID: 4800000, guid: 573620ae32aec764abd4d728906d2587, type: 3}
   m_RendererFeatures:
+  - {fileID: 41553810914614333}
   - {fileID: -6135896016876051283}
-  m_RendererFeatureMap: ad645eff14ebd8aa
+  m_RendererFeatureMap: 3d1ca18af8a09300ad645eff14ebd8aa
   m_UseNativeRenderPass: 0
   postProcessData: {fileID: 0}
   xrSystemData: {fileID: 11400000, guid: 60e1133243b97e347b653163a8c01b64, type: 2}
@@ -93,3 +94,25 @@ MonoBehaviour:
   m_CopyDepthMode: 1
   m_AccurateGbufferNormals: 0
   m_IntermediateTextureMode: 1
+--- !u!114 &41553810914614333
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d2fcc0c7cf72c4fbca1c1ba83fbc3d63, type: 3}
+  m_Name: "\u4F4E\u5206\u8FA8\u7387 SSAO"
+  m_EditorClassIdentifier: 
+  m_Active: 1
+  settings:
+    applyToRenderTextures: 1
+    applyToSceneView: 0
+    intensity: 2.14
+    radius: 0.06
+    bias: 0.001
+    samples: 16
+    bilateralSharpness: 4
+  aoShader: {fileID: 4800000, guid: f88e2fdc35ca644ce913cd0c2a5e9048, type: 3}

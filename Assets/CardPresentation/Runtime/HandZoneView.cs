@@ -35,6 +35,7 @@ namespace CardPresentation
         {
             ValidateOffset(raisedOffset); ValidateOffset(hoveredOffset); ValidateOffset(deckLocalPosition);
             liftSettings.Validate(); transitionSettings.Validate(); discardSettings.Validate();
+            ValidateSelectionSettings();
         }
 
         public override void Present(CardZoneViewData data, bool animate = true) => base.Present(data, animate);

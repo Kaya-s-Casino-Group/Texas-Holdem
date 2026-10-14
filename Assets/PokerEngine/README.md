@@ -409,3 +409,6 @@ Unity 的 CardMatchHost 消费此基础层，运行时及编辑器围绕同一�
 `PokerEngine.Scoring` 保留纯 C# 边界：`ScoreProfile` 提供牌型基础筹码/倍率和每级成长，`CardPointProfile` 提供 13 点数基础筹码及可选的花色+点数覆盖。`ScoreEngine` 只计算明确提交的计分子集，不选择目标、不移牌、不处理生命。
 
 默认计分版本为 `score.balatro.1`，采用小丑牌基础数值；不改变现有德州牌型识别或加入新牌型。新旧计分版本不能作为同版存档互换。Unity 资产与中文配置界面位于独立的 `Assets/PokerScoring` 模块，详见其 README。Run 和对局都可以接收同一资产 Build 出的纯配置快照；牌型等级仍属于各自运行状态。
+
+
+`CardDuelEngine.PreviewHand(state, actor, selected)` 提供只读候选牌型/计分结果，正式 Play 复用此入口。它验证选牌成员、数量、禁用状态及内容归属，不检查出牌费用，不调用伤害/目标/发牌策略，不推进随机或状态；返回的 CardDuelTransition.State 是原输入，Damage/Events 为空。无快照格式变化。

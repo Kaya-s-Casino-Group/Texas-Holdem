@@ -710,6 +710,30 @@ namespace UnityEngine.Rendering.Universal
             ScriptableRenderer.current = null;
         }
 
+        // Keep native UI after ordinary overlays, including cameras appended since the previous frame.
+        // This must run before stack analysis: beginCameraRendering is too late to change resolve flags.
+        static void EnsureNativeOverlayTail(List<Camera> cameraStack)
+        {
+            int firstNative = -1;
+            for (int i = 0; i < cameraStack.Count; ++i)
+            {
+                var camera = cameraStack[i];
+                bool native = camera != null && camera.TryGetComponent<UniversalAdditionalCameraData>(out var data)
+                    && data.renderType == CameraRenderType.Overlay && data.renderOverlayAtNativeResolution
+                    && !data.renderPostProcessing;
+                if (native)
+                {
+                    if (firstNative < 0) firstNative = i;
+                }
+                else if (firstNative >= 0)
+                {
+                    // Stable partition: preserve the relative order within both groups, without allocations.
+                    cameraStack.RemoveAt(i);
+                    cameraStack.Insert(firstNative++, camera);
+                }
+            }
+        }
+
         /// <summary>
         /// Renders a camera stack. This method calls RenderSingleCamera for each valid camera in the stack.
         /// The last camera resolves the final target to screen.
@@ -744,6 +768,9 @@ namespace UnityEngine.Rendering.Universal
             Camera lastActiveOverlayCamera = null, firstNativeOverlay = null, lastSceneOverlay = null;
             if (cameraStack != null)
             {
+                if (!baseCamera.stereoEnabled)
+                    EnsureNativeOverlayTail(cameraStack);
+
                 var baseCameraRendererType = baseCameraAdditionalData?.scriptableRenderer.GetType();
                 bool shouldUpdateCameraStack = false;
 
