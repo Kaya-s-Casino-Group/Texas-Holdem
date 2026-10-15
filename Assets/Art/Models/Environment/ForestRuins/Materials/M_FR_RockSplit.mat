@@ -35,7 +35,7 @@ Material:
     m_Ints: []
     m_Floats:
     - _BakeEmission: 0
-    - _BumpScale: 0.18
+    - _BumpScale: 1.05
     - _Cull: 0
     - _Cutoff: 0
     - _PaintFill: 0

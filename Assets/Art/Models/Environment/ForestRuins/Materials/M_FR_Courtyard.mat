@@ -35,11 +35,11 @@ Material:
     m_Ints: []
     m_Floats:
     - _BakeEmission: 0
-    - _BumpScale: 0.18
+    - _BumpScale: 0.56
     - _Cull: 0
     - _Cutoff: 0
     - _PaintFill: 0
-    - _Smoothness: 0.08
+    - _Smoothness: 0.531
     - _VertexTone: 0
     - _WindSpeed: 1
     - _WindStrength: 0
