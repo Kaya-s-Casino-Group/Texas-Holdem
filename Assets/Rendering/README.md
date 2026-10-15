@@ -28,7 +28,7 @@ UI Camera 为 Overlay，开启项目自定义 URP 的 `renderOverlayAtNativeReso
 
 ## 低分辨率 SSAO
 
-`LowResolutionSSAOFeature` 已安装在 `MainDeferredRenderer`，Feature 列表中位于复古后处理之前。两者都在 `BeforeUpscaling` 执行，同事件按列表顺序执行：低分辨率场景 → SSAO → 复古调色 → Point 放大 → 原生 UI。关闭复古 Feature 不会关闭 SSAO；关闭 Renderer 降分后，SSAO 使用管线当前内部尺寸。
+`LowResolutionSSAOFeature` 已安装在 `MainDeferredRenderer`，Feature 列表中位于复古后处理之前。两者都在 `BeforeUpscaling` 执行，同事件按列表顺序执行：低分辨率场景 → SSAO → 高度雾 → 体积光 → Bloom → 复古调色 → Point 放大 → 原生 UI。关闭复古 Feature 不会关闭 SSAO；关闭 Renderer 降分后，SSAO 使用管线当前内部尺寸。
 
 AO 和滤波缓冲直接使用 `cameraTargetDescriptor`，无额外半分辨率步骤。只请求深度，从深度重建几何法线，适配项目自定义 Deferred 材质，不依赖额外 DepthNormals Pass。采用固定屏幕采样旋转与 8/16/32 次半球采样，双向深度引导滤波后乘到场景 RGB；合成保留颜色目标与 alpha，不申请 Opaque Color 拷贝。共三个全屏 Pass、两张线性 R8 缓冲（设备不支持时回退 RGBA8），无跨帧历史。
 
@@ -39,6 +39,97 @@ AO 和滤波缓冲直接使用 `cameraTargetDescriptor`，无额外半分辨率�
 - `Tools/Rendering/Install Low Resolution SSAO`：重复执行会复用已有 Feature、保留参数并恢复推荐顺序，只保存主 Renderer。
 - `Tools/Rendering/Validate Low Resolution SSAO`：独立 Preview Scene 中验证透视/正交、1080p/竖屏/小窗口，检查 AO 尺寸、接触暗化、alpha、强度归零等价于禁用，以及 2×2 Point 像素块。结束恢复 Renderer 参数和 Feature 开关；报告、开关对照 PNG 位于 `Library/LowResolutionSSAOValidation/`。
 - `LowResolutionSSAOTests`：验证资产顺序、Shader 持久引用、深度输入和 Base/Overlay/零强度/离屏范围。
+
+## 高度雾与依赖它的体积光
+
+来源为 [LifeSugar/RayMarchingGodRay](https://github.com/LifeSugar/RayMarchingGodRay)，迁移基线 `9bcc726dc3fc3f2f6e87af2b1e11e5606edc7d43`。原仓库完整克隆在项目根目录的 `.cache/RayMarchingGodRay`（不纳入 Git，也不导入 Unity）；MIT 授权保留在 `RayMarchingGodRay-LICENSE.txt`。
+
+两个独立 Renderer Feature 已安装在 `MainDeferredRenderer.asset`：**SSAO → 高度雾 → 体积光 → Bloom → 复古后处理 → Point 放大 → 原生 UI**。全部使用定制 URP 的 `BeforeUpscaling`，同事件按 Feature 列表排序。保留原 Renderer 的 Deferred、540 行、SSAO 和复古设置，没有替换 Renderer 或修改嵌入式 URP。两个效果均只请求深度，使用 `cameraTargetDescriptor` 的当前内部尺寸；不再对 540 行画面额外减半，也不导入原仓库的 Pipeline Asset、Volume 或场景。
+
+### 高度雾：HeightFogFeature
+
+直接在 Renderer Feature 的 Settings 调节，无需额外 Global Volume。
+
+- `baseHeight`：世界空间完整密度的最高高度；更低处密度保持恒定。
+- `maximumHeight`：从基础高度按所选曲线减淡，达到此高度为零，必须高于基础高度。
+- `heightFalloff`：选择 Linear（线性）、Smooth（平滑 S 形）、Ground Hugging（贴地浓雾，快速衰减）、High Fill（较高位置仍保留密度）或 Custom（自定义）。默认 Linear 保持旧画面。
+- `heightCurve`：Custom 时生效，X=基础高度到最大高度的归一化高度，Y=密度倍率，输出限制在 0–1。端点固定 `(0,1)`、`(1,0)`，基础高度以下仍为完整密度，最大高度以上仍为零；地面裁切规则不变。可调整中间控制点和切线形成更厚的贴地层或分层雾。
+- `enableGround / groundHeight`：独立的下边界裁切。关闭时完全忽略地面高度，不使用极小浮点数参与密度运算。
+- `density / attenuationDistance`：密度与消光距离；密度为 1 时，经过 attenuationDistance 后透射率为 1/e。`distance` 是从近裁剪面起的最大积分长度，场景深度会进一步截断它。
+- `color`：均匀背景雾色。只在此处合成一次 `scene × T + fogColor × (1 − T)`，保留原 alpha。
+
+线性模式沿视线对“恒定密度 + 线性高度衰减”作解析积分。其他高度曲线缓存为 257×1 RGFloat 查找表（约 2 KiB，R=密度，G=累计积分），仅曲线/预设变化时重建和上传；积分与分段线性密度匹配，极短区间用中点值避免累计值相减的精度损失。无 3D 纹理时，高度雾仍无需逐步 ray march，且透射率不受体积光步数影响。高度雾、3D 噪声调制及体积光共用这一高度分布。透视、正交和非对称投影都从深度与逆 VP 重建近裁剪面及表面端点。无额外颜色拷贝、无雾专用 RT。
+
+高度雾 Settings 的 **Use Noise Texture** 可启用动态 `Texture3D` 密度调制。读取线性纹理 R 通道，实际密度为 `heightDensity × lerp(1, 2 × R, Noise Strength)`：R=0.5 不改变密度，强度为 1 时 R=0/1 对应零/双倍密度。默认接入离线生成的 `FogNoise32.asset`；其均值并非精确 0.5，不进行自动均值校正。开关关闭、纹理为空或强度为零时恢复原解析路径。
+
+**Noise World Size** 是各轴重复一个纹理周期的世界尺寸，**Noise Offset** 是世界偏移，**Noise Velocity** 是世界单位/秒的平移速度（正速度沿正轴移动）；速度为零时完全静止。坐标固定在世界空间，不跟随相机。Shader 使用独立的三轴 Repeat + 空间线性 sampler 和显式 LOD 0；偏移用 CPU double 计算并按周期回绕，Shader 不切换纹理、不逐帧上传噪声，也没有逐帧随机抖动。默认速度 `(0.03, 0, 0.015)`、世界尺寸 `(2, 1, 2)`，建议使用生成工具产生的周期性低频纹理。这里是噪声体的连续平移，未实现 4D 形态演化。
+
+**Noise Steps** 默认 32，统一控制纹理雾及体积光积分。每段保留精确高度/地面裁切积分，只在段中点采一次 3D 纹理。无参与灯光时由高度雾独立求透射率；有体积光时高度雾将本帧积分委托给后续体积光 Pass，一次步进同时累计 RGB 散射和 alpha 透射率，最后按 `scene × T + fogColor × (1-T) + scattering` 合成。沿用原来的两张 RGBA16F 缓冲，不增加密度 RT 或第二遍 3D 采样。双边滤波只滤散射 RGB，透射率逐像素保留，避免开关体积光/模糊时改变雾的遮蔽；目标颜色 alpha 保持不变。纹理模式下体积光自身 Steps / Jitter 不生效。Frame Debugger 中独立 Height Fog 绘制可能合并到 Volumetric Light。
+
+`Tools/Rendering/Enable Default 3D Fog Noise` 可接入默认纹理，保留现有其他参数。`Tools/Rendering/Validate 3D Fog Noise` 验证常量密度、空纹理/零强度回退、独立与共享积分一致性、三轴周期/接缝、平移、正交视角和地面裁切，并对五种高度曲线验证水平射线的密度、竖直射线的累计衰减以及与 3D 噪声共用积分的结果；报告在 `Library/HeightFogNoiseValidation/report.json`。CPU 测试另覆盖长时间运动偏移的周期连续性，以及曲线积分、边界、数值限制和缓存更新。细节空间频率仍需匹配 Noise Steps，缩小平铺尺寸时应增加步数以减少欠采样。
+
+### 体积光：VolumetricLightFeature
+
+`heightFog` 必须引用同一 Renderer 中排在它前面的高度雾。高度雾停用、密度或距离为零、参数无效、相机不在适用范围时，体积光不入队；前一相机和前一帧的数据不会作为依赖依据。单独关闭体积光仍保留高度雾。
+
+解析模式复用同一高度密度函数和解析透射率，沿视线做单次散射积分，仅叠加散射 RGB。纹理模式共用上述密度采样与透射积分，并一起合成，不重复衰减场景。两条路径都保留 Cornette–Shanks 相位函数、主光与额外光、阴影、Light Cookie、近灯中心抑制。主光直接按体积采样点查阴影图，不把表面的屏幕空间阴影当成雾中的遮挡。
+
+主光由 Feature 的 `mainLight / mainScattering / mainAnisotropy` 控制，不需要挂脚本。额外灯光必须挂载并启用 `VolumetricLight` 才参与体积光，散射强度、各向异性和近灯抑制半径都取自该组件；未挂载、禁用组件或 scattering 为零的灯不会产生体积散射，普通表面照明不受影响。最多选取 `maxAdditionalLights` 盏可见且贡献非零的额外灯（默认 16，上限 64，沿 URP 可见灯顺序），与 URP 的全局灯光缓冲索引对齐，不受某个 Mesh 的 per-object 灯光列表限制。
+
+默认 48 步、固定屏幕噪声、1 次双向深度引导滤波。两张内部尺寸的 RGBA16F 临时 RT 在 Feature 释放时回收；固定噪声避免无 TAA 的像素风画面逐帧闪动。关闭滤波可检查原始采样，增加步数可改善细阴影和窄光束。设置按当前桌面约米级场景给出温和起点，艺术效果仍需按灯光位置和强度调整。
+
+### 范围与验证
+
+默认处理 Game Base Camera 和离屏 RenderTexture；Scene View 默认关闭，跟随高度雾开关。Overlay、Preview、Reflection、XR 和深度专用目标跳过。UI Renderer 未添加这两个 Feature。当前实现适配本项目常规 Deferred / 非 Render Graph 路径，不包含多次散射、时间累积或局部体积盒。没有深度写入的透明物体不能提供独立雾距离；效果按它背后的不透明深度合成。灯光遮挡范围受 URP Shadow Distance 和阴影图分辨率限制。
+
+- `Tools/Rendering/Install Height Fog and Volumetric Light`：安装或复用两个 Feature，保留参数、修复依赖和推荐排序，只保存主 Renderer。
+- `Tools/Rendering/Validate Height Fog and Volumetric Light`：独立 Preview Scene 中做真实 GPU 验证，包含横屏/竖屏/正交、原生尺寸、Point 放大、alpha、依赖关闭、零密度、主光/点光/聚光及阴影。执行后恢复 Feature 和低分辨率设置。报告及截图在 `Library/HeightFogValidation/`。
+- `Tools/Rendering/Capture Current Scene Height Fog`：使用当前 Main Camera 与 Camera Stack 捕获关雾、仅雾、雾加体积光三张对照，不保存当前场景。
+- `HeightFogTests`：覆盖安装顺序、持久 Shader 和依赖引用、地面关闭、无效高度、Base/Overlay、零密度以及跨 Renderer 的依赖隔离。
+
+## Bloom
+
+`BloomFeature` 已安装在主 Renderer 中体积光之后、复古后处理之前，同样在 `BeforeUpscaling` 执行。独立于高度雾和体积光，无需 Volume 或开启 URP 内置后处理，也不修改定制 URP。场景 HDR 高光及体积散射先产生光晕，再接受现有复古调色和 Point 放大；原生 UI Camera 不执行 Bloom。
+
+采用常规柔和阈值提取、半尺寸起始的多级降采样、Tent 升采样与 RGB 加法合成。缓冲为线性 RGBA16F；每级加权归一化，避免层数增加时均匀区域亮度成倍增长。保留场景 alpha，不读取同一目标正在写入的颜色，不请求深度或 Opaque Color Copy。临时 RT 在尺寸和层数变化时复用或释放，销毁 Feature 时全部释放。
+
+- `intensity`：光晕强度，默认 0.3，0 时完全跳过。
+- `threshold`：Gamma 空间阈值，传给 Shader 前转为线性；默认 1，适合提取 HDR 高光。
+- `softKnee`：阈值附近过渡比例，默认 0.5；0 为硬阈值。
+- `scatter`：向更粗层扩散的比例，默认 0.7；越大光晕越宽。
+- `maxIterations`：最多 1–8 层，默认 6；小尺寸自动停止，最小支持 1×1。
+- `clamp`：进入 Bloom 的线性 HDR 亮度上限，默认 65472，可降低以压制极端亮点。
+- `tint`：光晕颜色，默认白色。
+
+默认处理 Game Base Camera 和 RenderTexture，Scene View 默认关闭；Overlay、Preview、Reflection、XR 和深度专用目标跳过。按本项目 Linear 色彩空间、常规非 Render Graph 路径实现。不包含镜头污渍、镜头眩光或时间累积。要让发光材质明显溢光，需要启用相机 HDR 并使高光超过阈值；低动态范围画面可降低阈值，但会让更多普通亮色参与 Bloom。
+
+- `Tools/Rendering/Install Bloom`：安装或复用 Feature，保留已有参数与开关；持久保存 Shader 引用和排序。雾与 SSAO 安装菜单也会保留推荐顺序。
+- `Tools/Rendering/Validate Bloom`：Preview Scene 中验证横屏、竖屏、奇数尺寸、1×1、关闭低分辨率后的原生尺寸、HDR 光晕、阈值过滤、零强度、颜色、alpha、单层和 Point 像素块。报告与对照图在 `Library/BloomValidation/`。
+- `Tools/Rendering/Capture Current Scene Bloom`：保留其他效果，以当前 Main Camera 捕获开关对照，不保存场景。
+
+体积光相关类型和 Shader 已统一命名为 `VolumetricLightFeature`、`VolumetricLight`、`VolumetricLight.shader`。脚本及 Shader 保留原 `.meta` GUID，类型带 `MovedFrom`，已有 Renderer 子资产、灯光组件和参数可继续使用；高度雾的 `HeightFogFeature` 及依赖引用保持原名。
+
+## 离线 3D 雾噪声生成器
+
+`Tools/Rendering/3D Noise Generator` 打开编辑器工具，可调随机种子、基础格子数、噪声层数和每层强度比例，生成后可拖动 Z 滑杆预览 XY 切片。输出固定为 32³、R8 单通道线性 `Texture3D`，三轴 Repeat、空间线性过滤、无 mip。体素数据 32 KiB；为了离线预览保留一份可读 CPU 数据，Unity 文本序列化文件约 65 KiB。
+
+默认资产为 `Assets/Rendering/Textures/FogNoise32.asset`：seed 1337、基础 2 格、3 层、强度递减 0.5，即把 2/4/8 格的周期性三维 Value Noise 离线合成。每层使用五次平滑插值，整数周期哈希让三个轴自然平铺；采样点位于体素中心，不复制末端切片。输出是 0–1 噪声值，不承诺均值恰好为 0.5，后续密度调制应单独定义强度和均值语义。最高频率限制为每轴 16 格，避免 32³ 数据欠采样。
+
+`Tools/Rendering/Generate Default 3D Fog Noise` 可直接按默认参数生成。更新相同路径时保留资产 GUID 和 file ID；生成参数存入资产 `.meta` 的 userData，重新打开工具可恢复。目标若是其他类型/规格的资产，工具会要求另选路径。生成代码仅存在于 Editor 程序集，运行时无需生成或逐帧上传噪声；纹理可供上述高度雾/体积光的共享积分动态采样。
+
+`VolumeNoiseGeneratorTests` 验证同种子复现、不同种子差异、三轴周期连续、频率限制、R8 线性格式及重烘焙后的引用/数据持久性。默认体积的八张切片预览在 `Library/VolumeNoiseValidation/FogNoise32Slices.png`。
+
+## 萤火虫区域
+
+`Tools/Rendering/Create Firefly Volume` 在主相机前创建一个区域并选中，默认 12 只；也可以拖入 `Assets/Rendering/Prefabs/FireflyVolume.prefab`。`FireflyVolume` 的 Center / Size 定义局部立方体范围，支持移动、旋转及缩放，选中时显示线框。编辑器可直接预览，关闭 Preview In Editor 后仅运行时生成；子物体自动生成且不写入场景，禁用组件时清理。
+
+每只是具有真实深度的、不透明 URP Unlit 小球，正常写入深度与 GBuffer，受前景遮挡，并参与现有高度雾和 Bloom。Emission 是 HDR 亮点颜色，Diameter 使用世界单位；点光源颜色、强度和范围独立控制，亮点与灯光共用缓慢且错相的亮度脉动。创建菜单会开启主相机 Allow HDR，让亮度超过 1 的数据进入 Bloom；新增区域及相机变更留在当前场景，需正常保存场景。
+
+每只自动挂载 `Light(Point)` 和 `VolumetricLight`，Scattering / Anisotropy / Light Radius 在区域上统一调整。点光源默认不投射阴影，可按需要开启。体积散射仍依赖现有 Height Fog + Volumetric Light Features，所有区域与场景其他体积灯共享 Feature 的 Max Additional Lights 上限（默认 16），增加数量并不会自动提高预算。
+
+随机种子控制初始分布；Speed / Turn Speed / Wander Interval 控制平滑游动。首版避障针对同一 Scene 内、Obstacle Layers 命中的 MeshRenderer / SkinnedMeshRenderer 世界包围盒，按 Clearance 和球体半径扩张；无需 Collider，出生位置、目标和整段位移均检测。已缓存 bounds 每帧更新，新增/删除模型按 Obstacle Refresh Interval 重新发现。包围盒是保守近似，树冠与镂空模型空隙也会避让；不解析 Shader/VAT 变形后的实际三角形。空间不足时减少生成数量并提示，不强行放进 Mesh。障碍物移入当前位置时会在区域内重新安置，找不到位置则暂时隐藏。
+
+`FireflyVolumeTests` 覆盖旋转/非均匀缩放边界、无 Collider 薄墙防穿透、随机复现、统一灯光参数和清理；GPU 测试确认 HDR 亮度、前景遮挡及亮点写深度后遮住后绘制的背景几何。
 
 ## 雕像裂痕与刚体 VAT
 

@@ -4,6 +4,52 @@
 
 ## [Unreleased]
 
+### 2026-10-15 — 森林遗迹场景与光照资源归档
+
+- 纳入森林遗迹环境、手绘 Deferred 材质、Meta Pass、植被预制件和优化后的 Lightmap UV1 缓存；原贴图 UV 与雕像 VAT 保持不变。
+- ForestRuins 与 SingleBattleDemo 的 Lighting Settings、LightingData 和 lightmap 分别归档到同名场景目录；清理未引用的默认设置，森林场景独立重烘焙。
+- 光照图集从 1024² 收紧到 512²，有效 UV 覆盖约 41.5%；缓存生成脚本纳入 Tools/ForestRuins，场景烘焙工具按当前场景选择独立设置。
+
+### 2026-10-15 — 高度雾衰减曲线
+
+- 新增 Height Falloff 选项：线性、平滑、贴地浓雾、高处缓降及自定义 AnimationCurve；默认线性保持原画面。归一化高度控制密度倍率，限制 0–1 并固定上下边界。
+- 非线性曲线按需缓存密度及匹配的累计积分，纯高度雾无需新增 ray march；动态 3D 噪声与体积光共用同一高度分布，曲线修改时刷新缓存，释放 Feature 时回收。
+- 渲染模块 33/33 测试通过；GPU 检查覆盖五种分布的密度/积分、噪声叠加和共享透射率，自定义曲线下正交视角与地面裁切通过。
+
+### 2026-10-15 — 高度雾与体积光共享动态 3D 密度纹理
+
+- 高度雾新增可选 Texture3D、强度、世界平铺尺寸、偏移、移动速度和共享步数，默认接入现有 32³ R8 周期噪声；空纹理、关闭或零强度保留解析路径。
+- 世界空间连续平移，独立 Repeat/Linear sampler、显式 LOD 0、double 时间偏移周期回绕；固定中点采样，不逐帧生成/上传纹理。
+- 纹理模式一次 ray march 同时积分透射率和散射，复用体积光 RT 的 alpha 存储 T，再统一合成。双边滤波仅影响 RGB；无参与灯光时自动回退独立纹理雾。
+- 渲染模块 27/27 测试通过；新增 GPU 检查通过三轴周期、接缝、平移、常量纹理、回退、共享积分和正交/地面裁切，原高度雾及主光/点光/聚光阴影 GPU 回归通过。
+
+### 2026-10-15 — 场景萤火虫区域
+
+- 新增 `FireflyVolume`、创建菜单及 Prefab：局部 Box 内随机游动的不透明 HDR 发光球，每只附带点光源和 `VolumetricLight`，区域统一控制外观、灯光、散射与运动参数，支持编辑器预览。
+- 同场景 Mesh Renderer 包围盒避障，无 Collider 也生效，检测整个移动线段；尊重球体半径、旋转和缩放后的区域边界，空间不足不会强行生成。生成子物体不序列化，禁用后清理。
+- 4 项测试通过，含实际 GPU HDR 保留、前后景深度遮挡检查；默认使用现有 Deferred / 高度雾 / 体积光 / Bloom 流程，不新增 Renderer Feature。
+
+### 2026-10-15 — 离线 32³ 雾噪声生成工具
+
+- 新增 Editor-only 3D 噪声生成窗口，支持种子、频率、层数、强度递减、输出路径及 Z 切片预览；周期性三维 Value Noise 多层离线合成，限制最高频率以避免欠采样。
+- 生成默认 `FogNoise32.asset`：32³ R8 线性、三轴 Repeat、无 mip，体素数据 32 KiB。重烘焙保持 GUID/file ID，参数随 `.meta` 保存；本轮不改变运行时高度雾和体积光。
+- 4 项 EditMode 测试覆盖确定性、周期性、频率约束及 Texture3D 持久化；默认八切片预览位于 `Library/VolumeNoiseValidation/FogNoise32Slices.png`。
+
+### 2026-10-15 — 体积光命名整理与独立 Bloom
+
+- 将体积光 Feature、灯光组件和 Shader 改为 `VolumetricLightFeature`、`VolumetricLight`、`VolumetricLight.shader`，保留 GUID、Renderer 子资产和场景灯光引用，补充 MovedFrom；主光与额外灯光的启用规则不变。
+- 新增独立 BloomFeature：柔和阈值、高光提取、多级降采样/Tent 升采样、HDR 上限、扩散、强度和颜色；RGB 加法保留 alpha，强度为零时跳过，缓冲随尺寸/层数变化回收。
+- 接入定制主 Renderer：SSAO → 高度雾 → 体积光 → Bloom → 复古处理 → Point 放大 → UI；不修改嵌入式 URP 和 UI Renderer，不重置已有灯光与效果参数。安装菜单维持推荐顺序。
+- 渲染模块 EditMode 17/17 通过；Bloom GPU 验证覆盖 HDR 光晕、阈值、颜色、零强度、alpha、单层、1×1、奇数尺寸、横/竖屏、原生尺寸及 Point 放大。重命名后高度雾/体积光 GPU 回归通过，无 Shader 错误；未执行 Player 构建。
+
+### 2026-10-15 — 高度雾与依赖高度雾的体积光
+
+- 拉取 LifeSugar/RayMarchingGodRay（`9bcc726`）至 `.cache/RayMarchingGodRay`，保留 MIT 授权，将原单一效果拆为 `HeightFogFeature` 与显式依赖它的 `VolumetricLightFeature`。
+- 高度雾独立控制基础高度、最大高度、地面裁切、密度、消光距离与雾色；修复基础高度无效和关闭地面后密度消失。共用解析高度积分和透视/正交深度重建；雾只施加一次消光，体积光仅添加散射。
+- 迁移主光/点光/聚光、阴影、Cookie 和 Cornette–Shanks 相位函数，主光由 Feature 控制，额外灯光必须挂载并启用 `VolumetricLight` 才参与散射。使用固定采样噪声、内部尺寸 RGBA16F 缓冲与深度引导滤波。
+- 安装到定制 MainDeferredRenderer：SSAO → 高度雾 → 体积光 → 复古处理 → Point 放大 → 原生 UI。保留嵌入式 URP 与已有渲染参数；跳过 Overlay / XR / Preview / Reflection，禁用高度雾时体积光自动停用。
+- 新增安装、GPU 验证及当前场景对照捕获菜单，更新 Rendering README。EditMode 渲染模块 14/14 通过；Metal GPU 验证覆盖横屏/竖屏/正交、540 行及原生尺寸、Point 像素块、alpha、依赖开关、零密度、三类灯光与阴影。对照图与报告位于 `Library/HeightFogValidation`；未执行 Player 构建。
+
 ### 2026-10-15 — 目标选择策略归属角色
 
 - 新增 BattleActorTargetRules，攻击及友方策略随角色 Setup 进入战局，玩家扣费、结束回合和恢复能量均保留快照；移除 Host / CardDuelEngine / TeamBattleEngine 全局策略入口。

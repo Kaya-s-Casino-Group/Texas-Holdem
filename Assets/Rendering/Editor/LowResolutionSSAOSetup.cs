@@ -27,7 +27,8 @@ namespace RetroRendering.Editor
             }
             feature.AOShader = shader; feature.SetActive(true); feature.Create();
             data.rendererFeatures.Remove(feature);
-            int retroIndex = data.rendererFeatures.FindIndex(item => item is RetroPostProcessFeature);
+            int retroIndex = data.rendererFeatures.FindIndex(item => item is HeightFogFeature ||
+                item is VolumetricLightFeature || item is BloomFeature || item is RetroPostProcessFeature);
             data.rendererFeatures.Insert(retroIndex < 0 ? 0 : retroIndex,feature);
             var serialized = new SerializedObject(data);
             var map = serialized.FindProperty("m_RendererFeatureMap");

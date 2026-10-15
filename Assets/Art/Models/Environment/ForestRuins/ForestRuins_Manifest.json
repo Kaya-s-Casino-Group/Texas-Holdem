@@ -1,0 +1,3806 @@
+{
+  "version": 1,
+  "excluded": [
+    "Layout_Jackal",
+    "Layout_Gargoyle"
+  ],
+  "sourceScene": "FR_ForestRuins_Layout",
+  "assemblyPath": "Assets/Art/Models/Environment/ForestRuins/Models/SM_FR_EnvironmentLayout.fbx",
+  "cameraVerticalFov": 21.512425534720364,
+  "cameraAspect": 2.2035502958579882,
+  "models": [
+    {
+      "name": "SM_FR_Courtyard",
+      "path": "Assets/Art/Models/Environment/ForestRuins/Models/Ground/SM_FR_Courtyard.fbx",
+      "category": "Ground",
+      "kind": "stone",
+      "materials": [
+        "M_FR_Courtyard"
+      ],
+      "vertices": 592,
+      "triangles": 1180,
+      "boundsMinBlender": [
+        -4.0,
+        -3.31115460395813,
+        1.984548703148903e-08
+      ],
+      "boundsMaxBlender": [
+        4.0,
+        3.31115460395813,
+        0.7045013308525085
+      ]
+    },
+    {
+      "name": "SM_FR_StoneLedge",
+      "path": "Assets/Art/Models/Environment/ForestRuins/Models/Ground/SM_FR_StoneLedge.fbx",
+      "category": "Ground",
+      "kind": "stone",
+      "materials": [
+        "M_FR_StoneLedge"
+      ],
+      "vertices": 678,
+      "triangles": 1352,
+      "boundsMinBlender": [
+        -2.25,
+        -0.8586106300354004,
+        7.69865948768711e-10
+      ],
+      "boundsMaxBlender": [
+        2.25,
+        0.8586105108261108,
+        0.8365949392318726
+      ]
+    },
+    {
+      "name": "SM_FR_StoneTile",
+      "path": "Assets/Art/Models/Environment/ForestRuins/Models/Ground/SM_FR_StoneTile.fbx",
+      "category": "Ground",
+      "kind": "stone",
+      "materials": [
+        "M_FR_StoneTile"
+      ],
+      "vertices": 593,
+      "triangles": 1182,
+      "boundsMinBlender": [
+        -2.0,
+        -1.632093906402588,
+        1.3686616284758202e-09
+      ],
+      "boundsMaxBlender": [
+        2.0,
+        1.632093906402588,
+        0.3522505462169647
+      ]
+    },
+    {
+      "name": "SM_FR_Arch",
+      "path": "Assets/Art/Models/Environment/ForestRuins/Models/Architecture/SM_FR_Arch.fbx",
+      "category": "Architecture",
+      "kind": "stone",
+      "materials": [
+        "M_FR_Arch"
+      ],
+      "vertices": 746,
+      "triangles": 1492,
+      "boundsMinBlender": [
+        -1.7788647413253784,
+        -0.7362034916877747,
+        6.158984433568548e-10
+      ],
+      "boundsMaxBlender": [
+        1.778864860534668,
+        0.7362033724784851,
+        3.5999996662139893
+      ]
+    },
+    {
+      "name": "SM_FR_Wall",
+      "path": "Assets/Art/Models/Environment/ForestRuins/Models/Architecture/SM_FR_Wall.fbx",
+      "category": "Architecture",
+      "kind": "stone",
+      "materials": [
+        "M_FR_Wall"
+      ],
+      "vertices": 2335,
+      "triangles": 4670,
+      "boundsMinBlender": [
+        -2.056138753890991,
+        -0.397134393453598,
+        2.0121312616083742e-08
+      ],
+      "boundsMaxBlender": [
+        2.056138753890991,
+        0.3971345126628876,
+        2.3999998569488525
+      ]
+    },
+    {
+      "name": "SM_FR_BrokenPillar",
+      "path": "Assets/Art/Models/Environment/ForestRuins/Models/Architecture/SM_FR_BrokenPillar.fbx",
+      "category": "Architecture",
+      "kind": "stone",
+      "materials": [
+        "M_FR_BrokenPillar"
+      ],
+      "vertices": 388,
+      "triangles": 770,
+      "boundsMinBlender": [
+        -0.5726027488708496,
+        -0.5232877135276794,
+        9.580585214052917e-10
+      ],
+      "boundsMaxBlender": [
+        0.5726027488708496,
+        0.5232877135276794,
+        2.8000001907348633
+      ]
+    },
+    {
+      "name": "SM_FR_WallRubble",
+      "path": "Assets/Art/Models/Environment/ForestRuins/Models/Architecture/SM_FR_WallRubble.fbx",
+      "category": "Architecture",
+      "kind": "stone",
+      "materials": [
+        "M_FR_WallRubble"
+      ],
+      "vertices": 478,
+      "triangles": 958,
+      "boundsMinBlender": [
+        -1.381080985069275,
+        -0.6405404806137085,
+        1.8902248655194853e-09
+      ],
+      "boundsMaxBlender": [
+        1.381080985069275,
+        0.6405404806137085,
+        1.7999999523162842
+      ]
+    },
+    {
+      "name": "SM_FR_FallenLintel",
+      "path": "Assets/Art/Models/Environment/ForestRuins/Models/Architecture/SM_FR_FallenLintel.fbx",
+      "category": "Architecture",
+      "kind": "stone",
+      "materials": [
+        "M_FR_FallenLintel"
+      ],
+      "vertices": 399,
+      "triangles": 794,
+      "boundsMinBlender": [
+        -1.7499998807907104,
+        -0.2979452311992645,
+        8.981757559922698e-10
+      ],
+      "boundsMaxBlender": [
+        1.7499998807907104,
+        0.2979452311992645,
+        0.7602740526199341
+      ]
+    },
+    {
+      "name": "SM_FR_TreeTrunkLarge",
+      "path": "Assets/Art/Models/Environment/ForestRuins/Models/Nature/SM_FR_TreeTrunkLarge.fbx",
+      "category": "Nature",
+      "kind": "stone",
+      "materials": [
+        "M_FR_TreeTrunkLarge"
+      ],
+      "vertices": 656,
+      "triangles": 1308,
+      "boundsMinBlender": [
+        -2.098562479019165,
+        -1.9589320421218872,
+        4.595529645712304e-08
+      ],
+      "boundsMaxBlender": [
+        2.098562479019165,
+        1.9589320421218872,
+        3.999999761581421
+      ]
+    },
+    {
+      "name": "SM_FR_TreeTrunkBent",
+      "path": "Assets/Art/Models/Environment/ForestRuins/Models/Nature/SM_FR_TreeTrunkBent.fbx",
+      "category": "Nature",
+      "kind": "stone",
+      "materials": [
+        "M_FR_TreeTrunkBent"
+      ],
+      "vertices": 508,
+      "triangles": 1013,
+      "boundsMinBlender": [
+        -1.8975536823272705,
+        -1.7460858821868896,
+        2.2069599481255864e-09
+      ],
+      "boundsMaxBlender": [
+        1.8975536823272705,
+        1.7460858821868896,
+        4.299999713897705
+      ]
+    },
+    {
+      "name": "SM_FR_TreeTrunkForked",
+      "path": "Assets/Art/Models/Environment/ForestRuins/Models/Nature/SM_FR_TreeTrunkForked.fbx",
+      "category": "Nature",
+      "kind": "stone",
+      "materials": [
+        "M_FR_TreeTrunkForked"
+      ],
+      "vertices": 442,
+      "triangles": 880,
+      "boundsMinBlender": [
+        -1.8554792404174805,
+        -1.5272992849349976,
+        1.3830248235535691e-07
+      ],
+      "boundsMaxBlender": [
+        1.8554792404174805,
+        1.5272992849349976,
+        4.299999713897705
+      ]
+    },
+    {
+      "name": "SM_FR_RootCurved",
+      "path": "Assets/Art/Models/Environment/ForestRuins/Models/Nature/SM_FR_RootCurved.fbx",
+      "category": "Nature",
+      "kind": "stone",
+      "materials": [
+        "M_FR_RootCurved"
+      ],
+      "vertices": 307,
+      "triangles": 610,
+      "boundsMinBlender": [
+        -1.5,
+        -0.39628177881240845,
+        1.308775381403393e-07
+      ],
+      "boundsMaxBlender": [
+        1.5,
+        0.39628174901008606,
+        1.050880789756775
+      ]
+    },
+    {
+      "name": "SM_FR_RockFlat",
+      "path": "Assets/Art/Models/Environment/ForestRuins/Models/Nature/SM_FR_RockFlat.fbx",
+      "category": "Nature",
+      "kind": "stone",
+      "materials": [
+        "M_FR_RockFlat"
+      ],
+      "vertices": 309,
+      "triangles": 614,
+      "boundsMinBlender": [
+        -1.5,
+        -1.018591046333313,
+        7.8783152446249e-08
+      ],
+      "boundsMaxBlender": [
+        1.5,
+        1.018591046333313,
+        0.7925637364387512
+      ]
+    },
+    {
+      "name": "SM_FR_RockSplit",
+      "path": "Assets/Art/Models/Environment/ForestRuins/Models/Nature/SM_FR_RockSplit.fbx",
+      "category": "Nature",
+      "kind": "stone",
+      "materials": [
+        "M_FR_RockSplit"
+      ],
+      "vertices": 285,
+      "triangles": 566,
+      "boundsMinBlender": [
+        -1.6976743936538696,
+        -1.6710963249206543,
+        5.8088218679586134e-09
+      ],
+      "boundsMaxBlender": [
+        1.6976743936538696,
+        1.6710963249206543,
+        2.0
+      ]
+    },
+    {
+      "name": "SM_FR_RearSoilUnderlay",
+      "path": "Assets/Art/Models/Environment/ForestRuins/Models/Ground/SM_FR_RearSoilUnderlay.fbx",
+      "category": "Ground",
+      "kind": "soil",
+      "materials": [
+        "M_FR_RearSoilUnderlay"
+      ],
+      "vertices": 4,
+      "triangles": 2,
+      "boundsMinBlender": [
+        -17.0,
+        2.700000047683716,
+        -0.15000000596046448
+      ],
+      "boundsMaxBlender": [
+        17.0,
+        7.800000190734863,
+        0.2199999988079071
+      ]
+    },
+    {
+      "name": "SM_FR_LeftSoilUnderlay",
+      "path": "Assets/Art/Models/Environment/ForestRuins/Models/Ground/SM_FR_LeftSoilUnderlay.fbx",
+      "category": "Ground",
+      "kind": "soil",
+      "materials": [
+        "M_FR_RearSoilUnderlay"
+      ],
+      "vertices": 4,
+      "triangles": 2,
+      "boundsMinBlender": [
+        -17.0,
+        -6.0,
+        -0.25
+      ],
+      "boundsMaxBlender": [
+        -5.0,
+        6.0,
+        0.2800000011920929
+      ]
+    },
+    {
+      "name": "SM_FR_RightSoilUnderlay",
+      "path": "Assets/Art/Models/Environment/ForestRuins/Models/Ground/SM_FR_RightSoilUnderlay.fbx",
+      "category": "Ground",
+      "kind": "soil",
+      "materials": [
+        "M_FR_RearSoilUnderlay"
+      ],
+      "vertices": 4,
+      "triangles": 2,
+      "boundsMinBlender": [
+        5.0,
+        -6.0,
+        -0.25
+      ],
+      "boundsMaxBlender": [
+        17.0,
+        6.0,
+        0.2800000011920929
+      ]
+    },
+    {
+      "name": "SM_FR_SoilUnderlayFront",
+      "path": "Assets/Art/Models/Environment/ForestRuins/Models/Ground/SM_FR_SoilUnderlayFront.fbx",
+      "category": "Ground",
+      "kind": "soil",
+      "materials": [
+        "M_FR_RearSoilUnderlay"
+      ],
+      "vertices": 4,
+      "triangles": 2,
+      "boundsMinBlender": [
+        -17.0,
+        -12.0,
+        -0.8999999761581421
+      ],
+      "boundsMaxBlender": [
+        17.0,
+        -3.5999999046325684,
+        -0.44999998807907104
+      ]
+    },
+    {
+      "name": "SM_FR_ForestBackdrop",
+      "path": "Assets/Art/Models/Environment/ForestRuins/Models/Backdrop/SM_FR_ForestBackdrop.fbx",
+      "category": "Backdrop",
+      "kind": "backdrop",
+      "materials": [
+        "M_FR_ForestBackdrop"
+      ],
+      "vertices": 4,
+      "triangles": 2,
+      "boundsMinBlender": [
+        -21.700464248657227,
+        -9.847955703735352,
+        0.0
+      ],
+      "boundsMaxBlender": [
+        21.700464248657227,
+        9.847955703735352,
+        0.0
+      ]
+    },
+    {
+      "name": "SM_FR_BrushCardLeft",
+      "path": "Assets/Art/Models/Environment/ForestRuins/Models/Backdrop/SM_FR_BrushCardLeft.fbx",
+      "category": "Backdrop",
+      "kind": "cutout",
+      "materials": [
+        "M_FR_Undergrowth"
+      ],
+      "vertices": 4,
+      "triangles": 2,
+      "boundsMinBlender": [
+        -5.0,
+        0.0,
+        0.0
+      ],
+      "boundsMaxBlender": [
+        5.0,
+        0.0,
+        3.3299999237060547
+      ]
+    },
+    {
+      "name": "SM_FR_BrushCardRight",
+      "path": "Assets/Art/Models/Environment/ForestRuins/Models/Backdrop/SM_FR_BrushCardRight.fbx",
+      "category": "Backdrop",
+      "kind": "cutout",
+      "materials": [
+        "M_FR_Undergrowth"
+      ],
+      "vertices": 4,
+      "triangles": 2,
+      "boundsMinBlender": [
+        -5.5,
+        0.0,
+        0.0
+      ],
+      "boundsMaxBlender": [
+        5.5,
+        0.0,
+        3.6600000858306885
+      ]
+    },
+    {
+      "name": "SM_FR_BrushCardWall",
+      "path": "Assets/Art/Models/Environment/ForestRuins/Models/Backdrop/SM_FR_BrushCardWall.fbx",
+      "category": "Backdrop",
+      "kind": "cutout",
+      "materials": [
+        "M_FR_Undergrowth"
+      ],
+      "vertices": 4,
+      "triangles": 2,
+      "boundsMinBlender": [
+        -4.0,
+        0.0,
+        0.0
+      ],
+      "boundsMaxBlender": [
+        4.0,
+        0.0,
+        2.6600000858306885
+      ]
+    },
+    {
+      "name": "SM_FR_BushSpreading",
+      "path": "Assets/Art/Models/Environment/ForestRuins/Models/Foliage/SM_FR_BushSpreading.fbx",
+      "category": "Foliage",
+      "kind": "foliage",
+      "materials": [
+        "M_FR_LeafAtlas"
+      ],
+      "vertices": 337,
+      "triangles": 466,
+      "boundsMinBlender": [
+        -0.8950204849243164,
+        -0.9386680722236633,
+        0.0
+      ],
+      "boundsMaxBlender": [
+        1.1729457378387451,
+        1.0710612535476685,
+        1.3931993246078491
+      ]
+    },
+    {
+      "name": "SM_FR_BushRounded",
+      "path": "Assets/Art/Models/Environment/ForestRuins/Models/Foliage/SM_FR_BushRounded.fbx",
+      "category": "Foliage",
+      "kind": "foliage",
+      "materials": [
+        "M_FR_LeafAtlas"
+      ],
+      "vertices": 337,
+      "triangles": 466,
+      "boundsMinBlender": [
+        -0.9817966222763062,
+        -0.9739528894424438,
+        0.0
+      ],
+      "boundsMaxBlender": [
+        1.1745972633361816,
+        1.060939908027649,
+        1.3488658666610718
+      ]
+    },
+    {
+      "name": "SM_FR_BushCompact",
+      "path": "Assets/Art/Models/Environment/ForestRuins/Models/Foliage/SM_FR_BushCompact.fbx",
+      "category": "Foliage",
+      "kind": "foliage",
+      "materials": [
+        "M_FR_LeafAtlas"
+      ],
+      "vertices": 263,
+      "triangles": 374,
+      "boundsMinBlender": [
+        -0.8071215152740479,
+        -0.7037956118583679,
+        0.0
+      ],
+      "boundsMaxBlender": [
+        0.9064502716064453,
+        0.8674880862236023,
+        1.133047342300415
+      ]
+    },
+    {
+      "name": "SM_FR_BushLowWide",
+      "path": "Assets/Art/Models/Environment/ForestRuins/Models/Foliage/SM_FR_BushLowWide.fbx",
+      "category": "Foliage",
+      "kind": "foliage",
+      "materials": [
+        "M_FR_LeafAtlas"
+      ],
+      "vertices": 300,
+      "triangles": 420,
+      "boundsMinBlender": [
+        -0.9285908937454224,
+        -0.9332371950149536,
+        0.0
+      ],
+      "boundsMaxBlender": [
+        1.3592969179153442,
+        1.0866639614105225,
+        1.0448994636535645
+      ]
+    },
+    {
+      "name": "SM_FR_BushBroad",
+      "path": "Assets/Art/Models/Environment/ForestRuins/Models/Foliage/SM_FR_BushBroad.fbx",
+      "category": "Foliage",
+      "kind": "foliage",
+      "materials": [
+        "M_FR_LeafAtlas"
+      ],
+      "vertices": 337,
+      "triangles": 466,
+      "boundsMinBlender": [
+        -0.9805544018745422,
+        -0.8967838287353516,
+        0.0
+      ],
+      "boundsMaxBlender": [
+        0.8300238251686096,
+        0.4471234083175659,
+        1.1604771614074707
+      ]
+    },
+    {
+      "name": "SM_FR_BushSideSweep",
+      "path": "Assets/Art/Models/Environment/ForestRuins/Models/Foliage/SM_FR_BushSideSweep.fbx",
+      "category": "Foliage",
+      "kind": "foliage",
+      "materials": [
+        "M_FR_LeafAtlas"
+      ],
+      "vertices": 337,
+      "triangles": 466,
+      "boundsMinBlender": [
+        -0.7146565914154053,
+        -0.8702079057693481,
+        0.0
+      ],
+      "boundsMaxBlender": [
+        1.2334871292114258,
+        1.053372859954834,
+        1.2814226150512695
+      ]
+    },
+    {
+      "name": "SM_FR_BushOpen",
+      "path": "Assets/Art/Models/Environment/ForestRuins/Models/Foliage/SM_FR_BushOpen.fbx",
+      "category": "Foliage",
+      "kind": "foliage",
+      "materials": [
+        "M_FR_LeafAtlas"
+      ],
+      "vertices": 263,
+      "triangles": 374,
+      "boundsMinBlender": [
+        -0.7075579166412354,
+        -0.9250069856643677,
+        0.0
+      ],
+      "boundsMaxBlender": [
+        0.9403687119483948,
+        1.0972837209701538,
+        1.2399474382400513
+      ]
+    },
+    {
+      "name": "SM_FR_BushFern",
+      "path": "Assets/Art/Models/Environment/ForestRuins/Models/Foliage/SM_FR_BushFern.fbx",
+      "category": "Foliage",
+      "kind": "foliage",
+      "materials": [
+        "M_FR_LeafAtlas"
+      ],
+      "vertices": 337,
+      "triangles": 466,
+      "boundsMinBlender": [
+        -0.7702636122703552,
+        -0.9870272278785706,
+        0.0
+      ],
+      "boundsMaxBlender": [
+        0.774931013584137,
+        0.4515185058116913,
+        1.2752496004104614
+      ]
+    },
+    {
+      "name": "SM_FR_BushUpright",
+      "path": "Assets/Art/Models/Environment/ForestRuins/Models/Foliage/SM_FR_BushUpright.fbx",
+      "category": "Foliage",
+      "kind": "foliage",
+      "materials": [
+        "M_FR_LeafAtlas"
+      ],
+      "vertices": 300,
+      "triangles": 420,
+      "boundsMinBlender": [
+        -0.5536054968833923,
+        -0.8480780720710754,
+        0.0
+      ],
+      "boundsMaxBlender": [
+        0.6428123116493225,
+        0.41153639554977417,
+        1.4282795190811157
+      ]
+    }
+  ],
+  "materials": [
+    {
+      "name": "M_FR_Courtyard",
+      "kind": "stone",
+      "baseMap": "Assets/Art/Models/Environment/ForestRuins/Textures/T_FR_Courtyard_BaseColor.jpg",
+      "normalMap": "Assets/Art/Models/Environment/ForestRuins/Textures/T_FR_Courtyard_Normal.jpg",
+      "baseColor": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "cutoff": 0,
+      "normalStrength": 0.18,
+      "paintFill": 0,
+      "vertexTone": 0,
+      "windStrength": 0,
+      "windSpeed": 1
+    },
+    {
+      "name": "M_FR_RearSoilUnderlay",
+      "kind": "soil",
+      "baseMap": "",
+      "normalMap": "",
+      "baseColor": [
+        0.0465,
+        0.0385,
+        0.0275,
+        1
+      ],
+      "cutoff": 0,
+      "normalStrength": 0.18,
+      "paintFill": 0,
+      "vertexTone": 0,
+      "windStrength": 0,
+      "windSpeed": 1
+    },
+    {
+      "name": "M_FR_Arch",
+      "kind": "stone",
+      "baseMap": "Assets/Art/Models/Environment/ForestRuins/Textures/T_FR_Arch_BaseColor.jpg",
+      "normalMap": "Assets/Art/Models/Environment/ForestRuins/Textures/T_FR_Arch_Normal.jpg",
+      "baseColor": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "cutoff": 0,
+      "normalStrength": 0.18,
+      "paintFill": 0,
+      "vertexTone": 0,
+      "windStrength": 0,
+      "windSpeed": 1
+    },
+    {
+      "name": "M_FR_Wall",
+      "kind": "stone",
+      "baseMap": "Assets/Art/Models/Environment/ForestRuins/Textures/T_FR_Wall_BaseColor.jpg",
+      "normalMap": "Assets/Art/Models/Environment/ForestRuins/Textures/T_FR_Wall_Normal.png",
+      "baseColor": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "cutoff": 0,
+      "normalStrength": 0.18,
+      "paintFill": 0,
+      "vertexTone": 0,
+      "windStrength": 0,
+      "windSpeed": 1
+    },
+    {
+      "name": "M_FR_WallRubble",
+      "kind": "stone",
+      "baseMap": "Assets/Art/Models/Environment/ForestRuins/Textures/T_FR_WallRubble_BaseColor.jpg",
+      "normalMap": "Assets/Art/Models/Environment/ForestRuins/Textures/T_FR_WallRubble_Normal.jpg",
+      "baseColor": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "cutoff": 0,
+      "normalStrength": 0.18,
+      "paintFill": 0,
+      "vertexTone": 0,
+      "windStrength": 0,
+      "windSpeed": 1
+    },
+    {
+      "name": "M_FR_BrokenPillar",
+      "kind": "stone",
+      "baseMap": "Assets/Art/Models/Environment/ForestRuins/Textures/T_FR_BrokenPillar_BaseColor.jpg",
+      "normalMap": "Assets/Art/Models/Environment/ForestRuins/Textures/T_FR_BrokenPillar_Normal.jpg",
+      "baseColor": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "cutoff": 0,
+      "normalStrength": 0.18,
+      "paintFill": 0,
+      "vertexTone": 0,
+      "windStrength": 0,
+      "windSpeed": 1
+    },
+    {
+      "name": "M_FR_FallenLintel",
+      "kind": "stone",
+      "baseMap": "Assets/Art/Models/Environment/ForestRuins/Textures/T_FR_FallenLintel_BaseColor.jpg",
+      "normalMap": "Assets/Art/Models/Environment/ForestRuins/Textures/T_FR_FallenLintel_Normal.jpg",
+      "baseColor": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "cutoff": 0,
+      "normalStrength": 0.18,
+      "paintFill": 0,
+      "vertexTone": 0,
+      "windStrength": 0,
+      "windSpeed": 1
+    },
+    {
+      "name": "M_FR_TreeTrunkLarge",
+      "kind": "stone",
+      "baseMap": "Assets/Art/Models/Environment/ForestRuins/Textures/T_FR_TreeTrunkLarge_BaseColor.jpg",
+      "normalMap": "Assets/Art/Models/Environment/ForestRuins/Textures/T_FR_TreeTrunkLarge_Normal.jpg",
+      "baseColor": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "cutoff": 0,
+      "normalStrength": 0.18,
+      "paintFill": 0,
+      "vertexTone": 0,
+      "windStrength": 0,
+      "windSpeed": 1
+    },
+    {
+      "name": "M_FR_TreeTrunkBent",
+      "kind": "stone",
+      "baseMap": "Assets/Art/Models/Environment/ForestRuins/Textures/T_FR_TreeTrunkBent_BaseColor.jpg",
+      "normalMap": "Assets/Art/Models/Environment/ForestRuins/Textures/T_FR_TreeTrunkBent_Normal.jpg",
+      "baseColor": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "cutoff": 0,
+      "normalStrength": 0.18,
+      "paintFill": 0,
+      "vertexTone": 0,
+      "windStrength": 0,
+      "windSpeed": 1
+    },
+    {
+      "name": "M_FR_TreeTrunkForked",
+      "kind": "stone",
+      "baseMap": "Assets/Art/Models/Environment/ForestRuins/Textures/T_FR_TreeTrunkForked_BaseColor.jpg",
+      "normalMap": "Assets/Art/Models/Environment/ForestRuins/Textures/T_FR_TreeTrunkForked_Normal.jpg",
+      "baseColor": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "cutoff": 0,
+      "normalStrength": 0.18,
+      "paintFill": 0,
+      "vertexTone": 0,
+      "windStrength": 0,
+      "windSpeed": 1
+    },
+    {
+      "name": "M_FR_RockSplit",
+      "kind": "stone",
+      "baseMap": "Assets/Art/Models/Environment/ForestRuins/Textures/T_FR_RockSplit_BaseColor.jpg",
+      "normalMap": "Assets/Art/Models/Environment/ForestRuins/Textures/T_FR_RockSplit_Normal.jpg",
+      "baseColor": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "cutoff": 0,
+      "normalStrength": 0.18,
+      "paintFill": 0,
+      "vertexTone": 0,
+      "windStrength": 0,
+      "windSpeed": 1
+    },
+    {
+      "name": "M_FR_RockFlat",
+      "kind": "stone",
+      "baseMap": "Assets/Art/Models/Environment/ForestRuins/Textures/T_FR_RockFlat_BaseColor.jpg",
+      "normalMap": "Assets/Art/Models/Environment/ForestRuins/Textures/T_FR_RockFlat_Normal.jpg",
+      "baseColor": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "cutoff": 0,
+      "normalStrength": 0.18,
+      "paintFill": 0,
+      "vertexTone": 0,
+      "windStrength": 0,
+      "windSpeed": 1
+    },
+    {
+      "name": "M_FR_RootCurved",
+      "kind": "stone",
+      "baseMap": "Assets/Art/Models/Environment/ForestRuins/Textures/T_FR_RootCurved_BaseColor.jpg",
+      "normalMap": "Assets/Art/Models/Environment/ForestRuins/Textures/T_FR_RootCurved_Normal.jpg",
+      "baseColor": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "cutoff": 0,
+      "normalStrength": 0.18,
+      "paintFill": 0,
+      "vertexTone": 0,
+      "windStrength": 0,
+      "windSpeed": 1
+    },
+    {
+      "name": "M_FR_ForestBackdrop",
+      "kind": "backdrop",
+      "baseMap": "Assets/Art/Models/Environment/ForestRuins/Textures/T_FR_ForestBackdrop_BaseColor.png",
+      "normalMap": "",
+      "baseColor": [
+        0.85,
+        0.85,
+        0.85,
+        1
+      ],
+      "cutoff": 0,
+      "normalStrength": 0.18,
+      "paintFill": 1,
+      "vertexTone": 0,
+      "windStrength": 0,
+      "windSpeed": 1
+    },
+    {
+      "name": "M_FR_Undergrowth",
+      "kind": "cutout",
+      "baseMap": "Assets/Art/Models/Environment/ForestRuins/Textures/T_FR_Undergrowth_BaseColor.png",
+      "normalMap": "",
+      "baseColor": [
+        0.75,
+        0.75,
+        0.75,
+        1
+      ],
+      "cutoff": 0.5,
+      "normalStrength": 0.18,
+      "paintFill": 1,
+      "vertexTone": 0,
+      "windStrength": 0,
+      "windSpeed": 1
+    },
+    {
+      "name": "M_FR_LeafAtlas",
+      "kind": "foliage",
+      "baseMap": "Assets/Art/Models/Environment/ForestRuins/Textures/T_FR_LeafAtlas_BaseColor.png",
+      "normalMap": "",
+      "baseColor": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "cutoff": 0.38,
+      "normalStrength": 0.18,
+      "paintFill": 0.88,
+      "vertexTone": 1,
+      "windStrength": 0.015,
+      "windSpeed": 1
+    },
+    {
+      "name": "M_FR_StoneLedge",
+      "kind": "stone",
+      "baseMap": "Assets/Art/Models/Environment/ForestRuins/Textures/T_FR_StoneLedge_BaseColor.jpg",
+      "normalMap": "Assets/Art/Models/Environment/ForestRuins/Textures/T_FR_StoneLedge_Normal.jpg",
+      "baseColor": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "cutoff": 0,
+      "normalStrength": 0.18,
+      "paintFill": 0,
+      "vertexTone": 0,
+      "windStrength": 0,
+      "windSpeed": 1
+    },
+    {
+      "name": "M_FR_StoneTile",
+      "kind": "stone",
+      "baseMap": "Assets/Art/Models/Environment/ForestRuins/Textures/T_FR_StoneTile_BaseColor.jpg",
+      "normalMap": "Assets/Art/Models/Environment/ForestRuins/Textures/T_FR_StoneTile_Normal.jpg",
+      "baseColor": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "cutoff": 0,
+      "normalStrength": 0.18,
+      "paintFill": 0,
+      "vertexTone": 0,
+      "windStrength": 0,
+      "windSpeed": 1
+    }
+  ],
+  "instances": [
+    {
+      "name": "SM_FR_Courtyard_MainCourtyard",
+      "source": "Set_MainCourtyard",
+      "mesh": "SM_FR_Courtyard_Mesh",
+      "category": "Ground",
+      "kind": "stone",
+      "matrixBlender": [
+        [
+          1.5,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.25,
+          0.0,
+          1.149999976158142
+        ],
+        [
+          0.0,
+          0.0,
+          1.5,
+          -0.5
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_Courtyard"
+      ],
+      "triangles": 1180
+    },
+    {
+      "name": "SM_FR_RearSoilUnderlay_RearForestGround",
+      "source": "Set_RearForestGround",
+      "mesh": "SM_FR_RearSoilUnderlay_Mesh",
+      "category": "Ground",
+      "kind": "soil",
+      "matrixBlender": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_RearSoilUnderlay"
+      ],
+      "triangles": 2
+    },
+    {
+      "name": "SM_FR_LeftSoilUnderlay_LeftForestGround",
+      "source": "Set_LeftForestGround",
+      "mesh": "SM_FR_LeftSoilUnderlay_Mesh",
+      "category": "Ground",
+      "kind": "soil",
+      "matrixBlender": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_RearSoilUnderlay"
+      ],
+      "triangles": 2
+    },
+    {
+      "name": "SM_FR_RightSoilUnderlay_RightForestGround",
+      "source": "Set_RightForestGround",
+      "mesh": "SM_FR_RightSoilUnderlay_Mesh",
+      "category": "Ground",
+      "kind": "soil",
+      "matrixBlender": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_RearSoilUnderlay"
+      ],
+      "triangles": 2
+    },
+    {
+      "name": "SM_FR_SoilUnderlayFront_LowerForegroundGround",
+      "source": "Set_LowerForegroundGround",
+      "mesh": "SM_FR_SoilUnderlayFront_Mesh",
+      "category": "Ground",
+      "kind": "soil",
+      "matrixBlender": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_RearSoilUnderlay"
+      ],
+      "triangles": 2
+    },
+    {
+      "name": "SM_FR_Arch_MainArch",
+      "source": "Set_MainArch",
+      "mesh": "SM_FR_Arch_Mesh",
+      "category": "Architecture",
+      "kind": "stone",
+      "matrixBlender": [
+        [
+          1.1172717809677124,
+          0.06975647062063217,
+          0.0,
+          -1.649999976158142
+        ],
+        [
+          -0.07812725007534027,
+          0.9975640773773193,
+          0.0,
+          4.150000095367432
+        ],
+        [
+          0.0,
+          0.0,
+          1.2000000476837158,
+          0.36000001430511475
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_Arch"
+      ],
+      "triangles": 1492
+    },
+    {
+      "name": "SM_FR_Wall_RightWall",
+      "source": "Set_RightWall",
+      "mesh": "SM_FR_Wall_Mesh",
+      "category": "Architecture",
+      "kind": "stone",
+      "matrixBlender": [
+        [
+          0.9925461411476135,
+          0.12186934798955917,
+          0.0,
+          1.7999999523162842
+        ],
+        [
+          -0.12186934798955917,
+          0.9925461411476135,
+          0.0,
+          4.699999809265137
+        ],
+        [
+          0.0,
+          0.0,
+          0.9200000166893005,
+          0.30000001192092896
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_Wall"
+      ],
+      "triangles": 4670
+    },
+    {
+      "name": "SM_FR_WallRubble_RightWallEnd",
+      "source": "Set_RightWallEnd",
+      "mesh": "SM_FR_WallRubble_Mesh",
+      "category": "Architecture",
+      "kind": "stone",
+      "matrixBlender": [
+        [
+          0.7881063222885132,
+          0.37460657954216003,
+          0.0,
+          4.449999809265137
+        ],
+        [
+          -0.3184156119823456,
+          0.9271838665008545,
+          0.0,
+          4.25
+        ],
+        [
+          0.0,
+          0.0,
+          1.0499999523162842,
+          0.25
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_WallRubble"
+      ],
+      "triangles": 958
+    },
+    {
+      "name": "SM_FR_BrokenPillar_LeftBrokenPillar",
+      "source": "Set_LeftBrokenPillar",
+      "mesh": "SM_FR_BrokenPillar_Mesh",
+      "category": "Architecture",
+      "kind": "stone",
+      "matrixBlender": [
+        [
+          0.6847033500671387,
+          -0.17672495543956757,
+          0.0,
+          -5.099999904632568
+        ],
+        [
+          0.14553818106651306,
+          0.8314254879951477,
+          0.0,
+          2.299999952316284
+        ],
+        [
+          0.0,
+          0.0,
+          0.7799999713897705,
+          0.15000000596046448
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_BrokenPillar"
+      ],
+      "triangles": 770
+    },
+    {
+      "name": "SM_FR_FallenLintel_RightFallenLintel",
+      "source": "Set_RightFallenLintel",
+      "mesh": "SM_FR_FallenLintel_Mesh",
+      "category": "Architecture",
+      "kind": "stone",
+      "matrixBlender": [
+        [
+          0.5870693922042847,
+          0.49017512798309326,
+          0.0,
+          5.199999809265137
+        ],
+        [
+          -0.381247341632843,
+          0.754803478717804,
+          0.0,
+          2.0999999046325684
+        ],
+        [
+          0.0,
+          0.0,
+          0.8999999761581421,
+          0.2800000011920929
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_FallenLintel"
+      ],
+      "triangles": 794
+    },
+    {
+      "name": "SM_FR_TreeTrunkLarge_LeftTrunk",
+      "source": "Set_LeftTrunk",
+      "mesh": "SM_FR_TreeTrunkLarge_Mesh",
+      "category": "Nature",
+      "kind": "stone",
+      "matrixBlender": [
+        [
+          1.1276311874389648,
+          -0.3591211140155792,
+          0.0,
+          -6.300000190734863
+        ],
+        [
+          0.4104241728782654,
+          0.9866772294044495,
+          0.0,
+          2.9000000953674316
+        ],
+        [
+          0.0,
+          0.0,
+          2.799999952316284,
+          0.10000000149011612
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_TreeTrunkLarge"
+      ],
+      "triangles": 1308
+    },
+    {
+      "name": "SM_FR_TreeTrunkLarge_RightTrunk",
+      "source": "Set_RightTrunk",
+      "mesh": "SM_FR_TreeTrunkLarge_Mesh",
+      "category": "Nature",
+      "kind": "stone",
+      "matrixBlender": [
+        [
+          1.103684425354004,
+          0.4694715738296509,
+          0.0,
+          6.400000095367432
+        ],
+        [
+          -0.5868394374847412,
+          0.882947564125061,
+          0.0,
+          4.400000095367432
+        ],
+        [
+          0.0,
+          0.0,
+          2.799999952316284,
+          0.10000000149011612
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_TreeTrunkLarge"
+      ],
+      "triangles": 1308
+    },
+    {
+      "name": "SM_FR_TreeTrunkBent_LeftFarTrunk",
+      "source": "Set_LeftFarTrunk",
+      "mesh": "SM_FR_TreeTrunkBent_Mesh",
+      "category": "Nature",
+      "kind": "stone",
+      "matrixBlender": [
+        [
+          0.635722279548645,
+          -0.35210368037223816,
+          0.0,
+          -5.199999809265137
+        ],
+        [
+          0.33801954984664917,
+          0.6622107028961182,
+          0.0,
+          8.0
+        ],
+        [
+          0.0,
+          0.0,
+          2.299999952316284,
+          0.05000000074505806
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_TreeTrunkBent"
+      ],
+      "triangles": 1013
+    },
+    {
+      "name": "SM_FR_TreeTrunkForked_RightFarTrunk",
+      "source": "Set_RightFarTrunk",
+      "mesh": "SM_FR_TreeTrunkForked_Mesh",
+      "category": "Nature",
+      "kind": "stone",
+      "matrixBlender": [
+        [
+          0.751754105091095,
+          0.27361610531806946,
+          0.0,
+          7.800000190734863
+        ],
+        [
+          -0.27361610531806946,
+          0.751754105091095,
+          0.0,
+          9.100000381469727
+        ],
+        [
+          0.0,
+          0.0,
+          2.4000000953674316,
+          0.10000000149011612
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_TreeTrunkForked"
+      ],
+      "triangles": 880
+    },
+    {
+      "name": "SM_FR_RockSplit_LeftRock",
+      "source": "Set_LeftRock",
+      "mesh": "SM_FR_RockSplit_Mesh",
+      "category": "Nature",
+      "kind": "stone",
+      "matrixBlender": [
+        [
+          0.7418240904808044,
+          -0.20086105167865753,
+          0.0,
+          -5.550000190734863
+        ],
+        [
+          0.24103325605392456,
+          0.6181867122650146,
+          0.0,
+          0.6000000238418579
+        ],
+        [
+          0.0,
+          0.0,
+          0.6600000262260437,
+          0.10000000149011612
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_RockSplit"
+      ],
+      "triangles": 566
+    },
+    {
+      "name": "SM_FR_RockFlat_RightRock",
+      "source": "Set_RightRock",
+      "mesh": "SM_FR_RockFlat_Mesh",
+      "category": "Nature",
+      "kind": "stone",
+      "matrixBlender": [
+        [
+          0.6962792873382568,
+          0.5162187814712524,
+          0.0,
+          5.699999809265137
+        ],
+        [
+          -0.48754000663757324,
+          0.7372368574142456,
+          0.0,
+          -0.44999998807907104
+        ],
+        [
+          0.0,
+          0.0,
+          1.100000023841858,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_RockFlat"
+      ],
+      "triangles": 614
+    },
+    {
+      "name": "SM_FR_RockFlat_LeftRearRock",
+      "source": "Set_LeftRearRock",
+      "mesh": "SM_FR_RockFlat_Mesh",
+      "category": "Nature",
+      "kind": "stone",
+      "matrixBlender": [
+        [
+          0.5629164576530457,
+          -0.30000001192092896,
+          0.0,
+          -4.300000190734863
+        ],
+        [
+          0.32499998807907104,
+          0.5196152329444885,
+          0.0,
+          4.099999904632568
+        ],
+        [
+          0.0,
+          0.0,
+          0.800000011920929,
+          0.2800000011920929
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_RockFlat"
+      ],
+      "triangles": 614
+    },
+    {
+      "name": "SM_FR_RockSplit_RightRearRock",
+      "source": "Set_RightRearRock",
+      "mesh": "SM_FR_RockSplit_Mesh",
+      "category": "Nature",
+      "kind": "stone",
+      "matrixBlender": [
+        [
+          0.6401249766349792,
+          0.13891854882240295,
+          0.0,
+          6.800000190734863
+        ],
+        [
+          -0.11287131160497665,
+          0.7878462076187134,
+          0.0,
+          6.300000190734863
+        ],
+        [
+          0.0,
+          0.0,
+          0.699999988079071,
+          0.15000000596046448
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_RockSplit"
+      ],
+      "triangles": 566
+    },
+    {
+      "name": "SM_FR_RockFlat_LeftForegroundRock",
+      "source": "Set_LeftForegroundRock",
+      "mesh": "SM_FR_RockFlat_Mesh",
+      "category": "Nature",
+      "kind": "stone",
+      "matrixBlender": [
+        [
+          0.6525416374206543,
+          -0.3465469777584076,
+          0.0,
+          -5.650000095367432
+        ],
+        [
+          0.3042851686477661,
+          0.7431723475456238,
+          0.0,
+          -3.450000047683716
+        ],
+        [
+          0.0,
+          0.0,
+          1.100000023841858,
+          -0.15000000596046448
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_RockFlat"
+      ],
+      "triangles": 614
+    },
+    {
+      "name": "SM_FR_RockSplit_RightForegroundRock",
+      "source": "Set_RightForegroundRock",
+      "mesh": "SM_FR_RockSplit_Mesh",
+      "category": "Nature",
+      "kind": "stone",
+      "matrixBlender": [
+        [
+          0.560236930847168,
+          0.15529143810272217,
+          0.0,
+          5.699999809265137
+        ],
+        [
+          -0.15011504292488098,
+          0.5795555114746094,
+          0.0,
+          -3.4000000953674316
+        ],
+        [
+          0.0,
+          0.0,
+          0.6499999761581421,
+          -0.30000001192092896
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_RockSplit"
+      ],
+      "triangles": 566
+    },
+    {
+      "name": "SM_FR_RootCurved_RightForegroundRoot",
+      "source": "Set_RightForegroundRoot",
+      "mesh": "SM_FR_RootCurved_Mesh",
+      "category": "Nature",
+      "kind": "stone",
+      "matrixBlender": [
+        [
+          1.3155696392059326,
+          -0.47882816195487976,
+          0.0,
+          4.400000095367432
+        ],
+        [
+          0.47882816195487976,
+          1.3155696392059326,
+          0.0,
+          -3.1500000953674316
+        ],
+        [
+          0.0,
+          0.0,
+          1.149999976158142,
+          -0.30000001192092896
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_RootCurved"
+      ],
+      "triangles": 610
+    },
+    {
+      "name": "SM_FR_RootCurved_LeftRoot",
+      "source": "Set_LeftRoot",
+      "mesh": "SM_FR_RootCurved_Mesh",
+      "category": "Nature",
+      "kind": "stone",
+      "matrixBlender": [
+        [
+          0.6894399523735046,
+          0.7713451385498047,
+          0.0,
+          -5.5
+        ],
+        [
+          -0.5785087943077087,
+          0.9192533493041992,
+          0.0,
+          -1.7000000476837158
+        ],
+        [
+          0.0,
+          0.0,
+          0.8500000238418579,
+          0.05000000074505806
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_RootCurved"
+      ],
+      "triangles": 610
+    },
+    {
+      "name": "SM_FR_ForestBackdrop_FarForest",
+      "source": "Card_FarForest",
+      "mesh": "SM_FR_ForestBackdrop_Mesh",
+      "category": "Backdrop",
+      "kind": "backdrop",
+      "matrixBlender": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.3846154510974884,
+          -0.923076868057251,
+          27.30768585205078
+        ],
+        [
+          0.0,
+          0.923076868057251,
+          0.3846154510974884,
+          -9.461540222167969
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_ForestBackdrop"
+      ],
+      "triangles": 2
+    },
+    {
+      "name": "SM_FR_BrushCardLeft_RearBrushLeft",
+      "source": "Card_RearBrushLeft",
+      "mesh": "SM_FR_BrushCardLeft_Mesh",
+      "category": "Backdrop",
+      "kind": "cutout",
+      "matrixBlender": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          -6.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          7.199999809265137
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          -0.44999998807907104
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_Undergrowth"
+      ],
+      "triangles": 2
+    },
+    {
+      "name": "SM_FR_BrushCardRight_RearBrushRight",
+      "source": "Card_RearBrushRight",
+      "mesh": "SM_FR_BrushCardRight_Mesh",
+      "category": "Backdrop",
+      "kind": "cutout",
+      "matrixBlender": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          6.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          7.5
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          -0.44999998807907104
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_Undergrowth"
+      ],
+      "triangles": 2
+    },
+    {
+      "name": "SM_FR_BrushCardWall_WallBaseBrush",
+      "source": "Card_WallBaseBrush",
+      "mesh": "SM_FR_BrushCardWall_Mesh",
+      "category": "Backdrop",
+      "kind": "cutout",
+      "matrixBlender": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          5.650000095367432
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          -0.6000000238418579
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_Undergrowth"
+      ],
+      "triangles": 2
+    },
+    {
+      "name": "SM_FR_RockFlat_Edge__1_0",
+      "source": "Detail_Edge_-1_0",
+      "mesh": "SM_FR_RockFlat_Mesh",
+      "category": "Nature",
+      "kind": "stone",
+      "matrixBlender": [
+        [
+          0.7331669926643372,
+          0.27268365025520325,
+          0.0,
+          -6.550000190734863
+        ],
+        [
+          -0.2241516262292862,
+          0.8919080495834351,
+          0.0,
+          -2.5999999046325684
+        ],
+        [
+          0.0,
+          0.0,
+          0.946296215057373,
+          -0.18000000715255737
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_RockFlat"
+      ],
+      "triangles": 614
+    },
+    {
+      "name": "SM_FR_RockSplit_Edge__1_1",
+      "source": "Detail_Edge_-1_1",
+      "mesh": "SM_FR_RockSplit_Mesh",
+      "category": "Nature",
+      "kind": "stone",
+      "matrixBlender": [
+        [
+          0.4532672166824341,
+          0.42246973514556885,
+          0.0,
+          -6.699999809265137
+        ],
+        [
+          -0.5034043192863464,
+          0.3803934156894684,
+          0.0,
+          -0.8999999761581421
+        ],
+        [
+          0.0,
+          0.0,
+          0.4749999940395355,
+          -0.07000000029802322
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_RockSplit"
+      ],
+      "triangles": 566
+    },
+    {
+      "name": "SM_FR_RockFlat_Edge__1_2",
+      "source": "Detail_Edge_-1_2",
+      "mesh": "SM_FR_RockFlat_Mesh",
+      "category": "Nature",
+      "kind": "stone",
+      "matrixBlender": [
+        [
+          0.14628684520721436,
+          0.9155252575874329,
+          0.0,
+          -6.849999904632568
+        ],
+        [
+          -0.7525808215141296,
+          0.17796002328395844,
+          0.0,
+          1.2000000476837158
+        ],
+        [
+          0.0,
+          0.0,
+          0.946296215057373,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_RockFlat"
+      ],
+      "triangles": 614
+    },
+    {
+      "name": "SM_FR_RockSplit_Edge__1_3",
+      "source": "Detail_Edge_-1_3",
+      "mesh": "SM_FR_RockSplit_Mesh",
+      "category": "Nature",
+      "kind": "stone",
+      "matrixBlender": [
+        [
+          -0.23168349266052246,
+          0.5342049598693848,
+          0.0,
+          -7.050000190734863
+        ],
+        [
+          -0.6365451812744141,
+          -0.19443470239639282,
+          0.0,
+          2.799999952316284
+        ],
+        [
+          0.0,
+          0.0,
+          0.4749999940395355,
+          0.05999999865889549
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_RockSplit"
+      ],
+      "triangles": 566
+    },
+    {
+      "name": "SM_FR_RockFlat_Edge__1_4",
+      "source": "Detail_Edge_-1_4",
+      "mesh": "SM_FR_RockFlat_Mesh",
+      "category": "Nature",
+      "kind": "stone",
+      "matrixBlender": [
+        [
+          -0.5958118438720703,
+          0.5869426131248474,
+          0.0,
+          -6.949999809265137
+        ],
+        [
+          -0.4824790358543396,
+          -0.7248135209083557,
+          0.0,
+          4.800000190734863
+        ],
+        [
+          0.0,
+          0.0,
+          0.946296215057373,
+          0.11999999731779099
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_RockFlat"
+      ],
+      "triangles": 614
+    },
+    {
+      "name": "SM_FR_RootCurved_EdgeRoot__1",
+      "source": "Detail_EdgeRoot_-1",
+      "mesh": "SM_FR_RootCurved_Mesh",
+      "category": "Nature",
+      "kind": "stone",
+      "matrixBlender": [
+        [
+          0.3411002457141876,
+          1.3875865936279297,
+          0.0,
+          -6.5
+        ],
+        [
+          -1.1156889200210571,
+          0.4242277145385742,
+          0.0,
+          0.25
+        ],
+        [
+          0.0,
+          0.0,
+          0.76126629114151,
+          0.14000000059604645
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_RootCurved"
+      ],
+      "triangles": 610
+    },
+    {
+      "name": "SM_FR_RockFlat_Edge_1_0",
+      "source": "Detail_Edge_1_0",
+      "mesh": "SM_FR_RockFlat_Mesh",
+      "category": "Nature",
+      "kind": "stone",
+      "matrixBlender": [
+        [
+          0.7331669926643372,
+          -0.27268365025520325,
+          0.0,
+          6.550000190734863
+        ],
+        [
+          0.2241516262292862,
+          0.8919080495834351,
+          0.0,
+          -2.5999999046325684
+        ],
+        [
+          0.0,
+          0.0,
+          0.946296215057373,
+          -0.18000000715255737
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_RockFlat"
+      ],
+      "triangles": 614
+    },
+    {
+      "name": "SM_FR_RockSplit_Edge_1_1",
+      "source": "Detail_Edge_1_1",
+      "mesh": "SM_FR_RockSplit_Mesh",
+      "category": "Nature",
+      "kind": "stone",
+      "matrixBlender": [
+        [
+          0.4532672166824341,
+          -0.42246973514556885,
+          0.0,
+          6.699999809265137
+        ],
+        [
+          0.5034043192863464,
+          0.3803934156894684,
+          0.0,
+          -0.8999999761581421
+        ],
+        [
+          0.0,
+          0.0,
+          0.4749999940395355,
+          -0.07000000029802322
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_RockSplit"
+      ],
+      "triangles": 566
+    },
+    {
+      "name": "SM_FR_RockFlat_Edge_1_2",
+      "source": "Detail_Edge_1_2",
+      "mesh": "SM_FR_RockFlat_Mesh",
+      "category": "Nature",
+      "kind": "stone",
+      "matrixBlender": [
+        [
+          0.14628684520721436,
+          -0.9155252575874329,
+          0.0,
+          6.849999904632568
+        ],
+        [
+          0.7525808215141296,
+          0.17796002328395844,
+          0.0,
+          1.2000000476837158
+        ],
+        [
+          0.0,
+          0.0,
+          0.946296215057373,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_RockFlat"
+      ],
+      "triangles": 614
+    },
+    {
+      "name": "SM_FR_RockSplit_Edge_1_3",
+      "source": "Detail_Edge_1_3",
+      "mesh": "SM_FR_RockSplit_Mesh",
+      "category": "Nature",
+      "kind": "stone",
+      "matrixBlender": [
+        [
+          -0.23168349266052246,
+          -0.5342049598693848,
+          0.0,
+          7.050000190734863
+        ],
+        [
+          0.6365451812744141,
+          -0.19443470239639282,
+          0.0,
+          2.799999952316284
+        ],
+        [
+          0.0,
+          0.0,
+          0.4749999940395355,
+          0.05999999865889549
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_RockSplit"
+      ],
+      "triangles": 566
+    },
+    {
+      "name": "SM_FR_RockFlat_Edge_1_4",
+      "source": "Detail_Edge_1_4",
+      "mesh": "SM_FR_RockFlat_Mesh",
+      "category": "Nature",
+      "kind": "stone",
+      "matrixBlender": [
+        [
+          -0.5958118438720703,
+          -0.5869426131248474,
+          0.0,
+          6.949999809265137
+        ],
+        [
+          0.4824790358543396,
+          -0.7248135209083557,
+          0.0,
+          4.800000190734863
+        ],
+        [
+          0.0,
+          0.0,
+          0.946296215057373,
+          0.11999999731779099
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_RockFlat"
+      ],
+      "triangles": 614
+    },
+    {
+      "name": "SM_FR_RootCurved_EdgeRoot_1",
+      "source": "Detail_EdgeRoot_1",
+      "mesh": "SM_FR_RootCurved_Mesh",
+      "category": "Nature",
+      "kind": "stone",
+      "matrixBlender": [
+        [
+          0.3411002457141876,
+          -1.3875865936279297,
+          0.0,
+          6.5
+        ],
+        [
+          1.1156889200210571,
+          0.4242277145385742,
+          0.0,
+          0.25
+        ],
+        [
+          0.0,
+          0.0,
+          0.76126629114151,
+          0.14000000059604645
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_RootCurved"
+      ],
+      "triangles": 610
+    },
+    {
+      "name": "SM_FR_BushSpreading_Arch_Left_Main",
+      "source": "FR_Bush_Arch_Left_Main",
+      "mesh": "SM_FR_BushSpreading_Mesh",
+      "category": "Foliage",
+      "kind": "foliage",
+      "matrixBlender": [
+        [
+          0.5590448975563049,
+          -0.421270489692688,
+          0.0,
+          -3.119999885559082
+        ],
+        [
+          0.421270489692688,
+          0.5590448975563049,
+          0.0,
+          2.9600000381469727
+        ],
+        [
+          0.0,
+          0.0,
+          0.699999988079071,
+          0.499427855014801
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_LeafAtlas"
+      ],
+      "triangles": 466
+    },
+    {
+      "name": "SM_FR_BushRounded_Arch_Right_Main",
+      "source": "FR_Bush_Arch_Right_Main",
+      "mesh": "SM_FR_BushRounded_Mesh",
+      "category": "Foliage",
+      "kind": "foliage",
+      "matrixBlender": [
+        [
+          0.5350857973098755,
+          0.40321606397628784,
+          0.0,
+          -0.2199999988079071
+        ],
+        [
+          -0.40321606397628784,
+          0.5350857973098755,
+          0.0,
+          2.7200000286102295
+        ],
+        [
+          0.0,
+          0.0,
+          0.6700000166893005,
+          0.4802904725074768
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_LeafAtlas"
+      ],
+      "triangles": 466
+    },
+    {
+      "name": "SM_FR_BushCompact_Arch_Left_Companion",
+      "source": "FR_Bush_Arch_Left_Companion",
+      "mesh": "SM_FR_BushCompact_Mesh",
+      "category": "Foliage",
+      "kind": "foliage",
+      "matrixBlender": [
+        [
+          0.3796674609184265,
+          0.2018728107213974,
+          0.0,
+          -4.079999923706055
+        ],
+        [
+          -0.2018728107213974,
+          0.3796674609184265,
+          0.0,
+          3.0299999713897705
+        ],
+        [
+          0.0,
+          0.0,
+          0.4300000071525574,
+          0.43194299936294556
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_LeafAtlas"
+      ],
+      "triangles": 374
+    },
+    {
+      "name": "SM_FR_BushLowWide_Arch_Right_Companion",
+      "source": "FR_Bush_Arch_Right_Companion",
+      "mesh": "SM_FR_BushLowWide_Mesh",
+      "category": "Foliage",
+      "kind": "foliage",
+      "matrixBlender": [
+        [
+          0.3522353768348694,
+          0.24663791060447693,
+          0.0,
+          0.7200000286102295
+        ],
+        [
+          -0.24663791060447693,
+          0.3522353768348694,
+          0.0,
+          3.049999952316284
+        ],
+        [
+          0.0,
+          0.0,
+          0.4300000071525574,
+          0.4334593415260315
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_LeafAtlas"
+      ],
+      "triangles": 420
+    },
+    {
+      "name": "SM_FR_BushBroad_Foreground_Left_Main",
+      "source": "FR_Bush_Foreground_Left_Main",
+      "mesh": "SM_FR_BushBroad_Mesh",
+      "category": "Foliage",
+      "kind": "foliage",
+      "matrixBlender": [
+        [
+          0.35165777802467346,
+          -0.8284544944763184,
+          0.0,
+          -4.190000057220459
+        ],
+        [
+          0.8284544944763184,
+          0.35165777802467346,
+          0.0,
+          -2.4000000953674316
+        ],
+        [
+          0.0,
+          0.0,
+          0.8999999761581421,
+          0.4736538529396057
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_LeafAtlas"
+      ],
+      "triangles": 466
+    },
+    {
+      "name": "SM_FR_BushSideSweep_Foreground_Right_Main",
+      "source": "FR_Bush_Foreground_Right_Main",
+      "mesh": "SM_FR_BushSideSweep_Mesh",
+      "category": "Foliage",
+      "kind": "foliage",
+      "matrixBlender": [
+        [
+          0.8559508919715881,
+          0.2781151831150055,
+          0.0,
+          4.349999904632568
+        ],
+        [
+          -0.2781151831150055,
+          0.8559508919715881,
+          0.0,
+          -2.450000047683716
+        ],
+        [
+          0.0,
+          0.0,
+          0.8999999761581421,
+          0.514188826084137
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_LeafAtlas"
+      ],
+      "triangles": 466
+    },
+    {
+      "name": "SM_FR_BushSpreading_Foreground_Left_Outer",
+      "source": "FR_Bush_Foreground_Left_Outer",
+      "mesh": "SM_FR_BushSpreading_Mesh",
+      "category": "Foliage",
+      "kind": "foliage",
+      "matrixBlender": [
+        [
+          1.0397814512252808,
+          -0.1461317539215088,
+          0.0,
+          -5.5
+        ],
+        [
+          0.1461317539215088,
+          1.0397814512252808,
+          0.0,
+          -3.9000000953674316
+        ],
+        [
+          0.0,
+          0.0,
+          1.0499999523162842,
+          0.5603285431861877
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_LeafAtlas"
+      ],
+      "triangles": 466
+    },
+    {
+      "name": "SM_FR_BushRounded_Foreground_Right_Outer",
+      "source": "FR_Bush_Foreground_Right_Outer",
+      "mesh": "SM_FR_BushRounded_Mesh",
+      "category": "Foliage",
+      "kind": "foliage",
+      "matrixBlender": [
+        [
+          1.0270549058914185,
+          0.2183072715997696,
+          0.0,
+          5.900000095367432
+        ],
+        [
+          -0.2183072715997696,
+          1.0270549058914185,
+          0.0,
+          -3.799999952316284
+        ],
+        [
+          0.0,
+          0.0,
+          1.0499999523162842,
+          0.5454989075660706
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_LeafAtlas"
+      ],
+      "triangles": 466
+    },
+    {
+      "name": "SM_FR_BushOpen_Foreground_Left_Small",
+      "source": "FR_Bush_Foreground_Left_Small",
+      "mesh": "SM_FR_BushOpen_Mesh",
+      "category": "Foliage",
+      "kind": "foliage",
+      "matrixBlender": [
+        [
+          0.4440908133983612,
+          0.20708295702934265,
+          0.0,
+          -3.0799999237060547
+        ],
+        [
+          -0.20708295702934265,
+          0.4440908133983612,
+          0.0,
+          -2.700000047683716
+        ],
+        [
+          0.0,
+          0.0,
+          0.49000000953674316,
+          0.40397077798843384
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_LeafAtlas"
+      ],
+      "triangles": 374
+    },
+    {
+      "name": "SM_FR_BushCompact_Foreground_Right_Small",
+      "source": "FR_Bush_Foreground_Right_Small",
+      "mesh": "SM_FR_BushCompact_Mesh",
+      "category": "Foliage",
+      "kind": "foliage",
+      "matrixBlender": [
+        [
+          0.4510524570941925,
+          -0.16416965425014496,
+          0.0,
+          3.1500000953674316
+        ],
+        [
+          0.16416965425014496,
+          0.4510524570941925,
+          0.0,
+          -2.5999999046325684
+        ],
+        [
+          0.0,
+          0.0,
+          0.47999998927116394,
+          0.3523598313331604
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_LeafAtlas"
+      ],
+      "triangles": 374
+    },
+    {
+      "name": "SM_FR_BushFern_Side_Left_Fern",
+      "source": "FR_Bush_Side_Left_Fern",
+      "mesh": "SM_FR_BushFern_Mesh",
+      "category": "Foliage",
+      "kind": "foliage",
+      "matrixBlender": [
+        [
+          -0.13930101692676544,
+          -0.6553589105606079,
+          0.0,
+          -5.699999809265137
+        ],
+        [
+          0.6553589105606079,
+          -0.13930101692676544,
+          0.0,
+          0.2660253942012787
+        ],
+        [
+          0.0,
+          0.0,
+          0.6700000166893005,
+          0.37247568368911743
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_LeafAtlas"
+      ],
+      "triangles": 466
+    },
+    {
+      "name": "SM_FR_BushUpright_Side_Right_Fern",
+      "source": "FR_Bush_Side_Right_Fern",
+      "mesh": "SM_FR_BushUpright_Mesh",
+      "category": "Foliage",
+      "kind": "foliage",
+      "matrixBlender": [
+        [
+          0.1250266432762146,
+          0.7090616226196289,
+          0.0,
+          5.849999904632568
+        ],
+        [
+          -0.7090616226196289,
+          0.1250266432762146,
+          0.0,
+          -1.3160253763198853
+        ],
+        [
+          0.0,
+          0.0,
+          0.7200000286102295,
+          0.5189781785011292
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_LeafAtlas"
+      ],
+      "triangles": 420
+    },
+    {
+      "name": "SM_FR_BushLowWide_Side_Left_Back",
+      "source": "FR_Bush_Side_Left_Back",
+      "mesh": "SM_FR_BushLowWide_Mesh",
+      "category": "Foliage",
+      "kind": "foliage",
+      "matrixBlender": [
+        [
+          0.39415308833122253,
+          -0.2863689661026001,
+          0.0,
+          -6.900000095367432
+        ],
+        [
+          0.2863689661026001,
+          0.39415308833122253,
+          0.0,
+          2.619999885559082
+        ],
+        [
+          0.0,
+          0.0,
+          0.487199991941452,
+          0.2177181839942932
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_LeafAtlas"
+      ],
+      "triangles": 420
+    },
+    {
+      "name": "SM_FR_BushOpen_Side_Right_Back",
+      "source": "FR_Bush_Side_Right_Back",
+      "mesh": "SM_FR_BushOpen_Mesh",
+      "category": "Foliage",
+      "kind": "foliage",
+      "matrixBlender": [
+        [
+          0.5698962211608887,
+          -0.1527031809091568,
+          0.0,
+          7.900000095367432
+        ],
+        [
+          0.1527031809091568,
+          0.5698962211608887,
+          0.0,
+          1.649999976158142
+        ],
+        [
+          0.0,
+          0.0,
+          0.5899999737739563,
+          0.21801000833511353
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_LeafAtlas"
+      ],
+      "triangles": 374
+    },
+    {
+      "name": "SM_FR_BushSpreading_Foreground_Left_Outer_02",
+      "source": "FR_Bush_Foreground_Left_Outer.001",
+      "mesh": "SM_FR_BushSpreading_Mesh",
+      "category": "Foliage",
+      "kind": "foliage",
+      "matrixBlender": [
+        [
+          0.396769642829895,
+          -0.3862842917442322,
+          -0.4545299708843231,
+          4.187332630157471
+        ],
+        [
+          0.2018110603094101,
+          0.6006357669830322,
+          -0.33428749442100525,
+          -4.127362251281738
+        ],
+        [
+          0.5613245964050293,
+          0.057098742574453354,
+          0.4414675831794739,
+          0.06695255637168884
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_LeafAtlas"
+      ],
+      "triangles": 466
+    },
+    {
+      "name": "SM_FR_BrokenPillar_Pillar_Left",
+      "source": "Extra_Pillar_Left",
+      "mesh": "SM_FR_BrokenPillar_Mesh",
+      "category": "Architecture",
+      "kind": "stone",
+      "matrixBlender": [
+        [
+          0.6986129283905029,
+          -0.17418377101421356,
+          0.0,
+          -3.700000286102295
+        ],
+        [
+          0.17418377101421356,
+          0.6986129283905029,
+          0.0,
+          1.850000023841858
+        ],
+        [
+          0.0,
+          0.0,
+          0.75,
+          0.3799999952316284
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_BrokenPillar"
+      ],
+      "triangles": 770
+    },
+    {
+      "name": "SM_FR_BrokenPillar_Pillar_Right",
+      "source": "Extra_Pillar_Right",
+      "mesh": "SM_FR_BrokenPillar_Mesh",
+      "category": "Architecture",
+      "kind": "stone",
+      "matrixBlender": [
+        [
+          0.8803328275680542,
+          0.18712052702903748,
+          0.0,
+          3.549999952316284
+        ],
+        [
+          -0.18712052702903748,
+          0.8803328275680542,
+          0.0,
+          3.0999999046325684
+        ],
+        [
+          0.0,
+          0.0,
+          0.9100000262260437,
+          0.3799999952316284
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_BrokenPillar"
+      ],
+      "triangles": 770
+    },
+    {
+      "name": "SM_FR_BrokenPillar_FallenColumn_Left",
+      "source": "Extra_FallenColumn_Left",
+      "mesh": "SM_FR_BrokenPillar_Mesh",
+      "category": "Architecture",
+      "kind": "stone",
+      "matrixBlender": [
+        [
+          0.057619333267211914,
+          -0.3053671419620514,
+          0.6850842833518982,
+          -6.480000019073486
+        ],
+        [
+          0.036004554480314255,
+          0.5737842917442322,
+          0.36392903327941895,
+          -0.75
+        ],
+        [
+          -0.6464391946792603,
+          0.004739496856927872,
+          0.08133355528116226,
+          1.4312180280685425
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_BrokenPillar"
+      ],
+      "triangles": 770
+    },
+    {
+      "name": "SM_FR_WallRubble_BrokenMasonry_Right",
+      "source": "Extra_BrokenMasonry_Right",
+      "mesh": "SM_FR_WallRubble_Mesh",
+      "category": "Architecture",
+      "kind": "stone",
+      "matrixBlender": [
+        [
+          -0.27811533212661743,
+          -0.6657395362854004,
+          0.0,
+          7.339134216308594
+        ],
+        [
+          0.8559508323669434,
+          -0.21631191670894623,
+          0.0,
+          0.8459219932556152
+        ],
+        [
+          0.0,
+          0.0,
+          0.6800000071525574,
+          0.20000000298023224
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_WallRubble"
+      ],
+      "triangles": 958
+    },
+    {
+      "name": "SM_FR_StoneLedge_Ledge_LeftEdge",
+      "source": "Extra_Ledge_LeftEdge",
+      "mesh": "SM_FR_StoneLedge_Mesh",
+      "category": "Ground",
+      "kind": "stone",
+      "matrixBlender": [
+        [
+          0.16632932424545288,
+          -0.7825180888175964,
+          0.0,
+          -7.25
+        ],
+        [
+          0.7825180888175964,
+          0.16632932424545288,
+          0.0,
+          -2.0999999046325684
+        ],
+        [
+          0.0,
+          0.0,
+          0.800000011920929,
+          0.019999999552965164
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_StoneLedge"
+      ],
+      "triangles": 1352
+    },
+    {
+      "name": "SM_FR_StoneLedge_Ledge_RightEdge",
+      "source": "Extra_Ledge_RightEdge",
+      "mesh": "SM_FR_StoneLedge_Mesh",
+      "category": "Ground",
+      "kind": "stone",
+      "matrixBlender": [
+        [
+          -0.09383934736251831,
+          -0.8436642289161682,
+          0.0,
+          7.5
+        ],
+        [
+          0.7642605304718018,
+          -0.10358890146017075,
+          0.0,
+          -1.7000000476837158
+        ],
+        [
+          0.0,
+          0.0,
+          0.8500000238418579,
+          0.019999999552965164
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_StoneLedge"
+      ],
+      "triangles": 1352
+    },
+    {
+      "name": "SM_FR_StoneLedge_Ledge_RearLeft",
+      "source": "Extra_Ledge_RearLeft",
+      "mesh": "SM_FR_StoneLedge_Mesh",
+      "category": "Ground",
+      "kind": "stone",
+      "matrixBlender": [
+        [
+          0.9476858377456665,
+          -0.059293001890182495,
+          0.0,
+          -7.699999809265137
+        ],
+        [
+          0.06626864522695541,
+          0.8479294776916504,
+          0.0,
+          5.550000190734863
+        ],
+        [
+          0.0,
+          0.0,
+          0.8500000238418579,
+          0.029999999329447746
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_StoneLedge"
+      ],
+      "triangles": 1352
+    },
+    {
+      "name": "SM_FR_RockSplit_Outer_Left_Mid",
+      "source": "Extra_Outer_Left_Mid",
+      "mesh": "SM_FR_RockSplit_Mesh",
+      "category": "Nature",
+      "kind": "stone",
+      "matrixBlender": [
+        [
+          0.8344654440879822,
+          -0.33714592456817627,
+          0.0,
+          -8.899999618530273
+        ],
+        [
+          0.33714592456817627,
+          0.8344654440879822,
+          0.0,
+          1.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.7200000286102295,
+          0.019999995827674866
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_RockSplit"
+      ],
+      "triangles": 566
+    },
+    {
+      "name": "SM_FR_RockFlat_Outer_Left_Back",
+      "source": "Extra_Outer_Left_Back",
+      "mesh": "SM_FR_RockFlat_Mesh",
+      "category": "Nature",
+      "kind": "stone",
+      "matrixBlender": [
+        [
+          1.2074072360992432,
+          0.29764190316200256,
+          0.0,
+          -9.449999809265137
+        ],
+        [
+          -0.3235238194465637,
+          1.1108146905899048,
+          0.0,
+          4.400000095367432
+        ],
+        [
+          0.0,
+          0.0,
+          1.2999999523162842,
+          0.02999989688396454
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_RockFlat"
+      ],
+      "triangles": 614
+    },
+    {
+      "name": "SM_FR_RockSplit_Outer_Left_Far",
+      "source": "Extra_Outer_Left_Far",
+      "mesh": "SM_FR_RockSplit_Mesh",
+      "category": "Nature",
+      "kind": "stone",
+      "matrixBlender": [
+        [
+          1.0125553607940674,
+          0.3907311260700226,
+          0.0,
+          -11.199999809265137
+        ],
+        [
+          -0.4298042356967926,
+          0.9205048680305481,
+          0.0,
+          6.25
+        ],
+        [
+          0.0,
+          0.0,
+          0.800000011920929,
+          -0.10000000149011612
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_RockSplit"
+      ],
+      "triangles": 566
+    },
+    {
+      "name": "SM_FR_RockSplit_Outer_Right_Mid",
+      "source": "Extra_Outer_Right_Mid",
+      "mesh": "SM_FR_RockSplit_Mesh",
+      "category": "Nature",
+      "kind": "stone",
+      "matrixBlender": [
+        [
+          0.9510565400123596,
+          0.29356613755226135,
+          0.0,
+          8.899999618530273
+        ],
+        [
+          -0.30901700258255005,
+          0.9035037159919739,
+          0.0,
+          1.5
+        ],
+        [
+          0.0,
+          0.0,
+          0.7799999713897705,
+          0.019999995827674866
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_RockSplit"
+      ],
+      "triangles": 566
+    },
+    {
+      "name": "SM_FR_RockFlat_Outer_Right_Back",
+      "source": "Extra_Outer_Right_Back",
+      "mesh": "SM_FR_RockFlat_Mesh",
+      "category": "Nature",
+      "kind": "stone",
+      "matrixBlender": [
+        [
+          1.2226845026016235,
+          -0.20791170001029968,
+          0.0,
+          9.199999809265137
+        ],
+        [
+          0.2598896324634552,
+          0.9781476259231567,
+          0.0,
+          4.699999809265137
+        ],
+        [
+          0.0,
+          0.0,
+          1.399999976158142,
+          0.01999988965690136
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_RockFlat"
+      ],
+      "triangles": 614
+    },
+    {
+      "name": "SM_FR_RockSplit_Outer_Right_Far",
+      "source": "Extra_Outer_Right_Far",
+      "mesh": "SM_FR_RockSplit_Mesh",
+      "category": "Nature",
+      "kind": "stone",
+      "matrixBlender": [
+        [
+          0.9062123894691467,
+          -0.6156615018844604,
+          0.0,
+          11.100000381469727
+        ],
+        [
+          0.708010733127594,
+          0.7880107760429382,
+          0.0,
+          6.300000190734863
+        ],
+        [
+          0.0,
+          0.0,
+          0.800000011920929,
+          -0.10000000149011612
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_RockSplit"
+      ],
+      "triangles": 566
+    },
+    {
+      "name": "SM_FR_RockFlat_Small_LeftPillar",
+      "source": "Extra_Small_LeftPillar",
+      "mesh": "SM_FR_RockFlat_Mesh",
+      "category": "Nature",
+      "kind": "stone",
+      "matrixBlender": [
+        [
+          0.19424846768379211,
+          -0.11736789345741272,
+          0.0,
+          -4.230000019073486
+        ],
+        [
+          0.10328374803066254,
+          0.22073689103126526,
+          0.0,
+          1.0499999523162842
+        ],
+        [
+          0.0,
+          0.0,
+          0.27000001072883606,
+          0.37999996542930603
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_RockFlat"
+      ],
+      "triangles": 614
+    },
+    {
+      "name": "SM_FR_RockSplit_Small_RightPillar",
+      "source": "Extra_Small_RightPillar",
+      "mesh": "SM_FR_RockSplit_Mesh",
+      "category": "Nature",
+      "kind": "stone",
+      "matrixBlender": [
+        [
+          0.20784609019756317,
+          0.11999999731779099,
+          0.0,
+          4.599999904632568
+        ],
+        [
+          -0.11999999731779099,
+          0.20784609019756317,
+          0.0,
+          3.3499999046325684
+        ],
+        [
+          0.0,
+          0.0,
+          0.23999999463558197,
+          0.3199999928474426
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_RockSplit"
+      ],
+      "triangles": 566
+    },
+    {
+      "name": "SM_FR_WallRubble_Low_BackLeft",
+      "source": "Extra_Low_BackLeft",
+      "mesh": "SM_FR_WallRubble_Mesh",
+      "category": "Architecture",
+      "kind": "stone",
+      "matrixBlender": [
+        [
+          0.4456206262111664,
+          0.07654520869255066,
+          0.0,
+          -4.699999809265137
+        ],
+        [
+          -0.0626278966665268,
+          0.5446474552154541,
+          0.0,
+          5.449999809265137
+        ],
+        [
+          0.0,
+          0.0,
+          0.4000000059604645,
+          0.30000001192092896
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_WallRubble"
+      ],
+      "triangles": 958
+    },
+    {
+      "name": "SM_FR_RockFlat_Gap_LeftRoot_A",
+      "source": "Extra_Gap_LeftRoot_A",
+      "mesh": "SM_FR_RockFlat_Mesh",
+      "category": "Nature",
+      "kind": "stone",
+      "matrixBlender": [
+        [
+          0.26629582047462463,
+          -0.08652476221323013,
+          0.0,
+          -5.800000190734863
+        ],
+        [
+          0.08652476221323013,
+          0.26629582047462463,
+          0.0,
+          -1.899999976158142
+        ],
+        [
+          0.0,
+          0.0,
+          0.36000001430511475,
+          0.07999996840953827
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_RockFlat"
+      ],
+      "triangles": 614
+    },
+    {
+      "name": "SM_FR_RockFlat_Gap_LeftRoot_B",
+      "source": "Extra_Gap_LeftRoot_B",
+      "mesh": "SM_FR_RockFlat_Mesh",
+      "category": "Nature",
+      "kind": "stone",
+      "matrixBlender": [
+        [
+          0.24257393181324005,
+          0.060480475425720215,
+          0.0,
+          -5.039999961853027
+        ],
+        [
+          -0.060480475425720215,
+          0.24257393181324005,
+          0.0,
+          -2.1600000858306885
+        ],
+        [
+          0.0,
+          0.0,
+          0.2800000011920929,
+          0.0899999812245369
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_RockFlat"
+      ],
+      "triangles": 614
+    },
+    {
+      "name": "SM_FR_RockFlat_Gap_RightRoot_A",
+      "source": "Extra_Gap_RightRoot_A",
+      "mesh": "SM_FR_RockFlat_Mesh",
+      "category": "Nature",
+      "kind": "stone",
+      "matrixBlender": [
+        [
+          0.319740891456604,
+          -0.2643788158893585,
+          0.0,
+          6.0
+        ],
+        [
+          0.14235782623291016,
+          0.5938044786453247,
+          0.0,
+          0.949999988079071
+        ],
+        [
+          0.0,
+          0.0,
+          0.4000000059604645,
+          0.1799999624490738
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_RockFlat"
+      ],
+      "triangles": 614
+    },
+    {
+      "name": "SM_FR_RockFlat_Gap_RightRoot_B",
+      "source": "Extra_Gap_RightRoot_B",
+      "mesh": "SM_FR_RockFlat_Mesh",
+      "category": "Nature",
+      "kind": "stone",
+      "matrixBlender": [
+        [
+          0.28531697392463684,
+          0.10815595090389252,
+          0.0,
+          5.599999904632568
+        ],
+        [
+          -0.09270510077476501,
+          0.3328697979450226,
+          0.0,
+          4.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.4000000059604645,
+          0.1499999612569809
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_RockFlat"
+      ],
+      "triangles": 614
+    },
+    {
+      "name": "SM_FR_RockFlat_Rear_MossyStone_A",
+      "source": "Extra_Rear_MossyStone_A",
+      "mesh": "SM_FR_RockFlat_Mesh",
+      "category": "Nature",
+      "kind": "stone",
+      "matrixBlender": [
+        [
+          1.2873483896255493,
+          0.17118291556835175,
+          0.0,
+          -2.1500000953674316
+        ],
+        [
+          -0.18092502653598785,
+          1.2180297374725342,
+          0.0,
+          6.800000190734863
+        ],
+        [
+          0.0,
+          0.0,
+          0.699999988079071,
+          -0.08000005781650543
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_RockFlat"
+      ],
+      "triangles": 614
+    },
+    {
+      "name": "SM_FR_RockFlat_Rear_MossyStone_B",
+      "source": "Extra_Rear_MossyStone_B",
+      "mesh": "SM_FR_RockFlat_Mesh",
+      "category": "Nature",
+      "kind": "stone",
+      "matrixBlender": [
+        [
+          0.9335803985595703,
+          -0.30461275577545166,
+          0.0,
+          -4.349999904632568
+        ],
+        [
+          0.3583679497241974,
+          0.7935433387756348,
+          0.0,
+          7.25
+        ],
+        [
+          0.0,
+          0.0,
+          0.6499999761581421,
+          -0.06000005081295967
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_RockFlat"
+      ],
+      "triangles": 614
+    },
+    {
+      "name": "SM_FR_RockFlat_Gap_RightFront",
+      "source": "Extra_Gap_RightFront",
+      "mesh": "SM_FR_RockFlat_Mesh",
+      "category": "Nature",
+      "kind": "stone",
+      "matrixBlender": [
+        [
+          0.1912105530500412,
+          -0.16105441749095917,
+          0.0,
+          5.639999866485596
+        ],
+        [
+          0.16105441749095917,
+          0.1912105530500412,
+          0.0,
+          -1.6200000047683716
+        ],
+        [
+          0.0,
+          0.0,
+          0.2800000011920929,
+          0.10000000149011612
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "materialNames": [
+        "M_FR_RockFlat"
+      ],
+      "triangles": 614
+    }
+  ],
+  "meshCount": 76,
+  "lightmapNotes": "UV0 artwork preserved. Unity importer generates UV1 lightmap charts. Foliage RGB vertex channel R stores paint tone / 2."
+}
