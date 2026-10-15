@@ -9,6 +9,8 @@ namespace CardPresentation
     public struct CardZoneLayoutSettings
     {
         public Vector2 Size;
+        [Tooltip("按区域可用高度等比缩放卡牌；宽度过小时进一步缩小。出牌区始终预留五个槽位。关闭时使用 Prefab 原始大小。")]
+        public bool FitCardsToZone;
         public Vector2 Padding;
         [Min(0)] public float PreferredGap;
         [Min(0)] public float OverlapLift;

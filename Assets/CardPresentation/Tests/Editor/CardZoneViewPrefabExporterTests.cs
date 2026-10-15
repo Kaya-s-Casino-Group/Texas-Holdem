@@ -85,6 +85,25 @@ namespace CardPresentation.Tests
             }
         }
 
+        [Test] public void AutoSizedExportBakesAnchorsWithoutApplyingTheSizeTwice()
+        {
+            using (var f = new Fixture())
+            {
+                var source = f.Zone<HandZoneView>();
+                var layout = source.Layout; layout.FitCardsToZone = true; layout.Size = new Vector2(.5f, .05f);
+                source.SetLayout(layout);
+                var anchor = f.Root("Anchor"); anchor.transform.position = new Vector3(.4f, .2f, .1f);
+                source.SetDeckSource(Vector3.zero, anchor.transform);
+                var deck = source.DeckWorldPosition; var discard = source.DiscardWorldPosition;
+                var asset = CardZoneViewPrefabExporter.Export(source, f.Folder + "/AutoSized.prefab");
+                var copy = ((GameObject)PrefabUtility.InstantiatePrefab(asset, f.Scene)).GetComponent<HandZoneView>();
+                Assert.IsNull(copy.DeckAnchor); Assert.IsTrue(copy.Layout.FitCardsToZone);
+                Near(deck, copy.DeckWorldPosition); Near(discard, copy.DiscardWorldPosition);
+                copy.Present(Data(new CardVisualData("a", "hearts_q")), false);
+                Assert.AreEqual(source.CardScale, copy.Views[0].PresentationScale);
+            }
+        }
+
         [Test] public void ExportedPrefabStartsEmptyAndCanBindFreshCardsAfterInstantiation()
         {
             using (var f = new Fixture())

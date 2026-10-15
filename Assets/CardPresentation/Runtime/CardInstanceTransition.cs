@@ -74,7 +74,7 @@ namespace CardPresentation
             hasStarted = false;
             target = new CardZoneCardPose(destination, Quaternion.identity);
             discardSettings = tuning; delay = wait; flight = tuning.FlightSeconds;
-            startFlipAngle = flip; exitOffset = view.InteractionOffset; exitSway = sway;
+            startFlipAngle = flip; exitOffset = view.InteractionOffset / view.PresentationScale; exitSway = sway;
             StartClock(delay + flight);
         }
 
@@ -103,7 +103,7 @@ namespace CardPresentation
                 float flip = Mathf.SmoothStep(0, 1, progress);
                 var position = Vector3.Lerp(start.Position, target.Position, exitTravel);
                 float arc = Mathf.Sin(progress * Mathf.PI);
-                position.y += arc * arc * discardSettings.FlightLift;
+                position.y += arc * arc * discardSettings.FlightLift * view.PresentationScale;
                 view.SetDiscardPose(exitOffset * (1 - exitTravel), exitSway * (1 - flip));
                 view.SetDealFlipAngle(Mathf.Lerp(startFlipAngle, 180, flip));
                 view.ApplyDisplayPose(new CardZoneCardPose(position, Quaternion.Slerp(start.Rotation, target.Rotation, flip)));
@@ -126,7 +126,7 @@ namespace CardPresentation
                 return;
             }
             var travel = destination.Position - start.Position; travel.y = 0;
-            var overshoot = travel.normalized * settings.OvershootDistance;
+            var overshoot = travel.normalized * settings.OvershootDistance * view.PresentationScale;
             float yaw = (travel.x <= 0 ? -1 : 1) * settings.LandingYaw;
             var landingRotation = destination.Rotation * Quaternion.Euler(0, yaw, 0);
             if (elapsed < delay + flight)
@@ -134,7 +134,7 @@ namespace CardPresentation
                 var position = Vector3.LerpUnclamped(start.Position, destination.Position + overshoot, eased);
                 // A squared arc reaches the landing with zero vertical velocity, matching the settle phase.
                 float lift = Mathf.Sin(t * Mathf.PI);
-                position.y += lift * lift * settings.FlightLift;
+                position.y += lift * lift * settings.FlightLift * view.PresentationScale;
                 view.ApplyDisplayPose(new CardZoneCardPose(position, Quaternion.SlerpUnclamped(start.Rotation, landingRotation, eased)));
             }
             else

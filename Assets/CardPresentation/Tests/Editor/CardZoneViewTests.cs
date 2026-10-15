@@ -46,6 +46,78 @@ namespace CardPresentation.Tests
             public void Dispose() => EditorSceneManager.ClosePreviewScene(Scene);
         }
 
+        [Test] public void AutoSizeReusesCardsAndScalesArtworkWithZoneHeight()
+        {
+            using (var f = new Fixture())
+            {
+                var settings = f.Zone.Layout;
+                settings.FitCardsToZone = true; settings.Padding = Vector2.zero; settings.ArcHeight = 0;
+                settings.Size = new Vector2(1, .1f);
+                f.Zone.SetLayout(settings);
+                var data = Data(Card("a"), Card("b")); f.Zone.Present(data, false);
+                var view = f.Zone.Views[0]; var scale = view.SwayRoot.localScale;
+                var prefabScale = f.Prefab.transform.localScale;
+                settings.Size.y *= 2; f.Zone.SetLayout(settings);
+                Assert.AreSame(view, f.Zone.Views[0]); Assert.AreSame(data, f.Zone.Data);
+                Assert.Less(Vector3.Distance(scale * 2, view.SwayRoot.localScale), .00001f);
+                Assert.AreEqual(Vector3.one, view.transform.localScale);
+                Assert.AreEqual(prefabScale, f.Prefab.transform.localScale);
+                f.Zone.Present(Data(Card("a"), Card("b"), Card("c")), false);
+                Assert.AreEqual(view.SwayRoot.localScale, f.Zone.Views[2].SwayRoot.localScale);
+                f.Zone.Present(Data(Card("a")), false);
+                Assert.Less(Vector3.Distance(scale * 2, view.SwayRoot.localScale), .00001f);
+                settings.FitCardsToZone = false; f.Zone.SetLayout(settings);
+                Assert.AreEqual(Vector3.one, view.SwayRoot.localScale);
+            }
+        }
+
+        [Test] public void AutoSizeFitsTinyPlayedZoneAndKeepsFiveStableSlots()
+        {
+            using (var f = new Fixture())
+            {
+                var root = new GameObject("Small Played Zone"); root.transform.SetParent(f.Root.transform, false);
+                var played = root.AddComponent<PlayedZoneView>();
+                var settings = CardZoneLayoutSettings.Default;
+                settings.FitCardsToZone = true; settings.Padding = Vector2.zero; settings.Size = new Vector2(.1f, .04f);
+                played.Configure(f.Prefab, settings);
+                played.Present(Data(Card("a")), false);
+                var slots = played.GetSlotPoses(); var scale = played.Views[0].SwayRoot.localScale;
+                played.Present(Data(Card("a"), Card("b"), Card("c"), Card("d"), Card("e")), false);
+                for (int i = 0; i < 5; i++)
+                {
+                    var view = played.Views[i];
+                    Assert.AreEqual(slots[i].Position, view.transform.localPosition);
+                    Assert.AreEqual(scale, view.SwayRoot.localScale);
+                    var bounds = view.Surface.GetComponent<MeshRenderer>().bounds;
+                    Assert.GreaterOrEqual(bounds.min.x, -.050001f);
+                    Assert.LessOrEqual(bounds.max.x, .050001f);
+                    Assert.GreaterOrEqual(bounds.min.z, -.020001f);
+                    Assert.LessOrEqual(bounds.max.z, .020001f);
+                }
+                var invalid = settings; invalid.Size = Vector2.zero;
+                Assert.Throws<ArgumentException>(() => played.SetLayout(invalid));
+                Assert.AreEqual(settings.Size, played.Layout.Size);
+                Assert.AreEqual(scale, played.Views[0].SwayRoot.localScale);
+            }
+        }
+
+        [Test] public void InspectorSizeChangesRefreshExistingCardsOnNextUpdate()
+        {
+            using (var f = new Fixture())
+            {
+                f.Zone.Present(Data(Card("a")), false); var view = f.Zone.Views[0];
+                var serialized = new SerializedObject(f.Zone);
+                var layout = serialized.FindProperty("layout");
+                layout.FindPropertyRelative("FitCardsToZone").boolValue = true;
+                layout.FindPropertyRelative("Size").vector2Value = new Vector2(.5f, .04f);
+                serialized.ApplyModifiedPropertiesWithoutUndo();
+                f.Zone.SendMessage("Update");
+                Assert.AreSame(view, f.Zone.Views[0]);
+                Assert.Less(view.SwayRoot.localScale.x, 1);
+                Assert.AreEqual(view.SwayRoot.localScale.x, view.SwayRoot.localScale.z);
+            }
+        }
+
         [Test] public void ProjectionPreservesZoneOrderAndCopiesOnlyDisclosedData()
         {
             var zone = new CardZone(new ZoneId("hand"), CardZoneKinds.Hand, new ParticipantId("owner"),

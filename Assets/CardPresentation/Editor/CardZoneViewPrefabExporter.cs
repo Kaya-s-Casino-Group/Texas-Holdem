@@ -43,8 +43,8 @@ namespace CardPresentation.Editor
                 serialized.FindProperty("facingCamera").objectReferenceValue = null;
                 if (source is HandZoneView hand)
                 {
-                    serialized.FindProperty("deckLocalPosition").vector3Value = source.transform.InverseTransformPoint(hand.DeckWorldPosition);
-                    serialized.FindProperty("discardLocalPosition").vector3Value = source.transform.InverseTransformPoint(hand.DiscardWorldPosition);
+                    serialized.FindProperty("deckLocalPosition").vector3Value = source.transform.InverseTransformPoint(hand.DeckWorldPosition) / source.CardScale;
+                    serialized.FindProperty("discardLocalPosition").vector3Value = source.transform.InverseTransformPoint(hand.DiscardWorldPosition) / source.CardScale;
                     serialized.FindProperty("deckAnchor").objectReferenceValue = null;
                     serialized.FindProperty("discardAnchor").objectReferenceValue = null;
                 }

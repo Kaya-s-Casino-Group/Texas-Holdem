@@ -70,6 +70,37 @@ namespace CardPresentation.Tests
             (host.IsRunning ? host.Cards : host.InitialCards).Select(card => card.Project()));
         private static void Close(Vector3 expected, Vector3 actual) => Assert.Less(Vector3.Distance(expected, actual), .00001f);
 
+        [Test] public void AutoSizeScalesTransferArcAndReorderLiftIncludingAnInFlightResize()
+        {
+            using (var f = new Fixture(occupied: 0, handCount: 2))
+            {
+                var layout = f.Played.Layout; layout.FitCardsToZone = true;
+                layout.Padding = Vector2.zero; layout.Size = new Vector2(1, .05f);
+                f.Played.SetLayout(layout);
+                f.Select("a", "b"); f.Hand.AdvanceMotion(1);
+                var first = f.Hand.Views[0]; var start = first.SwayRoot.position;
+                var settings = f.Route.Settings;
+                f.From.PlaySelected(f.To, f.Route);
+                f.Played.AdvanceMotion(settings.FlightSeconds * .5f);
+                var tween = DOTween.TweensByTarget(first.TransferRoot).Single();
+                foreach (float height in new[] { .05f, .1f })
+                {
+                    layout.Size.y = height; f.Played.SetLayout(layout);
+                    var landing = f.Played.transform.TransformPoint(f.Played.GetSlotPoses()[1].Position);
+                    float worldScale = f.Played.CardScale * f.Played.transform.lossyScale.y;
+                    Close((start + landing) * .5f + f.Played.transform.up * settings.ArcHeight * worldScale, first.SwayRoot.position);
+                    Assert.AreSame(tween, DOTween.TweensByTarget(first.TransferRoot).Single());
+                }
+                f.Played.AdvanceMotion(settings.FlightSeconds * .5f + settings.Interval + settings.LandingPause + settings.ResolvedReorderSeconds * .5f);
+                var slots = f.Played.GetSlotPoses();
+                var midpoint = f.Played.transform.TransformPoint((slots[0].Position + slots[1].Position) * .5f);
+                Close(midpoint + f.Played.transform.up * (.006f * f.Played.CardScale * f.Played.transform.lossyScale.y), first.SwayRoot.position);
+                Assert.AreEqual(settings.ArcHeight, f.Route.Settings.ArcHeight);
+                f.Played.AdvanceMotion(settings.ResolvedReorderSeconds);
+                Assert.IsFalse(f.Route.IsTransferring);
+            }
+        }
+
         [Test] public void OneThroughFiveCardsCrossInReverseThenReorderTogetherWithoutChangingDataOrder()
         {
             for (int count = 1; count <= 5; count++) using (var f = new Fixture(occupied: 0, handCount: 5))
@@ -177,10 +208,20 @@ namespace CardPresentation.Tests
             }
         }
 
-        [Test] public void TransferReusesVisualsAndPreservesDisplayedStartIncludingLiftAndSway()
+        [Test] public void TransferReusesVisualsAndPreservesDisplayedStartIncludingLiftAndSway() => VerifyTransferSizing(false);
+        [Test] public void TransferBetweenAutoSizedZonesPreservesStartAndAdoptsDestinationSize() => VerifyTransferSizing(true);
+
+        private void VerifyTransferSizing(bool autoSize)
         {
             using (var f = new Fixture())
             {
+                if (autoSize)
+                {
+                    var hand = f.Hand.Layout; hand.FitCardsToZone = true; hand.Size = new Vector2(.4f, .08f);
+                    var played = f.Played.Layout; played.FitCardsToZone = true; played.Size = new Vector2(.2f, .05f);
+                    f.Hand.SetLayout(hand); f.Played.SetLayout(played);
+                }
+                var destinationScale = f.Played.Views[0].SwayRoot.localScale;
                 f.Hand.AdvanceMotion(.13f); f.Select("c", "a"); f.Hand.AdvanceMotion(.03f);
                 var a = f.Hand.Views[0]; var c = f.Hand.Views[2]; var remaining = f.Hand.Views[3];
                 var position = a.SwayRoot.position; var rotation = a.SwayRoot.rotation; var scale = a.SwayRoot.lossyScale;
@@ -201,6 +242,7 @@ namespace CardPresentation.Tests
                 Assert.IsFalse(f.Route.IsTransferring); Assert.IsEmpty(f.Hand.DepartingViews); Assert.AreEqual(0, draws + discards);
                 Close(f.Played.transform.TransformPoint(f.Played.GetSlotPoses()[1].Position), a.SwayRoot.position);
                 Assert.AreEqual(Quaternion.identity, a.SwayRoot.localRotation); Assert.AreEqual(Vector3.zero, a.TransferRoot.localPosition);
+                Assert.AreEqual(destinationScale, a.SwayRoot.localScale);
             }
         }
 

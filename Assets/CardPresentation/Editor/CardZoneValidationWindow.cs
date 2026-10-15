@@ -216,6 +216,7 @@ namespace CardPresentation.Editor
             EditorGUI.BeginChangeCheck();
             var next = layout;
             next.Size = EditorGUILayout.Vector2Field("宽度 / 高度", next.Size);
+            next.FitCardsToZone = EditorGUILayout.Toggle("卡牌随区域缩放", next.FitCardsToZone);
             next.Padding = EditorGUILayout.Vector2Field("水平 / 垂直留白", next.Padding);
             next.PreferredGap = EditorGUILayout.FloatField("期望间距", next.PreferredGap);
             if (!(target is PlayedZoneView)) next.OverlapLift = EditorGUILayout.FloatField("重叠抬高", next.OverlapLift);

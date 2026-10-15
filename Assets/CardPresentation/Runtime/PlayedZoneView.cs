@@ -19,7 +19,7 @@ namespace CardPresentation
         public IReadOnlyList<CardZoneCardPose> GetSlotPoses()
         {
             var bounds = CardInstanceView.ValidatePrefab(CardPrefab, out _);
-            return Array.AsReadOnly(CalculateSlots(Layout, bounds.size));
+            return Array.AsReadOnly(CalculateSlots(Layout, bounds.size * CalculateCardScale(Layout, MotionSettings, bounds.size)));
         }
 
         protected override CardZoneCardPose[] CalculateCardPoses(CardZoneLayoutSettings settings, Vector3 cardSize, int count)
@@ -48,7 +48,12 @@ namespace CardPresentation
             base.OnDrawGizmosSelected();
             if (CardPrefab == null) return;
             Bounds bounds; CardZoneCardPose[] slots;
-            try { bounds = CardInstanceView.ValidatePrefab(CardPrefab, out _); slots = CalculateSlots(Layout, bounds.size); }
+            try
+            {
+                bounds = CardInstanceView.ValidatePrefab(CardPrefab, out _);
+                bounds.size *= CalculateCardScale(Layout, MotionSettings, bounds.size);
+                slots = CalculateSlots(Layout, bounds.size);
+            }
             catch (ArgumentException) { return; }
             var matrix = Gizmos.matrix; var color = Gizmos.color;
             Gizmos.matrix = transform.localToWorldMatrix;

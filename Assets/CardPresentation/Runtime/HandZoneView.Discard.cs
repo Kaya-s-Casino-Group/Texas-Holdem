@@ -15,9 +15,15 @@ namespace CardPresentation
         public CardZoneDiscardSettings DiscardSettings => discardSettings;
         public Vector3 DiscardLocalPosition => discardLocalPosition;
         public Transform DiscardAnchor => discardAnchor;
-        public Vector3 DiscardWorldPosition => discardAnchor != null ? discardAnchor.position : transform.TransformPoint(discardLocalPosition);
+        public Vector3 DiscardWorldPosition => discardAnchor != null ? discardAnchor.position : transform.TransformPoint(discardLocalPosition * CardScale);
         /// <summary>Visual ghosts only. These cards have already left Data/Views and cannot receive input.</summary>
         public IReadOnlyList<CardInstanceView> DepartingViews => departing.AsReadOnly();
+
+        protected override void OnCardScaleChanged(float scale)
+        {
+            base.OnCardScaleChanged(scale);
+            foreach (var view in departing) if (view != null) view.SetPresentationScale(scale);
+        }
 
         public void SetDiscardDestination(Vector3 localPosition, Transform anchor = null)
         {

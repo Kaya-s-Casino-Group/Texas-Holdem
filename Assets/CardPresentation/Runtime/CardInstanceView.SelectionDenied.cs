@@ -9,7 +9,7 @@ namespace CardPresentation
         private readonly object selectionDeniedTweenId = new object();
         private Vector3 selectionDeniedOffset;
         public bool IsSelectionDeniedAnimating => selectionDeniedTween != null && selectionDeniedTween.IsActive();
-        public Vector3 SelectionDeniedOffset => selectionDeniedOffset;
+        public Vector3 SelectionDeniedOffset => selectionDeniedOffset * PresentationScale;
 
         internal void BeginSelectionDenied(Vector3 offset, float riseSeconds, float returnSeconds)
         {

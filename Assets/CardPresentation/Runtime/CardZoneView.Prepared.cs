@@ -26,6 +26,7 @@ namespace CardPresentation
             private readonly CardZoneMotionSettings motion;
             private readonly Bounds bounds;
             private readonly GameObject prefab;
+            private readonly float cardScale;
             private bool committed, notified, disposed;
 
             internal PreparedPresentation(CardZoneView owner, CardZoneViewData data, Func<PresentationUpdate> createUpdate,
@@ -37,7 +38,8 @@ namespace CardPresentation
                 if (before != null && prefab != owner.boundPrefab) throw new InvalidOperationException("Clear before replacing the prefab.");
                 bounds = CardInstanceView.ValidatePrefab(prefab, out var template);
                 motion = owner.MotionSettings;
-                poses = owner.CalculateCardPoses(owner.Layout, motion.LayoutSize(bounds.size), data.Cards.Count);
+                cardScale = owner.CalculateCardScale(owner.Layout, motion, bounds.size);
+                poses = owner.CalculateCardPoses(owner.Layout, motion.LayoutSize(bounds.size) * cardScale, data.Cards.Count);
                 appearances = new CardShaderAppearance[data.Cards.Count];
                 owner.ValidatePresentationSettings();
                 update = createUpdate();
@@ -80,6 +82,7 @@ namespace CardPresentation
                     var view = nextOrdered[i];
                     if (view.transform.parent != owner.transform) view.transform.SetParent(owner.transform, false);
                     view.transform.localScale = Vector3.one;
+                    view.SetPresentationScale(cardScale);
                     view.ConfigureMotion(motion);
                     update.PresentCard(view, data.Cards[i], appearances[i], poses[i], i, created.Contains(view));
                     view.gameObject.SetActive(true);
@@ -89,6 +92,8 @@ namespace CardPresentation
                         (!next.TryGetValue(previous.ViewId, out var retained) || retained != previous)) update.RemoveCard(previous);
                 owner.views = next; owner.ordered = nextOrdered; owner.Data = data;
                 owner.boundPrefab = prefab; owner.cardBounds = bounds; committed = true;
+                owner.layoutRefreshRequested = false;
+                owner.OnCardScaleChanged(cardScale);
                 foreach (var view in nextOrdered) view.RefreshTransferPose();
             }
 

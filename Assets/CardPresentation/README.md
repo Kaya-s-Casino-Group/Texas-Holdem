@@ -21,6 +21,14 @@
 
 场景 `CardInteraction.CardHoverPresenter` 持有提示 Prefab，并为本地相机复用一个实例；`ICardHoverSource` 提供观察者可读的数据与卡牌视觉锚点。提示跟随卡牌上方、朝向场景相机且可限制在视口内，牌背及飞入/离场不显示。验证宿主按卡牌定义查询基础点数；固化手牌会自动注册，也可用 `Tools > Cards > Configure Card Hover Tooltip` 接入已有手牌。CardZoneView 不持有提示引用、不采集鼠标、不查询计分。资源结构见 [UI README](UI/README.md)，数据边界与配置见 [交互 README](../CardInteraction/README.md#场景共用的悬停提示)。
 
+## 直接调整牌区尺寸
+
+选中 CardZoneView / HandZoneView / PlayedZoneView，在 Inspector 顶部打开「卡牌随区域缩放」，再调整「区域大小（宽 / 高）」；Scene 中的青色边缘手柄也可拖动调整，支持 Undo 和 Prefab override。旧配置默认关闭，继续使用 Prefab 原始尺寸。
+
+开启后按扣除 Padding 的高度等比缩放卡牌，预留弧高和摆动空间；宽度不足时进一步缩小。手牌数量变化只重排，不改变卡牌大小；出牌区始终按五个槽位适配。编辑模式和运行时都会刷新已有实例，无需修改 Card Prefab。代码通过 `layout.FitCardsToZone = true` 配合 `SetLayout` 使用；实战牌区工具的表现参数页也有同名开关。
+
+DOTween 的距离也随卡牌等比变化：选中上浮、拒绝选中的弹跳、发牌抬升与落位回弹、弃牌抬升、跨区出牌弧高与整理抬升。时长、间隔、旋转角度、悬停面积倍率和缓动曲线不变，Inspector 中的动画参数保持原始值，不累计乘算。无锚点时，牌堆/弃牌的局部位置一起缩放；指定场景锚点或出牌控制点仍使用其实际世界位置。跨区距离按目标牌区尺寸计算，并计入该牌区的 Transform 缩放；关闭自动尺寸时沿用旧的世界距离。动画中的选择反馈与出牌路径也能响应 `SetLayout` 尺寸变化。
+
 ## 出牌区：五个固定槽位
 
 `PlayedZoneView` 直接继承通用 CardZoneView，共用卡牌实例复用、属性外观、可见性、相机朝向及资源管理。它只负责展示提交后的列表，出牌合法性、牌型/计分以及从手牌区转移卡牌由上层宿主处理。

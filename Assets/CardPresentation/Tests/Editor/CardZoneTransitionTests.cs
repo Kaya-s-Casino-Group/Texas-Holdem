@@ -56,6 +56,103 @@ namespace CardPresentation.Tests
             }
         }
 
+        private static void SetAutoSize(HandZoneView zone, float height)
+        {
+            var layout = zone.Layout;
+            layout.FitCardsToZone = true; layout.Size = new Vector2(1, height);
+            layout.Padding = Vector2.zero; layout.ArcHeight = 0;
+            zone.SetLayout(layout);
+        }
+
+        [Test] public void AutoSizeScalesEntireDealAndDiscardTrajectoriesWithoutChangingTiming()
+        {
+            using (var large = new Fixture())
+            using (var small = new Fixture())
+            {
+                SetAutoSize(large.Zone, .1f); SetAutoSize(small.Zone, .05f);
+                int largeCues = 0, smallCues = 0;
+                large.Zone.CardEnteredZone += _ => largeCues++;
+                small.Zone.CardEnteredZone += _ => smallCues++;
+                large.Zone.Present(Data(Card("a", selected: true)));
+                small.Zone.Present(Data(Card("a", selected: true)));
+                var a = large.Zone.Views[0]; var b = small.Zone.Views[0];
+                foreach (float step in new[] { 0, .1f, .125f, .225f, .2f, .5f })
+                {
+                    large.Zone.AdvanceMotion(step); small.Zone.AdvanceMotion(step);
+                    Near(a.DisplayPose.Position * .5f, b.DisplayPose.Position);
+                    Near(a.InteractionOffset * .5f, b.InteractionOffset);
+                    Assert.AreEqual(a.DealFlipAngle, b.DealFlipAngle, .0001f);
+                    Assert.Less(Quaternion.Angle(a.DisplayPose.Rotation, b.DisplayPose.Rotation), .01f);
+                    Assert.AreEqual(a.IsEntering, b.IsEntering); Assert.AreEqual(largeCues, smallCues);
+                }
+                Assert.AreEqual(1, largeCues);
+                large.Zone.Present(Data(), new[] { "a" }); small.Zone.Present(Data(), new[] { "a" });
+                foreach (float step in new[] { 0, .1f, .125f, .2f })
+                {
+                    large.Zone.AdvanceMotion(step); small.Zone.AdvanceMotion(step);
+                    Near(a.DisplayPose.Position * .5f, b.DisplayPose.Position);
+                    Near(a.InteractionOffset * .5f, b.InteractionOffset);
+                    Assert.AreEqual(a.DealFlipAngle, b.DealFlipAngle, .0001f);
+                }
+                large.Zone.AdvanceMotion(.1f); small.Zone.AdvanceMotion(.1f);
+                Assert.IsEmpty(large.Zone.DepartingViews); Assert.IsEmpty(small.Zone.DepartingViews);
+                Assert.AreEqual(CardZoneTransitionSettings.Default.FlightLift, small.Zone.TransitionSettings.FlightLift);
+                Assert.AreEqual(CardZoneDiscardSettings.Default.FlightLift, small.Zone.DiscardSettings.FlightLift);
+            }
+        }
+
+        [Test] public void AutoSizeScalesSelectionAndDeniedFeedbackAndResizesActiveTweenWithoutRestart()
+        {
+            using (var large = new Fixture())
+            using (var small = new Fixture())
+            {
+                SetAutoSize(large.Zone, .1f); SetAutoSize(small.Zone, .05f);
+                large.Zone.SetLiftSettings(CardZoneLiftSettings.Default); small.Zone.SetLiftSettings(CardZoneLiftSettings.Default);
+                large.Zone.Present(Data(Card("a")), false); small.Zone.Present(Data(Card("a")), false);
+                var a = large.Zone.Views[0]; var b = small.Zone.Views[0];
+                Assert.IsTrue(large.Zone.PlaySelectionDenied("a")); Assert.IsTrue(small.Zone.PlaySelectionDenied("a"));
+                foreach (float step in new[] { .04f, .04f, .06f, .15f })
+                {
+                    large.Zone.AdvanceMotion(step); small.Zone.AdvanceMotion(step);
+                    Near(a.SelectionDeniedOffset * .5f, b.SelectionDeniedOffset);
+                    Near(a.FaceRoot.localPosition * .5f, b.FaceRoot.localPosition);
+                    Assert.AreEqual(a.IsSelectionDeniedAnimating, b.IsSelectionDeniedAnimating);
+                }
+                large.Zone.Present(Data(Card("a", selected: true))); small.Zone.Present(Data(Card("a", selected: true)));
+                large.Zone.AdvanceMotion(.04f); small.Zone.AdvanceMotion(.04f);
+                Near(a.InteractionOffset * .5f, b.InteractionOffset);
+                var tween = DOTween.TweensByTarget(b.FaceRoot).Single();
+                SetAutoSize(small.Zone, .1f);
+                Assert.AreSame(tween, DOTween.TweensByTarget(b.FaceRoot).Single());
+                Near(a.InteractionOffset, b.InteractionOffset);
+                foreach (float step in new[] { .04f, .04f, .1f })
+                {
+                    large.Zone.AdvanceMotion(step); small.Zone.AdvanceMotion(step);
+                    Near(a.InteractionOffset, b.InteractionOffset); Assert.AreEqual(a.IsLifting, b.IsLifting);
+                }
+                Near(small.Zone.SelectedOffset * small.Zone.CardScale, b.InteractionOffset);
+            }
+        }
+
+        [Test] public void AutoSizeKeepsExplicitDeckAndDiscardAnchorsAtTheirWorldPositions()
+        {
+            using (var f = new Fixture())
+            {
+                var anchor = new GameObject("Fixed Anchor"); anchor.transform.SetParent(f.Root.transform, false);
+                anchor.transform.localPosition = new Vector3(.6f, .2f, .1f);
+                f.Zone.SetDeckSource(Vector3.zero, anchor.transform);
+                f.Zone.SetDiscardDestination(Vector3.zero, anchor.transform);
+                foreach (float height in new[] { .05f, .2f })
+                {
+                    SetAutoSize(f.Zone, height);
+                    Near(anchor.transform.position, f.Zone.DeckWorldPosition);
+                    Near(anchor.transform.position, f.Zone.DiscardWorldPosition);
+                }
+                f.Zone.Present(Data(Card("a")));
+                Near(anchor.transform.position, f.Zone.transform.TransformPoint(f.Zone.Views[0].DisplayPose.Position));
+            }
+        }
+
         [Test] public void NewIdentitiesFlyFromDeckInOrderThenOvershootAndSettle()
         {
             using (var f = new Fixture())

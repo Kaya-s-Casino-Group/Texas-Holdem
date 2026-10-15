@@ -28,7 +28,7 @@ namespace CardPresentation
         public CardZoneTransitionSettings TransitionSettings => transitionSettings;
         public Vector3 DeckLocalPosition => deckLocalPosition;
         public Transform DeckAnchor => deckAnchor;
-        public Vector3 DeckWorldPosition => deckAnchor != null ? deckAnchor.position : transform.TransformPoint(deckLocalPosition);
+        public Vector3 DeckWorldPosition => deckAnchor != null ? deckAnchor.position : transform.TransformPoint(deckLocalPosition * CardScale);
         public override bool IsTransitioning => departing.Count > 0 || base.IsTransitioning;
 
         protected override void ValidatePresentationSettings()
@@ -188,15 +188,17 @@ namespace CardPresentation
         protected override void OnDrawGizmosSelected()
         {
             base.OnDrawGizmosSelected();
+            float scale;
+            try { scale = CardScale; } catch (ArgumentException) { return; }
             var oldMatrix = Gizmos.matrix; var oldColor = Gizmos.color;
             Gizmos.matrix = transform.localToWorldMatrix;
             var deck = transform.InverseTransformPoint(DeckWorldPosition);
             Gizmos.color = new Color(1, 0.7f, 0.2f);
-            Gizmos.DrawWireCube(deck, new Vector3(0.064f, 0.006f, 0.096f));
+            Gizmos.DrawWireCube(deck, new Vector3(0.064f, 0.006f, 0.096f) * scale);
             Gizmos.DrawLine(deck, new Vector3(Layout.Size.x / 2, 0, 0));
             var discard = transform.InverseTransformPoint(DiscardWorldPosition);
             Gizmos.color = new Color(0.9f, 0.35f, 0.45f);
-            Gizmos.DrawWireCube(discard, new Vector3(0.064f, 0.006f, 0.096f));
+            Gizmos.DrawWireCube(discard, new Vector3(0.064f, 0.006f, 0.096f) * scale);
             Gizmos.DrawLine(new Vector3(-Layout.Size.x / 2, 0, 0), discard);
             Gizmos.matrix = oldMatrix; Gizmos.color = oldColor;
         }

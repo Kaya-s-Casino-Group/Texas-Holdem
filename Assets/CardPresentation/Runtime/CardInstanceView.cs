@@ -32,7 +32,8 @@ namespace CardPresentation
         private Tween liftTween;
         private readonly object liftTweenId = new object();
         private const float SelectionOvershootScale = 1.35f;
-        public Vector3 InteractionOffset => interactionOffset + selectionDeniedOffset;
+        public float PresentationScale { get; private set; } = 1;
+        public Vector3 InteractionOffset => (interactionOffset + selectionDeniedOffset) * PresentationScale;
         public bool IsLifting => liftTween != null && liftTween.IsActive();
         public bool IsTransitioning => IsTransferring || (transition != null && transition.IsAnimating);
         public bool IsEntering => IsTransferring || (transition != null && transition.IsEntering);
@@ -84,6 +85,14 @@ namespace CardPresentation
         {
             transform.localPosition = pose.Position; transform.localRotation = pose.Rotation;
             if (Data != null) ApplyFaceRotation();
+            RefreshInteractionPose();
+        }
+
+        internal void SetPresentationScale(float scale)
+        {
+            PresentationScale = scale;
+            SwayRoot.localScale = Vector3.one * scale;
+            // Tween values stay in prefab units: changing size never restarts an interaction tween.
             RefreshInteractionPose();
         }
 
@@ -207,7 +216,7 @@ namespace CardPresentation
         private void RefreshInteractionPose()
         {
             if (FaceRoot != null && TransitionRoot != null)
-                FaceRoot.localPosition = Quaternion.Inverse(transform.localRotation * TransitionRoot.localRotation) * (interactionOffset + selectionDeniedOffset);
+                FaceRoot.localPosition = Quaternion.Inverse(transform.localRotation * TransitionRoot.localRotation) * InteractionOffset;
         }
 
         private void KillLift()

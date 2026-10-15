@@ -14,6 +14,7 @@ namespace CardPresentation
         private bool hasTransferControl;
         private float transferClock, transferHeight, transferFlightSeconds, transferReorderAt, transferReorderSeconds, transferReorderLift;
         private Transform transferLandingAnchor;
+        private CardZoneView transferDestination;
 
         internal struct WorldPose
         {
@@ -25,11 +26,12 @@ namespace CardPresentation
         };
 
         internal void BeginTransfer(WorldPose start, CardZoneTransferSettings settings, float delay,
-            Vector3 up, Vector3? control, Transform landingAnchor = null, float waitForBatch = 0, float reorderLift = 0)
+            CardZoneView destination, Vector3? control, Transform landingAnchor = null, float waitForBatch = 0, float reorderLift = 0)
         {
             CompleteTransfer(); CancelSelectionDenied();
             transferStart = start; transferClock = 0; transferHeight = settings.ArcHeight;
-            transferUp = up; hasTransferControl = control.HasValue; transferControl = control.GetValueOrDefault();
+            transferDestination = destination; transferUp = destination.transform.up;
+            hasTransferControl = control.HasValue; transferControl = control.GetValueOrDefault();
             transferLandingAnchor = landingAnchor;
             transferFlightSeconds = settings.FlightSeconds;
             bool rearrange = landingAnchor != null;
@@ -44,7 +46,7 @@ namespace CardPresentation
             }, duration, duration).SetDelay(delay).SetEase(Ease.Linear)
                 .SetUpdate(UpdateType.Manual).SetAutoKill(true).SetRecyclable(false)
                 .SetTarget(TransferRoot).SetId(transferTweenId)
-                .OnComplete(() => { transferTween = null; transferLandingAnchor = null; ResetTransferPose(); });
+                .OnComplete(() => { transferTween = null; transferLandingAnchor = null; transferDestination = null; ResetTransferPose(); });
             transferTween.ForceInit(); RefreshTransferPose();
         }
 
@@ -61,17 +63,19 @@ namespace CardPresentation
             if (!IsTransferring) return;
             ResetTransferPose();
             var end = CaptureWorldPose();
+            float distanceScale = transferDestination != null ? transferDestination.AnimationWorldScale : 1;
+            var up = transferDestination != null ? transferDestination.transform.up : transferUp;
             // Landing anchors are the other cards' logical layout roots, never their animated children.
             var landing = transferLandingAnchor != null ? transferLandingAnchor.position : end.Position;
             var control = hasTransferControl ? transferControl :
-                (transferStart.Position + landing) * .5f + transferUp * (2 * transferHeight);
+                (transferStart.Position + landing) * .5f + up * (2 * transferHeight * distanceScale);
             float t = EaseTransfer(Mathf.Clamp01(transferClock / transferFlightSeconds));
             var position = (1 - t) * (1 - t) * transferStart.Position + 2 * (1 - t) * t * control + t * t * landing;
             if (transferReorderSeconds > 0 && transferClock >= transferReorderAt)
             {
                 float progress = EaseTransfer(Mathf.Clamp01((transferClock - transferReorderAt) / transferReorderSeconds));
                 // Small, distinct lift per card keeps cards from occupying the same plane when swapping places.
-                position = Vector3.Lerp(landing, end.Position, progress) + transferUp * (4 * progress * (1 - progress) * transferReorderLift);
+                position = Vector3.Lerp(landing, end.Position, progress) + up * (4 * progress * (1 - progress) * transferReorderLift * distanceScale);
             }
             var rotation = Quaternion.Slerp(transferStart.Rotation, end.Rotation, t);
             var scale = Vector3.Lerp(transferStart.Scale, end.Scale, t);
@@ -103,7 +107,7 @@ namespace CardPresentation
         internal void CompleteTransfer()
         {
             if (transferTween != null) DOTween.Kill(transferTweenId);
-            transferTween = null; transferLandingAnchor = null; ResetTransferPose();
+            transferTween = null; transferLandingAnchor = null; transferDestination = null; ResetTransferPose();
         }
     }
 }

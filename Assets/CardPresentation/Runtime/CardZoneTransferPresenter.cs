@@ -85,7 +85,7 @@ namespace CardPresentation
                         var landing = ids.Length > 1 ? imports[ids[ids.Length - 1 - i]].transform : null;
                         float wait = (ids.Length - 1 - i) * settings.Interval;
                         float lift = i == ids.Length - 1 - i ? 0 : .012f * (i + 1) / ids.Length;
-                        view.BeginTransfer(starts[i], settings, i * settings.Interval, destination.transform.up, control, landing, wait, lift);
+                        view.BeginTransfer(starts[i], settings, i * settings.Interval, destination, control, landing, wait, lift);
                         flights.Add(view);
                     }
                     from.NotifyCommitted(); to.NotifyCommitted();
@@ -132,7 +132,7 @@ namespace CardPresentation
                 var card = selected[index];
                 var start = card.SwayRoot.position;
                 var end = destination.transform.TransformPoint(slots[firstSlot + count - 1 - index].Position);
-                var control = controlPoint != null ? controlPoint.position : (start + end) * .5f + destination.transform.up * settings.ArcHeight * 2;
+                var control = controlPoint != null ? controlPoint.position : (start + end) * .5f + destination.transform.up * settings.ArcHeight * destination.AnimationWorldScale * 2;
                 var previous = start;
                 for (int i = 1; i <= 24; i++)
                 {

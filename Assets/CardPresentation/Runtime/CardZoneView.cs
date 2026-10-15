@@ -22,6 +22,7 @@ namespace CardPresentation
         protected CardInstanceView[] ordered = new CardInstanceView[0];
         private GameObject boundPrefab;
         private Bounds cardBounds;
+        private bool layoutRefreshRequested;
 
         protected double AnimationTime { get; private set; }
 
@@ -33,6 +34,11 @@ namespace CardPresentation
         public virtual bool SupportsSway => true;
         public CardZoneLayoutSettings Layout => ResolveLayoutSettings(layout);
         public GameObject CardPrefab => cardPrefab;
+        /// <summary>Uniform size relative to the artwork prefab, also used by distance-based animation.</summary>
+        public float CardScale => !Layout.FitCardsToZone || cardPrefab == null ? 1 :
+            CalculateCardScale(Layout, MotionSettings, (Data == null ? CardInstanceView.ValidatePrefab(cardPrefab, out _) : cardBounds).size);
+        // Transfers use world distances. Keep legacy world tuning when automatic sizing is disabled.
+        internal float AnimationWorldScale => Layout.FitCardsToZone ? CardScale * transform.TransformVector(Vector3.up).magnitude : 1;
         public CardZoneMotionSettings MotionSettings => ResolveMotionSettings(motionSettings);
         public virtual bool IsTransitioning => ordered.Any(view => view != null && view.IsTransitioning);
         public bool FaceCamera => faceCamera;
@@ -46,9 +52,10 @@ namespace CardPresentation
             var bounds = CardInstanceView.ValidatePrefab(prefab, out _);
             settings = ResolveLayoutSettings(settings);
             var motion = MotionSettings;
-            CalculateCardPoses(settings, motion.LayoutSize(bounds.size), 0);
+            CalculateCardPoses(settings, motion.LayoutSize(bounds.size) * CalculateCardScale(settings, motion, bounds.size), 0);
             ValidatePresentationSettings();
             cardPrefab = prefab; layout = settings; motionSettings = motion;
+            layoutRefreshRequested = false;
         }
 
         protected virtual void ValidatePresentationSettings() { }
@@ -77,10 +84,27 @@ namespace CardPresentation
         protected virtual CardZoneCardPose[] CalculateCardPoses(CardZoneLayoutSettings settings, Vector3 cardSize, int count) =>
             CardZoneRowLayout.CalculatePoses(settings, cardSize, count);
 
+        // Keep scale independent of the current card count so drawing/removing cards never changes their size.
+        protected float CalculateCardScale(CardZoneLayoutSettings settings, CardZoneMotionSettings motion, Vector3 size)
+        {
+            if (!settings.FitCardsToZone) return 1;
+            var footprint = motion.LayoutSize(size);
+            float width = settings.Size.x - 2 * settings.Padding.x;
+            float height = settings.Size.y - 2 * settings.Padding.y;
+            // Leave room for the requested fan, even when the card fills the available height.
+            height -= Mathf.Min(Mathf.Abs(settings.ArcHeight), height * .5f);
+            float scale = Mathf.Min(width / (footprint.x * (CardCapacity ?? 1)), height / footprint.z);
+            if (!CardZoneRowLayout.Finite(scale) || scale <= 0)
+                throw new ArgumentException("牌区尺寸必须大于两侧留白，才能自动缩放卡牌。");
+            // Avoid rounding a fitted footprint just beyond the layout's strict boundary.
+            return scale * .999999f;
+        }
+
         // Inspector/Prefab serialization and runtime setters obey the same subtype constraints.
         protected virtual void OnValidate()
         {
             layout = ResolveLayoutSettings(layout); motionSettings = ResolveMotionSettings(motionSettings);
+            layoutRefreshRequested = true;
         }
 
         public void Present(CardZone zone, Func<CardInstanceId, CardVisualData> project, bool animate = true) =>
@@ -132,16 +156,22 @@ namespace CardPresentation
             var bounds = Data == null ? CardInstanceView.ValidatePrefab(cardPrefab, out _) : cardBounds;
             settings = ResolveLayoutSettings(settings); motion = ResolveMotionSettings(motion);
             ValidateCardCount(ordered.Length);
-            var poses = CalculateCardPoses(settings, motion.LayoutSize(bounds.size), ordered.Length);
+            float scale = CalculateCardScale(settings, motion, bounds.size);
+            var poses = CalculateCardPoses(settings, motion.LayoutSize(bounds.size) * scale, ordered.Length);
             layout = settings; motionSettings = motion;
             for (int i = 0; i < ordered.Length; i++) if (ordered[i] != null)
             {
                 ordered[i].ConfigureMotion(motion);
+                ordered[i].SetPresentationScale(scale);
                 ApplyLayoutPose(ordered[i], poses[i], animate);
             }
             // Crossed transfers may anchor to a later card's layout root. Resolve after all roots move.
             foreach (var view in ordered) if (view != null) view.RefreshTransferPose();
+            OnCardScaleChanged(scale);
+            layoutRefreshRequested = false;
         }
+
+        protected virtual void OnCardScaleChanged(float scale) { }
 
         public void RefreshLayout() => SetLayout(Layout);
 
@@ -165,7 +195,20 @@ namespace CardPresentation
             OnMotionAdvanced(deltaTime);
         }
         protected virtual void OnMotionAdvanced(float deltaTime) { }
-        protected virtual void Update() { if (Application.isPlaying) AdvanceMotion(Time.deltaTime); }
+        protected virtual void Update()
+        {
+            // OnValidate may run during serialization; defer all Transform writes to the main update.
+            if (layoutRefreshRequested)
+            {
+                layoutRefreshRequested = false;
+                if (Data != null)
+                {
+                    try { SetLayout(Layout, MotionSettings, animate: Application.isPlaying); }
+                    catch (ArgumentException error) { Debug.LogWarning(error.Message, this); }
+                }
+            }
+            if (Application.isPlaying) AdvanceMotion(Time.deltaTime);
+        }
         protected virtual void LateUpdate() => RefreshCameraFacing();
         protected virtual void OnDisable()
         {
