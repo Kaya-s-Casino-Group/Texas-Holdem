@@ -167,9 +167,42 @@ public static class RigidVATAssetImport
         t.SetPlatformTextureSettings(settings);
         foreach (string platform in new[] {"Standalone", "Android", "iPhone"})
         {
-            var p = t.GetPlatformTextureSettings(platform); p.overridden = false; t.SetPlatformTextureSettings(p);
+            // VAT channels are numeric transforms, never color textures. Keep explicit
+            // full-precision, uncompressed settings on mobile as well as desktop.
+            var p = t.GetPlatformTextureSettings(platform);
+            p.overridden = true; p.format = settings.format; p.maxTextureSize = maxSize;
+            p.textureCompression = TextureImporterCompression.Uncompressed;
+            p.crunchedCompression = false; p.allowsAlphaSplitting = false;
+            t.SetPlatformTextureSettings(p);
         }
         t.SaveAndReimport();
+    }
+
+    [MenuItem("Tools/Art Assets/Statue VAT/Verify Uncompressed Platform Textures")]
+    public static void ConfigureAndValidateDataTextures()
+    {
+        int count = 0;
+        foreach (var manifest in Directory.GetFiles("Assets", "*_vat.json", SearchOption.AllDirectories))
+        {
+            var data = JObject.Parse(File.ReadAllText(manifest));
+            if ((string)data["schema"] != "statue-rigid-vat-v1") continue;
+            var stem = manifest.Substring(0, manifest.Length - "_vat.json".Length);
+            var expected = (int)data["texture"]["component_bits"] == 32
+                ? TextureFormat.RGBAFloat : TextureFormat.RGBAHalf;
+            foreach (var suffix in new[] { "_position.exr", "_rotation.exr" })
+            {
+                var path = stem + suffix;
+                ConfigureTexture(path, data);
+                var texture = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+                if (texture == null || texture.format != expected ||
+                    texture.width != (int)data["texture"]["width"] ||
+                    texture.height != (int)data["texture"]["height"] || texture.mipmapCount != 1)
+                    throw new InvalidOperationException("VAT data precision or dimensions changed: " + path);
+                Debug.Log($"VAT_DATA_VERIFIED: {path}: {texture.width}x{texture.height} {texture.format}, uncompressed, linear, point, no mipmaps");
+                count++;
+            }
+        }
+        Debug.Log($"VAT_DATA_VERIFIED: {count} textures for {EditorUserBuildSettings.activeBuildTarget}");
     }
 
     public static void Bind(Material mat, JObject data, string stem)

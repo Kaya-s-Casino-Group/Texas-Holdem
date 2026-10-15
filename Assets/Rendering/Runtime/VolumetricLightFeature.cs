@@ -71,7 +71,12 @@ namespace RetroRendering
                     if (i == data.lightData.mainLightIndex) continue;
                     int lightIndex = slot++;
                     var light = data.lightData.visibleLights[i].light;
-                    if (light == null || light.lightmapBakeType == LightmapBakeType.Baked) continue;
+                    if (light == null) continue;
+#if UNITY_EDITOR
+                    if (light.lightmapBakeType == LightmapBakeType.Baked) continue;
+#else
+                    if (light.bakingOutput.lightmapBakeType == LightmapBakeType.Baked) continue;
+#endif
                     if (!light.TryGetComponent<VolumetricLight>(out var custom) ||
                         !custom.isActiveAndEnabled || custom.scattering <= 0) continue;
                     lightParameters[count++] = new Vector4(lightIndex, custom.scattering,

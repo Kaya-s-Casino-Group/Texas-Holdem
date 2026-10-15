@@ -83,6 +83,15 @@ mono_crash.*
 *.unitypackage.meta
 *.app
 
+# iOS/Xcode build products and per-user state. Keep source projects versioned.
+*.ipa
+*.xcarchive/
+*.xcresult/
+*.dSYM/
+[Dd]erivedData/
+xcuserdata/
+*.xcuserstate
+
 # Crashlytics generated file
 crashlytics-build.properties
 

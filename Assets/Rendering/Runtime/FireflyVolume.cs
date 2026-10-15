@@ -100,7 +100,11 @@ namespace RetroRendering
                 var fly = new Fly { transform = go.transform, renderer = renderer,
                     light = go.AddComponent<Light>(), volume = go.AddComponent<VolumetricLight>(),
                     phase = Random01() * Mathf.PI * 2, speedFactor = Mathf.Lerp(.7f, 1.3f, Random01()) };
-                fly.light.type = LightType.Point; fly.light.lightmapBakeType = LightmapBakeType.Realtime;
+                fly.light.type = LightType.Point;
+#if UNITY_EDITOR
+                // Newly created player lights are realtime; this authoring property is editor-only.
+                fly.light.lightmapBakeType = LightmapBakeType.Realtime;
+#endif
                 ChooseTarget(fly); flies.Add(fly); Apply(fly);
             }
             if (flies.Count < count)
