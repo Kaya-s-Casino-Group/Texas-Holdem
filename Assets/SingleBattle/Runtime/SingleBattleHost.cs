@@ -351,11 +351,16 @@ namespace Poker.SingleBattle
             }
             StateChanged?.Invoke(); actions?.Refresh();
         }
+        private void Start()
+        {
+            // This host runs before the hand components. Wait until all scene OnEnable callbacks
+            // have completed so HandZoneView can animate the opening projection from an empty hand.
+            if (State == null && match != null && actions != null) StartBattle();
+        }
         private void OnEnable()
         {
-            if (!Application.isPlaying || match == null || actions == null) return;
-            if (State == null) StartBattle();
-            else { BindActors(); Bind(); CollectPlayed(); AdvanceEnemyImmediately(); Project(false); Publish(); }
+            if (!Application.isPlaying || State == null || match == null || actions == null) return;
+            BindActors(); Bind(); CollectPlayed(); AdvanceEnemyImmediately(); Project(false); Publish();
         }
         private void OnDisable() { if (State != null) SnapToState(); }
     }

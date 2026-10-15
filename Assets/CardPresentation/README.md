@@ -409,3 +409,7 @@ DeckOverviewData 明确区分 IsRemaining 与规则效果，按规则定义计�
 HandZoneView 默认最多选中 5 张，由 `SetMaxSelectedCards` 调整；此限制属于本地交互，正式提交仍使用玩法的权威校验。无法选中新牌共用独立 DOTween 反馈：默认沿局部 +Z 上升 0.004，0.08 秒到峰值、0.18 秒回弹归零，期间不改变选中状态，也不锁定正常手牌操作。`SetSelectionDeniedAnimation` 可调整偏移和时长，重复点击不累加高度，悬停/重排刷新不中断，成功选中或生命周期清理后归位。
 
 `SetSelectionDeniedSound(clip, volume, enabled)` 与成功选中音效独立，默认空 Clip 静默。拒绝事件为 `CardSelectionDenied`；音效只在 Play/Player 播放，空槽位不创建声源或加载占位音效。实战牌区工具的交互/音效页及 Inspector 均可编辑，View Prefab 导出保留并校验全部新设置。
+
+取消选牌音效通过 `SetDeselectionSound(clip, volume, enabled)` 独立配置，默认空 Clip、音量 1、开关开启；空 Clip 静默，不使用占位音效。实战牌区工具「表现参数 > 音效」与 Inspector 均提供「取消选牌音效」，支持配置读回、序列化和 View Prefab 导出。仅同一牌区内保留的卡牌由选中变为未选中时，在快照提交后逐牌触发 `CardDeselected`；重复刷新、悬停、重排、出牌、弃牌、静默恢复及重启会话不触发。实际音频只在 Play/Player 播放，使用独立 AudioSource，停用/清理时与其他音效一起停止。
+
+「表现参数 > 动画」单独展示「理牌 / 让位动画」：`TransitionSettings.ReflowSeconds` 默认 0.25 秒，为包含过冲及回稳的总时长；`ReflowOvershoot` 为 0–3 的惯性强度，默认 1.25，使用 OutBack，0 则保持原有 OutCubic 减速。点数理牌、花色理牌及增减牌后的让位共用此配置，位移和转动按同一进度过冲，幅度随实际移动距离等比变化；重复快照不重播，中途重排从当前姿态继续。已有配置若强度为 0，可点击「恢复默认理牌动画」同时恢复时长与惯性。补牌的飞入、逐张间隔和回稳参数独立。补牌、理牌、弃牌共用页首的列表动画总开关，上浮/悬停使用独立交互动画配置。

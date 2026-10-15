@@ -12,17 +12,40 @@ namespace CardPresentation.Editor
             transitionSettings.SettleSeconds = defaults.SettleSeconds; transitionSettings.OvershootDistance = defaults.OvershootDistance;
             transitionSettings.LandingYaw = defaults.LandingYaw;
         });
+        private void DrawListAnimationToggle()
+        {
+            EditorGUILayout.Space();
+            EditorGUI.BeginChangeCheck();
+            bool enabled = EditorGUILayout.ToggleLeft("启用列表动画（补牌 / 理牌 / 弃牌）", transitionSettings.Enabled);
+            if (EditorGUI.EndChangeCheck()) Mutate("调整列表动画总开关", () => transitionSettings.Enabled = enabled);
+            if (!enabled) EditorGUILayout.HelpBox("列表动画已关闭：补牌、理牌和弃牌立即完成。选中上浮与悬停缩放由交互动画独立控制。", MessageType.Info);
+        }
+
+        private void DrawReflow()
+        {
+            EditorGUILayout.Space(); EditorGUILayout.LabelField("理牌 / 让位动画", EditorStyles.boldLabel);
+            EditorGUI.BeginChangeCheck(); var next = transitionSettings;
+            next.ReflowSeconds = EditorGUILayout.FloatField("理牌总时长（秒）", next.ReflowSeconds);
+            next.ReflowOvershoot = EditorGUILayout.Slider("惯性强度", next.ReflowOvershoot, 0, 3);
+            if (EditorGUI.EndChangeCheck()) Mutate("调整理牌动画", () => { next.Validate(); transitionSettings = next; });
+            EditorGUILayout.LabelField("移动缓动", next.ReflowOvershoot > 0 ? "OutBack（过冲回弹）" : "OutCubic（减速）");
+            if (GUILayout.Button("恢复默认理牌动画"))
+                Mutate("恢复理牌动画", () => {
+                    transitionSettings.ReflowSeconds = CardZoneTransitionSettings.Default.ReflowSeconds;
+                    transitionSettings.ReflowOvershoot = CardZoneTransitionSettings.Default.ReflowOvershoot;
+                });
+            EditorGUILayout.HelpBox("点数理牌、花色理牌及增减卡牌后的让位共用此配置。总时长包含过冲与回稳；惯性强度 0 为无回弹，默认 1.25，幅度随移动距离等比变化。中途再次理牌从当前姿态继续，不重新发牌或翻面。补牌的飞入和回稳参数独立。已有配置若强度为 0，可点恢复默认启用惯性。", MessageType.None);
+        }
+
         private void DrawTransitions()
         {
             EditorGUILayout.Space(); EditorGUILayout.LabelField("从牌堆补牌 / 入列动画", EditorStyles.boldLabel);
             EditorGUI.BeginChangeCheck(); var next = transitionSettings;
-            next.Enabled = EditorGUILayout.Toggle("启用列表变化动画", next.Enabled);
             var anchor = (Transform)EditorGUILayout.ObjectField("牌堆锚点（可选）", deckAnchor, typeof(Transform), true);
             var position = EditorGUILayout.Vector3Field("牌堆局部位置", deckLocalPosition);
             next.FlightSeconds = EditorGUILayout.FloatField("飞入时间（秒）", next.FlightSeconds);
             next.DealInterval = EditorGUILayout.FloatField("逐张间隔（秒）", next.DealInterval);
             next.SettleSeconds = EditorGUILayout.FloatField("惯性回稳（秒）", next.SettleSeconds);
-            next.ReflowSeconds = EditorGUILayout.FloatField("让位 / 重排（秒）", next.ReflowSeconds);
             next.FlightLift = EditorGUILayout.FloatField("飞行抬高", next.FlightLift);
             next.OvershootDistance = EditorGUILayout.FloatField("惯性过冲距离", next.OvershootDistance);
             next.LandingYaw = EditorGUILayout.Slider("惯性摆角（度）", next.LandingYaw, 0, 15);
@@ -42,9 +65,11 @@ namespace CardPresentation.Editor
                 (enabled, clip, volume) => { discardSoundEnabled = enabled; discardSound = clip; discardSoundVolume = volume; });
             DrawAudioSection("选中音效", selectionSoundEnabled, selectionSound, selectionSoundVolume, Hand.SelectionSound,
                 (enabled, clip, volume) => { selectionSoundEnabled = enabled; selectionSound = clip; selectionSoundVolume = volume; });
+            DrawAudioSection("取消选牌音效", deselectionSoundEnabled, deselectionSound, deselectionSoundVolume, Hand.DeselectionSound,
+                (enabled, clip, volume) => { deselectionSoundEnabled = enabled; deselectionSound = clip; deselectionSoundVolume = volume; }, emptyIsSilent: true);
             DrawAudioSection("无法选中音效", selectionDeniedSoundEnabled, selectionDeniedSound, selectionDeniedSoundVolume, Hand.SelectionDeniedSound,
                 (enabled, clip, volume) => { selectionDeniedSoundEnabled = enabled; selectionDeniedSound = clip; selectionDeniedSoundVolume = volume; }, emptyIsSilent: true);
-            EditorGUILayout.HelpBox("抽牌、弃牌、成功选中的音效独立设置，留空使用默认占位音效。无法选中音效留空为静默，任意拒绝原因共用此槽位；仅完整点击新牌且未能选中时触发。在 Play 中试听。", MessageType.None);
+            EditorGUILayout.HelpBox("各音效独立设置。抽牌、弃牌、成功选中留空使用默认占位音效；取消选牌、无法选中留空为静默。取消选牌仅在保留的卡牌从选中变为未选中时触发，出牌、弃牌和恢复快照不触发。在 Play 中试听。", MessageType.None);
         }
 
         private void DrawAudioSection(string label, bool enabled, AudioClip clip, float volume, AudioClip current,

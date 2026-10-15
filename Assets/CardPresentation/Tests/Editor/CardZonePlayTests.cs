@@ -102,6 +102,81 @@ namespace CardPresentation.Tests
             }
         }
 
+        [Test] public void DeselectionCuesFollowCommittedEdgesAndSkipRemovalsRestoresAndInvalidUpdates()
+        {
+            using (var f = new Fixture())
+            {
+                int cues = 0;
+                f.View.CardDeselected += card => {
+                    Assert.IsFalse(card.Data.Interaction.IsSelected);
+                    Assert.AreSame(card, f.View.Views.Single(view => view.ViewId == card.ViewId));
+                    Assert.IsFalse(f.View.Data.Cards.Single(data => data.ViewId == card.ViewId).Interaction.IsSelected);
+                    cues++;
+                };
+                f.Set(true, false); f.Set(true, true); Assert.AreEqual(0, cues);
+                f.Set(true, false); Assert.AreEqual(1, cues);
+                f.Set(false, false); f.Host.Publish(); f.View.RefreshLayout();
+                f.Host.ReplaceCards(f.Host.Cards.Reverse()); Assert.AreEqual(1, cues);
+                f.Set(false, true); f.Host.BeginSession(); Assert.AreEqual(1, cues);
+                f.Set(false, true); f.Host.DiscardSelected(); Assert.AreEqual(1, cues);
+                f.Host.BeginSession(); f.Set(false, true);
+                var snapshot = f.View.Data;
+                Assert.Throws<ArgumentException>(() => f.View.Present(new CardZoneViewData(snapshot.ZoneId, new[] {
+                    new CardVisualData(snapshot.Cards[0].ViewId, "missing-card-art") })));
+                Assert.AreSame(snapshot, f.View.Data); Assert.AreEqual(1, cues);
+                f.Host.SetInteraction(f.Host.Cards[0].Id, default);
+                f.View.Present(f.Host.Zone, id => f.Host.Cards.Single(card => card.Id == id.Value).Project(), animate: false);
+                f.Host.Publish(); Assert.AreEqual(1, cues);
+                f.Set(false, true); f.View.enabled = false; f.Set(false, false);
+                f.View.enabled = true; f.Host.Publish(); Assert.AreEqual(1, cues);
+                f.Set(false, true); f.Set(false, false); Assert.AreEqual(2, cues);
+                Assert.IsNull(f.View.DeselectionSound);
+                Assert.IsEmpty(f.Root.GetComponentsInChildren<AudioSource>(true));
+            }
+        }
+
+        [Test] public void DeselectionAudioDefaultsToSilenceAndEditorRoundTripsIndependentSettings()
+        {
+            var clip = AudioClip.Create("Deselection Override", 256, 1, 48000, false);
+            CardZoneValidationWindow window = null;
+            try
+            {
+                using (var f = new Fixture())
+                {
+                    Assert.IsNull(f.View.DeselectionSound); Assert.IsTrue(f.View.DeselectionSoundEnabled);
+                    Assert.AreEqual(1, f.View.DeselectionSoundVolume);
+                    f.View.SetSelectionSound(null, .3f, false);
+                    f.View.SetDeselectionSound(clip, .4f, false);
+                    string saved = JsonUtility.ToJson(f.View);
+                    f.View.SetDeselectionSound(null); Assert.IsNull(f.View.DeselectionSound);
+                    JsonUtility.FromJsonOverwrite(saved, f.View);
+                    Assert.AreSame(clip, f.View.DeselectionSound); Assert.AreEqual(.4f, f.View.DeselectionSoundVolume);
+                    Assert.IsFalse(f.View.DeselectionSoundEnabled);
+                    foreach (float invalid in new[] { float.NaN, float.PositiveInfinity, float.NegativeInfinity, -.1f, 1.1f })
+                        Assert.Throws<ArgumentOutOfRangeException>(() => f.View.SetDeselectionSound(null, invalid));
+                    Assert.AreSame(clip, f.View.DeselectionSound); Assert.AreEqual(.4f, f.View.DeselectionSoundVolume);
+                    window = ScriptableObject.CreateInstance<CardZoneValidationWindow>(); window.SelectTarget(f.View);
+                    var editor = new SerializedObject(window);
+                    Assert.AreSame(clip, editor.FindProperty("deselectionSound").objectReferenceValue);
+                    Assert.AreEqual(.4f, editor.FindProperty("deselectionSoundVolume").floatValue);
+                    Assert.IsFalse(editor.FindProperty("deselectionSoundEnabled").boolValue);
+                    editor.FindProperty("deselectionSound").objectReferenceValue = null;
+                    editor.FindProperty("deselectionSoundVolume").floatValue = .6f;
+                    editor.FindProperty("deselectionSoundEnabled").boolValue = true;
+                    editor.ApplyModifiedPropertiesWithoutUndo();
+                    var snapshot = f.View.Data;
+                    typeof(CardZoneValidationWindow).GetMethod("Apply", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+                        .Invoke(window, new object[] { false });
+                    Assert.IsNull(f.View.DeselectionSound); Assert.AreEqual(.6f, f.View.DeselectionSoundVolume);
+                    Assert.IsTrue(f.View.DeselectionSoundEnabled); Assert.AreSame(snapshot, f.View.Data);
+                    Assert.AreEqual(.3f, f.View.SelectionSoundVolume); Assert.IsFalse(f.View.SelectionSoundEnabled);
+                    Assert.IsTrue(f.View.DrawSoundEnabled); Assert.AreEqual(1, f.View.DiscardSoundVolume);
+                    Object.DestroyImmediate(window); window = null;
+                }
+            }
+            finally { if (window != null) Object.DestroyImmediate(window); Object.DestroyImmediate(clip); }
+        }
+
         [Test] public void SelectionAudioConfigurationIsIndependentAndSurvivesSerialization()
         {
             var clip = AudioClip.Create("Selection Override", 256, 1, 48000, false);

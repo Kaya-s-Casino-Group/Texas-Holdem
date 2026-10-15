@@ -61,7 +61,7 @@ namespace CardPresentation
             private readonly HandZoneView hand;
             private readonly CardZoneViewData data;
             private readonly bool animateInteraction, animate, reuse;
-            private readonly bool[] selections, arrivals;
+            private readonly bool[] selections, deselections, arrivals;
             private readonly float[] delays;
             private readonly HashSet<string> discards;
             private readonly Vector3 source, discardDestination;
@@ -82,7 +82,10 @@ namespace CardPresentation
                 reuse = hand.Data != null && hand.Data.ZoneId == data.ZoneId;
                 var previouslyUnselected = animateInteraction && reuse ? new HashSet<string>(
                     hand.Data.Cards.Where(card => !card.Interaction.IsSelected).Select(card => card.ViewId), StringComparer.Ordinal) : null;
-                selections = new bool[data.Cards.Count]; arrivals = new bool[data.Cards.Count]; delays = new float[data.Cards.Count];
+                var previouslySelected = animateInteraction && reuse ? new HashSet<string>(
+                    hand.Data.Cards.Where(card => card.Interaction.IsSelected).Select(card => card.ViewId), StringComparer.Ordinal) : null;
+                selections = new bool[data.Cards.Count]; deselections = new bool[data.Cards.Count];
+                arrivals = new bool[data.Cards.Count]; delays = new float[data.Cards.Count];
                 queue = reuse ? hand.nextDealTime : hand.AnimationTime;
                 source = hand.transform.InverseTransformPoint(hand.DeckWorldPosition);
                 ValidateOffset(source);
@@ -90,6 +93,8 @@ namespace CardPresentation
                 {
                     selections[i] = previouslyUnselected != null && data.Cards[i].Interaction.IsSelected &&
                         previouslyUnselected.Contains(data.Cards[i].ViewId);
+                    deselections[i] = previouslySelected != null && !data.Cards[i].Interaction.IsSelected &&
+                        previouslySelected.Contains(data.Cards[i].ViewId);
                     arrivals[i] = !reuse || !hand.ContainsViewIdentity(data.Cards[i].ViewId);
                     if (!animate || !arrivals[i]) continue;
                     queue = Math.Max(queue, hand.AnimationTime); delays[i] = (float)(queue - hand.AnimationTime);
@@ -128,9 +133,10 @@ namespace CardPresentation
                 foreach (var previous in immediateDiscards) hand.NotifyDiscardStarted(previous);
                 for (int i = 0; i < committed.Length; i++)
                 {
-                    var selected = committed[i];
-                    if (selections[i] && selected != null && selected.Data.Interaction.IsSelected &&
-                        hand.TryGetView(selected.ViewId, out var current) && current == selected) hand.NotifyCardSelected(selected);
+                    var view = committed[i];
+                    if (view == null || !hand.TryGetView(view.ViewId, out var current) || current != view) continue;
+                    if (selections[i] && view.Data.Interaction.IsSelected) hand.NotifyCardSelected(view);
+                    else if (deselections[i] && !view.Data.Interaction.IsSelected) hand.NotifyCardDeselected(view);
                 }
             }
             public override void Dispose() { foreach (var previous in immediateDiscards) Release(previous); }

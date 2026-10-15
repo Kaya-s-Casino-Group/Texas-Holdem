@@ -408,6 +408,89 @@ namespace CardPresentation.Tests
             }
         }
 
+        [Test] public void ReflowOvershootsThenSettlesAndCanReverseFromItsDisplayedPose()
+        {
+            using (var f = new Fixture())
+            {
+                var layout = f.Zone.Layout; layout.ArcHeight = 0; f.Zone.SetLayout(layout);
+                var tuning = f.Zone.TransitionSettings; tuning.ReflowSeconds = .4f; tuning.ReflowOvershoot = 2;
+                f.Zone.SetTransitionSettings(tuning);
+                f.Zone.Present(Data(Card("a"), Card("b")), false);
+                var card = f.Zone.Views[0]; var start = card.DisplayPose.Position;
+                int deals = 0; f.Zone.CardDealStarted += _ => deals++; f.Zone.CardEnteredZone += _ => deals++;
+                f.Zone.Present(Data(Card("b"), Card("a")));
+                var destination = card.transform.localPosition;
+                f.Zone.AdvanceMotion(tuning.ReflowSeconds * .7f);
+                var beyond = card.DisplayPose.Position;
+                Assert.Greater(Vector3.Dot(beyond - destination, destination - start), 0);
+                Assert.IsFalse(card.IsEntering); Assert.AreEqual(0, card.DealFlipAngle);
+                var tween = DOTween.TweensByTarget(card.TransitionRoot).Single();
+                f.Zone.Present(Data(Card("b"), Card("a")));
+                Assert.AreSame(tween, DOTween.TweensByTarget(card.TransitionRoot).Single()); Near(beyond, card.DisplayPose.Position);
+                f.Zone.Present(Data(Card("a"), Card("b")));
+                Assert.AreSame(card, f.Zone.Views[0]); Near(beyond, card.DisplayPose.Position);
+                f.Zone.AdvanceMotion(tuning.ReflowSeconds + .001f);
+                Settled(f.Zone); Near(start, card.DisplayPose.Position); Assert.AreEqual(0, deals);
+                f.Zone.Present(Data(Card("b"), Card("a")), false);
+                Settled(f.Zone);
+            }
+        }
+
+        [Test] public void ReflowInertiaScalesWithCardSizeAndRetainsItsTiming()
+        {
+            using (var large = new Fixture())
+            using (var small = new Fixture())
+            {
+                foreach (var zone in new[] { large.Zone, small.Zone })
+                {
+                    var layout = zone.Layout;
+                    layout.FitCardsToZone = true; layout.ArcHeight = 0; layout.Padding = Vector2.zero; layout.PreferredGap = 0;
+                    layout.Size = zone == large.Zone ? new Vector2(1, .1f) : new Vector2(.5f, .05f);
+                    zone.SetLayout(layout);
+                    var tuning = zone.TransitionSettings; tuning.ReflowOvershoot = 2; tuning.ReflowSeconds = .4f;
+                    zone.SetTransitionSettings(tuning);
+                    zone.Present(Data(Card("a"), Card("b")), false);
+                    zone.Present(Data(Card("b"), Card("a")));
+                }
+                foreach (float step in new[] { .1f, .18f, .08f, .05f })
+                {
+                    large.Zone.AdvanceMotion(step); small.Zone.AdvanceMotion(step);
+                    for (int i = 0; i < 2; i++)
+                    {
+                        Near(large.Zone.Views[i].DisplayPose.Position * .5f, small.Zone.Views[i].DisplayPose.Position);
+                        Assert.AreEqual(large.Zone.Views[i].IsTransitioning, small.Zone.Views[i].IsTransitioning);
+                    }
+                }
+                Settled(large.Zone); Settled(small.Zone);
+            }
+        }
+
+        [Test] public void ZeroReflowInertiaKeepsLegacyEaseAndInvalidStrengthDoesNotReplaceTuning()
+        {
+            using (var f = new Fixture())
+            {
+                var tuning = f.Zone.TransitionSettings; tuning.ReflowOvershoot = 0; tuning.ReflowSeconds = .4f;
+                f.Zone.SetTransitionSettings(tuning);
+                f.Zone.Present(Data(Card("a"), Card("b")), false);
+                var card = f.Zone.Views[0]; var start = card.DisplayPose.Position;
+                f.Zone.Present(Data(Card("b"), Card("a")));
+                f.Zone.AdvanceMotion(.2f);
+                Near(Vector3.Lerp(start, card.transform.localPosition, .875f), card.DisplayPose.Position);
+                foreach (float value in new[] { -.1f, 3.1f, float.NaN, float.PositiveInfinity })
+                {
+                    var invalid = tuning; invalid.ReflowOvershoot = value;
+                    Assert.Throws<ArgumentException>(() => f.Zone.SetTransitionSettings(invalid));
+                    Assert.AreEqual(0, f.Zone.TransitionSettings.ReflowOvershoot);
+                }
+                tuning.ReflowOvershoot = 2.1f; f.Zone.SetTransitionSettings(tuning);
+                string saved = JsonUtility.ToJson(f.Zone);
+                f.Zone.SetTransitionSettings(CardZoneTransitionSettings.Default);
+                JsonUtility.FromJsonOverwrite(saved, f.Zone);
+                Assert.AreEqual(2.1f, f.Zone.TransitionSettings.ReflowOvershoot);
+                Assert.AreEqual(.4f, f.Zone.TransitionSettings.ReflowSeconds);
+            }
+        }
+
         [Test] public void SortingSnapshotsReuseViewsAndRetargetReflowWithoutDealingCardsAgain()
         {
             using (var f = new Fixture())

@@ -119,7 +119,7 @@ CardHoverTarget 支持场景 CardInstanceView 和原生 Canvas CardUIItemView �
 
 Presenter 在 Play 的 LateUpdate 消费投影，要求目标正面可见、悬停、处于活动渲染状态且没有飞入/离场；隐藏牌、移出/弃掉、失焦后清除悬停或来源停用即隐藏。编辑模式不自动处理鼠标；`RefreshPresentation()` 供宿主显式刷新和确定性测试。
 
-提示的位置、朝向及视口限制使用指定 SceneCamera（为空时 Camera.main），按卡牌实际 Mesh 投影的上边缘放置，不继承卡牌翻面、摆动和悬停缩放。可通过 `SetRenderingCamera(uiCamera)` 单独指定绘制相机，Canvas.worldCamera 及活动/Culling Mask 检查使用该相机；留空则回退到场景相机。安装按钮工具会自动接入同场景/同观察者的 UI Camera，后续注册提示也会识别已有 Stack。主相机排除 UI 层，UI Camera 只绘制 UI 并同步主相机投影。Inspector 提供 Size Multiplier（默认 0.55）、Gap（0.008）、Camera Plane Offset、Toward Camera（0.002）、Clamp To Viewport 与 Viewport Padding（12 像素）；场景根对象建议保持单位缩放。所有提示 Graphic 的 Raycast Target 关闭，不拦截鼠标。
+提示的位置、朝向及视口限制使用指定 SceneCamera（为空时 Camera.main），按卡牌实际 Mesh 投影的上边缘放置，不继承卡牌翻面、摆动和悬停缩放。框、文字、Gap、Camera Plane Offset 和 Toward Camera 跟随 CardZoneView 的自动卡牌尺寸及牌区世界缩放等比变化；共用父级缩放不会重复计算。显隐 DOTween 使用同一个尺寸基准，悬停中调整大小不会重新播放显隐动画；Viewport Padding 保持屏幕像素单位。可通过 `SetRenderingCamera(uiCamera)` 单独指定绘制相机，Canvas.worldCamera 及活动/Culling Mask 检查使用该相机；留空则回退到场景相机。安装按钮工具会自动接入同场景/同观察者的 UI Camera，后续注册提示也会识别已有 Stack。主相机排除 UI 层，UI Camera 只绘制 UI 并同步主相机投影。Inspector 提供 Size Multiplier（默认 0.55）、Gap（0.008）、Camera Plane Offset、Toward Camera（0.002）、Clamp To Viewport 与 Viewport Padding（12 像素）。所有提示 Graphic 的 Raycast Target 关闭，不拦截鼠标。
 
 Canvas 卡牌使用实际 Graphic 的四角（包括放大/摆动）定位，同一提示实例临时挂在其 rootCanvas 下、排序高于页面，显示于卡牌左侧并垂直居中。Canvas Size Multiplier 默认 0.4（448 × 320 模板为 179.2 × 128 Canvas 单位），Canvas Gap 默认 8；Inspector 可调。位置跟随 CanvasScaler，边界限制仍由 Clamp To Viewport / Viewport Padding 控制。提示不接收射线，移回手牌时恢复 World Space 父级、尺寸和排序；不创建另一份 Tooltip Prefab。
 

@@ -61,6 +61,7 @@ namespace CardPresentation.Editor
                     exportedHand.SetDrawSound(exportedHand.DrawSoundOverride, exportedHand.DrawSoundVolume, exportedHand.DrawSoundEnabled);
                     exportedHand.SetDiscardSound(exportedHand.DiscardSoundOverride, exportedHand.DiscardSoundVolume, exportedHand.DiscardSoundEnabled);
                     exportedHand.SetSelectionSound(exportedHand.SelectionSoundOverride, exportedHand.SelectionSoundVolume, exportedHand.SelectionSoundEnabled);
+                    exportedHand.SetDeselectionSound(exportedHand.DeselectionSound, exportedHand.DeselectionSoundVolume, exportedHand.DeselectionSoundEnabled);
                     exportedHand.SetMaxSelectedCards(exportedHand.MaxSelectedCards);
                     exportedHand.SetSelectionDeniedAnimation(exportedHand.SelectionDeniedOffset, exportedHand.SelectionDeniedRiseSeconds, exportedHand.SelectionDeniedReturnSeconds);
                     exportedHand.SetSelectionDeniedSound(exportedHand.SelectionDeniedSound, exportedHand.SelectionDeniedSoundVolume, exportedHand.SelectionDeniedSoundEnabled);

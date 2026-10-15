@@ -171,13 +171,15 @@ namespace CardPresentation.Tests
         {
             using (var f = new Fixture())
             {
-                int cues = 0; f.Zone.CardSelected += _ => cues++;
+                int cues = 0, deselections = 0; f.Zone.CardSelected += _ => cues++;
+                f.Zone.CardDeselected += _ => deselections++;
                 var first = f.Zone.Views[0]; var second = f.Zone.Views[1];
                 f.Pointer.ProcessPointer(f.RayAt(first)); Assert.AreEqual(0, cues);
                 f.Pointer.ProcessPointer(f.RayAt(first), pressed: true); Assert.AreEqual(0, cues);
                 f.Pointer.ProcessPointer(f.RayAt(first), released: true); Assert.AreEqual(1, cues);
                 f.Pointer.CancelPointer(); f.Publish(); Assert.AreEqual(1, cues);
                 f.Click(f.RayAt(first)); Assert.IsFalse(f.Model.Cards[0].IsSelected); Assert.AreEqual(1, cues);
+                Assert.AreEqual(1, deselections);
                 f.Click(f.RayAt(first)); Assert.IsTrue(f.Model.Cards[0].IsSelected); Assert.AreEqual(2, cues);
                 f.Model.Cards[1].IsDisabled = true; f.Publish(); f.Click(f.RayAt(second)); Assert.AreEqual(2, cues);
                 f.Model.Cards[1].IsDisabled = false; f.Model.Cards[1].Effects = CardEffects.Ineffective; f.Publish();
@@ -186,6 +188,7 @@ namespace CardPresentation.Tests
                 f.Pointer.ProcessPointer(f.RayAt(second), released: true); Assert.AreEqual(2, cues);
                 f.Click(f.RayAt(second)); Assert.AreEqual(3, cues);
                 f.Model.Reverse(); f.Publish(); f.Zone.RefreshLayout(); Assert.AreEqual(3, cues);
+                Assert.AreEqual(1, deselections);
             }
         }
 

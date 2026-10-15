@@ -93,7 +93,10 @@ namespace CardInteraction
                 var surface = target.View.Surface.transform;
                 var bounds = filter.sharedMesh.bounds;
                 var center = surface.TransformPoint(bounds.center);
-                float depth = camera.WorldToViewportPoint(center).z - towardCamera;
+                // Follow authored card size and the zone's world scale, independently of cosmetic sway/hover.
+                float cardScale = target.View.PresentationScale * target.View.transform.TransformVector(Vector3.forward).magnitude;
+                float depthOffset = towardCamera * cardScale;
+                float depth = camera.WorldToViewportPoint(center).z - depthOffset;
                 if (depth <= camera.nearClipPlane || depth >= camera.farClipPlane) continue;
                 if (!EnsureInstance()) { Hide(); return; }
                 if (instance.transform.parent != transform) instance.transform.SetParent(transform,false);
@@ -102,9 +105,9 @@ namespace CardInteraction
                 canvas.sortingOrder = tooltipPrefab.GetComponent<Canvas>().sortingOrder;
                 instance.SetContent(target.Suit, target.Rank, target.ChipPoints);
                 canvas.worldCamera = renderCamera;
-                // The tooltip is a sibling UI object; only its position follows the card's rendered bounds.
+                // Keep camera-facing UI independent of the card rotation while matching its size.
                 instance.transform.rotation = camera.transform.rotation;
-                presentationScale = tooltipPrefab.transform.localScale * sizeMultiplier;
+                SetWorldPresentationScale(tooltipPrefab.transform.localScale * (sizeMultiplier * cardScale));
                 instance.transform.localScale = presentationScale;
                 var rect = (RectTransform)instance.transform;
                 float halfHeight = Mathf.Abs(Vector3.Dot(camera.transform.up,
@@ -115,14 +118,25 @@ namespace CardInteraction
                 float cardTop = Mathf.Abs(Vector3.Dot(camera.transform.up, surface.TransformVector(Vector3.right * extent.x))) +
                     Mathf.Abs(Vector3.Dot(camera.transform.up, surface.TransformVector(Vector3.up * extent.y))) +
                     Mathf.Abs(Vector3.Dot(camera.transform.up, surface.TransformVector(Vector3.forward * extent.z)));
-                var position = center + camera.transform.up * (cardTop + gap + halfHeight + cameraPlaneOffset.y) +
-                    camera.transform.right * cameraPlaneOffset.x - camera.transform.forward * towardCamera;
+                var position = center + camera.transform.up * (cardTop + halfHeight + (gap + cameraPlaneOffset.y) * cardScale) +
+                    camera.transform.right * (cameraPlaneOffset.x * cardScale) - camera.transform.forward * depthOffset;
                 if (clampToViewport) position = ClampPosition(camera, position, halfWidth, halfHeight);
                 instance.transform.position = position;
                 Show(target.View.ViewId);
                 return;
             }
             Hide();
+        }
+
+        private void SetWorldPresentationScale(Vector3 worldScale)
+        {
+            // The presenter may share a scaled ancestor with the card. Cancel inherited scale to avoid counting it twice.
+            var root = instance.transform;
+            root.localScale = Vector3.one;
+            presentationScale = new Vector3(
+                worldScale.x / Mathf.Max(.000001f, root.TransformVector(Vector3.right).magnitude),
+                worldScale.y / Mathf.Max(.000001f, root.TransformVector(Vector3.up).magnitude),
+                worldScale.z / Mathf.Max(.000001f, root.TransformVector(Vector3.forward).magnitude));
         }
 
         private bool PresentCanvasCard(CardHoverTarget target, Camera renderCamera)

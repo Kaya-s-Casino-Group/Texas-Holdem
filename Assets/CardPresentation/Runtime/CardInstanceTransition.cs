@@ -121,6 +121,11 @@ namespace CardPresentation
             view.SetDealFlipAngle(IsEntering ? Mathf.Lerp(startFlipAngle, 0, Mathf.SmoothStep(0, 1, t)) : 0);
             if (!IsEntering)
             {
+                // OutBack includes the overshoot and return in ReflowSeconds. Zero strength is exactly OutCubic.
+                // Interpolate the full displacement so inertia naturally follows card/zone sizing.
+                float remaining = t - 1;
+                eased = 1 + (settings.ReflowOvershoot + 1) * remaining * remaining * remaining +
+                    settings.ReflowOvershoot * remaining * remaining;
                 view.ApplyDisplayPose(new CardZoneCardPose(Vector3.LerpUnclamped(start.Position, destination.Position, eased),
                     Quaternion.SlerpUnclamped(start.Rotation, destination.Rotation, eased)));
                 return;

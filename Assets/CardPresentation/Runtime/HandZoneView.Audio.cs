@@ -17,6 +17,12 @@ namespace CardPresentation
         [SerializeField] private bool selectionSoundEnabled = true;
         [SerializeField] private AudioClip selectionSound;
         [SerializeField, Range(0, 1)] private float selectionSoundVolume = 1;
+        [Header("取消选牌音效")]
+        [SerializeField, InspectorName("启用取消选牌音效")] private bool deselectionSoundEnabled = true;
+        [SerializeField, InspectorName("音效（空为静默）"), Tooltip("仅从选中变为未选中时播放；留空不使用默认音效。")]
+        private AudioClip deselectionSound;
+        [SerializeField, Range(0, 1), InspectorName("取消选牌音量")] private float deselectionSoundVolume = 1;
+        [Header("无法选中音效")]
         [SerializeField] private bool selectionDeniedSoundEnabled = true;
         [SerializeField] private AudioClip selectionDeniedSound;
         [SerializeField, Range(0, 1)] private float selectionDeniedSoundVolume = 1;
@@ -24,6 +30,7 @@ namespace CardPresentation
         private AudioSource drawAudioSource;
         private AudioSource discardAudioSource;
         private AudioSource selectionAudioSource;
+        private AudioSource deselectionAudioSource;
         private AudioSource selectionDeniedAudioSource;
 
         public bool DrawSoundEnabled => drawSoundEnabled;
@@ -40,6 +47,9 @@ namespace CardPresentation
         public AudioClip SelectionSoundOverride => selectionSound;
         public AudioClip SelectionSound => selectionSound != null ? selectionSound : DefaultCardSound;
         public float SelectionSoundVolume => selectionSoundVolume;
+        public bool DeselectionSoundEnabled => deselectionSoundEnabled;
+        public AudioClip DeselectionSound => deselectionSound;
+        public float DeselectionSoundVolume => deselectionSoundVolume;
         public bool SelectionDeniedSoundEnabled => selectionDeniedSoundEnabled;
         public AudioClip SelectionDeniedSound => selectionDeniedSound;
         public float SelectionDeniedSoundVolume => selectionDeniedSoundVolume;
@@ -56,6 +66,9 @@ namespace CardPresentation
 
         /// <summary>Existing card changed from unselected to selected, after the snapshot is committed. Restores are silent.</summary>
         public event Action<CardInstanceView> CardSelected;
+
+        /// <summary>A retained card changed from selected to unselected after commit. Restores/removals are silent.</summary>
+        public event Action<CardInstanceView> CardDeselected;
 
         /// <summary>Configure draws only. A null clip uses the bundled default; discard settings are independent.</summary>
         public void SetDrawSound(AudioClip clip, float volume = 1, bool enabled = true)
@@ -82,6 +95,15 @@ namespace CardPresentation
                 throw new ArgumentOutOfRangeException(nameof(volume), "Selection volume must be finite and between 0 and 1.");
             selectionSound = clip; selectionSoundVolume = volume; selectionSoundEnabled = enabled;
             if (!enabled || volume == 0) StopSelectionAudio();
+        }
+
+        /// <summary>Configure deselection independently. A null clip is silent and never loads a placeholder.</summary>
+        public void SetDeselectionSound(AudioClip clip, float volume = 1, bool enabled = true)
+        {
+            if (!CardZoneRowLayout.Finite(volume) || volume < 0 || volume > 1)
+                throw new ArgumentOutOfRangeException(nameof(volume));
+            deselectionSound = clip; deselectionSoundVolume = volume; deselectionSoundEnabled = enabled;
+            if (!enabled || volume == 0 || clip == null) StopDeselectionAudio();
         }
 
         /// <summary>A null clip is silent; refused selection never loads a placeholder sound.</summary>
@@ -132,6 +154,12 @@ namespace CardPresentation
             CardSelected?.Invoke(view);
         }
 
+        private void NotifyCardDeselected(CardInstanceView view)
+        {
+            PlayCardSound(ref deselectionAudioSource, DeselectionSound, deselectionSoundVolume, deselectionSoundEnabled, "Deselection Audio");
+            CardDeselected?.Invoke(view);
+        }
+
         private void PlayCardSound(ref AudioSource source, AudioClip clip, float volume, bool enabled, string sourceName)
         {
             if (!Application.isPlaying || !isActiveAndEnabled || !enabled || volume <= 0) return;
@@ -153,10 +181,11 @@ namespace CardPresentation
         private void StopDrawAudio() { if (drawAudioSource != null) drawAudioSource.Stop(); }
         private void StopDiscardAudio() { if (discardAudioSource != null) discardAudioSource.Stop(); }
         private void StopSelectionAudio() { if (selectionAudioSource != null) selectionAudioSource.Stop(); }
+        private void StopDeselectionAudio() { if (deselectionAudioSource != null) deselectionAudioSource.Stop(); }
         private void StopSelectionDeniedAudio() { if (selectionDeniedAudioSource != null) selectionDeniedAudioSource.Stop(); }
-        private void StopCardAudio() { StopDrawAudio(); StopDiscardAudio(); StopSelectionAudio(); StopSelectionDeniedAudio(); }
+        private void StopCardAudio() { StopDrawAudio(); StopDiscardAudio(); StopSelectionAudio(); StopDeselectionAudio(); StopSelectionDeniedAudio(); }
         private void ReleaseCardAudio()
-        { ReleaseAudio(ref drawAudioSource); ReleaseAudio(ref discardAudioSource); ReleaseAudio(ref selectionAudioSource); ReleaseAudio(ref selectionDeniedAudioSource); }
+        { ReleaseAudio(ref drawAudioSource); ReleaseAudio(ref discardAudioSource); ReleaseAudio(ref selectionAudioSource); ReleaseAudio(ref deselectionAudioSource); ReleaseAudio(ref selectionDeniedAudioSource); }
         private static void ReleaseAudio(ref AudioSource source)
         {
             if (source == null) return;

@@ -250,18 +250,19 @@ namespace CardPresentation.Tests
             }
         }
 
-        [Test] public void TooltipFacesTheSharedCameraAndClampsWithoutInheritingCardScaleOrRotation()
+        [Test] public void TooltipFacesTheSharedCameraAndClampsWhileFollowingCardScale()
         {
             using (var f = new Fixture())
             {
-                f.Hover(0); var instance = f.Presenter.Instance; var scale = instance.transform.lossyScale;
+                f.Hover(0); f.Presenter.AdvanceAnimation(1);
+                var instance = f.Presenter.Instance; var scale = instance.transform.lossyScale;
                 var start = instance.transform.position;
                 f.Zone.transform.position += new Vector3(0.02f, 0, 0); f.Presenter.RefreshPresentation();
                 Assert.Greater(instance.transform.position.x, start.x);
                 f.Zone.transform.localScale = Vector3.one * 2; f.Zone.transform.rotation = Quaternion.Euler(0, 21, 0);
                 f.Camera.transform.Rotate(0, 0, 11); f.Presenter.RefreshPresentation();
                 Assert.Less(Quaternion.Angle(f.Camera.transform.rotation, instance.transform.rotation), 0.001f);
-                Assert.Less(Vector3.Distance(scale, instance.transform.lossyScale), 0.000001f);
+                Assert.Less(Vector3.Distance(scale * 2, instance.transform.lossyScale), 0.000001f);
                 f.Zone.transform.position += f.Camera.transform.right * 2; f.Presenter.RefreshPresentation();
                 var corners = new Vector3[4]; ((RectTransform)instance.transform).GetWorldCorners(corners);
                 foreach (var corner in corners)
@@ -270,6 +271,52 @@ namespace CardPresentation.Tests
                     Assert.That(viewport.x, Is.InRange(0f, 1f)); Assert.That(viewport.y, Is.InRange(0f, 1f));
                 }
                 f.Camera.enabled = false; f.Presenter.RefreshPresentation(); Assert.IsFalse(f.Presenter.IsVisible);
+            }
+        }
+
+        [Test] public void TooltipAutoSizeScalesItsFrameOffsetsAndActiveVisibilityAnimationTogether()
+        {
+            using (var f = new Fixture())
+            {
+                var settings = new SerializedObject(f.Presenter);
+                settings.FindProperty("clampToViewport").boolValue = false;
+                settings.FindProperty("cameraPlaneOffset").vector2Value = new Vector2(.012f, .007f);
+                settings.ApplyModifiedPropertiesWithoutUndo();
+                var layout = f.Zone.Layout; layout.FitCardsToZone = true;
+                layout.Padding = Vector2.zero; layout.ArcHeight = 0; layout.Size = new Vector2(.5f, .1f);
+                f.Zone.SetLayout(layout);
+                f.Hover(0); f.Presenter.AdvanceAnimation(.08f);
+                var instance = f.Presenter.Instance; var card = f.Zone.Views[0];
+                float progress = f.Presenter.VisibilityScale;
+                var scale = instance.transform.lossyScale; var prefabScale = f.Prefab.transform.localScale;
+                var bounds = card.Surface.GetComponent<MeshFilter>().sharedMesh.bounds;
+                var offset = instance.transform.position - card.Surface.transform.TransformPoint(bounds.center);
+                layout.Size.y = .05f; f.Zone.SetLayout(layout); f.Presenter.RefreshPresentation();
+                Assert.AreSame(instance, f.Presenter.Instance); Assert.AreEqual(progress, f.Presenter.VisibilityScale);
+                Assert.Less(Vector3.Distance(scale * .5f, instance.transform.lossyScale), .000001f);
+                var smallerOffset = instance.transform.position - card.Surface.transform.TransformPoint(bounds.center);
+                Assert.Less(Vector3.Distance(offset * .5f, smallerOffset), .000001f);
+                f.Presenter.RefreshPresentation();
+                Assert.Less(Vector3.Distance(scale * .5f, instance.transform.lossyScale), .000001f);
+                Assert.AreEqual(prefabScale, f.Prefab.transform.localScale);
+                f.Presenter.AdvanceAnimation(1);
+                Assert.AreEqual(1, f.Presenter.VisibilityScale, .0001f);
+                Assert.Less(Vector3.Distance(scale * (.5f / progress), instance.transform.lossyScale), .000001f);
+            }
+        }
+
+        [Test] public void TooltipDoesNotApplySharedParentScaleTwice()
+        {
+            using (var f = new Fixture())
+            {
+                f.Hover(0); f.Presenter.AdvanceAnimation(1);
+                var scale = f.Presenter.Instance.transform.lossyScale;
+                f.Presenter.transform.localScale = Vector3.one * 2;
+                f.Presenter.RefreshPresentation();
+                Assert.Less(Vector3.Distance(scale, f.Presenter.Instance.transform.lossyScale), .000001f);
+                f.Root.transform.localScale = Vector3.one * 3;
+                f.Presenter.RefreshPresentation();
+                Assert.Less(Vector3.Distance(scale * 3, f.Presenter.Instance.transform.lossyScale), .000001f);
             }
         }
 
