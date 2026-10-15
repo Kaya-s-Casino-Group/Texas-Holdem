@@ -8,9 +8,9 @@ Host 不再保存生命、攻击、能量、牌数等数值，仅持有玩家/�
 
 | 位置 | 内容 | 默认 Demo 资产 |
 | --- | --- | --- |
-| PlayerBattleActor → 玩家配置 | 单位 ID、最大生命、初始格挡、能量上限/初始值、出牌/弃牌费用、手牌上限、弃牌次数及无限开关、独立出/弃牌张数上限、两种补牌时机 | `Assets/SingleBattle/Profiles/SingleBattlePlayer.asset` |
-| EnemyBattleActor → 怪物配置 | 单位 ID、最大生命、初始格挡、基础攻击伤害；没有能量或牌组字段 | `Assets/SingleBattle/Profiles/SingleBattleEnemy.asset` |
-| SingleBattleHost → 公共战局规则 | 规则版本、回合上限、玩家格挡清除时机、独立牌型计分、出牌伤害与弃牌收益资产引用 | `Assets/SingleBattle/Profiles/SingleBattleRules.asset` |
+| PlayerBattleActor → 玩家配置 | 单位 ID、最大生命、初始格挡、能量上限/初始值、出牌/弃牌费用、手牌上限、弃牌次数及无限开关、独立出/弃牌张数上限、两种补牌时机、出牌伤害、弃牌收益、攻击/承伤修正资产 | `Assets/SingleBattle/Profiles/SingleBattlePlayer.asset` |
+| EnemyBattleActor → 怪物配置 | 单位 ID、最大生命、初始格挡、基础攻击伤害、攻击/承伤修正资产；没有能量或牌组字段 | `Assets/SingleBattle/Profiles/SingleBattleEnemy.asset` |
+| SingleBattleHost → 公共战局规则 | 规则版本、回合上限、玩家格挡清除时机、共享牌型计分基础表 | `Assets/SingleBattle/Profiles/SingleBattleRules.asset` |
 
 使用 Assets/Create/玩法/战局 创建不同角色/怪物的配置，分别拖到对应 Actor。多个 Actor 可复用同一模板，但需要不同数值时应复制或另建配置再绑定。共享资产不是角色当前状态：开战时转成不可变的 BattlePlayerSetup / BattleEnemySetup / BattlePlayerRules，当前 HP、格挡、能量、手牌仅由战局状态持有；修改配置应用于下一场战斗。
 
@@ -25,7 +25,7 @@ Host 不再保存生命、攻击、能量、牌数等数值，仅持有玩家/�
 - `PlayerBattleProfile.unlimitedDiscards` → `BattlePlayerRules.UnlimitedDiscards`：默认 false，仍按整场预算扣次数；true 时不检查、不扣该计数，但仍检查能量、手牌、阶段与张数合法性。`discards = 0` 单独使用仍表示不能弃牌。`CardDuelState.RemainingDiscardBudgetFor(player)` 返回 null 表示不限，`HasDiscardBudgetFor(player)` 查询次数条件；旧 `DiscardsFor/DiscardsRemaining` 仅保留有限计数，在无限模式下保持初始值，不能用它判断可否弃牌。
 - `maxPlayCards/maxDiscardCards` → `MaxPlayCards/MaxDiscardCards`：默认各 5。出牌配置范围 1–5（现有分类器的提交牌数范围）；弃牌范围 1–52；实际均取与手牌上限的较小值。`MaxSelection` 仅表示 UI 可选择范围的最大值，不能替代动作各自的上限。正式提交、预览、玩家按钮校验使用同一动作上限；绑定玩家时同步手牌选择上限。
 - `BattleRulesProfile.playerBlockExpiry` → `BattleRules.PlayerBlockExpiry`：默认 `Retain`，格挡保留至被消耗。选 `AfterEnemyPhase` 时，最后一个敌人结算完伤害后，清除所有仍存活玩家的剩余格挡；不会在两个敌人之间清除，不修改怪物格挡。到达回合上限时同样清除，但不恢复下一轮能量；玩家提前击杀全部敌人不会触发不存在的敌人阶段。清除通过 CombatEngine 生成 ClearBlock 事件，按伤害事件后顺序追加，0 格挡不生成空事件。
-- 新建 `玩法/战局/弃牌收益配置（每张格挡）` 可得到 `PerCardBlockRewardProfile`，独立配置 `blockPerCard`（新建默认 8，允许 0）；引用到公共规则的弃牌收益槽位后才启用。纯 C# 对应 `PerCardBlockRewardRule`。每个选定存活友方获得 `实际弃牌张数 × 每张格挡`，默认目标策略为自己；多友方目标时每人各获得全额，非均分。规则不计牌型，0 收益不生成战斗事件，溢出拒绝整次动作。
+- 新建 `玩法/战局/弃牌收益配置（每张格挡）` 可得到 `PerCardBlockRewardProfile`，独立配置 `blockPerCard`（新建默认 8，允许 0）；引用到玩家配置的弃牌收益槽位后才启用。纯 C# 对应 `PerCardBlockRewardRule`。每个选定存活友方获得 `实际弃牌张数 × 每张格挡`，默认目标策略为自己；多友方目标时每人各获得全额，非均分。规则不计牌型，0 收益不生成战斗事件，溢出拒绝整次动作。
 
 离线验证：`Assets/PokerEngine/Tests/Editor/BattleConfigurationTests.cs` 覆盖默认兼容、独立上限、次数/能量约束、实际弃牌计数、预览与执行、回滚、多敌人格挡时序与基础方案组合；这是规则正确性验证，不代表这些参数已经完成平衡验证。Windows 可运行 `Tools/test-poker-engine.ps1 -Compiler <csc.exe> -Runtime <mono.exe> -NUnit <已有的 NUnit3 DLL> -Fixtures BattleConfigurationTests,CardDuelTests,TeamBattleTests,DiscardRewardTests,CombatTests,AttackContextTests,ScoredHandDamageTests,ModuleBoundaryTests`。脚本按模块分别编译，不启动 Unity、不下载依赖；编译输出默认保存在系统临时目录。已有 bash 脚本也支持将测试类名作为参数传入。
 
@@ -35,20 +35,30 @@ Host 不再保存生命、攻击、能量、牌数等数值，仅持有玩家/�
 
 ## 独立弃牌收益与只读验算
 
-- `BattleRulesProfile` 的「弃牌收益配置」引用独立 `DiscardRewardProfile`。单局绑定 `SingleBattleDiscardReward.asset`（PerCardBlockRewardProfile）；多人保留 `DemoDiscardReward.asset`（NoDiscardRewardProfile）。未绑定时使用 `NoDiscardRewardRule`。`Tools/Poker/战局/打开默认弃牌收益配置` 打开单局公共规则当前绑定的收益资产。
-- 配置的 `BuildRule()` 在开局生成不可变、纯 C# 的 `IDiscardRewardRule`。未来规则通过独立实现及派生配置接入，Host、牌区和验算面板不承担收益计算。费用、次数、移牌和补牌由战局原流程管理，收益规则不能自行修改它们。
+- `PlayerBattleProfile` 的「弃牌收益配置」引用独立 `DiscardRewardProfile`。单局玩家绑定 `SingleBattleDiscardReward.asset`（PerCardBlockRewardProfile）；多人玩家保留 `DemoDiscardReward.asset`（NoDiscardRewardProfile）。未绑定时使用 `NoDiscardRewardRule`。`Tools/Poker/战局/打开默认弃牌收益配置` 打开单局玩家当前绑定的收益资产。公共 BattleRulesProfile 与怪物配置不持有弃牌收益槽位。
+- 配置的 `BuildRule()` 在开局生成不可变、纯 C# 的 `IDiscardRewardRule`，由该玩家的 `BattlePlayerRules.DiscardReward` 持有。执行与预览均按弃牌者取规则；友方目标只决定收益作用位置，不决定使用哪位玩家的收益规则。不同玩家可绑定不同收益，空槽位不继承其他玩家或公共规则。修改资产在下一场生效，回合切换保留快照。未来规则通过独立实现及派生配置接入，Host、牌区和验算面板不承担收益计算。费用、次数、移牌和补牌由战局原流程管理，收益规则不能自行修改它们。
 - `DiscardRewardContext` 包含弃牌前的只读 TeamBattleState、弃牌者、实际弃掉的卡牌/有效牌面快照及已验证的友方目标。不会调用牌型分类、ScoreEngine、出牌伤害或攻击/承伤修正，也不伪造攻击来源；弃牌分数不进入战斗总分。直接调用 TeamBattle 的 Discard 时须提供真实弃牌快照；CardDuel 会自动构建。
 - `DiscardRewardPlan` 返回版本、说明和效果列表；默认列表为空，不调用 CombatEngine、不增加 Combat revision、不生成 0 点收益事件。当前效果通路只允许 Combat 已有的 GainBlock / Heal，来源必须是弃牌者，目标必须属于选定的存活友方；按张数格挡是一个可选具体实现。非法输出、版本不匹配或数值溢出原子拒绝整次弃牌，不扣费、不移牌、不消耗随机数。
-- `Tools/Poker/战局/弃牌收益验算` 是独立中文只读面板，展示弃牌快照、收益目标、原有费用/次数/过牌结果、规则说明以及额外收益和实际结算，按当前战局绑定规则显示格挡或“无额外收益”。「当前选牌预计结果」调用 `Host.PreviewSelectedDiscard → CardDuelEngine.PreviewDiscard → Execute`，不提交返回状态；「最近一次实际弃牌」读取 Host 缓存的已提交返回值，重新开局清空。
+- `Tools/Poker/战局/弃牌收益验算` 是独立中文只读面板，展示弃牌快照、收益目标、原有费用/次数/过牌结果、规则说明以及额外收益和实际结算，按当前观察玩家的规则快照显示格挡或“无额外收益”。「当前选牌预计结果」调用 `Host.PreviewSelectedDiscard → CardDuelEngine.PreviewDiscard → Execute`，不提交返回状态；「最近一次实际弃牌」读取 Host 缓存的已提交返回值，重新开局清空。
 - 测试入口 `Tools/测试面板` →「弃牌收益与友方边界」。规则与目标策略必须纯函数，不能读取外部随机源、改变状态或触发表现，保证预览与实际执行一致。
+
+## 角色攻击与承伤配置
+
+攻击修正与承伤修正属于角色战斗规则，玩家与怪物共用 `BattleActorProfile` 的两个槽位，不属于 `BattleRulesProfile`。攻击者的资产决定攻击修正，实际受击目标的资产决定承伤修正。它们独立于计分、基础伤害构建和当前生命/格挡；本层尚不提供 Buff 调度或条件规则列表。
+
+- 新建资产：`Assets/Create/玩法/角色/攻击修正（倍率与固定值）`、`承伤修正（倍率与固定值）`。拖到 PlayerBattleProfile / EnemyBattleProfile 的对应槽位。空槽位原值通过。
+- 两类基础资产均配置版本、非负倍率和有符号固定增减值，计算 `floor(max(0, 输入伤害 × 倍率 + 固定值))`。例如输入 100、倍率 0.8、固定值 -5，输出 75；先应用攻击修正，再对其输出应用目标承伤，最后扣格挡。超限拒绝整次动作，不截断成上限。
+- 单局玩家引用 `SingleBattlePlayerAttackModifier.asset` / `SingleBattlePlayerIncomingModifier.asset`，怪物引用 `SingleBattleEnemyAttackModifier.asset` / `SingleBattleEnemyIncomingModifier.asset`。四份资产互相独立，初始均为 1 倍、0 增减，不改变已有伤害。多人配置未绑定时保持原行为。
+- `BuildRule()` 复制资产数值，规则不得持有 ScriptableObject 引用。`BuildSetup()` 将两类规则组成 `BattleActorDamageRules` 放入每个角色的开战快照。修改或替换资产作用于下一场；扣费、结束回合和恢复能量不会丢失角色规则。
+- 扩展条件策略时派生 `AttackDamageModifierProfile` / `IncomingDamageModifierProfile`，返回纯 C# 的 `IAttackDamageModifier` / `IIncomingDamageModifier`。可读取现有 AttackContext 与 CombatState，不修改来源、目标、状态、随机数或触发表现。玩家出牌、怪物攻击及正式动作预览共用接线；候选牌型 GUI 仍只做计分，不调用伤害修正。
 
 ## 出牌伤害与只读验算
 
-- `DemoBattleRules.asset` →「出牌伤害配置」引用独立 `DemoScoreDamage.asset`。入口 `Tools/Poker/战局/打开默认伤害配置`；默认使用 `EqualScoreDamageRule`，最终得分等额作为每个已选目标的基础伤害，不再设置除数。新建公共规则资产必须绑定伤害配置，缺失时明确报错。
-- `ScoredHandDamageProfile.BuildRule()` 在开战时构建纯 C#、不可变的 `IScoredHandDamageRule`。新增策略通过实现接口与派生配置资产接入；公共战局配置、Host 和牌区不维护转换参数。
+- `PlayerBattleProfile` →「出牌伤害配置」引用独立 `ScoredHandDamageProfile`。现有 SingleBattlePlayer / DemoPlayer 均迁移原 `DemoScoreDamage.asset` 引用，保持得分等额基础伤害；不同玩家可以绑定不同资产。入口 `Tools/Poker/战局/打开默认伤害配置` 打开单局玩家实际绑定的资产。新建玩家配置必须绑定伤害配置，缺失或工厂返回空规则时报错；公共规则与怪物配置不持有该槽位。
+- `ScoredHandDamageProfile.BuildRule()` 在开战时构建纯 C#、不可变的 `IScoredHandDamageRule`，保存于该玩家的 `BattlePlayerRules.DamagePolicy`。预览与正式出牌按出牌者选取规则；怪物直接提供基础攻击，不调用玩家的出牌伤害规则。修改资产下一场生效，已有回合转换保留玩家规则快照。新增策略通过实现接口与派生配置资产接入；公共战局配置、Host 和牌区不维护转换参数。
 - `ScoredHandDamageContext` 包含计分结果、攻击者、由目标策略验证后的目标列表、只读 CombatState 和正式出牌生成的 HandAttackInfo。`DamagePlan` 返回每个目标的 `DamageRequest` 及说明。当前协议要求每个已选目标按顺序恰好一条请求，不允许偷换来源/目标/规则版本；异常输出会原子拒绝本次出牌。
 - 边界为：牌型计分 → 构建基础伤害 → 攻击修正 → 目标承伤修正 → 格挡与生命。卡牌/Joker 对筹码倍率的影响属于计分层，不再在伤害阶段重复计算。
-- `BattleRules` 构造时可注入 `IAttackDamageModifier` / `IIncomingDamageModifier`，默认分别为原值通过的 Identity 实现。当前只留纯 C# 接口，尚不提供 Buff/抗性配置表或 Inspector 参数。上下文包含只读 CombatState、目标、该阶段输入伤害，以及共用的 `AttackContext`（攻击者、来源类型、基础伤害和出牌快照）。`Amount` 是该阶段输入，`Attack.BaseDamage` 始终是原始基础伤害；返回 `DamageModification`，记录版本、说明、输入与输出及可选触发原因，只能改变数值，不能偷换来源快照、目标或修改状态。
+- 攻击与承伤规则由各角色的 `BattleActorProfile` 独立资产生成，并在开战时冻结到 `BattleActorDamageRules`。攻击阶段按 Source、承伤阶段按 Target 取对应角色规则；空槽位使用 Identity 原值通过。`BattleRules` 不再接受全局攻击/承伤修正；纯 C# 调用也必须通过各自 Setup 的 `BattleActorDamageRules` 配置，未提供时使用 Identity。上下文包含只读 CombatState、目标、该阶段输入伤害，以及共用的 `AttackContext`（攻击者、来源类型、基础伤害和出牌快照）。`Amount` 是该阶段输入，`Attack.BaseDamage` 始终是原始基础伤害；返回 `DamageModification`，记录版本、说明、输入与输出及可选触发原因，只能改变数值，不能偷换来源快照、目标或修改状态。
 - 攻击修正在 TeamBattleEngine 构建各目标请求时执行，读取本次攻击开始时的状态；目标承伤修正在 `CombatEngine.Resolve` 内、格挡前执行，读取同一原子批次前序效果结算后的状态。无效输出或数值溢出会拒绝整个动作，已计算的中间结果不写回。
 - 只有 `CombatEngine.Resolve` 扣格挡/生命并生成掉血、溢出、死亡事件。怪物普通攻击直接产生 DamageRequest，不经过牌型计分，但仍经过攻击与承伤两个修正接口。
 - 旧 standalone `ScoredDuelEngine`/快照保留 ScoreDamagePolicy 的兼容入口。当前 Demo 使用等额规则与新修正接口，不修改旧存档格式；显式注入旧 ScoreDamagePolicy 的兼容调用仍保留除法行为。
@@ -96,6 +106,24 @@ Host 不再保存生命、攻击、能量、牌数等数值，仅持有玩家/�
 - `PlayerBattleActor.CreateSetup(id, deck, initialHealth)` / `PlayerBattleProfile.BuildSetup` 可消费 Run 当前构筑和生命；缺省牌组为独立标准 52 张。Core 不依赖 ScriptableObject 或 Unity。
 - `ICardDuelDealPolicy` 上下文含 PlayerId，只返回抽牌数量，不能移动或创建卡牌。每位玩家可独立注入策略。
 - `ScoredDuelEngine` / 旧快照协议保留给原有独立 1v1 规则调用；新 Demo 使用 TeamBattleEngine。完整多人战局存档、Run 奖励写回、复活和增援尚未实现。
+
+## 公共规则与后续边界
+
+公共 BattleRulesProfile 仅保留版本、回合上限、玩家阵营格挡清除时机及共享牌型计分基础表。纯 C# BattleRules 仅持有前三项；计分表由 CardDuelEngine 独立持有。出牌伤害与弃牌收益归属 BattlePlayerRules，攻击/承伤修正归属双方角色的 BattleActorDamageRules，不再存在全局修正回退。旧 ScoredDuelDefinition 适配入口将自己的伤害转换显式写入默认玩家规则，旧 standalone 快照格式保持。
+
+尚待后续拆分的边界：
+
+- 目标策略目前由 Host / TeamBattleEngine 整场共用。目标合法性可继续统一校验，但具体选谁应随行动或角色策略决定，以支持不同怪物 AI 与不同招式。
+- 共享计分基础表可以保留；个人牌型等级、Joker 和成长应来自玩家状态。当前正式计分固定 1 级与空 Joker，尚未接入个人成长。
+- SingleBattleHud 同时处理信息显示、按钮命令、Tab 切换和世界空间意图对象的生命周期。未来可拆成信息展示、操作绑定和意图 Presenter；游戏数值仍由规则层提供。
+
+## 敌人行动预览
+
+`TeamBattleEngine.PreviewEnemyAction(state, enemy)` 是只读规则接口；玩家阶段假设所有尚未结束的玩家立即结束回合，随后按剩余敌人队列预演至指定敌人。所有阶段转换、目标选择、攻击修正、承伤修正、格挡与生命结算均复用正式 `Execute`。前序敌人消耗格挡或击倒目标会影响后续预览；实际状态、随机数与牌区不被改写。注入策略必须是确定性纯函数，状态变化后重新计算。
+
+返回 `EnemyActionPreview`，包含来源、原始规则 revision、错误及逐目标 `Hits`（正式 CombatEvent）；其中 `SettledDamage` 是两层修正后的格挡前伤害，`BlockAbsorbed` / `HealthLost` / `Overkill` 分别是格挡吸收、预计扣血和溢出伤害。没有安排本阶段行动、已经行动、死亡或终局返回 null；前序行动或当前行动失败则返回错误，不回退基础攻击值。
+
+`EnemyBattleActor.ReadIntent()` 仅包装该预览及 CardDuel 命令 revision。世界空间标签显示 `攻击 N`，N 取每个目标的 SettledDamage；多人时标明玩家序号，每个目标独立一行。面板高度及运行时 Gizmo 随行数调整，预览失败显示“意图不可用”。该数值是攻击伤害，格挡后的实际扣血可从同一预览事件读取。每次 StateChanged 刷新，不冻结玩家后续行动之前的旧预测。
 
 ## 战局信息层
 

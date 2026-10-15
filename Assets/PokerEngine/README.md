@@ -61,9 +61,15 @@ graph TD
 | Progression | 跨 Run 解锁、货币、升级等级、幂等结算、统计和存档 | 解锁条件、奖励公式、升级效果、开局内容过滤 |
 | 表现/网络 | 类型化命令和确定性结果 | 宿主认证、玩家视图、动画、I/O、请求收据 |
 
-多人战局的出牌转换位于 Composition：`IScoredHandDamageRule.Resolve(ScoredHandDamageContext)` 接收得分、来源和目标策略选出的目标，返回不可变 `DamagePlan`。默认 `EqualScoreDamageRule` 将得分等额作为每个目标的基础伤害。引擎验证来源、目标及规则版本后，调用 `IAttackDamageModifier`，再交给 `CombatEngine` 进行 `IIncomingDamageModifier`、格挡与生命结算；两个修正接口默认原值通过。`DamageModification` 与 CombatEvent 保留各阶段真实输入、输出、版本和说明。攻击修正读取攻击开始时的状态，目标承伤读取该原子批次的当前状态；怪物直接产生基础伤害请求并共用两个修正接口。`CardDuelEngine.PreviewPlay` 复用正式 `Execute`，调用方只读取返回结果而不提交新状态；所有注入策略须遵守纯函数约定。Unity 独立配置与中文只读验算面板见 `Assets/SingleBattle/README.md`。
+多人战局的出牌转换由各自 `BattlePlayerRules.DamagePolicy` 持有，TeamBattle 按出牌者读取，纯 C# 默认 EqualScoreDamageRule。公共 BattleRules 不再接受出牌伤害参数；旧 ScoredDuelDefinition 适配入口将转换规则转入默认玩家规则。转换协议位于 Composition：`IScoredHandDamageRule.Resolve(ScoredHandDamageContext)` 接收得分、来源和目标策略选出的目标，返回不可变 `DamagePlan`。默认 `EqualScoreDamageRule` 将得分等额作为每个目标的基础伤害。引擎验证来源、目标及规则版本后，调用 `IAttackDamageModifier`，再交给 `CombatEngine` 进行 `IIncomingDamageModifier`、格挡与生命结算；两个修正接口默认原值通过。`DamageModification` 与 CombatEvent 保留各阶段真实输入、输出、版本和说明。攻击修正读取攻击开始时的状态，目标承伤读取该原子批次的当前状态；怪物直接产生基础伤害请求并共用两个修正接口。`CardDuelEngine.PreviewPlay` 复用正式 `Execute`，调用方只读取返回结果而不提交新状态；所有注入策略须遵守纯函数约定。Unity 独立配置与中文只读验算面板见 `Assets/SingleBattle/README.md`。
+
+角色伤害规则由 `BattleActorDamageRules` 表达，随各自 `BattlePlayerSetup` / `BattleEnemySetup` 输入，并保留在玩家回合状态与怪物阵容中。TeamBattleEngine 按攻击 Source 选攻击修正、按实际 Target 分派承伤修正，CombatEngine 仍提供该原子批次的最新只读上下文；不把这些规则放入序列化生命状态。`BattleRules` 不再持有攻击/承伤修正，双方 Setup 未指定角色修正规则时构建 Identity 快照。基础 ScaledAttackDamageModifier / ScaledIncomingDamageModifier 位于 Combat，支持倍率及固定增减，默认 1 倍、0 增减。Unity 作者配置位于角色 Profile，公共 BattleRulesProfile 不新增修正槽位。
+
+敌人行动预览：`TeamBattleEngine.PreviewEnemyAction(state, enemy)` 在不可变状态上复用正式 Execute。玩家阶段假定所有可行动玩家立即结束回合，再按敌人队列预演前序行动，保持目标、格挡、存活状态及修正上下文一致；敌人阶段只预演当前剩余队列，不跨入下一轮。返回 `EnemyActionPreview`（来源、原始 revision、Error、逐目标 Hits），Hits 为正式 CombatEvent，包含攻击/承伤报告、SettledDamage、BlockAbsorbed、HealthLost 和 Overkill。SettledDamage 是两层修正后的格挡前伤害；已行动、死亡、终局或前序行动导致该敌人不再有行动则返回 null；解析失败保留错误，不提供猜测值。预览不提交任何状态；确定性纯函数策略和状态变化后重算是与实际结算保持一致的前提。
 
 攻击来源边界：`AttackContext` 携带原始基础伤害、来源类型和可选 `HandAttackInfo`；正式 CardDuel 出牌复用权威分类结果，并在移牌前捕获有效牌面与卡牌效果。SubmittedCards 包含所有提交牌，PatternCards 保留组成牌，ScoringCards 排除其中失效牌。Combat 不反向依赖 Scoring，也不重新识别牌型。攻击与承伤修正共用同一个 AttackContext，各目标共用同一份牌快照；它与实时 CombatState 分开，后者仍按原有阶段时机读取。`DamageModification.Triggers` 仅存储实际返回的触发来源/原因/卡牌范围与引用，不定义具体能力规则。旧无牌来源的数值调用明确标记 Other，不伪造出牌快照。
+
+弃牌收益归属玩家：`BattlePlayerRules.DiscardReward` 持有每位玩家的收益规则，`BattleRules` 不再提供全局收益字段或构造参数。TeamBattle 按弃牌者读取规则，预览与执行共用路径；友方目标可以不同于弃牌者，但不会改变规则来源。现有调用需将 `discardReward:` 参数移到对应的 `BattlePlayerRules`。
 
 弃牌收益与攻击结算独立：`IDiscardRewardRule.Resolve(DiscardRewardContext)` 接收权威弃牌快照和存活友方目标，返回 `DiscardRewardPlan`。默认 NoDiscardRewardRule 产生空计划，不判牌型、不计分、不创建 CombatEvent；有支持效果时仍通过 CombatEngine 原子应用，暂只允许 GainBlock / Heal，禁止改来源、攻击敌方或清空格挡。费用、次数和发牌继续由 TeamBattle / CardDuel 负责。`PreviewDiscard` 直接复用正式 Execute；`DiscardRewardResolution` 保存上下文及返回计划，供配置无关的只读面板投影。
 

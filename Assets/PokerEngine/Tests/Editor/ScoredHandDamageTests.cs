@@ -29,23 +29,23 @@ namespace PokerEngine.Tests
                     new DamageRequest(kind == 1 ? c.Targets[0] : c.Source, kind == 2 ? c.Source : c.Targets[0], 5) });
             }
         }
-        private static CardDuelEngine Engine(IScoredHandDamageRule rule, IBattleTargetPolicy targets = null) =>
-            new CardDuelEngine(new BattleRules("damage.test.1", rule, 10), targetPolicy: targets);
-        private static CardDuelState Create(CardDuelEngine engine, bool smallDeck = false)
+        private static CardDuelEngine Engine(IBattleTargetPolicy targets = null) =>
+            new CardDuelEngine(new BattleRules("damage.test.1", 10), targetPolicy: targets);
+        private static CardDuelState Create(CardDuelEngine engine, bool smallDeck = false, IScoredHandDamageRule damage = null, BattleActorDamageRules modifiers = null)
         {
-            var rules = new BattlePlayerRules(dealPolicy: new CardDuelDealPolicy(CardDuelRefillTiming.AfterAction, CardDuelRefillTiming.NextPlayerTurn));
+            var rules = new BattlePlayerRules(dealPolicy: new CardDuelDealPolicy(CardDuelRefillTiming.AfterAction, CardDuelRefillTiming.NextPlayerTurn), damagePolicy: damage);
             var deck = smallDeck ? StandardDeck.Cards().Take(8).Select((card, i) => new DeckEntry("card" + i, card.Id)).ToArray() : null;
             var state = engine.Create("battle", HmacDeckShuffler.FromSeed(new byte[32]), new[] {
-                new BattlePlayerSetup(Player, new CombatantDefinition("player", 40), deck, rules: rules)
+                new BattlePlayerSetup(Player, new CombatantDefinition("player", 40), deck, rules: rules, damageRules: modifiers)
             }, new[] {
-                new BattleEnemySetup(Enemy, new CombatantDefinition("enemy", 10, 2), 7),
-                new BattleEnemySetup(Other, new CombatantDefinition("other", 100, 9), 8)
+                new BattleEnemySetup(Enemy, new CombatantDefinition("enemy", 10, 2), 7, modifiers),
+                new BattleEnemySetup(Other, new CombatantDefinition("other", 100, 9), 8, modifiers)
             });
             return engine.Execute(state, state.Revision, Player, CardDuelAction.Start).State;
         }
         [Test] public void RuleGeneratesRequestsAndOnlyCombatAppliesBlockOverkillAndDeath()
         {
-            var engine = Engine(new EqualScoreDamageRule()); var state = Create(engine);
+            var engine = Engine(); var state = Create(engine);
             var selected = state.Zone(CardZoneKinds.Hand, Player).Cards.Take(1).ToArray();
             var result = engine.PreviewPlay(state, state.Revision, Player, selected);
             Assert.IsTrue(result.Accepted); Assert.AreEqual(result.Score.Total, result.Damage.Requests.Single().Amount);
@@ -57,7 +57,7 @@ namespace PokerEngine.Tests
         }
         [Test] public void AlternateRuleUsesEachTargetContextAndPreservesOneActionCost()
         {
-            var engine = Engine(new PerTargetRule(), new AllTargets()); var state = Create(engine);
+            var engine = Engine(new AllTargets()); var state = Create(engine, damage: new PerTargetRule());
             var result = engine.Execute(state, state.Revision, Player, CardDuelAction.Play, state.Zone(CardZoneKinds.Hand, Player).Cards.Take(1));
             Assert.IsTrue(result.Accepted); CollectionAssert.AreEqual(new[] { Enemy, Other }, result.Damage.Requests.Select(x => x.Target));
             Assert.AreEqual(result.Score.Total + 2, result.Events[0].Effect.Amount);
@@ -67,7 +67,7 @@ namespace PokerEngine.Tests
         [TestCase(0)] [TestCase(1)] [TestCase(2)] [TestCase(3)] [TestCase(4)]
         public void InvalidDamageOutputRejectsWholeCommandWithoutSpendingCardsEnergyOrScore(int kind)
         {
-            var engine = Engine(new BadRule(kind)); var state = Create(engine);
+            var engine = Engine(); var state = Create(engine, damage: new BadRule(kind));
             var result = engine.Execute(state, state.Revision, Player, CardDuelAction.Play, state.Zone(CardZoneKinds.Hand, Player).Cards.Take(1));
             Assert.AreEqual(CardDuelError.InvalidDamagePlan, result.Error); Assert.AreSame(state, result.State);
             Assert.IsEmpty(result.Events); Assert.IsNull(result.Score); Assert.IsNull(result.Damage);
@@ -75,7 +75,7 @@ namespace PokerEngine.Tests
         }
         [Test] public void RepeatedPreviewMatchesCommitIncludingRecycleRandomnessWithoutMutatingInput()
         {
-            var engine = Engine(new ScoreDamagePolicy(100)); var state = Create(engine, true);
+            var engine = Engine(); var state = Create(engine, true, new ScoreDamagePolicy(100));
             state = engine.Execute(state, state.Revision, Player, CardDuelAction.Discard, state.Zone(CardZoneKinds.Hand, Player).Cards.Take(2)).State;
             var cards = state.Zone(CardZoneKinds.Hand, Player).Cards.Take(1).ToArray();
             var hand = state.Zone(CardZoneKinds.Hand, Player).Cards.ToArray(); var random = state.Random.StateBytes.ToArray(); long revision = state.Revision;
@@ -95,7 +95,7 @@ namespace PokerEngine.Tests
         }
         [Test] public void PreviewUsesActualLegalityChecksAndCannotReturnDamageForRejectedCards()
         {
-            var engine = Engine(new ScoreDamagePolicy(5)); var state = Create(engine);
+            var engine = Engine(); var state = Create(engine, damage: new ScoreDamagePolicy(5));
             var result = engine.PreviewPlay(state, state.Revision, Player, state.Zone(CardZoneKinds.Deck, Player).Cards.Take(1));
             Assert.AreEqual(CardDuelError.InvalidSelection, result.Error); Assert.AreSame(state, result.State); Assert.IsNull(result.Damage);
             Assert.AreEqual(CardDuelError.StaleRevision, engine.PreviewPlay(state, state.Revision - 1, Player, new CardInstanceId[0]).Error);
@@ -124,9 +124,8 @@ namespace PokerEngine.Tests
         }
         [Test] public void PreviewAndCommitShareScoreAttackIncomingAndBlockStagesPerTarget()
         {
-            var engine = new CardDuelEngine(new BattleRules("stages", new EqualScoreDamageRule(), 10,
-                new DoubleAttack(), new TargetAdjustment()), targetPolicy: new AllTargets());
-            var state = Create(engine); var cards = state.Zone(CardZoneKinds.Hand, Player).Cards.Take(1).ToArray();
+            var engine = new CardDuelEngine(new BattleRules("stages", 10), targetPolicy: new AllTargets());
+            var state = Create(engine, modifiers: new BattleActorDamageRules(new DoubleAttack(), new TargetAdjustment())); var cards = state.Zone(CardZoneKinds.Hand, Player).Cards.Take(1).ToArray();
             var preview = engine.PreviewPlay(state, state.Revision, Player, cards);
             var actual = engine.Execute(state, state.Revision, Player, CardDuelAction.Play, cards);
             Assert.IsTrue(preview.Accepted); Assert.IsTrue(actual.Accepted);
@@ -157,9 +156,8 @@ namespace PokerEngine.Tests
         public void InvalidOrOverflowingModifierRejectsEntirePlay(bool incoming, int kind)
         {
             var modifier = new BadModifier(kind);
-            var engine = new CardDuelEngine(new BattleRules("bad-modifier", new EqualScoreDamageRule(), 10,
-                incoming ? null : modifier, incoming ? modifier : null));
-            var state = Create(engine); var cards = state.Zone(CardZoneKinds.Hand, Player).Cards.Take(1).ToArray();
+            var engine = new CardDuelEngine(new BattleRules("bad-modifier", 10));
+            var state = Create(engine, modifiers: new BattleActorDamageRules(incoming ? null : modifier, incoming ? modifier : null)); var cards = state.Zone(CardZoneKinds.Hand, Player).Cards.Take(1).ToArray();
             foreach (var result in new[] { engine.PreviewPlay(state, state.Revision, Player, cards),
                 engine.Execute(state, state.Revision, Player, CardDuelAction.Play, cards) })
             {
@@ -170,9 +168,8 @@ namespace PokerEngine.Tests
         }
         [Test] public void EnemyBypassesScoringButUsesBothDamageModifiers()
         {
-            var engine = new CardDuelEngine(new BattleRules("enemy-modifiers", new BadRule(4), 10,
-                new DoubleAttack(), new TargetAdjustment()));
-            var state = Create(engine);
+            var engine = new CardDuelEngine(new BattleRules("enemy-modifiers", 10));
+            var state = Create(engine, damage: new BadRule(4), modifiers: new BattleActorDamageRules(new DoubleAttack(), new TargetAdjustment()));
             state = engine.Execute(state, state.Revision, Player, CardDuelAction.EndTurn).State;
             var result = engine.Execute(state, state.Revision, Enemy, CardDuelAction.EnemyAction);
             Assert.IsTrue(result.Accepted); Assert.IsNull(result.Score); Assert.IsNull(result.Damage);
@@ -181,7 +178,7 @@ namespace PokerEngine.Tests
         }
         [Test] public void EqualScorePreservesLargeValuesUntilTargetHealthClamping()
         {
-            var engine = new TeamBattleEngine(new BattleRules("large", new EqualScoreDamageRule(), 10));
+            var engine = new TeamBattleEngine(new BattleRules("large", 10));
             var state = engine.Create("large", new[] { new BattlePlayerSetup(Player, new CombatantDefinition("p", 40)) },
                 new[] { new BattleEnemySetup(Enemy, new CombatantDefinition("e", 1000000, 100), 7) });
             var score = ScoreEngine.Fixed(engine.NextScoreId(state), 5000000);
@@ -193,7 +190,7 @@ namespace PokerEngine.Tests
         }
         [Test] public void EnemyAttackDoesNotInvokeScoredHandRule()
         {
-            var engine = Engine(new BadRule(4)); var state = Create(engine);
+            var engine = Engine(); var state = Create(engine, damage: new BadRule(4));
             state = engine.Execute(state, state.Revision, Player, CardDuelAction.EndTurn).State;
             var result = engine.Execute(state, state.Revision, Enemy, CardDuelAction.EnemyAction);
             Assert.IsTrue(result.Accepted); Assert.IsNull(result.Score); Assert.IsNull(result.Damage); Assert.AreEqual(7, result.Events.Single().HealthLost);

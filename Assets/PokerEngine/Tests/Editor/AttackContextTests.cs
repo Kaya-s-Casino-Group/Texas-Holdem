@@ -40,7 +40,7 @@ namespace PokerEngine.Tests
                 new[] { new DamageTriggerReason("test", "把杂牌当计分牌", AttackCardScope.Scoring,
                     c.Attack.Hand.SubmittedCards.Where(card => card.Suit == Suit.Spades).Select(card => card.Id)) });
         }
-        private static CardDuelState Create(CardDuelEngine engine, bool allIneffective = false)
+        private static CardDuelState Create(CardDuelEngine engine, bool allIneffective = false, IAttackDamageModifier outgoing = null, IIncomingDamageModifier incoming = null, IScoredHandDamageRule rule = null)
         {
             var faces = StandardDeck.Cards().ToArray();
             var deck = new[] {
@@ -49,17 +49,17 @@ namespace PokerEngine.Tests
                 new DeckEntry("black-kicker", faces.Single(c => c.Rank == Rank.Two && c.Suit == Suit.Spades).Id)
             };
             var state = engine.Create("origin", HmacDeckShuffler.FromSeed(new byte[32]),
-                new[] { new BattlePlayerSetup(Player, new CombatantDefinition("p", 100), deck, rules: new BattlePlayerRules(handSize: 3)) },
-                new[] { new BattleEnemySetup(Enemy, new CombatantDefinition("e", 10000), 7), new BattleEnemySetup(Other, new CombatantDefinition("e2", 10000), 8) });
+                new[] { new BattlePlayerSetup(Player, new CombatantDefinition("p", 100), deck, rules: new BattlePlayerRules(handSize: 3, damagePolicy: rule), damageRules: new BattleActorDamageRules(outgoing, incoming)) },
+                new[] { new BattleEnemySetup(Enemy, new CombatantDefinition("e", 10000), 7, new BattleActorDamageRules(outgoing, incoming)), new BattleEnemySetup(Other, new CombatantDefinition("e2", 10000), 8, new BattleActorDamageRules(outgoing, incoming)) });
             return engine.Execute(state, state.Revision, Player, CardDuelAction.Start).State;
         }
-        private static CardDuelEngine Engine(IAttackDamageModifier outgoing = null, IIncomingDamageModifier incoming = null, IScoredHandDamageRule rule = null) =>
-            new CardDuelEngine(new BattleRules("origin.1", rule ?? new EqualScoreDamageRule(), 10, outgoing, incoming), targetPolicy: new AllTargets());
+        private static CardDuelEngine Engine() =>
+            new CardDuelEngine(new BattleRules("origin.1", 10), targetPolicy: new AllTargets());
 
         [Test] public void FormalHandSnapshotIsSharedAcrossConstructionBothModifiersAndTargets()
         {
             var outgoing = new ObserveModifier(); var incoming = new ObserveModifier(true); var rule = new ObserveRule();
-            var engine = Engine(outgoing, incoming, rule); var state = Create(engine);
+            var engine = Engine(); var state = Create(engine, outgoing: outgoing, incoming: incoming, rule: rule);
             var result = engine.Execute(state, state.Revision, Player, CardDuelAction.Play, state.Zone(CardZoneKinds.Hand, Player).Cards);
             Assert.IsTrue(result.Accepted); Assert.AreEqual(40, result.Score.Total); Assert.AreEqual(2, result.Events.Count);
             var hand = result.Events[0].Effect.Attack.Hand;
@@ -88,7 +88,7 @@ namespace PokerEngine.Tests
         }
         [Test] public void PreviewAndCommitProduceIdenticalFactsAndTriggerReasonsWithoutWritingState()
         {
-            var engine = Engine(new ObserveModifier(), new ObserveModifier(true)); var state = Create(engine);
+            var engine = Engine(); var state = Create(engine, outgoing: new ObserveModifier(), incoming: new ObserveModifier(true));
             var cards = state.Zone(CardZoneKinds.Hand, Player).Cards;
             var first = engine.PreviewPlay(state, state.Revision, Player, cards);
             var second = engine.PreviewPlay(state, state.Revision, Player, cards);
@@ -110,8 +110,8 @@ namespace PokerEngine.Tests
         }
         [Test] public void EnemyOrdinaryAttackHasOriginButNoFabricatedHand()
         {
-            var outgoing = new ObserveModifier(); var incoming = new ObserveModifier(true); var engine = Engine(outgoing, incoming);
-            var state = Create(engine); state = engine.Execute(state, state.Revision, Player, CardDuelAction.EndTurn).State;
+            var outgoing = new ObserveModifier(); var incoming = new ObserveModifier(true); var engine = Engine();
+            var state = Create(engine, outgoing: outgoing, incoming: incoming); state = engine.Execute(state, state.Revision, Player, CardDuelAction.EndTurn).State;
             var result = engine.Execute(state, state.Revision, Enemy, CardDuelAction.EnemyAction);
             Assert.IsTrue(result.Accepted); var hit = result.Events.Single();
             Assert.AreEqual(AttackOrigin.EnemyAttack, hit.Effect.Attack.Origin); Assert.IsNull(hit.Effect.Attack.Hand);
@@ -129,7 +129,7 @@ namespace PokerEngine.Tests
         }
         [TestCase(false)] [TestCase(true)] public void EvidenceCannotClaimAKickerBelongsToTheScoringScope(bool incoming)
         {
-            var invalid = new InvalidEvidence(); var engine = Engine(incoming ? null : invalid, incoming ? invalid : null); var state = Create(engine);
+            var invalid = new InvalidEvidence(); var engine = Engine(); var state = Create(engine, outgoing: incoming ? null : invalid, incoming: incoming ? invalid : null);
             var result = engine.PreviewPlay(state, state.Revision, Player, state.Zone(CardZoneKinds.Hand, Player).Cards);
             Assert.AreEqual(CardDuelError.InvalidDamageModifier, result.Error); Assert.AreSame(state, result.State); Assert.IsEmpty(result.Events);
         }

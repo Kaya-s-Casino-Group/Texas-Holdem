@@ -15,4 +15,6 @@ MonoBehaviour:
   unitId: guardian
   maxHealth: 1200
   initialBlock: 0
+  attackModifier: {fileID: 11400000, guid: fee8c0c82b154ac8bd62dc904452f26c, type: 2}
+  incomingModifier: {fileID: 11400000, guid: a5427931d42a44a2973a35e61d2f9e43, type: 2}
   attackDamage: 240

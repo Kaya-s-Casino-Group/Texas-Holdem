@@ -252,7 +252,7 @@ namespace Poker.SingleBattle
             while (State.Duel.Phase == ScoredDuelPhase.AwaitingEnemyAction)
             {
                 var enemy = ActingEnemy;
-                Message = "玩家回合结束 · 敌人准备攻击 " + enemy.ReadIntent().Damage; Publish();
+                Message = "玩家回合结束 · 敌人准备攻击"; Publish();
                 yield return WaitForPresentation(enemy.PresentPreparation(true));
                 var enemyResult = CommitEnemyTurn();
                 Message = "敌人造成 " + enemyResult.Events.Sum(item => item.HealthLost) + " 伤害"; Publish();

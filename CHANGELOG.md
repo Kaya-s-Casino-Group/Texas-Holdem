@@ -4,6 +4,36 @@
 
 ## [Unreleased]
 
+### 2026-10-15 — 敌人意图读取规则层行动预览
+
+- 新增 TeamBattleEngine.PreviewEnemyAction 与 EnemyActionPreview，以不可变状态复用正式 Execute，逐项包含目标选择、攻击修正、承伤修正、格挡和生命结算。
+- 玩家阶段按立即结束回合预演，敌人阶段按剩余队列预演；前序敌人的格挡消耗、击杀和目标变化影响后续意图，已行动、死亡和终局隐藏。
+- EnemyBattleActor 只包装规则预览；Billboard 读取逐目标 SettledDamage，显示两层修正后的格挡前攻击值，多人时标明目标并分行，面板与运行时 Gizmo 同步尺寸。失败显示“意图不可用”，不回退基础伤害。
+- 更新原有调用点与文档；仅做静态检查与脚本编译，不运行动态测试或进入 Play。
+
+### 2026-10-14 — 出牌伤害归属玩家与公共规则清理
+
+- 将 ScoredHandDamageProfile 槽位从 BattleRulesProfile 移至 PlayerBattleProfile，原 SingleBattleRules / DemoBattleRules 的资产引用迁入对应玩家配置；默认配置打开入口改为读取单局玩家实际绑定的资产。
+- BattlePlayerRules.DamagePolicy 保存开战快照，TeamBattle 按出牌者构建基础伤害；预览与正式动作共用，怪物仍直接提供基础攻击。Unity 玩家配置必须绑定资产；纯 C# 默认等分数伤害。
+- BattleRules 移除出牌伤害与旧全局攻击/承伤回退，仅保留版本、回合上限和阵营格挡清除时机；角色修正一律来自各自 Setup。旧 ScoredDuelDefinition 适配显式转入默认玩家规则，旧 standalone 快照不变。
+- 更新既有测试调用点和模块文档，记录目标策略、敌人意图预览、个人计分成长及 HUD 职责的后续边界。
+- 仅做静态检查与脚本编译，不运行动态测试或进入 Play。
+
+### 2026-10-14 — 弃牌收益移至玩家配置
+
+- 将 DiscardRewardProfile 槽位从 BattleRulesProfile 移至 PlayerBattleProfile；公共 BattleRules 同步移除收益字段与构造参数，由每位玩家的 BattlePlayerRules 持有不可变收益规则，空槽位为无收益。
+- TeamBattle 按弃牌者读取收益规则，预览和正式执行共用；选择队友作为目标不会改用队友的规则。已有玩家规则快照随扣费、结束回合与能量恢复保留。
+- 单局每张弃牌 8 格挡、多人无收益的原资产引用分别迁至 SingleBattlePlayer / DemoPlayer；更新默认资产打开入口、文档及既有测试调用点。
+- 仅做静态引用检查与脚本编译，不运行动态测试或进入 Play。
+
+### 2026-10-14 — 角色独立攻击与承伤修正配置
+
+- BattleActorProfile 新增两个独立资产槽位，玩家与怪物均可绑定 AttackDamageModifierProfile / IncomingDamageModifierProfile；配置归属角色，不加入公共战局配置。
+- 具体倍率/固定增减值资产生成不可变 ScaledAttackDamageModifier / ScaledIncomingDamageModifier；输出为 floor(max(0, 输入 × 倍率 + 固定值))，默认 1 倍、0 增减，空槽位原值通过。
+- BattlePlayerSetup / BattleEnemySetup 携带 BattleActorDamageRules 快照；攻击阶段读取来源角色，承伤阶段读取实际目标角色。快照随扣费、结束回合及恢复能量保留，预览复用同一规则链。
+- SingleBattlePlayer / SingleBattleEnemy 分别绑定四份独立中性资产；多人旧配置空槽位保持原行为。BattleRules 旧代码注入仅保留为未提供角色规则时的兼容回退，不叠加角色修正；Combat/旧 ScoredDuel 存档格式不变。
+- 仅做静态检查与脚本编译，不进入 Play 或运行动态测试。
+
 ### 2026-10-14 — 左侧候选牌型与通用数字滚动 UI
 
 - 左侧候选面板显示当前观察玩家的选牌牌型、选中/计分牌数、整数筹码 × 整数倍率，选牌变化时更新 target。

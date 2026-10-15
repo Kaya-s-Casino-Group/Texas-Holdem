@@ -36,13 +36,13 @@ namespace PokerEngine.Tests
                         kind == 3 ? Ally : c.Source, kind == 2 ? Enemy : kind == 6 ? Ally : c.Targets[0], kind == 5 ? 0 : 7) });
             }
         }
-        private static CardDuelEngine Engine(IDiscardRewardRule rule = null) => new CardDuelEngine(
-            new BattleRules("discard.test", new NoAttacks(), 10, discardReward: rule), targetPolicy: new NoAttacks());
-        private static CardDuelState Create(CardDuelEngine engine, bool smallDeck = false)
+        private static CardDuelEngine Engine() => new CardDuelEngine(
+            new BattleRules("discard.test", 10), targetPolicy: new NoAttacks());
+        private static CardDuelState Create(CardDuelEngine engine, bool smallDeck = false, IDiscardRewardRule reward = null)
         {
             var deck = smallDeck ? StandardDeck.Cards().Take(8).Select((card, i) => new DeckEntry("c" + i, card.Id)).ToArray() : null;
             var state = engine.Create("discard", HmacDeckShuffler.FromSeed(new byte[32]), new[] {
-                new BattlePlayerSetup(Player, new CombatantDefinition("p", 40), deck),
+                new BattlePlayerSetup(Player, new CombatantDefinition("p", 40), deck, rules: new BattlePlayerRules(discardReward: reward, damagePolicy: new NoAttacks())),
                 new BattlePlayerSetup(Ally, new CombatantDefinition("a", 40))
             }, new[] { new BattleEnemySetup(Enemy, new CombatantDefinition("e", 10000), 7) });
             return engine.Execute(state, state.Revision, Player, CardDuelAction.Start).State;
@@ -63,7 +63,7 @@ namespace PokerEngine.Tests
         }
         [Test] public void FutureRewardUsesFriendlyTargetsAndCommonCombatSettlement()
         {
-            var engine = Engine(new Reward()); var state = Create(engine);
+            var engine = Engine(); var state = Create(engine, reward: new Reward());
             var result = engine.Execute(state, state.Revision, Player, CardDuelAction.Discard,
                 state.Zone(CardZoneKinds.Hand, Player).Cards.Take(1), new[] { Ally });
             Assert.IsTrue(result.Accepted); Assert.AreEqual(7, result.State.Duel.Combat.Get(Ally).Block);
@@ -75,7 +75,7 @@ namespace PokerEngine.Tests
         [TestCase(0)] [TestCase(1)] [TestCase(2)] [TestCase(3)] [TestCase(4)] [TestCase(5)] [TestCase(6)]
         public void InvalidRewardRejectsWholeDiscard(int kind)
         {
-            var engine = Engine(new BadReward(kind)); var state = Create(engine);
+            var engine = Engine(); var state = Create(engine, reward: new BadReward(kind));
             var result = engine.Execute(state, state.Revision, Player, CardDuelAction.Discard, state.Zone(CardZoneKinds.Hand, Player).Cards.Take(1));
             Assert.AreEqual(CardDuelError.InvalidDiscardReward, result.Error); Assert.AreSame(state, result.State);
             Assert.IsEmpty(result.Events); Assert.IsNull(result.DiscardReward); Assert.AreEqual(3, state.DiscardsFor(Player));
@@ -88,13 +88,13 @@ namespace PokerEngine.Tests
         }
         [Test] public void RewardOverflowRollsBackCostsCardsAndRandomState()
         {
-            var engine = Engine(new Reward(long.MaxValue)); var state = Create(engine, true);
+            var engine = Engine(); var state = Create(engine, true, new Reward(long.MaxValue));
             var result = engine.PreviewDiscard(state, state.Revision, Player, state.Zone(CardZoneKinds.Hand, Player).Cards.Take(2));
             Assert.AreEqual(CardDuelError.Overflow, result.Error); Assert.AreSame(state, result.State); Assert.IsEmpty(result.Events);
         }
         [Test] public void RepeatedPreviewAndCommitShareRewardAndRecycleResultsWithoutMutatingInput()
         {
-            var engine = Engine(new Reward()); var state = Create(engine, true);
+            var engine = Engine(); var state = Create(engine, true, new Reward());
             var selected = state.Zone(CardZoneKinds.Hand, Player).Cards.Take(2).ToArray(); var random = state.Random.StateBytes.ToArray();
             var one = engine.PreviewDiscard(state, state.Revision, Player, selected);
             var two = engine.PreviewDiscard(state, state.Revision, Player, selected);

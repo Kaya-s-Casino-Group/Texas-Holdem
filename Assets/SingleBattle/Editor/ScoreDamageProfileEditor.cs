@@ -10,8 +10,9 @@ namespace Poker.SingleBattle.Editor
         [MenuItem("Tools/Poker/战局/打开默认伤害配置")]
         public static void OpenDefault()
         {
-            var asset = AssetDatabase.LoadAssetAtPath<ScoreDamageProfile>("Assets/SingleBattle/Profiles/DemoScoreDamage.asset");
-            if (asset == null) throw new InvalidOperationException("未找到默认出牌伤害配置。");
+            var player = AssetDatabase.LoadAssetAtPath<PlayerBattleProfile>("Assets/SingleBattle/Profiles/SingleBattlePlayer.asset");
+            var asset = player != null ? player.Damage : null;
+            if (asset == null) throw new InvalidOperationException("默认玩家未绑定出牌伤害配置。");
             Selection.activeObject = asset; EditorGUIUtility.PingObject(asset);
         }
         public override void OnInspectorGUI()

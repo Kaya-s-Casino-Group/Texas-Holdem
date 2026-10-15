@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
-using System.Linq;
 using PokerEngine;
 
 namespace Poker.SingleBattle
@@ -9,13 +7,12 @@ namespace Poker.SingleBattle
     /// <summary>Derived intent, not another stored combat or damage state.</summary>
     public sealed class EnemyBattleIntent
     {
-        public ParticipantId Source { get; }
-        public IReadOnlyList<ParticipantId> Targets { get; }
-        public ParticipantId Target => Targets[0];
-        public long Damage { get; }
+        public EnemyActionPreview Action { get; }
+        public ParticipantId Source => Action.Source;
+        // CardDuel revision belongs to commands; Action.ExpectedRevision belongs to the rule-layer forecast.
         public long ExpectedRevision { get; }
-        internal EnemyBattleIntent(ParticipantId source, IReadOnlyList<ParticipantId> targets, long damage, long revision)
-        { Source = source; Targets = targets; Damage = damage; ExpectedRevision = revision; }
+        internal EnemyBattleIntent(EnemyActionPreview action, long revision)
+        { Action = action; ExpectedRevision = revision; }
     }
     /// <summary>Enemy-only intent/turn policy. The current policy chooses one fixed attack; the owner validates and resolves it.</summary>
     public sealed class EnemyBattleActor : BattleActor
@@ -27,12 +24,16 @@ namespace Poker.SingleBattle
         protected override bool OwnsParticipant(CardDuelState state, ParticipantId id) => Battle.OwnsEnemy(this, id);
         public bool CanAct => isActiveAndEnabled && IsBound && IsAlive && Battle.isActiveAndEnabled &&
             Battle.State.Duel.Phase == ScoredDuelPhase.AwaitingEnemyAction && Battle.State.Duel.NextEnemy == ParticipantId;
-        public EnemyBattleIntent ReadIntent() => IsBound && IsAlive && !Battle.State.Duel.IsFinished
-            ? new EnemyBattleIntent(ParticipantId, Battle.Engine.Duel.Targets(Battle.State.Duel, ParticipantId), Battle.State.Duel.Enemies.Single(x => x.Id == ParticipantId).Damage, Battle.State.Revision) : null;
+        public EnemyBattleIntent ReadIntent()
+        {
+            if (!IsBound || !IsAlive || Battle.State.Duel.IsFinished) return null;
+            var state = Battle.State;
+            var preview = Battle.Engine.Duel.PreviewEnemyAction(state.Duel, ParticipantId);
+            return preview == null ? null : new EnemyBattleIntent(preview, state.Revision);
+        }
         internal CardDuelTransition ExecuteTurn()
         {
-            var intent = ReadIntent();
-            return CanAct && intent != null ? Battle.ExecuteEnemyTurn(this, intent.ExpectedRevision) : null;
+            return CanAct ? Battle.ExecuteEnemyTurn(this, Battle.State.Revision) : null;
         }
     }
 }

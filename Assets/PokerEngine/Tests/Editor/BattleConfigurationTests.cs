@@ -8,8 +8,8 @@ namespace PokerEngine.Tests
     public sealed class BattleConfigurationTests
     {
         private static readonly ParticipantId P = new ParticipantId("p"), A = new ParticipantId("a"), E = new ParticipantId("e"), E2 = new ParticipantId("e2");
-        private static CardDuelEngine Engine(IDiscardRewardRule reward = null, PlayerBlockExpiry expiry = PlayerBlockExpiry.Retain, int rounds = 20) =>
-            new CardDuelEngine(new BattleRules("config.test", new EqualScoreDamageRule(), rounds, discardReward: reward, playerBlockExpiry: expiry));
+        private static CardDuelEngine Engine(PlayerBlockExpiry expiry = PlayerBlockExpiry.Retain, int rounds = 20) =>
+            new CardDuelEngine(new BattleRules("config.test", rounds, playerBlockExpiry: expiry));
         private static CardDuelState Start(CardDuelEngine engine, BattlePlayerRules rules = null, int block = 0, int damage = 7,
             bool twoEnemies = false, bool ally = false, int health = 800, int enemyHealth = 10000, bool smallDeck = false)
         {
@@ -56,8 +56,8 @@ namespace PokerEngine.Tests
         [TestCase(1)] [TestCase(2)] [TestCase(3)] [TestCase(4)] [TestCase(5)] [TestCase(8)]
         public void PerCardBlockUsesActualDiscardCountAndPreviewMatchesCommit(int count)
         {
-            var engine = Engine(new PerCardBlockRewardRule(8));
-            var state = Start(engine, new BattlePlayerRules(maxDiscardCards: 8), smallDeck: true);
+            var engine = Engine();
+            var state = Start(engine, new BattlePlayerRules(maxDiscardCards: 8, discardReward: new PerCardBlockRewardRule(8)), smallDeck: true);
             var cards = state.Zone(CardZoneKinds.Hand).Cards.Take(count).ToArray(); var random = state.Random.StateBytes.ToArray();
             var preview = engine.PreviewDiscard(state, state.Revision, P, cards);
             var result = Do(engine, state, CardDuelAction.Discard, count);
@@ -73,34 +73,34 @@ namespace PokerEngine.Tests
         }
         [Test] public void RewardCanSupportSelectedAllyWithoutChangingTargetPolicy()
         {
-            var engine = Engine(new PerCardBlockRewardRule(8)); var state = Start(engine, ally: true);
+            var engine = Engine(); var state = Start(engine, new BattlePlayerRules(discardReward: new PerCardBlockRewardRule(8)), ally: true);
             var result = Do(engine, state, CardDuelAction.Discard, 3, targets: new[] { A });
             Assert.AreEqual(24, result.State.Duel.Combat.Get(A).Block); Assert.AreEqual(0, result.State.Duel.Combat.Get(P).Block);
             Assert.AreEqual(3, result.State.Duel.Player(A).Energy.Energy);
         }
         [Test] public void ZeroBlockDoesNotCreateFakeCombatEvents()
         {
-            var engine = Engine(new PerCardBlockRewardRule(0)); var state = Start(engine);
+            var engine = Engine(); var state = Start(engine, new BattlePlayerRules(discardReward: new PerCardBlockRewardRule(0)));
             var result = Do(engine, state, CardDuelAction.Discard, 5);
             Assert.IsEmpty(result.Events); Assert.IsEmpty(result.DiscardReward.Plan.Effects); Assert.AreEqual(2, result.State.DiscardsRemaining);
         }
         [TestCase(0, 2)] [TestCase(int.MaxValue, 1)]
         public void BlockOverflowRejectsAllCostsCardsAndRandomChanges(int initialBlock, int count)
         {
-            var engine = Engine(new PerCardBlockRewardRule(int.MaxValue)); var state = Start(engine, block: initialBlock);
+            var engine = Engine(); var state = Start(engine, new BattlePlayerRules(discardReward: new PerCardBlockRewardRule(int.MaxValue)), block: initialBlock);
             var result = engine.PreviewDiscard(state, state.Revision, P, state.Zone(CardZoneKinds.Hand).Cards.Take(count));
             Assert.AreEqual(CardDuelError.Overflow, result.Error); Assert.AreSame(state, result.State);
             Assert.IsEmpty(result.Events); Assert.AreEqual(3, state.DiscardsRemaining); Assert.AreEqual(3, state.Duel.Player(P).Energy.Energy);
         }
         [Test] public void PlayAndDiscardLimitsAreIndependentlyEnforcedInPreviewAndExecution()
         {
-            var engine = Engine(new PerCardBlockRewardRule(8)); var state = Start(engine, new BattlePlayerRules(maxPlayCards: 2, maxDiscardCards: 8));
+            var engine = Engine(); var state = Start(engine, new BattlePlayerRules(maxPlayCards: 2, maxDiscardCards: 8, discardReward: new PerCardBlockRewardRule(8)));
             var cards = state.Zone(CardZoneKinds.Hand).Cards.Take(3).ToArray();
             foreach (var result in new[] { engine.PreviewHand(state, P, cards), engine.PreviewPlay(state, state.Revision, P, cards),
                 engine.Execute(state, state.Revision, P, CardDuelAction.Play, cards) })
             { Assert.AreEqual(CardDuelError.InvalidSelection, result.Error); Assert.AreSame(state, result.State); }
             Do(engine, state, CardDuelAction.Play, 2); Do(engine, state, CardDuelAction.Discard, 8);
-            state = Start(engine, new BattlePlayerRules(maxPlayCards: 5, maxDiscardCards: 2));
+            state = Start(engine, new BattlePlayerRules(maxPlayCards: 5, maxDiscardCards: 2, discardReward: new PerCardBlockRewardRule(8)));
             cards = state.Zone(CardZoneKinds.Hand).Cards.Take(3).ToArray();
             foreach (var result in new[] { engine.PreviewDiscard(state, state.Revision, P, cards), engine.Execute(state, state.Revision, P, CardDuelAction.Discard, cards) })
             { Assert.AreEqual(CardDuelError.InvalidSelection, result.Error); Assert.AreSame(state, result.State); }
@@ -187,8 +187,8 @@ namespace PokerEngine.Tests
         }
         [Test] public void ProposedBaseRulesWorkTogetherWithoutChangingExistingAssets()
         {
-            var engine = Engine(new PerCardBlockRewardRule(8), PlayerBlockExpiry.AfterEnemyPhase);
-            var rules = new BattlePlayerRules(discards: 0, unlimitedDiscards: true,
+            var engine = Engine(PlayerBlockExpiry.AfterEnemyPhase);
+            var rules = new BattlePlayerRules(discards: 0, unlimitedDiscards: true, discardReward: new PerCardBlockRewardRule(8),
                 dealPolicy: new CardDuelDealPolicy(CardDuelRefillTiming.AfterAction, CardDuelRefillTiming.AfterAction));
             var state = Start(engine, rules, damage: 240, enemyHealth: 1200);
             state = Do(engine, state, CardDuelAction.Discard, 5).State;

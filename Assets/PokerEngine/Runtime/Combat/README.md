@@ -27,6 +27,12 @@ ScoredDuelState 组合持有独立的 PlayerTurnState（MaxEnergy / Energy），
 - 每批 1–64 个效果，共用一次 Revision；未知单位、死亡单位、溢出或任一步失败都回滚整批，不发事件。旧 Revision 拒绝，输入状态不修改。
 - 公共层不判胜负，支持多个阵营/单位；一对一限制只在 ScoredDuel 示例中。
 
+## 独立伤害修正规则
+
+`IAttackDamageModifier` / `IIncomingDamageModifier` 是纯函数协议；`ScaledAttackDamageModifier` / `ScaledIncomingDamageModifier` 保存不可变倍率、固定增减值和版本，按 `floor(max(0, 输入 × 倍率 + 固定值))` 生成 DamageModification。默认 1 倍、0 增减，负倍率拒绝；超出 decimal/long 范围按原子结算的 Overflow 路径拒绝，不写状态。
+
+角色归属和规则分派由 Composition 的 BattleActorDamageRules 与 TeamBattleEngine 管理：按来源选择攻击修正、按目标选择承伤修正。CombatEngine 不持有 Unity 资产，不在 CombatantState / CombatState 的存档字段中存入策略对象；承伤接口仍在每条效果扣格挡前调用，读取该批次前序效果后的上下文。
+
 ## 最小可运行的牌型伤害流程
 
 入口位于 `Composition/Encounters/ScoredDuel*.cs`。这套流程验证公共基建，不替换现有 Draw 出牌计分模式。

@@ -20,10 +20,20 @@ namespace Poker.SingleBattle
         [SerializeField, Range(1, 52), InspectorName("单次弃牌张数上限")] private int maxDiscardCards = 5;
         [SerializeField, InspectorName("出牌后补牌时机")] private CardDuelRefillTiming playRefillTiming = CardDuelRefillTiming.NextPlayerTurn;
         [SerializeField, InspectorName("弃牌后补牌时机")] private CardDuelRefillTiming discardRefillTiming = CardDuelRefillTiming.AfterAction;
+        [Header("玩家出牌与弃牌规则（开战时生成快照）")]
+        [SerializeField, InspectorName("出牌伤害配置")] private ScoredHandDamageProfile damage;
+        public ScoredHandDamageProfile Damage => damage;
+        public void ConfigureDamage(ScoredHandDamageProfile profile) => damage = profile != null ? profile : throw new System.ArgumentNullException(nameof(profile));
+        [SerializeField, InspectorName("弃牌收益配置（空为无收益）")] private DiscardRewardProfile discardReward;
+        public DiscardRewardProfile DiscardReward => discardReward;
+        public void ConfigureDiscardReward(DiscardRewardProfile profile) => discardReward = profile;
         public BattlePlayerRules BuildRules() => new BattlePlayerRules(maxEnergy, initialEnergy, playEnergyCost, discardEnergyCost,
-            handSize, discards, new CardDuelDealPolicy(playRefillTiming, discardRefillTiming), unlimitedDiscards, maxPlayCards, maxDiscardCards);
+            handSize, discards, new CardDuelDealPolicy(playRefillTiming, discardRefillTiming), unlimitedDiscards, maxPlayCards, maxDiscardCards,
+            discardReward: discardReward != null ? discardReward.BuildRule() ?? throw new System.InvalidOperationException("弃牌收益配置返回了空规则。") : null,
+            damagePolicy: damage != null ? damage.BuildRule() ?? throw new System.InvalidOperationException("出牌伤害配置返回了空规则。")
+                : throw new System.InvalidOperationException("请先为玩家绑定独立的出牌伤害配置。"));
         // Null deck means an independent standard 52-card deck. A Run supplies this player's current entries.
         public BattlePlayerSetup BuildSetup(ParticipantId id, IEnumerable<DeckEntry> deck = null, int? initialHealth = null) =>
-            new BattlePlayerSetup(id, BuildCombatant(), deck, initialHealth, BuildRules());
+            new BattlePlayerSetup(id, BuildCombatant(), deck, initialHealth, BuildRules(), BuildDamageRules());
     }
 }

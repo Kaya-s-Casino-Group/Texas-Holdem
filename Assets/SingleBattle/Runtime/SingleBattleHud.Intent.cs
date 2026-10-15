@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -57,17 +58,31 @@ namespace Poker.SingleBattle
                     label.rectTransform.anchorMin = Vector2.zero; label.rectTransform.anchorMax = Vector2.one;
                     label.rectTransform.offsetMin = new Vector2(4, 2); label.rectTransform.offsetMax = new Vector2(-4, -2);
                     label.fontSize = 14; label.alignment = TextAlignmentOptions.Center; label.raycastTarget = false;
+                    label.enableAutoSizing = true; label.fontSizeMin = 8; label.fontSizeMax = 14;
                     view = new IntentView { Root = root, Text = label,
                         Renderers = actor.Visual != null ? actor.Visual.GetComponentsInChildren<Renderer>(true) : new Renderer[0] };
                     enemyIntents.Add(actor, view);
                 }
                 var action = actor.ReadIntent();
                 view.Visible = action != null;
-                view.Text.text = action == null ? "" : "攻击 " + action.Damage;
+                view.Text.text = EnemyIntentText(action);
+                view.Root.sizeDelta = new Vector2(host.Players.Count > 1 ? 160 : IntentSize.x,
+                    IntentSize.y * (action != null && action.Action.Accepted ? Mathf.Max(1, action.Action.Hits.Count) : 1));
                 view.Root.gameObject.SetActive(view.Visible);
             }
             intent.gameObject.SetActive(false);
             UpdateEnemyIntentBillboards();
+        }
+
+        private string EnemyIntentText(EnemyBattleIntent intent)
+        {
+            if (intent == null) return "";
+            if (!intent.Action.Accepted) return "意图不可用";
+            // SettledDamage includes both modifiers, before block. Never collapse different targets into one value.
+            var players = host.Players.ToList();
+            return string.Join("\n", intent.Action.Hits.Select(hit =>
+                (players.Count > 1 ? "玩家 " + (players.FindIndex(player => player.ParticipantId == hit.Effect.Target) + 1) + " · " : "") +
+                "攻击 " + hit.SettledDamage));
         }
 
         private void UpdateEnemyIntentBillboards()
@@ -123,6 +138,12 @@ namespace Poker.SingleBattle
                 {
                     if (actor == null || actor.Visual == null || !actor.Visual.gameObject.activeInHierarchy ||
                         Application.isPlaying && actor.IsBound && !actor.IsAlive) continue;
+                    var size = new Vector2(host.Players.Count > 1 ? 160 : IntentSize.x, IntentSize.y);
+                    if (Application.isPlaying && enemyIntents.TryGetValue(actor, out var view))
+                    {
+                        if (!view.Visible) continue;
+                        size = view.Root.sizeDelta;
+                    }
                     var basis = IntentBase(actor.Visual, actor.Visual.GetComponentsInChildren<Renderer>(true));
                     var position = basis + intentWorldOffset; var rotation = IntentRotation(camera);
                     // Match the Canvas under the identity WorldUIRoot, independent of actor scale.
@@ -132,14 +153,14 @@ namespace Poker.SingleBattle
                     Gizmos.color = new Color(.25f, 1, .8f, .9f);
                     Gizmos.DrawWireSphere(basis, .002f); Gizmos.DrawLine(basis, position);
                     Gizmos.matrix = matrix; Gizmos.color = new Color(1, .75f, .25f, .95f);
-                    var center = new Vector3(0, -IntentSize.y * .5f, 0);
-                    Gizmos.DrawWireCube(center, new Vector3(IntentSize.x, IntentSize.y, 0));
+                    var center = new Vector3(0, -size.y * .5f, 0);
+                    Gizmos.DrawWireCube(center, new Vector3(size.x, size.y, 0));
                     Gizmos.color = new Color(.3f, .75f, 1, .95f);
                     var tip = center + Vector3.back * 20;
                     Gizmos.DrawLine(center, tip);
                     Gizmos.DrawLine(tip, tip + new Vector3(-4, 0, 6));
                     Gizmos.DrawLine(tip, tip + new Vector3(4, 0, 6));
-                    UnityEditor.Handles.Label(matrix.MultiplyPoint3x4(new Vector3(-IntentSize.x * .5f, -IntentSize.y - 5, 0)),
+                    UnityEditor.Handles.Label(matrix.MultiplyPoint3x4(new Vector3(-size.x * .5f, -size.y - 5, 0)),
                         actor.name + " · 意图 Billboard", UnityEditor.EditorStyles.miniLabel);
                 }
             }

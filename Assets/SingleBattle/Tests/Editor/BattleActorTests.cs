@@ -45,7 +45,7 @@ namespace Poker.SingleBattle.Tests
                 Actions = ui.GetComponent<HandActionPresenter>() ?? ui.AddComponent<HandActionPresenter>(); Actions.Configure(Hand, panel, route);
                 Host = root.AddComponent<SingleBattleHost>(); Host.Configure(Match, Actions, null, null);
                 var rules = ScriptableObject.CreateInstance<BattleRulesProfile>(); profiles.Add(rules);
-                var damage = ScriptableObject.CreateInstance<ScoreDamageProfile>(); profiles.Add(damage); rules.ConfigureDamage(damage);
+                var damage = ScriptableObject.CreateInstance<ScoreDamageProfile>(); profiles.Add(damage);
                 Host.ConfigureRules(rules);
                 Player = New("Player").AddComponent<PlayerBattleActor>(); Enemy = New("Enemy").AddComponent<EnemyBattleActor>();
                 var visual = New("Enemy Visual").transform; visual.SetParent(Enemy.transform, false);
@@ -54,7 +54,7 @@ namespace Poker.SingleBattle.Tests
                 var players = new List<PlayerBattleActor> { Player }; var enemies = new List<EnemyBattleActor> { Enemy };
                 for (int i = 1; i < playerCount; i++) { var actor = New("Player " + i).AddComponent<PlayerBattleActor>(); actor.Configure(Host); players.Add(actor); }
                 for (int i = 1; i < enemyCount; i++) { var actor = New("Enemy " + i).AddComponent<EnemyBattleActor>(); actor.Configure(Host); enemies.Add(actor); }
-                foreach (var actor in players) { var profile = ScriptableObject.CreateInstance<PlayerBattleProfile>(); profiles.Add(profile); actor.ConfigureProfile(profile); }
+                foreach (var actor in players) { var profile = ScriptableObject.CreateInstance<PlayerBattleProfile>(); profiles.Add(profile); profile.ConfigureDamage(damage); actor.ConfigureProfile(profile); }
                 foreach (var actor in enemies) { var profile = ScriptableObject.CreateInstance<EnemyBattleProfile>(); profiles.Add(profile); actor.ConfigureProfile(profile); SetProperty(profile, "maxHealth", 75); }
                 Host.ConfigureActors(players, enemies); if (start) Host.StartBattle();
             }
@@ -165,7 +165,7 @@ namespace Poker.SingleBattle.Tests
         {
             using (var f = new Fixture(start: false))
             {
-                var profile = (ScoreDamageProfile)f.Host.RulesProfile.Damage;
+                var profile = (ScoreDamageProfile)f.Player.Profile.Damage;
                 var config = new SerializedObject(profile); config.FindProperty("version").stringValue = "equal.test.1";
                 config.ApplyModifiedPropertiesWithoutUndo(); f.Host.StartBattle(); f.Select();
                 int changed = 0, attacks = 0; f.Host.StateChanged += () => changed++; f.Player.ActionPresented += () => attacks++;
@@ -189,7 +189,7 @@ namespace Poker.SingleBattle.Tests
         }
         [Test] public void DamageConfigurationIsIndependentAndRejectsInvalidSetup()
         {
-            var rules = ScriptableObject.CreateInstance<BattleRulesProfile>();
+            var rules = ScriptableObject.CreateInstance<PlayerBattleProfile>();
             var damage = ScriptableObject.CreateInstance<ScoreDamageProfile>();
             try
             {
@@ -197,7 +197,7 @@ namespace Poker.SingleBattle.Tests
                 Assert.IsInstanceOf<EqualScoreDamageRule>(rules.BuildRules().DamagePolicy);
                 var serialized = new SerializedObject(damage); serialized.FindProperty("version").stringValue = "";
                 serialized.ApplyModifiedPropertiesWithoutUndo(); Assert.Throws<ArgumentException>(() => rules.BuildRules());
-                var demo = AssetDatabase.LoadAssetAtPath<BattleRulesProfile>("Assets/SingleBattle/Profiles/DemoBattleRules.asset");
+                var demo = AssetDatabase.LoadAssetAtPath<PlayerBattleProfile>("Assets/SingleBattle/Profiles/DemoPlayer.asset");
                 Assert.AreSame(AssetDatabase.LoadAssetAtPath<ScoreDamageProfile>("Assets/SingleBattle/Profiles/DemoScoreDamage.asset"), demo.Damage);
             }
             finally { UnityEngine.Object.DestroyImmediate(rules); UnityEngine.Object.DestroyImmediate(damage); }
@@ -209,7 +209,7 @@ namespace Poker.SingleBattle.Tests
             {
                 using (var f = new Fixture(start: false))
                 {
-                    f.Host.RulesProfile.ConfigureDiscardReward(profile); f.Host.StartBattle(); f.Select();
+                    f.Player.Profile.ConfigureDiscardReward(profile); f.Host.StartBattle(); f.Select();
                     var before = f.Host.State; var mirror = f.Match.State; int changes = 0, attacks = 0;
                     f.Host.StateChanged += () => changes++; f.Player.ActionPresented += () => attacks++;
                     var preview = f.Host.PreviewSelectedDiscard();
@@ -228,10 +228,10 @@ namespace Poker.SingleBattle.Tests
                     Assert.AreEqual(preview.State.DiscardsRemaining, actual.State.DiscardsRemaining);
                     f.Host.StartBattle(); f.Select(); Assert.IsNull(f.Host.LastDiscardResolution);
                     Assert.AreEqual("discard.next.2", f.Host.PreviewSelectedDiscard().DiscardReward.Plan.RuleVersion);
-                    f.Host.RulesProfile.ConfigureDiscardReward(null); f.Host.StartBattle(); f.Select();
+                    f.Player.Profile.ConfigureDiscardReward(null); f.Host.StartBattle(); f.Select();
                     Assert.AreEqual("discard.none.1", f.Host.PreviewSelectedDiscard().DiscardReward.Plan.RuleVersion);
                 }
-                var demo = AssetDatabase.LoadAssetAtPath<BattleRulesProfile>("Assets/SingleBattle/Profiles/DemoBattleRules.asset");
+                var demo = AssetDatabase.LoadAssetAtPath<PlayerBattleProfile>("Assets/SingleBattle/Profiles/DemoPlayer.asset");
                 Assert.AreSame(AssetDatabase.LoadAssetAtPath<NoDiscardRewardProfile>("Assets/SingleBattle/Profiles/DemoDiscardReward.asset"), demo.DiscardReward);
                 Assert.IsInstanceOf<NoDiscardRewardRule>(demo.BuildRules().DiscardReward);
             }
@@ -245,7 +245,7 @@ namespace Poker.SingleBattle.Tests
                 Assert.That(f.Match.Commands, Is.SameAs(f.Player)); Assert.That(f.Host, Is.Not.InstanceOf<ICardMatchCommands>());
                 Assert.That(f.Player.Unit, Is.SameAs(f.Host.State.Duel.Combat.Get(f.Host.State.Duel.PlayerId)));
                 Assert.That(f.Enemy.Unit, Is.SameAs(f.Host.State.Duel.Combat.Get(f.Host.State.Duel.EnemyId)));
-                Assert.That(f.Player.Turn.Energy, Is.EqualTo(3)); Assert.That(f.Enemy.ReadIntent().Damage, Is.EqualTo(7));
+                Assert.That(f.Player.Turn.Energy, Is.EqualTo(3)); Assert.That(f.Enemy.ReadIntent().Action.Hits.Single().SettledDamage, Is.EqualTo(7));
                 Assert.That(f.Enemy.ReadIntent().Source, Is.EqualTo(f.Enemy.ParticipantId)); Assert.That(f.Enemy.CanAct, Is.False);
                 Assert.That(typeof(EnemyBattleActor).GetProperty("Turn"), Is.Null);
                 Assert.That(f.Enemy.Visual.IsChildOf(f.Enemy.transform), Is.True);
@@ -454,7 +454,7 @@ namespace Poker.SingleBattle.Tests
                 f.Host.StartBattle(); f.HandView.CompleteTransitions();
                 Assert.That(player.Unit.Health, Is.EqualTo(70)); Assert.That(player.Turn.Energy, Is.EqualTo(6));
                 Assert.That(player.Rules.PlayEnergyCost, Is.EqualTo(2)); Assert.That(enemy.Unit.Health, Is.EqualTo(120));
-                Assert.That(enemy.ReadIntent().Damage, Is.EqualTo(11)); Assert.That(f.Player.Unit.Health, Is.EqualTo(40));
+                Assert.That(enemy.ReadIntent().Action.Hits.Single().SettledDamage, Is.EqualTo(11)); Assert.That(f.Player.Unit.Health, Is.EqualTo(40));
                 Assert.That(f.Host.SelectPlayer(player), Is.True); f.HandView.CompleteTransitions(); Assert.That(f.Hand.Cards.Count, Is.EqualTo(5));
             }
         }

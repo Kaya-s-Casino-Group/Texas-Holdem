@@ -140,11 +140,11 @@ namespace PokerEngine.Tests
         }
         [Test] public void EachActorUsesItsOwnHealthEnergyCostsHandAndDealPolicy()
         {
-            var engine = new CardDuelEngine(new BattleRules("distinct", new ScoreDamagePolicy(5), 10));
+            var engine = new CardDuelEngine(new BattleRules("distinct", 10));
             var state = engine.Create("distinct", HmacDeckShuffler.FromSeed(new byte[32]), new[] {
                 new BattlePlayerSetup(P1, new CombatantDefinition("hero-a", 60), rules: new BattlePlayerRules(3, 7, 3, 2, 5, 1,
-                    new CardDuelDealPolicy(CardDuelRefillTiming.AfterAction, CardDuelRefillTiming.NextPlayerTurn))),
-                new BattlePlayerSetup(P2, new CombatantDefinition("hero-b", 90), rules: new BattlePlayerRules(1, 2, 1, 2, 9, 4)) },
+                    new CardDuelDealPolicy(CardDuelRefillTiming.AfterAction, CardDuelRefillTiming.NextPlayerTurn), damagePolicy: new ScoreDamagePolicy(5))),
+                new BattlePlayerSetup(P2, new CombatantDefinition("hero-b", 90), rules: new BattlePlayerRules(1, 2, 1, 2, 9, 4, damagePolicy: new ScoreDamagePolicy(5))) },
                 new[] { new BattleEnemySetup(E1, new CombatantDefinition("small", 1000), 3), new BattleEnemySetup(E2, new CombatantDefinition("big", 2000), 11) });
             state = Do(engine, state, P1, CardDuelAction.Start);
             Assert.That(state.Zone(CardZoneKinds.Hand, P1).Cards.Count, Is.EqualTo(5)); Assert.That(state.Zone(CardZoneKinds.Hand, P2).Cards.Count, Is.EqualTo(9));
