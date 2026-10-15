@@ -53,6 +53,10 @@ namespace Poker.SingleBattle
         {
             if (cue == null) throw new ArgumentNullException(nameof(cue));
             if (active != null && active.keepWaiting) throw new InvalidOperationException("Presentation operations must be sequenced.");
+            if (cue.Kind == BattlePresentationKind.GainBlock || cue.Kind == BattlePresentationKind.ClearBlock ||
+                cue.Kind == BattlePresentationKind.BlockHit && (cue.Effect == null || cue.Effect.HealthLost == 0))
+                return BattlePresentationOperation.Completed();
+            if (cue.Kind == BattlePresentationKind.BlockHit) cue = new BattlePresentationCue(BattlePresentationKind.Hit, cue.ActorId, cue.Effect);
             CapturePose(); active = new BattlePresentationOperation();
             if (!Application.isPlaying || !isActiveAndEnabled || model == null) { Snap(cue); return BattlePresentationOperation.Completed(); }
             var operation = active;

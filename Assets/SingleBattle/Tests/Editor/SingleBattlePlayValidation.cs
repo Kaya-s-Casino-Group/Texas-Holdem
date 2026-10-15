@@ -141,7 +141,7 @@ namespace Poker.SingleBattle.Tests
                 {
                     Assert.That(host.State.Duel.CompletedRounds, Is.Zero); Assert.That(host.State.Duel.PlayerTurn.Energy, Is.EqualTo(1));
                     Assert.That(host.State.Duel.Combat.Get(host.State.Duel.PlayerId).Health, Is.EqualTo(playerHealth));
-                    Assert.That(host.Actions.Hand.Cards.Count, Is.EqualTo(7)); Assert.That(host.Actions.Played.Cards, Is.Empty);
+                    Assert.That(host.Actions.Hand.Cards.Count, Is.EqualTo(7)); Assert.That(host.PlayerZone(CardZoneKinds.Played).Cards, Is.Empty);
                     Assert.That(hud.EndTurnButton.interactable, Is.True); Assert.That(hud.EnergyText, Does.Contain("1 / 3"));
                     Assert.That(host.State.Duel.Combat.Get(host.State.Duel.EnemyId).Health, Is.LessThan(10000));
                     hud.EndTurnButton.onClick.Invoke(); long revision = host.State.Revision;
@@ -154,7 +154,7 @@ namespace Poker.SingleBattle.Tests
                     Assert.That(sawEnemyTurn, Is.True); Assert.That(host.State.Duel.CompletedRounds, Is.EqualTo(1));
                     Assert.That(host.State.Duel.PlayerTurn.Energy, Is.EqualTo(3));
                     Assert.That(host.State.Duel.Combat.Get(host.State.Duel.PlayerId).Health, Is.EqualTo(playerHealth - enemyDamage));
-                    Assert.That(host.Actions.Hand.Cards.Count, Is.EqualTo(8)); Assert.That(host.Actions.Played.Cards, Is.Empty);
+                    Assert.That(host.Actions.Hand.Cards.Count, Is.EqualTo(8)); Assert.That(host.PlayerZone(CardZoneKinds.Played).Cards, Is.Empty);
                     var pile = Object.FindObjectsOfType<DrawPilePresenter>().Single(item => item.Source == host.Actions.Hand); pile.Refresh();
                     Assert.That(pile.View.RemainingCount.text, Is.EqualTo(host.State.Zone(CardZoneKinds.Deck).Cards.Count.ToString()));
                     ExecuteEvents.Execute(pile.View.gameObject, new PointerEventData(EventSystem.current), ExecuteEvents.pointerClickHandler);

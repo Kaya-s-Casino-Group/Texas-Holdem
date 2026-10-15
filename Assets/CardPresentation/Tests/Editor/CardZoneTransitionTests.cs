@@ -491,6 +491,65 @@ namespace CardPresentation.Tests
             }
         }
 
+        [Test] public void ReflowCuesOncePerCommittedBatchAndSkipsRepeatedSnapshots()
+        {
+            using (var f = new Fixture())
+            {
+                int cues = 0;
+                CardZoneViewData committed = null;
+                f.Zone.ReflowStarted += () => { cues++; committed = f.Zone.Data; };
+                f.Zone.Present(Data(Card("a"), Card("b"), Card("c")), false);
+                var sorted = Data(Card("c"), Card("b"), Card("a"));
+                f.Zone.Present(sorted);
+                Assert.AreEqual(1, cues); Assert.AreSame(sorted, committed);
+                f.Zone.AdvanceMotion(.05f);
+                f.Zone.Present(Data(Card("c"), Card("b"), Card("a")));
+                Assert.AreEqual(1, cues, "An unfinished reflow must not make repeated snapshots cue again.");
+                f.Zone.AdvanceMotion(2);
+                f.Zone.Present(Data(Card("c", selected: true), Card("b"), Card("a")));
+                Assert.AreEqual(1, cues, "Selection does not change the layout target.");
+                f.Zone.Present(Data(Card("c"), Card("b"), Card("a"), Card("d")));
+                Assert.AreEqual(2, cues, "Settled cards making room cue once, independently of the incoming card.");
+                f.Zone.AdvanceMotion(2);
+                f.Zone.Present(Data(Card("c"), Card("a")));
+                Assert.AreEqual(3, cues, "Survivors closing a gap cue once.");
+                f.Zone.Present(Data());
+                Assert.AreEqual(3, cues, "Removing every card leaves no reflow.");
+            }
+        }
+
+        [Test] public void ReflowCuesSkipRestoresInvalidUpdatesAndDisabledAnimations()
+        {
+            using (var f = new Fixture())
+            {
+                int cues = 0; f.Zone.ReflowStarted += () => cues++;
+                f.Zone.Present(Data(Card("a"), Card("b")), false);
+                f.Zone.Present(Data(Card("b"), Card("a")), false);
+                Assert.Throws<ArgumentException>(() => f.Zone.Present(Data(Card("a"), Card("a"))));
+                f.Root.SetActive(false);
+                f.Zone.Present(Data(Card("a"), Card("b")));
+                f.Root.SetActive(true);
+                var tuning = f.Zone.TransitionSettings; tuning.Enabled = false;
+                f.Zone.SetTransitionSettings(tuning);
+                f.Zone.Present(Data(Card("b"), Card("a")));
+                Assert.AreEqual(0, cues);
+            }
+        }
+
+        [Test] public void NewCardFlightsAndTheirRetargetingDoNotCueReflow()
+        {
+            using (var f = new Fixture())
+            {
+                int cues = 0; f.Zone.ReflowStarted += () => cues++;
+                f.Zone.Present(Data(Card("a"), Card("b")));
+                f.Zone.Present(Data(Card("b"), Card("a"), Card("c")));
+                Assert.AreEqual(0, cues);
+                f.Zone.AdvanceMotion(3);
+                f.Zone.Present(Data(Card("a"), Card("b"), Card("c")));
+                Assert.AreEqual(1, cues);
+            }
+        }
+
         [Test] public void SortingSnapshotsReuseViewsAndRetargetReflowWithoutDealingCardsAgain()
         {
             using (var f = new Fixture())

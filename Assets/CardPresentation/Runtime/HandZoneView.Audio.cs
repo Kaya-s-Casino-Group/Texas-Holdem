@@ -17,6 +17,11 @@ namespace CardPresentation
         [SerializeField] private bool selectionSoundEnabled = true;
         [SerializeField] private AudioClip selectionSound;
         [SerializeField, Range(0, 1)] private float selectionSoundVolume = 1;
+        [Header("理牌 / 让位音效")]
+        [SerializeField, InspectorName("启用理牌音效")] private bool reflowSoundEnabled = true;
+        [SerializeField, InspectorName("音效（空为静默）"), Tooltip("已有卡牌理牌或让位时整批播放一次；留空不使用默认音效。")]
+        private AudioClip reflowSound;
+        [SerializeField, Range(0, 1), InspectorName("理牌音量")] private float reflowSoundVolume = 1;
         [Header("取消选牌音效")]
         [SerializeField, InspectorName("启用取消选牌音效")] private bool deselectionSoundEnabled = true;
         [SerializeField, InspectorName("音效（空为静默）"), Tooltip("仅从选中变为未选中时播放；留空不使用默认音效。")]
@@ -31,6 +36,7 @@ namespace CardPresentation
         private AudioSource discardAudioSource;
         private AudioSource selectionAudioSource;
         private AudioSource deselectionAudioSource;
+        private AudioSource reflowAudioSource;
         private AudioSource selectionDeniedAudioSource;
 
         public bool DrawSoundEnabled => drawSoundEnabled;
@@ -47,6 +53,9 @@ namespace CardPresentation
         public AudioClip SelectionSoundOverride => selectionSound;
         public AudioClip SelectionSound => selectionSound != null ? selectionSound : DefaultCardSound;
         public float SelectionSoundVolume => selectionSoundVolume;
+        public bool ReflowSoundEnabled => reflowSoundEnabled;
+        public AudioClip ReflowSound => reflowSound;
+        public float ReflowSoundVolume => reflowSoundVolume;
         public bool DeselectionSoundEnabled => deselectionSoundEnabled;
         public AudioClip DeselectionSound => deselectionSound;
         public float DeselectionSoundVolume => deselectionSoundVolume;
@@ -69,6 +78,18 @@ namespace CardPresentation
 
         /// <summary>A retained card changed from selected to unselected after commit. Restores/removals are silent.</summary>
         public event Action<CardInstanceView> CardDeselected;
+
+        /// <summary>One cue per committed snapshot that starts a retained card reflow. Restores and refreshes are silent.</summary>
+        public event Action ReflowStarted;
+
+        /// <summary>A null clip is silent. Reflow uses its own source and plays once for the whole batch.</summary>
+        public void SetReflowSound(AudioClip clip, float volume = 1, bool enabled = true)
+        {
+            if (!CardZoneRowLayout.Finite(volume) || volume < 0 || volume > 1)
+                throw new ArgumentOutOfRangeException(nameof(volume));
+            reflowSound = clip; reflowSoundVolume = volume; reflowSoundEnabled = enabled;
+            if (!enabled || volume == 0 || clip == null) StopReflowAudio();
+        }
 
         /// <summary>Configure draws only. A null clip uses the bundled default; discard settings are independent.</summary>
         public void SetDrawSound(AudioClip clip, float volume = 1, bool enabled = true)
@@ -160,6 +181,12 @@ namespace CardPresentation
             CardDeselected?.Invoke(view);
         }
 
+        private void NotifyReflowStarted()
+        {
+            PlayCardSound(ref reflowAudioSource, ReflowSound, reflowSoundVolume, reflowSoundEnabled, "Reflow Audio");
+            ReflowStarted?.Invoke();
+        }
+
         private void PlayCardSound(ref AudioSource source, AudioClip clip, float volume, bool enabled, string sourceName)
         {
             if (!Application.isPlaying || !isActiveAndEnabled || !enabled || volume <= 0) return;
@@ -176,16 +203,18 @@ namespace CardPresentation
             }
             // Separate sources keep one action's mute from cutting off the other action's tail.
             source.PlayOneShot(clip, volume);
+            RequestHapticFeedback();
         }
 
+        private void StopReflowAudio() { if (reflowAudioSource != null) reflowAudioSource.Stop(); }
         private void StopDrawAudio() { if (drawAudioSource != null) drawAudioSource.Stop(); }
         private void StopDiscardAudio() { if (discardAudioSource != null) discardAudioSource.Stop(); }
         private void StopSelectionAudio() { if (selectionAudioSource != null) selectionAudioSource.Stop(); }
         private void StopDeselectionAudio() { if (deselectionAudioSource != null) deselectionAudioSource.Stop(); }
         private void StopSelectionDeniedAudio() { if (selectionDeniedAudioSource != null) selectionDeniedAudioSource.Stop(); }
-        private void StopCardAudio() { StopDrawAudio(); StopDiscardAudio(); StopSelectionAudio(); StopDeselectionAudio(); StopSelectionDeniedAudio(); }
+        private void StopCardAudio() { CardHapticsDriver.StopFor(this); StopReflowAudio(); StopDrawAudio(); StopDiscardAudio(); StopSelectionAudio(); StopDeselectionAudio(); StopSelectionDeniedAudio(); }
         private void ReleaseCardAudio()
-        { ReleaseAudio(ref drawAudioSource); ReleaseAudio(ref discardAudioSource); ReleaseAudio(ref selectionAudioSource); ReleaseAudio(ref deselectionAudioSource); ReleaseAudio(ref selectionDeniedAudioSource); }
+        { CardHapticsDriver.StopFor(this); ReleaseAudio(ref reflowAudioSource); ReleaseAudio(ref drawAudioSource); ReleaseAudio(ref discardAudioSource); ReleaseAudio(ref selectionAudioSource); ReleaseAudio(ref deselectionAudioSource); ReleaseAudio(ref selectionDeniedAudioSource); }
         private static void ReleaseAudio(ref AudioSource source)
         {
             if (source == null) return;

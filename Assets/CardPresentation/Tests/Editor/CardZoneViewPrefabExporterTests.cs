@@ -59,6 +59,9 @@ namespace CardPresentation.Tests
                 source.SetMaxSelectedCards(3); source.SetSelectionDeniedAnimation(new Vector3(0, 0, .006f), .09f, .2f);
                 source.SetSelectionDeniedSound(null, .45f, false);
                 source.SetDeselectionSound(source.DrawSound, .42f, false);
+                source.SetReflowSound(source.DrawSound, .37f, false);
+                var haptics = source.HapticSettings; haptics.Enabled = false; haptics.GamepadSeconds = .08f; haptics.GamepadStrength = .42f;
+                source.SetHapticSettings(haptics);
                 source.gameObject.AddComponent<CardZonePlayHost>(); source.gameObject.AddComponent<CardZoneMouseInput>();
                 var unrelated = new GameObject("Authored Child"); unrelated.transform.SetParent(source.transform, false);
                 source.Present(Data(new CardVisualData("a", "spades_a"), new CardVisualData("b")));
@@ -79,6 +82,9 @@ namespace CardPresentation.Tests
                 Assert.IsNull(hand.SelectionDeniedSound); Assert.AreEqual(.45f, hand.SelectionDeniedSoundVolume); Assert.IsFalse(hand.SelectionDeniedSoundEnabled);
                 Assert.AreSame(source.DrawSound, hand.DeselectionSound); Assert.AreEqual(.42f, hand.DeselectionSoundVolume);
                 Assert.IsFalse(hand.DeselectionSoundEnabled);
+                Assert.AreSame(source.DrawSound, hand.ReflowSound); Assert.AreEqual(.37f, hand.ReflowSoundVolume);
+                Assert.IsFalse(hand.ReflowSoundEnabled);
+                Assert.AreEqual(haptics, hand.HapticSettings);
                 Assert.IsNull(hand.DeckAnchor); Assert.IsNull(hand.DiscardAnchor); Assert.IsNull(hand.FacingCamera); Assert.IsTrue(hand.FaceCamera);
                 Near(deckLocal, hand.DeckLocalPosition); Near(discardLocal, hand.DiscardLocalPosition);
                 Assert.Less(Quaternion.Angle(authoredRotation, asset.transform.localRotation), .001f);

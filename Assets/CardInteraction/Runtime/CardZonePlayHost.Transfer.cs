@@ -6,8 +6,16 @@ namespace CardInteraction
 {
     public sealed partial class CardZonePlayHost
     {
+        public int PlaySelected(bool animate = true)
+        {
+            if (!IsRunning || !isActiveAndEnabled || !(match.Commands is ICardDirectPlayCommands commands))
+                throw new InvalidOperationException("Start a hand binding with a direct gameplay play command.");
+            return commands.Play(this, animate);
+        }
+
         public int PlaySelected(CardZonePlayHost destination, CardZoneTransferPresenter route, bool animate = true)
         {
+            if (IsRunning && match.Commands is ICardDirectPlayCommands) return PlaySelected(animate);
             if (!IsRunning || destination == null || !destination.IsRunning) throw new InvalidOperationException("Start both match zone bindings.");
             return TransferSelected(destination, route, animate, false);
         }

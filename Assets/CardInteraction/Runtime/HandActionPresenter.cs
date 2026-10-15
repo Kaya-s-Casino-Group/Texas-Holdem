@@ -24,6 +24,12 @@ namespace CardInteraction
         {
             get
             {
+                if (!Ready) return false;
+                if (hand.Match.Commands is ICardDirectPlayCommands direct)
+                    return direct.CanPlay(hand) && hand.Cards.Any(card => card.Interaction.IsSelected) &&
+                        hand.Cards.Where(card => card.Interaction.IsSelected).All(card => card.Card.CanPlay &&
+                            hand.GetComponent<HandZoneView>().TryGetView(card.Id, out var visual) && visual.isActiveAndEnabled &&
+                            visual.Surface != null && visual.Surface.GetComponent<Renderer>() is Renderer renderer && renderer.enabled);
                 var destination = Played;
                 if (!Ready || playRoute == null || !playRoute.isActiveAndEnabled || playRoute.IsTransferring ||
                     playRoute.Source != hand.GetComponent<HandZoneView>() || destination == null || !destination.IsRunning ||
@@ -48,7 +54,13 @@ namespace CardInteraction
             Unsubscribe(); hand = source; panel = view; playRoute = route;
             if (isActiveAndEnabled) Subscribe(); Refresh();
         }
-        public void Play() { if (CanPlay) { hand.PlaySelected(Played, playRoute); Refresh(); } }
+        public void Play()
+        {
+            if (!CanPlay) return;
+            if (hand.Match.Commands is ICardDirectPlayCommands) hand.PlaySelected();
+            else hand.PlaySelected(Played, playRoute);
+            Refresh();
+        }
         public void Discard() { if (CanDiscard) { hand.DiscardSelected(); Refresh(); } }
         public void SortByRank() => Sort(CardZoneSortOrder.RankFirst);
         public void SortBySuit() => Sort(CardZoneSortOrder.SuitFirst);

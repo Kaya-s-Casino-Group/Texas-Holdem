@@ -12,6 +12,11 @@ namespace Poker.SingleBattle
         [SerializeField] private Transform visual;
         [SerializeField] private MonoBehaviour presentation;
         private ParticipantId participant;
+        private string shieldSession;
+        private readonly ShieldLedger shieldLedger = new ShieldLedger();
+        public ShieldSnapshot Shields => shieldLedger.Snapshot;
+        internal ShieldSnapshot RecordBlockEffect(CombatEvent effect, ShieldCard[] cards) =>
+            shieldLedger.Apply(effect.Revision + "/" + effect.Index, effect.Before.Block, effect.After.Block, cards);
         private BattlePresentationOperation pending;
         public SingleBattleHost Battle => battle;
         public Transform Visual => visual;
@@ -47,7 +52,11 @@ namespace Poker.SingleBattle
             if (visual != null && (visual == transform || !visual.IsChildOf(transform)))
                 throw new ArgumentException("The visual must be beneath the logical actor, not its root.");
             ResetPresentation(); participant = id;
+            string session = battle.State.Table.MatchId.ToString() + "/" + id;
+            if (shieldSession != session) { shieldSession = session; shieldLedger.Reset(Unit.Block); }
+            else shieldLedger.Reconcile(Unit.Block);
             Presentation?.Synchronize(Unit);
+            (Presentation as IShieldPresentation)?.SynchronizeShields(Shields);
             if (!IsAlive) SnapToCurrentState();
         }
         internal BattlePresentationOperation PresentPreparation(bool animate) =>
@@ -58,14 +67,19 @@ namespace Poker.SingleBattle
             ActionPresented?.Invoke();
             return Play(new BattlePresentationCue(BattlePresentationKind.Attack, participant, effect), animate);
         }
-        internal BattlePresentationOperation PresentHit(CombatEvent effect, bool animate)
+        internal BattlePresentationOperation PresentHit(CombatEvent effect, bool animate) => PresentEffect(effect, animate, null);
+        internal BattlePresentationOperation PresentEffect(CombatEvent effect, bool animate, ShieldSnapshot shields)
         {
             if (!IsBound || effect.Effect.Target != participant) return BattlePresentationOperation.Completed();
             Presentation?.Synchronize(effect.After);
-            if (effect.HealthLost == 0 && effect.BlockAbsorbed == 0)
-                return BattlePresentationOperation.Completed();
+            BattlePresentationKind kind;
+            if (effect.Effect.Kind == CombatEffectKind.GainBlock && effect.After.Block > effect.Before.Block) kind = BattlePresentationKind.GainBlock;
+            else if (effect.Effect.Kind == CombatEffectKind.ClearBlock) kind = BattlePresentationKind.ClearBlock;
+            else if (effect.BlockAbsorbed > 0) kind = BattlePresentationKind.BlockHit;
+            else if (effect.HealthLost > 0) kind = BattlePresentationKind.Hit;
+            else return BattlePresentationOperation.Completed();
             if (effect.HealthLost > 0) DamagePresented?.Invoke(effect);
-            return Play(new BattlePresentationCue(BattlePresentationKind.Hit, participant, effect), animate);
+            return Play(new BattlePresentationCue(kind, participant, effect, shields), animate);
         }
         internal BattlePresentationOperation PresentDeath(CombatEvent effect, bool animate)
         {
@@ -91,7 +105,12 @@ namespace Poker.SingleBattle
         internal void SnapToCurrentState()
         {
             ResetPresentation();
-            if (IsBound) Presentation?.Synchronize(Unit);
+            if (IsBound)
+            {
+                shieldLedger.Reconcile(Unit.Block);
+                Presentation?.Synchronize(Unit);
+                (Presentation as IShieldPresentation)?.SynchronizeShields(Shields);
+            }
             if (IsBound && !IsAlive) Presentation?.Snap(new BattlePresentationCue(BattlePresentationKind.Death, participant));
         }
         protected virtual void OnDisable() => ResetPresentation();

@@ -205,10 +205,43 @@ namespace Poker.SingleBattle.Editor
             EditorSceneManager.MarkSceneDirty(scene); EditorSceneManager.SaveScene(scene);
             Debug.Log("SingleBattleDemo saved without editor card seeds. The battle supplies zones and deals at the first player turn.");
         }
+        [MenuItem("Tools/Poker/Single Battle/Remove Played Zone Presentation")]
+        public static void RemovePlayedZonePresentation()
+        {
+            if (Application.isPlaying) throw new InvalidOperationException("Stop Play mode before removing the old played zone.");
+            var scene = SceneManager.GetActiveScene();
+            var hosts = scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<SingleBattleHost>(true)).ToArray();
+            if (hosts.Length == 0) throw new InvalidOperationException("当前场景没有 SingleBattleHost。");
+            Undo.SetCurrentGroupName("移除出牌区表现"); int group = Undo.GetCurrentGroup();
+            foreach (var host in hosts) RemovePlayedPresentation(host);
+            Undo.CollapseUndoOperations(group);
+            EditorSceneManager.MarkSceneDirty(scene); EditorSceneManager.SaveScene(scene);
+            Debug.Log("已移除出牌区及飞行路径；出牌只更新手牌与战斗数据，后续表现待配置。");
+        }
+        internal static void RemovePlayedPresentation(SingleBattleHost host)
+        {
+            var actions = host.Actions;
+            if (actions == null || actions.Hand == null) throw new InvalidOperationException("Bind the hand action presenter first.");
+            var scene = host.gameObject.scene;
+            var zones = scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<PlayedZoneView>(true))
+                .Where(zone => zone.GetComponent<CardZonePlayHost>()?.Match == host.Match).ToArray();
+            var routes = scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<CardZoneTransferPresenter>(true))
+                .Where(route => route.Source == actions.Hand.GetComponent<HandZoneView>() || zones.Contains(route.Destination)).ToArray();
+            foreach (var route in routes) route.CompleteTransfers();
+            Undo.RecordObject(actions, "解除出牌路径绑定"); actions.Configure(actions.Hand, actions.Panel);
+            EditorUtility.SetDirty(actions); PrefabUtility.RecordPrefabInstancePropertyModifications(actions);
+            foreach (var route in routes) Undo.DestroyObjectImmediate(route);
+            foreach (var zone in zones)
+            {
+                zone.GetComponent<CardZonePlayHost>().StopSession(); zone.Clear();
+                Undo.DestroyObjectImmediate(zone.gameObject);
+            }
+        }
+
         private static void PrepareRuntimeCardZones(Scene scene, SingleBattleHost host)
         {
-            host.Actions.PlayRoute.CompleteTransfers();
-            host.Actions.Hand.StopSession(); host.Actions.Played.StopSession();
+            RemovePlayedPresentation(host);
+            host.Actions.Hand.StopSession();
             host.Match.ConfigureRuntimeManaged(); EditorUtility.SetDirty(host.Match);
             foreach (var zone in scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<CardZonePlayHost>(true)).Where(zone => zone.Match == host.Match))
             {

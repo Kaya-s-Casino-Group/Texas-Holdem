@@ -12,7 +12,8 @@
     "PokerEngine.Scoring",
     "PokerEngine.Combat",
     "PokerEngine.Composition",
-    "UIFoundation.Runtime"
+    "UIFoundation.Runtime",
+    "CardArt.Runtime"
   ],
   "includePlatforms": [
     "Editor"

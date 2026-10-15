@@ -177,6 +177,48 @@ namespace CardPresentation.Tests
             finally { if (window != null) Object.DestroyImmediate(window); Object.DestroyImmediate(clip); }
         }
 
+        [Test] public void ReflowAudioDefaultsToSilenceAndEditorRoundTripsIndependentSettings()
+        {
+            var clip = AudioClip.Create("Reflow Override", 256, 1, 48000, false);
+            CardZoneValidationWindow window = null;
+            try
+            {
+                using (var f = new Fixture())
+                {
+                    Assert.IsNull(f.View.ReflowSound); Assert.IsTrue(f.View.ReflowSoundEnabled);
+                    Assert.AreEqual(1, f.View.ReflowSoundVolume);
+                    f.View.SetSelectionSound(null, .3f, false);
+                    f.View.SetReflowSound(clip, .4f, false);
+                    string saved = JsonUtility.ToJson(f.View);
+                    f.View.SetReflowSound(null); Assert.IsNull(f.View.ReflowSound);
+                    JsonUtility.FromJsonOverwrite(saved, f.View);
+                    Assert.AreSame(clip, f.View.ReflowSound); Assert.AreEqual(.4f, f.View.ReflowSoundVolume);
+                    Assert.IsFalse(f.View.ReflowSoundEnabled);
+                    foreach (float invalid in new[] { float.NaN, float.PositiveInfinity, float.NegativeInfinity, -.1f, 1.1f })
+                        Assert.Throws<ArgumentOutOfRangeException>(() => f.View.SetReflowSound(null, invalid));
+                    Assert.AreSame(clip, f.View.ReflowSound); Assert.AreEqual(.4f, f.View.ReflowSoundVolume);
+                    window = ScriptableObject.CreateInstance<CardZoneValidationWindow>(); window.SelectTarget(f.View);
+                    var editor = new SerializedObject(window);
+                    Assert.AreSame(clip, editor.FindProperty("reflowSound").objectReferenceValue);
+                    Assert.AreEqual(.4f, editor.FindProperty("reflowSoundVolume").floatValue);
+                    Assert.IsFalse(editor.FindProperty("reflowSoundEnabled").boolValue);
+                    editor.FindProperty("reflowSound").objectReferenceValue = null;
+                    editor.FindProperty("reflowSoundVolume").floatValue = .6f;
+                    editor.FindProperty("reflowSoundEnabled").boolValue = true;
+                    editor.ApplyModifiedPropertiesWithoutUndo();
+                    var snapshot = f.View.Data;
+                    typeof(CardZoneValidationWindow).GetMethod("Apply", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+                        .Invoke(window, new object[] { false });
+                    Assert.IsNull(f.View.ReflowSound); Assert.AreEqual(.6f, f.View.ReflowSoundVolume);
+                    Assert.IsTrue(f.View.ReflowSoundEnabled); Assert.AreSame(snapshot, f.View.Data);
+                    Assert.AreEqual(.3f, f.View.SelectionSoundVolume); Assert.IsFalse(f.View.SelectionSoundEnabled);
+                    Assert.IsTrue(f.View.DrawSoundEnabled); Assert.AreEqual(1, f.View.DiscardSoundVolume);
+                    Object.DestroyImmediate(window); window = null;
+                }
+            }
+            finally { if (window != null) Object.DestroyImmediate(window); Object.DestroyImmediate(clip); }
+        }
+
         [Test] public void SelectionAudioConfigurationIsIndependentAndSurvivesSerialization()
         {
             var clip = AudioClip.Create("Selection Override", 256, 1, 48000, false);

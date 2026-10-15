@@ -35,6 +35,14 @@ namespace CardPresentation.Editor
                     transitionSettings.ReflowOvershoot = CardZoneTransitionSettings.Default.ReflowOvershoot;
                 });
             EditorGUILayout.HelpBox("点数理牌、花色理牌及增减卡牌后的让位共用此配置。总时长包含过冲与回稳；惯性强度 0 为无回弹，默认 1.25，幅度随移动距离等比变化。中途再次理牌从当前姿态继续，不重新发牌或翻面。补牌的飞入和回稳参数独立。已有配置若强度为 0，可点恢复默认启用惯性。", MessageType.None);
+            DrawReflowAudio();
+        }
+
+        private void DrawReflowAudio()
+        {
+            DrawAudioSection("理牌 / 让位音效", reflowSoundEnabled, reflowSound, reflowSoundVolume, Hand.ReflowSound,
+                (enabled, clip, volume) => { reflowSoundEnabled = enabled; reflowSound = clip; reflowSoundVolume = volume; }, emptyIsSilent: true);
+            EditorGUILayout.HelpBox("默认留空。已有卡牌开始理牌或让位时整批播放一次；重复刷新、静默恢复或关闭列表动画时不播放。在 Play 中试听。", MessageType.None);
         }
 
         private void DrawTransitions()
@@ -56,9 +64,22 @@ namespace CardPresentation.Editor
             EditorGUILayout.HelpBox("新增身份背面朝上从牌堆依次飞入；可见牌在飞行中翻正，不可见牌保持牌背，动画不修改卡牌属性或可见性。落位后过冲并回摆，原有牌平滑让位。锚点优先，否则使用右侧局部位置。橙色 Gizmo 表示牌堆来源。", MessageType.None);
         }
 
+        private void DrawHapticControls()
+        {
+            EditorGUILayout.Space(); EditorGUILayout.LabelField("手机 / 手柄震动", EditorStyles.boldLabel);
+            EditorGUI.BeginChangeCheck(); var next = hapticSettings;
+            next.Enabled = EditorGUILayout.Toggle("启用设备震动", next.Enabled);
+            next.GamepadSeconds = EditorGUILayout.Slider("手柄时长（秒）", next.GamepadSeconds, .01f, .2f);
+            next.GamepadStrength = EditorGUILayout.Slider("手柄强度", next.GamepadStrength, 0, 1);
+            if (EditorGUI.EndChangeCheck()) Mutate("调整设备震动", () => { next.Validate(); hapticSettings = next; });
+            EditorGUILayout.HelpBox("抽牌入列、弃牌、选中、取消选中、无法选中及理牌让位共用。每播放一次音效触发一次短震动；空音效、静音或关闭音效时不触发。连接手柄时优先震动当前手柄，否则手机使用系统短促轻触，手机时长与强度由系统决定。仅 Play / 真机触发。", MessageType.None);
+        }
+
         private void DrawAudioControls()
         {
             if (Hand == null) { EditorGUILayout.HelpBox("当前牌区没有手牌音效配置。", MessageType.Info); return; }
+            DrawHapticControls();
+            DrawReflowAudio();
             DrawAudioSection("抽牌音效", drawSoundEnabled, drawSound, drawSoundVolume, Hand.DrawSound,
                 (enabled, clip, volume) => { drawSoundEnabled = enabled; drawSound = clip; drawSoundVolume = volume; });
             DrawAudioSection("弃牌音效", discardSoundEnabled, discardSound, discardSoundVolume, Hand.DiscardSound,

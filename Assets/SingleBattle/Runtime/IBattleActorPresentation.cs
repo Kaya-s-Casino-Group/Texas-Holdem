@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Poker.SingleBattle
 {
-    public enum BattlePresentationKind { PrepareAttack, Attack, Hit, Death }
+    public enum BattlePresentationKind { PrepareAttack, Attack, Hit, Death, GainBlock, BlockHit, ClearBlock }
     public enum BattlePresentationStatus { Pending, Completed, Cancelled, Failed }
 
     /// <summary>Immutable, already-resolved presentation input. It cannot submit gameplay commands.</summary>
@@ -13,10 +13,11 @@ namespace Poker.SingleBattle
         public BattlePresentationKind Kind { get; }
         public ParticipantId ActorId { get; }
         public CombatEvent Effect { get; }
-        public BattlePresentationCue(BattlePresentationKind kind, ParticipantId actorId, CombatEvent effect = null)
+        public ShieldSnapshot Shields { get; }
+        public BattlePresentationCue(BattlePresentationKind kind, ParticipantId actorId, CombatEvent effect = null, ShieldSnapshot shields = null)
         {
             if (!Enum.IsDefined(typeof(BattlePresentationKind), kind) || !actorId.IsValid) throw new ArgumentException("Invalid presentation cue.");
-            Kind = kind; ActorId = actorId; Effect = effect;
+            Kind = kind; ActorId = actorId; Effect = effect; Shields = shields;
         }
     }
 
@@ -36,6 +37,11 @@ namespace Poker.SingleBattle
         }
         public static BattlePresentationOperation Completed()
         { var operation = new BattlePresentationOperation(); operation.Complete(); return operation; }
+    }
+
+    public interface IShieldPresentation
+    {
+        void SynchronizeShields(ShieldSnapshot snapshot);
     }
 
     /// <summary>Play returns an operation completed by the actual animation/timeline, never an estimated host delay.

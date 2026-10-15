@@ -35,7 +35,7 @@ namespace CardPresentation
         {
             ValidateOffset(raisedOffset); ValidateOffset(hoveredOffset); ValidateOffset(deckLocalPosition);
             liftSettings.Validate(); transitionSettings.Validate(); discardSettings.Validate();
-            ValidateSelectionSettings();
+            ValidateSelectionSettings(); hapticSettings.Validate();
         }
 
         public override void Present(CardZoneViewData data, bool animate = true) => base.Present(data, animate);
@@ -68,6 +68,7 @@ namespace CardPresentation
             private readonly List<CardInstanceView> immediateDiscards = new List<CardInstanceView>();
             private double queue;
             private float discardDelay;
+            private bool reflowStarted;
 
             public HandPresentationUpdate(HandZoneView hand, CardZoneViewData data, bool requestedAnimation, IEnumerable<string> discardedViewIds)
             {
@@ -108,6 +109,10 @@ namespace CardPresentation
             public override void PresentCard(CardInstanceView view, CardVisualData card, CardShaderAppearance appearance,
                 CardZoneCardPose pose, int index, bool created)
             {
+                // Compare final layout targets, not the in-flight display pose, so repeated snapshots stay silent.
+                if (animate && !created && !arrivals[index] && !view.IsEntering &&
+                    (view.transform.localPosition != pose.Position || view.transform.localRotation != pose.Rotation))
+                    reflowStarted = true;
                 view.Present(card, hand.hoveredOffset, hand.raisedOffset, appearance, hand.liftSettings, animateInteraction, hoverScaling: true);
                 // Lost visuals for an existing identity are restored without replaying the deal.
                 view.SetPose(pose, hand.transitionSettings, animate && (arrivals[index] || !created), arrivals[index], source, delays[index]);
@@ -138,6 +143,7 @@ namespace CardPresentation
                     if (selections[i] && view.Data.Interaction.IsSelected) hand.NotifyCardSelected(view);
                     else if (deselections[i] && !view.Data.Interaction.IsSelected) hand.NotifyCardDeselected(view);
                 }
+                if (reflowStarted && ReferenceEquals(hand.Data, data) && hand.isActiveAndEnabled) hand.NotifyReflowStarted();
             }
             public override void Dispose() { foreach (var previous in immediateDiscards) Release(previous); }
         }

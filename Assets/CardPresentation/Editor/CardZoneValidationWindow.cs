@@ -24,6 +24,10 @@ namespace CardPresentation.Editor
         [SerializeField] private bool drawSoundEnabled = true, discardSoundEnabled = true, selectionSoundEnabled = true;
         [SerializeField] private AudioClip drawSound, discardSound, selectionSound;
         [SerializeField] private float drawSoundVolume = 1, discardSoundVolume = 1, selectionSoundVolume = 1;
+        [SerializeField] private CardHapticSettings hapticSettings = CardHapticSettings.Default;
+        [SerializeField] private bool reflowSoundEnabled = true;
+        [SerializeField] private AudioClip reflowSound;
+        [SerializeField] private float reflowSoundVolume = 1;
         [SerializeField] private bool deselectionSoundEnabled = true;
         [SerializeField] private AudioClip deselectionSound;
         [SerializeField] private float deselectionSoundVolume = 1;
@@ -107,6 +111,8 @@ namespace CardPresentation.Editor
             drawSoundEnabled = Hand.DrawSoundEnabled; drawSound = Hand.DrawSoundOverride; drawSoundVolume = Hand.DrawSoundVolume;
             discardSoundEnabled = Hand.DiscardSoundEnabled; discardSound = Hand.DiscardSoundOverride; discardSoundVolume = Hand.DiscardSoundVolume;
             selectionSoundEnabled = Hand.SelectionSoundEnabled; selectionSound = Hand.SelectionSoundOverride; selectionSoundVolume = Hand.SelectionSoundVolume;
+            hapticSettings = Hand.HapticSettings;
+            reflowSoundEnabled = Hand.ReflowSoundEnabled; reflowSound = Hand.ReflowSound; reflowSoundVolume = Hand.ReflowSoundVolume;
             deselectionSoundEnabled = Hand.DeselectionSoundEnabled; deselectionSound = Hand.DeselectionSound; deselectionSoundVolume = Hand.DeselectionSoundVolume;
             maxSelectedCards = Hand.MaxSelectedCards; selectionDeniedOffset = Hand.SelectionDeniedOffset;
             selectionDeniedRiseSeconds = Hand.SelectionDeniedRiseSeconds; selectionDeniedReturnSeconds = Hand.SelectionDeniedReturnSeconds;
@@ -131,6 +137,8 @@ namespace CardPresentation.Editor
                 Hand.SetDrawSound(drawSound, drawSoundVolume, drawSoundEnabled); Hand.SetDeckSource(deckLocalPosition, deckAnchor);
                 Hand.SetDiscardSound(discardSound, discardSoundVolume, discardSoundEnabled);
                 Hand.SetSelectionSound(selectionSound, selectionSoundVolume, selectionSoundEnabled);
+                Hand.SetHapticSettings(hapticSettings);
+                Hand.SetReflowSound(reflowSound, reflowSoundVolume, reflowSoundEnabled);
                 Hand.SetDeselectionSound(deselectionSound, deselectionSoundVolume, deselectionSoundEnabled);
                 Hand.SetMaxSelectedCards(maxSelectedCards);
                 Hand.SetSelectionDeniedAnimation(selectionDeniedOffset, selectionDeniedRiseSeconds, selectionDeniedReturnSeconds);

@@ -148,7 +148,7 @@ Host、CardDuelEngine、TeamBattleEngine 已移除全局目标策略参数和配
 
 ## 可等待的表现协议
 
-逻辑角色绑定任意实现 `IBattleActorPresentation` 的子物体组件，宿主通过角色调用协议，不依赖具体 Presenter 类型、动画名称或持续时间。协议只接收已结算的只读 `BattlePresentationCue`（PrepareAttack / Attack / Hit / Death、ActorId、可选 CombatEvent）；表现不获得战局命令权限。
+逻辑角色绑定任意实现 `IBattleActorPresentation` 的子物体组件，宿主通过角色调用协议，不依赖具体 Presenter 类型、动画名称或持续时间。协议只接收已结算的只读 `BattlePresentationCue`（PrepareAttack / Attack / Hit / Death / GainBlock / BlockHit / ClearBlock、ActorId、可选 CombatEvent 和 ShieldSnapshot）；表现不获得战局命令权限。
 
 | 调用 | 协议要求 |
 | --- | --- |
@@ -201,3 +201,32 @@ Host、CardDuelEngine、TeamBattleEngine 已移除全局目标策略参数和配
 ## 卡牌美术
 
 单牌 CardView 与 Canvas 总览共用 `Assets/CardArt/Profiles/StandardCardArt.asset`；CardMatchHost 使用 CardStateArtBindings 将玩法状态映射为参数组合。Zone 仅管理投影/布局/动画。切换玩家仍沿用同一套卡牌美术，Run DeckEntry 的效果与禁用随卡牌保留。美术入口为 `Tools > 卡牌美术 > Shader 参数组合`；状态映射入口为 `Tools > 玩法配置 > 卡牌状态美术映射`。
+
+## 出牌表现入口
+
+当前 SingleBattle 使用 `ICardDirectPlayCommands` 提交出牌，不依赖 `PlayedZoneView`、出牌区 `CardZonePlayHost` 或 `CardZoneTransferPresenter`。按钮通过 `CardZonePlayHost.PlaySelected(animate)` 调用玩家权限与战斗结算；被打出的卡牌从手牌视图移除，剩余手牌仍使用现有理牌动画，暂不添加替代的出牌动画。计分、伤害、能量、补牌与规则层 Played → Discard 的收集流程保留。
+
+当前 `SingleBattleDemoNew` 已移除旧出牌区对象与飞行组件。其他旧单战场景可用 `Tools > Poker > Single Battle > Remove Played Zone Presentation` 清理并保存；操作支持 Undo。新配置流程也会清理这些旧绑定。旧 DrawBattle / 卡牌跨区示例仍使用原有通用转移组件，不影响当前战斗入口。新出牌表现可在战斗结算后的表现阶段接入，不必重新引入目标牌区。
+
+
+## 弃牌盾牌表现
+
+`BattleActorPresentationCoordinator` 是 Actor 的总表现入口，组合原有模型 Presenter 与 `DiscardShieldPresenter`。`GainBlock` 插入本次弃掉的牌；`BlockHit` 播放盾牌受击和整张溶解；`ClearBlock` 清空盾牌。完全格挡只播放盾牌表现；穿透格挡造成生命损失时，盾牌与角色受击同时执行，两个操作都完成后才释放流程。死亡也清空容器。规则先结算，表现只消费只读结果，不修改格挡或伤害。
+
+每次弃牌记录独立批次：本次牌列表、实际获得格挡、剩余格挡。批次按获得顺序消耗，初始格挡和其他来源格挡占用无卡牌的账目，避免误消耗弃牌盾牌。每批累计溶解张数为 `ceil((初始格挡 - 剩余格挡) × 张数 / 初始格挡)`；例如三张牌提供 24 格挡，累计消耗 1–8 点溶解第一张，9–16 点溶解第二张，17–24 点溶解第三张。已选中的牌播放完整溶解，其他牌保持完整，不停留在半溶解状态；因此最后少量格挡尚在时，牌也可能已经全部溶解。战局重开重置账目，跳过或恢复直接同步最终状态，不重播音效与震动。
+
+当前 `SingleBattleDemoNew` 已接好。选中 `PlayerBattleActor` 下的 `Discard Shields`：
+
+- 青色 `SpawnCenter / SpawnSize` 是卡牌实例化和飞入起点区域。
+- 黄色 `RingCenter / RingInnerRadius / RingOuterRadius` 是围绕 Actor 的圆弧落地区域，以卡牌底部为锚点，可在 Scene 中直接移动圆心和拖动内外半径。`LandingHeightVariation` 控制底部高度随机范围。`ArcAngle` 控制圆弧角度（默认 60°），`ArcCenterAngle` 控制朝向（默认 0°，角色前方）。位置按圆弧区域面积随机分布，牌面随机朝内或朝外，并叠加独立俯仰、偏转和倾斜角度。
+- `CardHeight` 是唯一的卡牌尺寸参数（容器局部单位），宽度自动按图集原始牌面比例计算，Inspector 显示最终宽高。`PitchRange / YawRange / RollRange` 分别控制俯仰、朝向偏移、左右倾斜的最小/最大角度，允许非对称范围。`OutwardChance` 为朝外概率（0 全朝内、1 全朝外），`Seed` 控制随机结果；同一批次恢复时姿态保持一致。旧宽高及角度配置自动迁移，保留高度和原角度范围。
+- DOTween 使用不受 Time.timeScale 影响的时间：`FlightSeconds / CardInterval / ArcHeight` 控制逐张飞入，`DissolveSeconds / DissolveInterval` 控制逐张溶解。
+- 每张落地触发材质闪光、生成于卡牌底边中心的可选 `LandingEffect` 粒子（位置包含卡牌旋转与缩放）、`LandingSound` 与设备震动。当前落地音效复用手牌弃牌音效；粒子和 `BlockHitSound` 默认空，可自行配置。严格在实际播放非空且音量大于零的音效时请求一次震动；静默落地、Snap 和取消不会触发震动。手机与手柄能力沿用 `CardHapticsDriver`。
+
+盾牌容器是 Actor 根节点的子节点，配置时采用 Visual 的位置与朝向，保持独立于模型攻击前冲和受击晃动。手牌弃牌时直接移除原牌，随后由盾牌容器创建独立实例，避免旧飞离动画与弃牌音效重复执行。没有盾牌表现入口的旧场景仍保留原弃牌路径。
+
+渲染使用共享 Mesh、共享图集材质和 MaterialPropertyBlock 的实例属性，不创建逐牌材质。`CardArt/Shield Deferred` 提供 URP GBuffer、Forward、ShadowCaster、DepthOnly、DepthNormals Pass；牌面无原卡牌附加视觉效果。Perlin 噪声叠加牌面局部高度渐变，自上向下 alpha clip，两个 step 构成自发光边缘；深度和阴影使用相同裁剪。落地闪光为默认特效，外部粒子可选。
+
+旧单战场景可运行 `Tools > Poker > Single Battle > Configure Discard Shields` 建立绑定和共享资产；支持重复执行。Inspector 提供三张牌的临时预览及清除按钮，预览实例不保存到场景。
+
+专项验证：`DiscardShieldTests` 检查取整、FIFO、不可变快照、共享资源及实际 shader 渲染；`DiscardShieldPlaybackTests` 在 PlayMode 验证错峰落地、暂停时间、整张溶解和取消回调；`BattleActorTests` 覆盖真实弃牌奖励与协议路由。设备实际触感仍需在目标手机或手柄上调校。

@@ -29,13 +29,13 @@ namespace Poker.SingleBattle
         public int PlayerDiscards => State.DiscardsFor(playerActor.ParticipantId);
         public bool CanSwitchPlayer => State != null && State.HasStarted && !busy && !State.Duel.IsFinished &&
             State.Duel.Phase == ScoredDuelPhase.AwaitingPlayerHand && actions != null &&
-            !actions.Hand.GetComponent<HandZoneView>().IsTransitioning && !actions.PlayRoute.IsTransferring;
+            !actions.Hand.GetComponent<HandZoneView>().IsTransitioning;
         public bool SelectPlayer(PlayerBattleActor player)
         {
             if (!CanSwitchPlayer || !Players.Contains(player) || !State.Duel.CanAct(player.ParticipantId)) return false;
             if (player == playerActor) return true;
             // Stop only this observer's sessions. Authoritative cards, HP and round are untouched.
-            actions.Hand.StopSession(); actions.Played.StopSession(); match.StopMatch();
+            actions.Hand.StopSession(); match.StopMatch();
             playerActor = player; Bind(); Publish(); return true;
         }
         [SerializeField, InspectorName("公共战局规则")] private BattleRulesProfile rulesProfile;
@@ -45,6 +45,7 @@ namespace Poker.SingleBattle
             if (busy) throw new InvalidOperationException("Wait for presentation before replacing next battle's rules.");
             rulesProfile = configuration != null ? configuration : throw new ArgumentNullException(nameof(configuration));
         }
+        private readonly Dictionary<CombatEvent, ShieldSnapshot> shieldFrames = new Dictionary<CombatEvent, ShieldSnapshot>();
         private Coroutine playback;
         private bool busy;
         public CardDuelEngine Engine { get; private set; }
@@ -77,9 +78,9 @@ namespace Poker.SingleBattle
 
         public void Configure(CardMatchHost owner, HandActionPresenter panel, DeckOverviewPresenter deckOverview, DrawPilePresenter pile)
         {
-            if (owner == null || panel == null || panel.Hand == null || panel.Played == null || panel.PlayRoute == null ||
-                panel.Hand.Match != owner || panel.Played.Match != owner || owner.gameObject.scene != gameObject.scene)
-                throw new ArgumentException("Bind a complete existing hand/played UI in this scene.");
+            if (owner == null || panel == null || panel.Hand == null || panel.Hand.GetComponent<HandZoneView>() == null ||
+                panel.Hand.Match != owner || owner.gameObject.scene != gameObject.scene)
+                throw new ArgumentException("Bind a hand UI and match in this scene.");
             match = owner; actions = panel; overview = deckOverview; drawPile = pile;
         }
         public void ConfigureActors(PlayerBattleActor player, EnemyBattleActor enemy) => ConfigureActors(new[] { player }, new[] { enemy });
@@ -116,7 +117,7 @@ namespace Poker.SingleBattle
             var nextState = nextEngine.Create(id, HmacDeckShuffler.CreateRandomState(),
                 Players.Select((actor, index) => actor.CreateSetup(new ParticipantId(index == 0 ? "player" : id + "/player/" + index))),
                 Enemies.Select((actor, index) => actor.CreateSetup(new ParticipantId(id + "/enemy/" + index))));
-            Engine = nextEngine; State = nextState;
+            shieldFrames.Clear(); Engine = nextEngine; State = nextState;
             LastScore = null; LastDamage = 0; LastPlayResolution = null; LastPlayedBy = default; LastDiscardResolution = null; LastDiscardedBy = default;
             var limits = State.Duel.Player(State.Duel.PlayerId).Rules;
             Message = "出牌 1–" + limits.MaxPlayCards + " 张 · 弃牌 1–" + limits.MaxDiscardCards + " 张 · 能量用尽或手动结束回合";
@@ -128,12 +129,11 @@ namespace Poker.SingleBattle
         }
         private void Bind()
         {
-            actions.Hand.StopSession(); actions.Played.StopSession();
+            actions.Hand.StopSession();
             match.StartExternalMatch(playerActor, State.Table, State.Table.Cards.Select(card => Style(card)));
             var deck = PlayerZone(CardZoneKinds.Deck).Id; var discard = PlayerZone(CardZoneKinds.Discard).Id;
             actions.Hand.Bind(match, PlayerZone(CardZoneKinds.Hand).Id, deck, discard, actions.Hand.GetComponent<HandZoneView>().FacingCamera);
-            actions.Played.Bind(match, PlayerZone(CardZoneKinds.Played).Id, deck, discard);
-            actions.Hand.BeginSession(); actions.Played.BeginSession();
+            actions.Hand.BeginSession();
             actions.Hand.GetComponent<HandZoneView>().SetMaxSelectedCards(playerActor.Rules.MaxSelection);
             // Rebinding an observer also restores the selected ordering for an already dealt hand.
             actions.Hand.RequestSortAfterLanding(actions.Hand.SortOrder);
@@ -156,17 +156,19 @@ namespace Poker.SingleBattle
             if (!result.Accepted) return false;
             State = result.State; busy = true; BeginPresentation(result, animate); return true;
         }
-        internal int ExecutePlayerPlay(PlayerBattleActor actor, CardZonePlayHost hand, CardZonePlayHost destination, CardZoneTransferPresenter route, bool animate)
+        internal int ExecutePlayerPlay(PlayerBattleActor actor, CardZonePlayHost hand, bool animate)
         {
-            if (actor != playerActor || !playerActor.CanPlay(hand) || destination != actions.Played || route != actions.PlayRoute || route.IsTransferring) return 0;
-            var ids = playerActor.SelectedCards(); var frame = match.PrepareExternalPlay(playerActor, hand.Zone.Id, destination.Zone.Id, ids, PlayedZoneView.SlotCount);
+            if (actor != playerActor || !playerActor.CanPlay(hand)) return 0;
+            var ids = playerActor.SelectedCards();
+            var frame = match.PrepareExternalPlay(playerActor, hand.Zone.Id, PlayerZone(CardZoneKinds.Played).Id, ids, playerActor.Rules.MaxPlayCards);
             var result = Engine.Execute(State, State.Revision, actor.ParticipantId, CardDuelAction.Play, ids); if (!result.Accepted) return 0;
             LastPlayResolution = result; LastPlayedBy = actor.ParticipantId;
             State = result.State; busy = true;
             try
             {
-                route.PresentTransfer(frame.Project(hand.Zone.Id), frame.Project(destination.Zone.Id), ids.Select(id => id.Value), animate, () => match.Commit(frame));
-                match.Notify(frame, hand, destination); BeginPresentation(result, animate);
+                // The logical played zone still participates in scoring/collection; no scene view or flight is created.
+                hand.GetComponent<HandZoneView>().PresentCommitted(frame.Project(hand.Zone.Id), () => match.Commit(frame), animate);
+                match.Notify(frame, hand); BeginPresentation(result, animate);
             }
             catch { SnapToState(); throw; }
             return ids.Length;
@@ -180,14 +182,30 @@ namespace Poker.SingleBattle
             State = result.State; busy = true;
             try
             {
-                hand.GetComponent<HandZoneView>().PresentDiscardCommitted(frame.Project(hand.Zone.Id), ids.Select(id => id.Value), () => match.Commit(frame), animate);
+                bool insertsShields = actor.Presentation is IShieldPresentation && result.Events.Any(effect =>
+                    effect.Effect.Target == actor.ParticipantId && effect.Effect.Kind == CombatEffectKind.GainBlock && effect.After.Block > effect.Before.Block);
+                if (insertsShields) hand.GetComponent<HandZoneView>().PresentCommitted(frame.Project(hand.Zone.Id), () => match.Commit(frame), animate);
+                else hand.GetComponent<HandZoneView>().PresentDiscardCommitted(frame.Project(hand.Zone.Id), ids.Select(id => id.Value), () => match.Commit(frame), animate);
                 match.Notify(frame, hand); BeginPresentation(result, animate);
             }
             catch { SnapToState(); throw; }
             return ids.Length;
         }
+        private void RecordBlockEffects(CardDuelTransition result)
+        {
+            foreach (var effect in result.Events)
+            {
+                if (shieldFrames.ContainsKey(effect)) continue;
+                ShieldCard[] cards = null;
+                if (result.DiscardReward != null && effect.Effect.Kind == CombatEffectKind.GainBlock &&
+                    effect.Effect.Source == effect.Effect.Target)
+                    cards = result.DiscardReward.Context.Cards.Select(card => new ShieldCard(card.Id.Value, StandardArt(Engine.Face(card.Card)))).ToArray();
+                shieldFrames[effect] = Actor(effect.Effect.Target).RecordBlockEffect(effect, cards);
+            }
+        }
         private void BeginPresentation(CardDuelTransition result, bool animate)
         {
+            shieldFrames.Clear(); RecordBlockEffects(result);
             if (animate && Application.isPlaying && isActiveAndEnabled)
             {
                 var running = StartCoroutine(RunPresentation(Present(result)));
@@ -234,7 +252,7 @@ namespace Poker.SingleBattle
         }
         private IEnumerator Present(CardDuelTransition result)
         {
-            while (actions.PlayRoute.IsTransferring || actions.Hand.GetComponent<HandZoneView>().IsTransitioning) yield return null;
+            while (actions.Hand.GetComponent<HandZoneView>().IsTransitioning) yield return null;
             Show(result);
             yield return PlayEffects(result);
             while (State.Duel.Phase == ScoredDuelPhase.AwaitingEnemyAction)
@@ -248,7 +266,7 @@ namespace Poker.SingleBattle
             }
             CollectPlayed();
             Project(true); Publish();
-            while (actions.Hand.GetComponent<HandZoneView>().IsTransitioning || actions.Played.GetComponent<PlayedZoneView>().IsTransitioning) yield return null;
+            while (actions.Hand.GetComponent<HandZoneView>().IsTransitioning) yield return null;
         }
         private void Show(CardDuelTransition result)
         {
@@ -270,7 +288,7 @@ namespace Poker.SingleBattle
             foreach (var effect in result.Events)
             {
                 var target = Actor(effect.Effect.Target);
-                yield return WaitForPresentation(target.PresentHit(effect, true));
+                yield return WaitForPresentation(target.PresentEffect(effect, true, shieldFrames.TryGetValue(effect, out var shields) ? shields : null));
                 yield return WaitForPresentation(target.PresentDeath(effect, true));
             }
         }
@@ -279,7 +297,7 @@ namespace Poker.SingleBattle
             foreach (var group in result.Events.Where(item => item.Effect.Kind == CombatEffectKind.Damage).GroupBy(item => item.Effect.Source))
                 Actor(group.Key).PresentAction(group.First(), false);
             foreach (var effect in result.Events)
-            { var target = Actor(effect.Effect.Target); target.PresentHit(effect, false); target.PresentDeath(effect, false); }
+            { var target = Actor(effect.Effect.Target); target.PresentEffect(effect, false, shieldFrames.TryGetValue(effect, out var shields) ? shields : null); target.PresentDeath(effect, false); }
         }
         internal CardDuelTransition ExecuteEnemyTurn(EnemyBattleActor actor, long expectedRevision)
         {
@@ -291,7 +309,7 @@ namespace Poker.SingleBattle
             var result = ActingEnemy?.ExecuteTurn();
             if (result == null) throw new InvalidOperationException("No active enemy actor can act in this phase.");
             if (!result.Accepted) throw new InvalidOperationException("Enemy action rejected: " + result.Error);
-            State = result.State; return result;
+            State = result.State; RecordBlockEffects(result); return result;
         }
         private void AdvanceEnemyImmediately()
         {
@@ -319,8 +337,7 @@ namespace Poker.SingleBattle
                 PlayerZone(CardZoneKinds.Hand).Cards.Contains(card.Id) ? before.Interaction : default)).ToArray();
             var update = match.PrepareExternalProjection(playerActor, new CardTableState(State.Table.MatchId, State.Table.Cards, zones, State.Revision), styles);
             actions.Hand.GetComponent<HandZoneView>().PresentCommitted(update.Project(actions.Hand.Zone.Id), () => match.Commit(update), animate);
-            actions.Played.GetComponent<PlayedZoneView>().Present(update.Project(actions.Played.Zone.Id), animate);
-            match.Notify(update, actions.Hand, actions.Played); overview?.Refresh(); drawPile?.Refresh();
+            match.Notify(update, actions.Hand); overview?.Refresh(); drawPile?.Refresh();
             if (PlayerZone(CardZoneKinds.Hand).Cards.Any(id => !old.ContainsKey(id))) actions.Hand.RequestSortAfterLanding(actions.Hand.SortOrder);
         }
         public void SnapToState()
@@ -330,8 +347,7 @@ namespace Poker.SingleBattle
             foreach (var actor in Actors) if (actor != null) actor.CancelPresentation();
             // Scene teardown order is independent of our hierarchy; Unity's destroyed objects
             // do not compare null through the null-conditional operator.
-            if (actions == null || actions.Hand == null || actions.Played == null || match == null) return;
-            if (actions.PlayRoute != null) actions.PlayRoute.CompleteTransfers();
+            if (actions == null || actions.Hand == null || match == null) return;
             var handView = actions.Hand.GetComponent<HandZoneView>();
             if (handView != null) handView.CompleteTransitions();
             if (State != null && ReferenceEquals(match.Commands, playerActor))

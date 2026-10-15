@@ -2,7 +2,9 @@
   "name": "CardPresentation.Tests.Support",
   "references": [
     "CardPresentation.Runtime",
-    "CardInteraction.Runtime"
+    "CardInteraction.Runtime",
+    "CardArt.Runtime",
+    "PokerEngine.Core"
   ],
   "optionalUnityReferences": [
     "TestAssemblies"

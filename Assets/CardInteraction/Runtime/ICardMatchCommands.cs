@@ -9,6 +9,12 @@ namespace CardInteraction
         bool TryGetCardBasePoints(CardInstanceId card, out long points);
     }
 
+    /// <summary>Gameplay can accept a play without a destination view or a scene transfer route.</summary>
+    public interface ICardDirectPlayCommands : ICardMatchCommands
+    {
+        int Play(CardZonePlayHost hand, bool animate);
+    }
+
     /// <summary>Gameplay authority for a table that is only a local presentation mirror.</summary>
     public interface ICardMatchCommands
     {

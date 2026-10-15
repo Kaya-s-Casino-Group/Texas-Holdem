@@ -413,3 +413,15 @@ HandZoneView 默认最多选中 5 张，由 `SetMaxSelectedCards` 调整；此�
 取消选牌音效通过 `SetDeselectionSound(clip, volume, enabled)` 独立配置，默认空 Clip、音量 1、开关开启；空 Clip 静默，不使用占位音效。实战牌区工具「表现参数 > 音效」与 Inspector 均提供「取消选牌音效」，支持配置读回、序列化和 View Prefab 导出。仅同一牌区内保留的卡牌由选中变为未选中时，在快照提交后逐牌触发 `CardDeselected`；重复刷新、悬停、重排、出牌、弃牌、静默恢复及重启会话不触发。实际音频只在 Play/Player 播放，使用独立 AudioSource，停用/清理时与其他音效一起停止。
 
 「表现参数 > 动画」单独展示「理牌 / 让位动画」：`TransitionSettings.ReflowSeconds` 默认 0.25 秒，为包含过冲及回稳的总时长；`ReflowOvershoot` 为 0–3 的惯性强度，默认 1.25，使用 OutBack，0 则保持原有 OutCubic 减速。点数理牌、花色理牌及增减牌后的让位共用此配置，位移和转动按同一进度过冲，幅度随实际移动距离等比变化；重复快照不重播，中途重排从当前姿态继续。已有配置若强度为 0，可点击「恢复默认理牌动画」同时恢复时长与惯性。补牌的飞入、逐张间隔和回稳参数独立。补牌、理牌、弃牌共用页首的列表动画总开关，上浮/悬停使用独立交互动画配置。
+
+理牌 / 让位音效通过 `SetReflowSound(clip, volume, enabled)` 独立配置，默认空 Clip、音量 1、开关开启，空 Clip 静默。动画区和音效页共用设置，支持 Inspector、序列化及 View Prefab 导出。快照提交后，已有卡牌实际开始理牌 / 让位时整批触发一次 `ReflowStarted`；重复快照、静默恢复、只有新牌飞入、关闭列表动画时不触发。实际音频仅在 Play/Player 播放。
+
+### 手机与手柄触觉反馈
+
+`HandZoneView.HapticSettings` 与表现编辑器「音效 > 手机 / 手柄震动」配置设备震动，默认开启，手柄时长 0.045 秒、双马达强度 0.25。配置会序列化并导出至 View Prefab。
+
+原则是一次 `AudioSource.PlayOneShot` 对应一次触觉请求：抽牌入列、弃牌、选中、取消选中、无法选中、理牌 / 让位共用入口。Clip 为空、音效关闭、音效音量为 0、编辑模式、静默恢复及未触发音效的重复快照不震动。理牌音效整批一次，因此震动也整批一次；不同音效即使同帧也各自发请求。连续的手柄请求从当前时刻重新发送短脉冲，不排队延迟；手柄硬件可能把重叠脉冲感知为连续触感。
+
+项目已安装 `com.unity.inputsystem` 1.6.1，Active Input Handling 使用 Both，保留现有旧输入。优先使用 `Gamepad.current` 的双马达反馈；没有当前手柄时，Android 使用 `View.performHapticFeedback(KEYBOARD_TAP)`，iOS 使用轻触 `UIImpactFeedbackGenerator`。手机反馈的时长和强度由系统控制，Android 尊重系统触觉开关且不需要 VIBRATE 权限。无设备支持时不阻断卡牌操作。手柄计时使用实际时间，Time.timeScale 为 0 也会停止；牌区清理、停用、应用暂停、失焦和退出会停止本模块发出的持续震动。编辑器只能验证已连接手柄，手机触感须真机验证。
+
+参考：[Unity Input System 安装](https://docs.unity3d.com/Packages/com.unity.inputsystem@1.6/manual/Installation.html)、[Gamepad 双马达反馈](https://docs.unity3d.com/Packages/com.unity.inputsystem@1.6/manual/Gamepad.html)、[Android 系统触觉反馈](https://developer.android.com/develop/ui/views/haptics/haptic-feedback)、[Apple UIImpactFeedbackGenerator](https://developer.apple.com/documentation/uikit/uiimpactfeedbackgenerator)。
