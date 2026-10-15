@@ -25,6 +25,11 @@ namespace Poker.SingleBattle
         public ScoredHandDamageProfile Damage => damage;
         public void ConfigureDamage(ScoredHandDamageProfile profile) => damage = profile != null ? profile : throw new System.ArgumentNullException(nameof(profile));
         [SerializeField, InspectorName("弃牌收益配置（空为无收益）")] private DiscardRewardProfile discardReward;
+        [SerializeField, InspectorName("友方目标策略（空为自身或指定队友）")] private AllyTargetPolicyProfile supportTargets;
+        public AllyTargetPolicyProfile SupportTargets => supportTargets;
+        public void ConfigureSupportTargets(AllyTargetPolicyProfile policy) => supportTargets = policy;
+        public override BattleActorTargetRules BuildTargetRules() => new BattleActorTargetRules(BuildAttackTargetPolicy(),
+            supportTargets != null ? supportTargets.BuildPolicy() ?? throw new System.InvalidOperationException("友方目标配置返回了空策略。") : null);
         public DiscardRewardProfile DiscardReward => discardReward;
         public void ConfigureDiscardReward(DiscardRewardProfile profile) => discardReward = profile;
         public BattlePlayerRules BuildRules() => new BattlePlayerRules(maxEnergy, initialEnergy, playEnergyCost, discardEnergyCost,
@@ -34,6 +39,6 @@ namespace Poker.SingleBattle
                 : throw new System.InvalidOperationException("请先为玩家绑定独立的出牌伤害配置。"));
         // Null deck means an independent standard 52-card deck. A Run supplies this player's current entries.
         public BattlePlayerSetup BuildSetup(ParticipantId id, IEnumerable<DeckEntry> deck = null, int? initialHealth = null) =>
-            new BattlePlayerSetup(id, BuildCombatant(), deck, initialHealth, BuildRules(), BuildDamageRules());
+            new BattlePlayerSetup(id, BuildCombatant(), deck, initialHealth, BuildRules(), BuildDamageRules(), BuildTargetRules());
     }
 }

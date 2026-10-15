@@ -65,6 +65,8 @@ graph TD
 
 角色伤害规则由 `BattleActorDamageRules` 表达，随各自 `BattlePlayerSetup` / `BattleEnemySetup` 输入，并保留在玩家回合状态与怪物阵容中。TeamBattleEngine 按攻击 Source 选攻击修正、按实际 Target 分派承伤修正，CombatEngine 仍提供该原子批次的最新只读上下文；不把这些规则放入序列化生命状态。`BattleRules` 不再持有攻击/承伤修正，双方 Setup 未指定角色修正规则时构建 Identity 快照。基础 ScaledAttackDamageModifier / ScaledIncomingDamageModifier 位于 Combat，支持倍率及固定增减，默认 1 倍、0 增减。Unity 作者配置位于角色 Profile，公共 BattleRulesProfile 不新增修正槽位。
 
+角色目标策略由 `BattleActorTargetRules` 持有，Attack / Support 分别实现 IBattleTargetPolicy / IBattleAllyTargetPolicy；通过双方 Setup 的 `targetRules:` 输入，玩家回合状态在扣费、结束和恢复能量时保留同一策略快照。默认首个存活对手与自身/指定队友。`OpponentTargetPolicy` 提供首个、最低当前生命、最高当前生命及全部存活对手，生命相同时保持阵容顺序，可配置是否接受显式请求；策略必须纯粹、确定且不读 Unity 可变资产。TeamBattleEngine 按行动 Source 分派策略，仅负责目标合法性（活来源、阵营、存活、非空输出、数量上限、无重复），同时校验请求和输出。Host / TeamBattleEngine / CardDuelEngine 不再接受整场 targetPolicy / allyTargetPolicy；旧注入调用需迁移到各自 Setup 的 BattleActorTargetRules。预览和正式 Execute 共用上述路径。
+
 敌人行动预览：`TeamBattleEngine.PreviewEnemyAction(state, enemy)` 在不可变状态上复用正式 Execute。玩家阶段假定所有可行动玩家立即结束回合，再按敌人队列预演前序行动，保持目标、格挡、存活状态及修正上下文一致；敌人阶段只预演当前剩余队列，不跨入下一轮。返回 `EnemyActionPreview`（来源、原始 revision、Error、逐目标 Hits），Hits 为正式 CombatEvent，包含攻击/承伤报告、SettledDamage、BlockAbsorbed、HealthLost 和 Overkill。SettledDamage 是两层修正后的格挡前伤害；已行动、死亡、终局或前序行动导致该敌人不再有行动则返回 null；解析失败保留错误，不提供猜测值。预览不提交任何状态；确定性纯函数策略和状态变化后重算是与实际结算保持一致的前提。
 
 攻击来源边界：`AttackContext` 携带原始基础伤害、来源类型和可选 `HandAttackInfo`；正式 CardDuel 出牌复用权威分类结果，并在移牌前捕获有效牌面与卡牌效果。SubmittedCards 包含所有提交牌，PatternCards 保留组成牌，ScoringCards 排除其中失效牌。Combat 不反向依赖 Scoring，也不重新识别牌型。攻击与承伤修正共用同一个 AttackContext，各目标共用同一份牌快照；它与实时 CombatState 分开，后者仍按原有阶段时机读取。`DamageModification.Triggers` 仅存储实际返回的触发来源/原因/卡牌范围与引用，不定义具体能力规则。旧无牌来源的数值调用明确标记 Other，不伪造出牌快照。

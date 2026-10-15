@@ -99,17 +99,17 @@ namespace PokerEngine
         public ICardDuelDealPolicy DealPolicy => defaultPlayerRules.DealPolicy;
         public int MaxSelection => defaultPlayerRules.MaxSelection;
         public CardDuelEngine(ScoredDuelDefinition definition, int handSize = 8, int discards = 3, ScoreProfile scoring = null,
-            ICardDuelDealPolicy dealPolicy = null, IBattleTargetPolicy targetPolicy = null, IBattleAllyTargetPolicy allyTargetPolicy = null)
-            : this(new BattleRules(definition.Version, definition.RoundLimit), handSize, discards, scoring, dealPolicy, targetPolicy, allyTargetPolicy)
+            ICardDuelDealPolicy dealPolicy = null)
+            : this(new BattleRules(definition.Version, definition.RoundLimit), handSize, discards, scoring, dealPolicy)
         {
             defaultPlayer = definition.Player; defaultEnemy = definition.Enemy; defaultEnemyDamage = definition.EnemyDamage;
             defaultPlayerRules = new BattlePlayerRules(definition.MaxEnergy, definition.InitialEnergy, definition.PlayEnergyCost,
                 definition.DiscardEnergyCost, handSize, discards, dealPolicy, damagePolicy: definition.DamagePolicy);
         }
         public CardDuelEngine(BattleRules rules, int handSize = 8, int discards = 3, ScoreProfile scoring = null,
-            ICardDuelDealPolicy dealPolicy = null, IBattleTargetPolicy targetPolicy = null, IBattleAllyTargetPolicy allyTargetPolicy = null)
+            ICardDuelDealPolicy dealPolicy = null)
         {
-            Duel = new TeamBattleEngine(rules, targetPolicy, allyTargetPolicy); Scoring = scoring ?? ScoreProfile.Default;
+            Duel = new TeamBattleEngine(rules); Scoring = scoring ?? ScoreProfile.Default;
             defaultPlayerRules = new BattlePlayerRules(handSize: handSize, discards: discards, dealPolicy: dealPolicy);
         }
         public CardDefinition Face(CardInstance card) => faces[card.DefinitionId];
@@ -124,7 +124,7 @@ namespace PokerEngine
         public CardDuelState Create(string id, RandomState random, IEnumerable<BattlePlayerSetup> players, IEnumerable<BattleEnemySetup> enemies)
         {
             var roster = Guard.Copy(players, nameof(players)).Select(player => player == null ? null :
-                new BattlePlayerSetup(player.Id, player.Definition, player.Deck, player.InitialHealth, player.Rules ?? defaultPlayerRules, player.DamageRules)).ToArray();
+                new BattlePlayerSetup(player.Id, player.Definition, player.Deck, player.InitialHealth, player.Rules ?? defaultPlayerRules, player.DamageRules, player.TargetRules)).ToArray();
             var duel = Duel.Create(id, roster, enemies);
             var cards = new List<CardInstance>(); var zones = new List<CardZone>();
             for (int seat = 0; seat < roster.Length; seat++)

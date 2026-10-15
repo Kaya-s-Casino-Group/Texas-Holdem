@@ -22,8 +22,6 @@ namespace Poker.SingleBattle
         [Header("战斗阵容")]
         [SerializeField] private PlayerBattleActor[] playerActors = Array.Empty<PlayerBattleActor>();
         [SerializeField] private EnemyBattleActor[] enemyActors = Array.Empty<EnemyBattleActor>();
-        private IBattleTargetPolicy targetPolicy;
-        private IBattleAllyTargetPolicy allyTargetPolicy;
         public IReadOnlyList<PlayerBattleActor> Players => Array.AsReadOnly(playerActors);
         public IReadOnlyList<EnemyBattleActor> Enemies => Array.AsReadOnly(enemyActors);
         private IEnumerable<BattleActor> Actors => Players.Cast<BattleActor>().Concat(Enemies);
@@ -39,16 +37,6 @@ namespace Poker.SingleBattle
             // Stop only this observer's sessions. Authoritative cards, HP and round are untouched.
             actions.Hand.StopSession(); actions.Played.StopSession(); match.StopMatch();
             playerActor = player; Bind(); Publish(); return true;
-        }
-        public void ConfigureTargetPolicy(IBattleTargetPolicy policy)
-        {
-            if (State != null) throw new InvalidOperationException("Configure targeting before starting the battle.");
-            targetPolicy = policy ?? throw new ArgumentNullException(nameof(policy));
-        }
-        public void ConfigureAllyTargetPolicy(IBattleAllyTargetPolicy policy)
-        {
-            if (State != null) throw new InvalidOperationException("Configure support targeting before starting the battle.");
-            allyTargetPolicy = policy ?? throw new ArgumentNullException(nameof(policy));
         }
         [SerializeField, InspectorName("公共战局规则")] private BattleRulesProfile rulesProfile;
         public BattleRulesProfile RulesProfile => rulesProfile;
@@ -123,7 +111,7 @@ namespace Poker.SingleBattle
             if (playerActor == null) playerActor = Players[0];
             if (match.Commands != null && !ReferenceEquals(match.Commands, playerActor)) throw new InvalidOperationException("Another authority owns the card UI.");
             if (rulesProfile == null) throw new InvalidOperationException("Bind the shared battle rules first.");
-            var nextEngine = new CardDuelEngine(rulesProfile.BuildRules(), scoring: rulesProfile.BuildScoring(), targetPolicy: targetPolicy, allyTargetPolicy: allyTargetPolicy);
+            var nextEngine = new CardDuelEngine(rulesProfile.BuildRules(), scoring: rulesProfile.BuildScoring());
             string id = "battle/" + Guid.NewGuid().ToString("N");
             var nextState = nextEngine.Create(id, HmacDeckShuffler.CreateRandomState(),
                 Players.Select((actor, index) => actor.CreateSetup(new ParticipantId(index == 0 ? "player" : id + "/player/" + index))),

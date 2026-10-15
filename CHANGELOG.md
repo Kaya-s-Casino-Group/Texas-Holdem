@@ -4,6 +4,14 @@
 
 ## [Unreleased]
 
+### 2026-10-15 — 目标选择策略归属角色
+
+- 新增 BattleActorTargetRules，攻击及友方策略随角色 Setup 进入战局，玩家扣费、结束回合和恢复能量均保留快照；移除 Host / CardDuelEngine / TeamBattleEngine 全局策略入口。
+- BattleActorProfile 提供独立攻击目标资产槽，PlayerBattleProfile 提供友方目标资产槽。内置首个、最低生命、最高生命、全部存活对手及显式目标开关；同生命按阵容顺序选择，默认保持旧行为。
+- SingleBattle / Demo 的玩家、敌人分别绑定默认策略资产；攻击目标选择读取行动来源角色配置，意图预览和正式执行继续共用同一条规则路径。
+- 公共目标校验同时检查请求与输出的阵营、存活、数量和重复，校验行动来源，非法请求无法被忽略请求的策略绕过。更新既有调用点与模块文档。
+- 仅做静态检查与脚本编译，不运行动态测试或进入 Play。
+
 ### 2026-10-15 — 敌人意图读取规则层行动预览
 
 - 新增 TeamBattleEngine.PreviewEnemyAction 与 EnemyActionPreview，以不可变状态复用正式 Execute，逐项包含目标选择、攻击修正、承伤修正、格挡和生命结算。

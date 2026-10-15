@@ -16,3 +16,4 @@ MonoBehaviour:
   maxHealth: 75
   initialBlock: 0
   attackDamage: 7
+  attackTargets: {fileID: 11400000, guid: ff71305deb5a4b38b718678caeb3c994, type: 2}

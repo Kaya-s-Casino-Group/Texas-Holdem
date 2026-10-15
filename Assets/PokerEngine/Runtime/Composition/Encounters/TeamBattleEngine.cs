@@ -66,12 +66,13 @@ namespace PokerEngine
         public IReadOnlyList<DeckEntry> Deck { get; }
         public BattlePlayerRules Rules { get; }
         public BattleActorDamageRules DamageRules { get; }
+        public BattleActorTargetRules TargetRules { get; }
         public BattlePlayerSetup(ParticipantId id, CombatantDefinition definition, IEnumerable<DeckEntry> deck = null, int? initialHealth = null,
-            BattlePlayerRules rules = null, BattleActorDamageRules damageRules = null)
+            BattlePlayerRules rules = null, BattleActorDamageRules damageRules = null, BattleActorTargetRules targetRules = null)
         {
             if (!id.IsValid || definition == null || initialHealth <= 0 || initialHealth > definition.MaxHealth)
                 throw new ArgumentException("Invalid player setup.");
-            Id = id; Definition = definition; InitialHealth = initialHealth; Rules = rules; DamageRules = damageRules ?? new BattleActorDamageRules();
+            Id = id; Definition = definition; InitialHealth = initialHealth; Rules = rules; DamageRules = damageRules ?? new BattleActorDamageRules(); TargetRules = targetRules ?? new BattleActorTargetRules();
             Deck = deck == null ? null : Guard.View(Guard.Copy(deck, nameof(deck)));
         }
     }
@@ -81,10 +82,11 @@ namespace PokerEngine
         public CombatantDefinition Definition { get; }
         public long Damage { get; }
         public BattleActorDamageRules DamageRules { get; }
-        public BattleEnemySetup(ParticipantId id, CombatantDefinition definition, long damage, BattleActorDamageRules damageRules = null)
+        public BattleActorTargetRules TargetRules { get; }
+        public BattleEnemySetup(ParticipantId id, CombatantDefinition definition, long damage, BattleActorDamageRules damageRules = null, BattleActorTargetRules targetRules = null)
         {
             if (!id.IsValid || definition == null || damage < 0) throw new ArgumentException("Invalid enemy setup.");
-            Id = id; Definition = definition; Damage = damage; DamageRules = damageRules ?? new BattleActorDamageRules();
+            Id = id; Definition = definition; Damage = damage; DamageRules = damageRules ?? new BattleActorDamageRules(); TargetRules = targetRules ?? new BattleActorTargetRules();
         }
     }
     public sealed class BattlePlayerTurn
@@ -94,8 +96,9 @@ namespace PokerEngine
         public BattlePlayerRules Rules { get; }
         public bool HasEnded { get; }
         public BattleActorDamageRules DamageRules { get; }
-        internal BattlePlayerTurn(ParticipantId id, PlayerTurnState energy, bool ended, BattlePlayerRules rules, BattleActorDamageRules damageRules = null)
-        { Id = id; Energy = energy; HasEnded = ended; Rules = rules; DamageRules = damageRules ?? new BattleActorDamageRules(); }
+        public BattleActorTargetRules TargetRules { get; }
+        internal BattlePlayerTurn(ParticipantId id, PlayerTurnState energy, bool ended, BattlePlayerRules rules, BattleActorDamageRules damageRules, BattleActorTargetRules targetRules)
+        { Id = id; Energy = energy; HasEnded = ended; Rules = rules; DamageRules = damageRules ?? new BattleActorDamageRules(); TargetRules = targetRules ?? new BattleActorTargetRules(); }
     }
     public sealed class BattleActionRecord
     {
@@ -131,6 +134,11 @@ namespace PokerEngine
             var player = Players.FirstOrDefault(unit => unit.Id == id);
             return player != null ? player.DamageRules : Enemies.Single(unit => unit.Id == id).DamageRules;
         }
+        public BattleActorTargetRules TargetRulesFor(ParticipantId id)
+        {
+            var player = Players.FirstOrDefault(unit => unit.Id == id);
+            return player != null ? player.TargetRules : Enemies.Single(unit => unit.Id == id).TargetRules;
+        }
         public bool CanAct(ParticipantId id) => Phase == ScoredDuelPhase.AwaitingPlayerHand &&
             Players.Any(player => player.Id == id && !player.HasEnded && Combat.Get(id).IsAlive);
         internal TeamBattleState(BattleRules rules, CombatState combat, IEnumerable<BattlePlayerTurn> players,
@@ -140,33 +148,6 @@ namespace PokerEngine
             Rules = rules; Combat = combat; Players = Guard.View(players.ToArray()); Enemies = Guard.View(enemies.ToArray());
             Phase = phase; PendingEnemies = Guard.View(pending.ToArray()); Revision = revision; CompletedRounds = rounds;
             Scores = Guard.View((scores ?? new ScoreResult[0]).ToArray()); Actions = Guard.View((actions ?? new BattleActionRecord[0]).ToArray());
-        }
-    }
-    /// <summary>Pure authority-side targeting seam. UI may supply a request; policy decides the valid target set.
-    /// Returning multiple living opponents enables area attacks without changing turn scheduling.</summary>
-    public interface IBattleTargetPolicy
-    {
-        IReadOnlyList<ParticipantId> SelectTargets(BattleTargetContext context);
-    }
-    public sealed class BattleTargetContext
-    {
-        public TeamBattleState State { get; }
-        public ParticipantId Source { get; }
-        public IReadOnlyList<ParticipantId> Requested { get; }
-        public IReadOnlyList<ParticipantId> Opponents { get; }
-        internal BattleTargetContext(TeamBattleState state, ParticipantId source, IEnumerable<ParticipantId> requested)
-        {
-            State = state; Source = source; Requested = Guard.View((requested ?? new ParticipantId[0]).ToArray());
-            string team = state.Combat.Get(source).TeamId;
-            Opponents = Guard.View(state.Combat.Combatants.Where(unit => unit.IsAlive && unit.TeamId != team).Select(unit => unit.Id).ToArray());
-        }
-    }
-    public sealed class FirstLivingOpponentPolicy : IBattleTargetPolicy
-    {
-        public IReadOnlyList<ParticipantId> SelectTargets(BattleTargetContext context)
-        {
-            if (context.Requested.Count > 1) throw new ArgumentException("This policy accepts one target.");
-            return context.Requested.Count == 0 ? context.Opponents.Take(1).ToArray() : context.Requested;
         }
     }
     public sealed class TeamBattleTransition
@@ -185,13 +166,9 @@ namespace PokerEngine
     public sealed class TeamBattleEngine
     {
         public BattleRules Definition { get; }
-        public IBattleTargetPolicy TargetPolicy { get; }
-        public IBattleAllyTargetPolicy AllyTargetPolicy { get; }
-        public TeamBattleEngine(BattleRules definition, IBattleTargetPolicy targetPolicy = null, IBattleAllyTargetPolicy allyTargetPolicy = null)
+        public TeamBattleEngine(BattleRules definition)
         {
             Definition = definition ?? throw new ArgumentNullException(nameof(definition));
-            TargetPolicy = targetPolicy ?? new FirstLivingOpponentPolicy();
-            AllyTargetPolicy = allyTargetPolicy ?? new SelfOrRequestedAllyPolicy();
         }
         public TeamBattleState Create(string id, IEnumerable<BattlePlayerSetup> players, IEnumerable<BattleEnemySetup> enemies)
         {
@@ -203,29 +180,42 @@ namespace PokerEngine
                 p.Select(x => x.Definition.Create(x.Id, "player", x.InitialHealth)).Concat(e.Select(x => x.Definition.Create(x.Id, "enemy")))),
                 p.Select(x => {
                     var rules = x.Rules ?? new BattlePlayerRules();
-                    return new BattlePlayerTurn(x.Id, new PlayerTurnState(rules.MaxEnergy, rules.InitialEnergy), false, rules, x.DamageRules);
+                    return new BattlePlayerTurn(x.Id, new PlayerTurnState(rules.MaxEnergy, rules.InitialEnergy), false, rules, x.DamageRules, x.TargetRules);
                 }),
                 e, ScoredDuelPhase.AwaitingPlayerHand, new ParticipantId[0]);
         }
         public string NextScoreId(TeamBattleState state) => state.Combat.Id + "/score/" + state.Scores.Count;
         public IReadOnlyList<ParticipantId> Targets(TeamBattleState state, ParticipantId source, IEnumerable<ParticipantId> requested = null)
         {
+            ValidateTargetSource(state, source);
             var context = new BattleTargetContext(state, source, requested);
-            var targets = TargetPolicy.SelectTargets(context)?.ToArray();
+            // Reject illegal requests even if a custom policy would ignore or replace them.
+            if (context.Requested.Count > 64 || context.Requested.Distinct().Count() != context.Requested.Count ||
+                context.Requested.Any(id => !context.Opponents.Contains(id)))
+                throw new ArgumentException("Attack requests require distinct living opponents.");
+            var targets = state.TargetRulesFor(source).Attack.SelectTargets(context)?.ToArray();
             if (targets == null || targets.Length == 0 || targets.Length > 64 || targets.Distinct().Count() != targets.Length ||
                 targets.Any(id => !context.Opponents.Contains(id))) throw new ArgumentException("Target policy must return distinct living opponents.");
             return Guard.View(targets);
         }
         public IReadOnlyList<ParticipantId> AllyTargets(TeamBattleState state, ParticipantId source, IEnumerable<ParticipantId> requested = null)
         {
+            ValidateTargetSource(state, source);
             var context = new BattleAllyTargetContext(state, source, requested);
             if (!context.Allies.Contains(source) || context.Requested.Count > 64 ||
                 context.Requested.Distinct().Count() != context.Requested.Count || context.Requested.Any(id => !context.Allies.Contains(id)))
                 throw new ArgumentException("Support requests require distinct living allies.");
-            var targets = AllyTargetPolicy.SelectTargets(context)?.ToArray();
+            var targets = state.TargetRulesFor(source).Support.SelectTargets(context)?.ToArray();
             if (targets == null || targets.Length == 0 || targets.Length > 64 || targets.Distinct().Count() != targets.Length ||
                 targets.Any(id => !context.Allies.Contains(id))) throw new ArgumentException("Support policy must return distinct living allies.");
             return Guard.View(targets);
+        }
+        private void ValidateTargetSource(TeamBattleState state, ParticipantId source)
+        {
+            if (state == null) throw new ArgumentNullException(nameof(state));
+            if (!ReferenceEquals(state.Rules, Definition) ||
+                !state.Combat.Combatants.Any(unit => unit.Id == source && unit.IsAlive))
+                throw new ArgumentException("Targeting requires a living source in this battle.");
         }
         /// <summary>Forecast the requested enemy in this round's remaining queue, assuming all players end now.
         /// Reuses Execute for phase transitions and preceding enemies, so targeting and state-dependent modifiers
@@ -350,7 +340,7 @@ namespace PokerEngine
                     int index = Array.FindIndex(players, x => x.Id == actor);
                     int energy = action == ScoredDuelActionKind.EndPlayerTurn ? 0 : players[index].Energy.Energy - cost;
                     players[index] = new BattlePlayerTurn(actor, new PlayerTurnState(players[index].Energy.MaxEnergy, energy), energy == 0,
-                        players[index].Rules, players[index].DamageRules);
+                        players[index].Rules, players[index].DamageRules, players[index].TargetRules);
                 }
                 var pending = enemy ? state.PendingEnemies.Where(id => id != actor && combat.Get(id).IsAlive).ToArray() : state.PendingEnemies.ToArray();
                 // Expire only after the entire enemy phase, including its final round. Enemy block is independent.
@@ -377,7 +367,7 @@ namespace PokerEngine
                     if (phase == ScoredDuelPhase.AwaitingPlayerHand)
                         players = players.Select(x => new BattlePlayerTurn(x.Id,
                             new PlayerTurnState(x.Energy.MaxEnergy, combat.Get(x.Id).IsAlive ? x.Energy.MaxEnergy : 0), !combat.Get(x.Id).IsAlive,
-                            x.Rules, x.DamageRules)).ToArray();
+                            x.Rules, x.DamageRules, x.TargetRules)).ToArray();
                 }
                 else if (!enemy && players.All(x => x.HasEnded || !combat.Get(x.Id).IsAlive))
                 {

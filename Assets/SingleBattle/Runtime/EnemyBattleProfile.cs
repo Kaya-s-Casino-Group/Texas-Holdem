@@ -7,6 +7,6 @@ namespace Poker.SingleBattle
     public sealed class EnemyBattleProfile : BattleActorProfile
     {
         [SerializeField, Min(0), InspectorName("基础攻击伤害")] private int attackDamage = 7;
-        public BattleEnemySetup BuildSetup(ParticipantId id) => new BattleEnemySetup(id, BuildCombatant(), attackDamage, BuildDamageRules());
+        public BattleEnemySetup BuildSetup(ParticipantId id) => new BattleEnemySetup(id, BuildCombatant(), attackDamage, BuildDamageRules(), BuildTargetRules());
     }
 }

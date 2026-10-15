@@ -49,12 +49,12 @@ namespace PokerEngine.Tests
                 new DeckEntry("black-kicker", faces.Single(c => c.Rank == Rank.Two && c.Suit == Suit.Spades).Id)
             };
             var state = engine.Create("origin", HmacDeckShuffler.FromSeed(new byte[32]),
-                new[] { new BattlePlayerSetup(Player, new CombatantDefinition("p", 100), deck, rules: new BattlePlayerRules(handSize: 3, damagePolicy: rule), damageRules: new BattleActorDamageRules(outgoing, incoming)) },
+                new[] { new BattlePlayerSetup(Player, new CombatantDefinition("p", 100), deck, rules: new BattlePlayerRules(handSize: 3, damagePolicy: rule), damageRules: new BattleActorDamageRules(outgoing, incoming), targetRules: new BattleActorTargetRules(new AllTargets())) },
                 new[] { new BattleEnemySetup(Enemy, new CombatantDefinition("e", 10000), 7, new BattleActorDamageRules(outgoing, incoming)), new BattleEnemySetup(Other, new CombatantDefinition("e2", 10000), 8, new BattleActorDamageRules(outgoing, incoming)) });
             return engine.Execute(state, state.Revision, Player, CardDuelAction.Start).State;
         }
         private static CardDuelEngine Engine() =>
-            new CardDuelEngine(new BattleRules("origin.1", 10), targetPolicy: new AllTargets());
+            new CardDuelEngine(new BattleRules("origin.1", 10));
 
         [Test] public void FormalHandSnapshotIsSharedAcrossConstructionBothModifiersAndTargets()
         {

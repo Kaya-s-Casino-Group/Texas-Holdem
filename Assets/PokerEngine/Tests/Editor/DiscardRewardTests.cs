@@ -37,12 +37,12 @@ namespace PokerEngine.Tests
             }
         }
         private static CardDuelEngine Engine() => new CardDuelEngine(
-            new BattleRules("discard.test", 10), targetPolicy: new NoAttacks());
+            new BattleRules("discard.test", 10));
         private static CardDuelState Create(CardDuelEngine engine, bool smallDeck = false, IDiscardRewardRule reward = null)
         {
             var deck = smallDeck ? StandardDeck.Cards().Take(8).Select((card, i) => new DeckEntry("c" + i, card.Id)).ToArray() : null;
             var state = engine.Create("discard", HmacDeckShuffler.FromSeed(new byte[32]), new[] {
-                new BattlePlayerSetup(Player, new CombatantDefinition("p", 40), deck, rules: new BattlePlayerRules(discardReward: reward, damagePolicy: new NoAttacks())),
+                new BattlePlayerSetup(Player, new CombatantDefinition("p", 40), deck, rules: new BattlePlayerRules(discardReward: reward, damagePolicy: new NoAttacks()), targetRules: new BattleActorTargetRules(new NoAttacks())),
                 new BattlePlayerSetup(Ally, new CombatantDefinition("a", 40))
             }, new[] { new BattleEnemySetup(Enemy, new CombatantDefinition("e", 10000), 7) });
             return engine.Execute(state, state.Revision, Player, CardDuelAction.Start).State;

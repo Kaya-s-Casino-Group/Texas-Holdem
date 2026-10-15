@@ -9,13 +9,13 @@ namespace PokerEngine.Tests
     {
         private static readonly ParticipantId P1 = new ParticipantId("p1"), P2 = new ParticipantId("p2"),
             E1 = new ParticipantId("e1"), E2 = new ParticipantId("e2"), E3 = new ParticipantId("e3");
-        private static CardDuelEngine Engine(int energy = 3, int rounds = 8, IBattleTargetPolicy targeting = null) =>
+        private static CardDuelEngine Engine(int energy = 3, int rounds = 8) =>
             new CardDuelEngine(new ScoredDuelDefinition("team.test", new CombatantDefinition("hero", 40), new CombatantDefinition("enemy", 10000),
-                new ScoreDamagePolicy(5), 7, rounds, maxEnergy: energy), targetPolicy: targeting);
-        private static CardDuelState Create(CardDuelEngine engine, int hp1 = 40, int hp2 = 40, int enemyHealth = 10000)
+                new ScoreDamagePolicy(5), 7, rounds, maxEnergy: energy));
+        private static CardDuelState Create(CardDuelEngine engine, int hp1 = 40, int hp2 = 40, int enemyHealth = 10000, IBattleTargetPolicy targeting = null, IBattleAllyTargetPolicy support = null)
         {
             var state = engine.Create("teams", HmacDeckShuffler.FromSeed(new byte[32]),
-                new[] { new BattlePlayerSetup(P1, new CombatantDefinition("hero", 40), initialHealth: hp1), new BattlePlayerSetup(P2, new CombatantDefinition("hero", 40), initialHealth: hp2) },
+                new[] { new BattlePlayerSetup(P1, new CombatantDefinition("hero", 40), initialHealth: hp1, targetRules: new BattleActorTargetRules(targeting, support)), new BattlePlayerSetup(P2, new CombatantDefinition("hero", 40), initialHealth: hp2, targetRules: new BattleActorTargetRules(targeting, support)) },
                 new[] { E1, E2, E3 }.Select(id => new BattleEnemySetup(id, new CombatantDefinition("enemy", enemyHealth), 7)));
             return Do(engine, state, P1, CardDuelAction.Start);
         }
@@ -39,8 +39,8 @@ namespace PokerEngine.Tests
             Assert.Throws<ArgumentException>(() => engine.Duel.AllyTargets(state.Duel, P1, new[] { E1 }));
             Assert.Throws<ArgumentException>(() => engine.Duel.AllyTargets(state.Duel, P1, new[] { P2, P2 }));
             Assert.Throws<ArgumentException>(() => engine.Duel.AllyTargets(state.Duel, P1, new[] { new ParticipantId("absent") }));
-            var invalid = new TeamBattleEngine(engine.Duel.Definition, allyTargetPolicy: new InvalidAllyPolicy());
-            Assert.Throws<ArgumentException>(() => invalid.AllyTargets(state.Duel, P1));
+            var invalid = Create(engine, support: new InvalidAllyPolicy());
+            Assert.Throws<ArgumentException>(() => engine.Duel.AllyTargets(invalid.Duel, P1));
             var dying = EndPlayers(engine, Create(engine, hp2: 1));
             var dead = Do(engine, dying, E1, CardDuelAction.EnemyAction, targets: new[] { P2 });
             Assert.Throws<ArgumentException>(() => engine.Duel.AllyTargets(dead.Duel, P1, new[] { P2 }));
@@ -131,7 +131,7 @@ namespace PokerEngine.Tests
         { public IReadOnlyList<ParticipantId> SelectTargets(BattleTargetContext context) => context.Opponents; }
         [Test] public void MultiTargetPolicyProducesOneCostAndOneEventPerTarget()
         {
-            var engine = Engine(targeting: new AllOpponents()); var state = Create(engine, enemyHealth: 1);
+            var engine = Engine(); var state = Create(engine, enemyHealth: 1, targeting: new AllOpponents());
             var result = engine.Execute(state, state.Revision, P2, CardDuelAction.Play, state.Zone(CardZoneKinds.Hand, P2).Cards.Take(1));
             Assert.That(result.Accepted, Is.True); Assert.That(result.Events.Count, Is.EqualTo(3)); Assert.That(result.Events.All(x => x.Died), Is.True);
             Assert.That(result.State.Duel.Player(P2).Energy.Energy, Is.EqualTo(2)); Assert.That(result.State.Duel.Phase, Is.EqualTo(ScoredDuelPhase.Won));

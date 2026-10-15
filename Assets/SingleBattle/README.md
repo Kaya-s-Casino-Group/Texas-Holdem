@@ -101,8 +101,8 @@ Host 不再保存生命、攻击、能量、牌数等数值，仅持有玩家/�
 - `CardDuelState` 拥有全部卡牌、每位玩家四区、弃牌预算及洗牌状态；保留类名以兼容原调用，已支持多对多。新代码使用 `Zone(kind, playerId)` / `DiscardsFor(playerId)`，不使用默认第一玩家的便捷别名。
 - `TeamBattleState` 拥有共同 CombatState、各玩家能量与结束标记、怪物队列和战斗阶段。`TeamBattleEngine` 负责阵营回合、费用、伤害与胜负，`BattleRules` 只含公共规则。
 - 角色根节点持有 PlayerBattleActor / EnemyBattleActor，通过 ParticipantId 查询最新快照；Model 子物体继续承载 VAT、DOTween、裂纹与音效。角色绑定要求在 Host 阵容中具有对应席位，不能冒用同队另一个角色的身份。
-- `IBattleTargetPolicy.SelectTargets(BattleTargetContext)` 由权威侧注入，接收源单位、当前状态、可选请求和存活对手集合，返回一个或多个目标。默认选第一个存活对手（或校验显式单目标）；引擎拒绝未知、死亡、友方和重复目标。接口支持多个伤害事件，但当前 Demo 不提供选目标或 AOE 操作 UI，也未定义范围/友方治疗规则。
-- `IBattleAllyTargetPolicy.SelectTargets(BattleAllyTargetContext)` 预留独立友方目标接口，默认自己，也可请求存活队友；引擎验证请求与策略输出，拒绝敌方、死亡、未知和重复目标。可通过 Host.ConfigureAllyTargetPolicy 在开战前注入。弃牌通过独立 IDiscardRewardRule 生成收益计划，默认空计划；费用/次数和过牌仍由原有流程处理，不按牌型换取格挡。
+- `IBattleTargetPolicy.SelectTargets(BattleTargetContext)` 由行动来源角色的 BattleActorTargetRules.Attack 提供，接收源单位、当前状态、可选请求和存活对手集合，返回一个或多个目标。默认选第一个存活对手（或校验显式单目标）；引擎拒绝未知、死亡、友方和重复目标。接口支持多个伤害事件，但当前 Demo 不提供选目标或 AOE 操作 UI，也未定义范围/友方治疗规则。
+- `IBattleAllyTargetPolicy.SelectTargets(BattleAllyTargetContext)` 预留独立友方目标接口，默认自己，也可请求存活队友；引擎验证请求与策略输出，拒绝敌方、死亡、未知和重复目标。由行动来源角色的 BattleActorTargetRules.Support 提供；Unity 入口在 PlayerBattleProfile 的友方目标策略槽位。弃牌通过独立 IDiscardRewardRule 生成收益计划，默认空计划；费用/次数和过牌仍由原有流程处理，不按牌型换取格挡。
 - `PlayerBattleActor.CreateSetup(id, deck, initialHealth)` / `PlayerBattleProfile.BuildSetup` 可消费 Run 当前构筑和生命；缺省牌组为独立标准 52 张。Core 不依赖 ScriptableObject 或 Unity。
 - `ICardDuelDealPolicy` 上下文含 PlayerId，只返回抽牌数量，不能移动或创建卡牌。每位玩家可独立注入策略。
 - `ScoredDuelEngine` / 旧快照协议保留给原有独立 1v1 规则调用；新 Demo 使用 TeamBattleEngine。完整多人战局存档、Run 奖励写回、复活和增援尚未实现。
@@ -113,9 +113,18 @@ Host 不再保存生命、攻击、能量、牌数等数值，仅持有玩家/�
 
 尚待后续拆分的边界：
 
-- 目标策略目前由 Host / TeamBattleEngine 整场共用。目标合法性可继续统一校验，但具体选谁应随行动或角色策略决定，以支持不同怪物 AI 与不同招式。
 - 共享计分基础表可以保留；个人牌型等级、Joker 和成长应来自玩家状态。当前正式计分固定 1 级与空 Joker，尚未接入个人成长。
 - SingleBattleHud 同时处理信息显示、按钮命令、Tab 切换和世界空间意图对象的生命周期。未来可拆成信息展示、操作绑定和意图 Presenter；游戏数值仍由规则层提供。
+
+## 角色目标配置
+
+BattleActorProfile（玩家和敌人共有）新增“攻击目标策略”独立资产槽位；PlayerBattleProfile 另有“友方目标策略”槽位，用于弃牌收益等支援行动。开战时 BuildTargetRules 将配置转成纯 C# BattleActorTargetRules，随各自 Setup 输入并保留在玩家状态与敌人阵容中，扣费、结束回合与恢复能量不会丢失。修改资产在下次开战生效；空攻击槽默认为首个存活对手，空友方槽默认为自身或指定单个队友。
+
+创建菜单 `玩法 > 角色 > 攻击目标策略` 提供首个存活、当前生命最低、当前生命最高、全部存活对手四种模式；生命比较使用当前绝对生命值，同值按阵容顺序确定，不引入随机数。“允许命令指定目标”默认开启以保留旧行为；开启时合法显式目标优先，单目标模式只接受一个目标；关闭时拒绝带显式目标的命令。每个敌人的 EnemyBattleProfile 可绑定不同策略资产，敌人意图预览和实际攻击都读取该敌人的同一份策略快照。
+
+SingleBattle / Demo 的玩家、敌人分别绑定独立默认攻击策略资产，玩家分别绑定友方策略资产。若多个场景角色共享同一角色 Profile，它们仍共享作者配置；需要不同策略时绑定各自的角色 Profile。可继承 AttackTargetPolicyProfile / AllyTargetPolicyProfile 扩展确定性策略，BuildPolicy 不得返回读取可变 Unity 资产的运行时规则。
+
+Host、CardDuelEngine、TeamBattleEngine 已移除全局目标策略参数和配置入口，不保留全局回退。纯 C# 调用改为 `new BattlePlayerSetup(..., targetRules: new BattleActorTargetRules(attack, support))` 或 `new BattleEnemySetup(..., targetRules: new BattleActorTargetRules(attack))`。TeamBattleEngine 仅在目标选择边界分派来源角色策略并做公共合法性校验：来源必须存活且属于当前战局，请求及输出须为合法阵营的存活单位、无重复且数量有效；非法请求不能被忽略它的策略绕过。策略失败会拒绝整个命令，预览显示不可用。
 
 ## 敌人行动预览
 

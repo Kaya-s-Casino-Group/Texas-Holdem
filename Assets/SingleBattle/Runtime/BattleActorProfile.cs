@@ -9,6 +9,13 @@ namespace Poker.SingleBattle
         [SerializeField, InspectorName("单位定义 ID")] private string unitId = "unit";
         [SerializeField, Min(1), InspectorName("最大生命")] private int maxHealth = 40;
         [SerializeField, Min(0), InspectorName("初始格挡")] private int initialBlock;
+        [Header("角色攻击目标（开战时生成快照）")]
+        [SerializeField, InspectorName("攻击目标策略（空为首个存活对手）")] private AttackTargetPolicyProfile attackTargets;
+        public AttackTargetPolicyProfile AttackTargets => attackTargets;
+        public void ConfigureAttackTargets(AttackTargetPolicyProfile policy) => attackTargets = policy;
+        protected IBattleTargetPolicy BuildAttackTargetPolicy() => attackTargets != null
+            ? attackTargets.BuildPolicy() ?? throw new System.InvalidOperationException("攻击目标配置返回了空策略。") : null;
+        public virtual BattleActorTargetRules BuildTargetRules() => new BattleActorTargetRules(BuildAttackTargetPolicy());
         [Header("角色伤害修正（开战时生成快照）")]
         [SerializeField, InspectorName("攻击修正配置（空为不修正）")] private AttackDamageModifierProfile attackModifier;
         [SerializeField, InspectorName("承伤修正配置（空为不修正）")] private IncomingDamageModifierProfile incomingModifier;
