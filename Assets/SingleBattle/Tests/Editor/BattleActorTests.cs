@@ -417,6 +417,38 @@ namespace Poker.SingleBattle.Tests
             }
             throw new AssertionException("The sequence failed to reach a presentation checkpoint.");
         }
+        [TestCase(CardDuelAction.Play)] [TestCase(CardDuelAction.Discard)]
+        public void ActorPresentationStartsOnlyAfterCardActionViewCompletes(CardDuelAction action)
+        {
+            using (var f = new Fixture(start: false))
+            {
+                var reward = ScriptableObject.CreateInstance<PerCardBlockRewardProfile>();
+                IEnumerator sequence = null;
+                try
+                {
+                    f.Player.Profile.ConfigureDiscardReward(reward); f.Host.StartBattle();
+                    var probe = Probe(f.Player); f.HandView.CompleteTransitions();
+                    var ids = new[] { f.Host.State.Zone(CardZoneKinds.Hand).Cards[0] };
+                    var result = f.Host.Engine.Execute(f.Host.State, f.Host.State.Revision, action, ids);
+                    Assert.IsTrue(result.Accepted);
+                    typeof(SingleBattleHost).GetProperty("State").SetValue(f.Host, result.State);
+                    var flags = BindingFlags.Instance | BindingFlags.NonPublic;
+                    typeof(SingleBattleHost).GetField("busy", flags).SetValue(f.Host, true);
+                    typeof(SingleBattleHost).GetMethod("RecordBlockEffects", flags).Invoke(f.Host, new object[] { result });
+                    var cardAction = new CardActionViewOperation();
+                    var flow = (IEnumerator)typeof(SingleBattleHost).GetMethod("PresentAfterCardAction", flags)
+                        .Invoke(f.Host, new object[] { result, cardAction });
+                    sequence = (IEnumerator)typeof(SingleBattleHost).GetMethod("RunPresentation", flags).Invoke(f.Host, new object[] { flow });
+                    Assert.IsTrue(sequence.MoveNext()); Assert.AreSame(cardAction, sequence.Current);
+                    Assert.IsEmpty(probe.Cues); Assert.IsTrue(f.Host.IsPresenting);
+                    cardAction.Complete();
+                    Assert.IsNotNull(NextPending(f, sequence));
+                    Assert.AreEqual(action == CardDuelAction.Play ? BattlePresentationKind.Attack : BattlePresentationKind.GainBlock, probe.Cues.Single().Kind);
+                }
+                finally { (sequence as IDisposable)?.Dispose(); f.Player.Profile.ConfigureDiscardReward(null); UnityEngine.Object.DestroyImmediate(reward); }
+            }
+        }
+
         [Test] public void HostWaitsForEachAttackHitAndPreparationBeforeContinuingTheTurn()
         {
             using (var f = new Fixture())

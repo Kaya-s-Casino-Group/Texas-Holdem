@@ -9,7 +9,7 @@ namespace CardPresentation
 {
     /// <summary>Hand-specific deal/discard flights, selection lift and audio on the shared zone renderer.</summary>
     [AddComponentMenu("Cards/Hand Zone View")]
-    public partial class HandZoneView : CardZoneView
+    public partial class HandZoneView : CardZoneView, ICardActionView
     {
         [SerializeField] private Vector3 raisedOffset = new Vector3(0, 0, 0.02f);
         // Retained only for old scene/prefab serialization and API compatibility; hover no longer translates.
@@ -47,8 +47,32 @@ namespace CardPresentation
         public void Present(CardZoneViewData data, bool animate, IEnumerable<string> discardedIds) =>
             ApplyPresentation(data, () => new HandPresentationUpdate(this, data, animate, discardedIds));
 
-        public void PresentDiscardCommitted(CardZoneViewData data, IEnumerable<string> discardedIds, Action commitData, bool animate = true) =>
-            ApplyPresentation(data, () => new HandPresentationUpdate(this, data, animate, discardedIds), commitData);
+        /// <summary>One completion boundary for play and discard, independent of retained-card reflow.</summary>
+        public virtual CardActionViewOperation PresentActionCommitted(CardViewActionKind action, CardZoneViewData data,
+            IEnumerable<string> cardIds, Action commitData, bool animate = true)
+        {
+            if (action == CardViewActionKind.Discard) return PresentDiscardCommitted(data, cardIds, commitData, animate);
+            if (action != CardViewActionKind.Play) throw new ArgumentOutOfRangeException(nameof(action));
+            var operation = new CardActionViewOperation();
+            try
+            {
+                ValidateDepartures(data, cardIds);
+                // Direct play currently removes cards immediately. Future play animation completes this same contract.
+                PresentCommitted(data, commitData, animate);
+                operation.Complete();
+            }
+            catch (Exception error) { operation.Fail(error); throw; }
+            return operation;
+        }
+
+        /// <summary>Completes when this batch has left the View, independently of retained-card reflow.</summary>
+        public CardActionViewOperation PresentDiscardCommitted(CardZoneViewData data, IEnumerable<string> discardedIds, Action commitData, bool animate = true)
+        {
+            var operation = new CardActionViewOperation();
+            try { ApplyPresentation(data, () => new HandPresentationUpdate(this, data, animate, discardedIds, operation), commitData); }
+            catch (Exception error) { operation.Fail(error); throw; }
+            return operation;
+        }
 
         public void Present(CardZone zone, Func<CardInstanceId, CardVisualData> project, bool animate,
             IEnumerable<string> discardedViewIds) => Present(CardZoneViewData.FromZone(zone, project), animate, discardedViewIds);
@@ -69,11 +93,12 @@ namespace CardPresentation
             private double queue;
             private float discardDelay;
             private bool reflowStarted;
+            private readonly CardActionViewOperation discardOperation;
 
-            public HandPresentationUpdate(HandZoneView hand, CardZoneViewData data, bool requestedAnimation, IEnumerable<string> discardedViewIds)
+            public HandPresentationUpdate(HandZoneView hand, CardZoneViewData data, bool requestedAnimation, IEnumerable<string> discardedViewIds, CardActionViewOperation discardOperation = null)
             {
-                this.hand = hand; this.data = data;
-                discards = hand.ValidateDiscards(data, discardedViewIds);
+                this.hand = hand; this.data = data; this.discardOperation = discardOperation;
+                discards = hand.ValidateDepartures(data, discardedViewIds);
                 discardDestination = hand.transform.InverseTransformPoint(hand.DiscardWorldPosition);
                 ValidateOffset(discardDestination);
                 if (!CardZoneRowLayout.Finite(discards.Count * hand.discardSettings.Interval + hand.discardSettings.FlightSeconds))
@@ -129,6 +154,7 @@ namespace CardPresentation
             }
             public override void AfterCommit()
             {
+                hand.TrackDiscard(discardOperation, discards);
                 var committed = hand.ordered;
                 hand.nextDealTime = animate && committed.Length > 0 ? queue : hand.AnimationTime;
                 hand.ConsumeDealSounds(); hand.ConsumeDiscardSounds();
@@ -195,7 +221,7 @@ namespace CardPresentation
         {
             ClearDepartures(); base.Clear(); nextDealTime = 0; StopCardAudio();
         }
-        protected override void OnDisable() { base.OnDisable(); StopCardAudio(); }
+        protected override void OnDisable() { CancelDiscardBatches(); base.OnDisable(); StopCardAudio(); }
         protected override void OnDestroy() { base.OnDestroy(); ReleaseCardAudio(); }
         protected override void OnDrawGizmosSelected()
         {

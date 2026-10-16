@@ -12,6 +12,32 @@ namespace CardPresentation
         [SerializeField] private Transform discardAnchor;
         private readonly List<CardInstanceView> departing = new List<CardInstanceView>();
 
+        private sealed class DiscardBatch
+        {
+            public CardActionViewOperation Operation;
+            public CardInstanceView[] Views;
+        }
+        private readonly List<DiscardBatch> discardBatches = new List<DiscardBatch>();
+        private void TrackDiscard(CardActionViewOperation operation, HashSet<string> ids)
+        {
+            if (operation == null) return;
+            var views = departing.Where(view => view != null && ids.Contains(view.ViewId)).ToArray();
+            if (views.Length == 0) { operation.Complete(); return; }
+            discardBatches.Add(new DiscardBatch { Operation = operation, Views = views });
+        }
+        private void CancelDiscardBatches(CardInstanceView removed = null)
+        {
+            for (int i = discardBatches.Count - 1; i >= 0; i--)
+                if (removed == null || discardBatches[i].Views.Contains(removed))
+                { discardBatches[i].Operation.Cancel(); discardBatches.RemoveAt(i); }
+        }
+        private void CompleteDiscardBatches()
+        {
+            for (int i = discardBatches.Count - 1; i >= 0; i--)
+                if (!discardBatches[i].Views.Any(view => departing.Contains(view)))
+                { discardBatches[i].Operation.Complete(); discardBatches.RemoveAt(i); }
+        }
+
         public CardZoneDiscardSettings DiscardSettings => discardSettings;
         public Vector3 DiscardLocalPosition => discardLocalPosition;
         public Transform DiscardAnchor => discardAnchor;
@@ -35,7 +61,7 @@ namespace CardPresentation
             settings.Validate(); discardSettings = settings;
         }
 
-        private HashSet<string> ValidateDiscards(CardZoneViewData next, IEnumerable<string> ids)
+        private HashSet<string> ValidateDepartures(CardZoneViewData next, IEnumerable<string> ids)
         {
             var result = new HashSet<string>(StringComparer.Ordinal);
             if (ids == null) return result;
@@ -52,7 +78,7 @@ namespace CardPresentation
             var restored = new HashSet<string>(next.Cards.Select(card => card.ViewId), StringComparer.Ordinal);
             for (int i = departing.Count - 1; i >= 0; i--)
                 if (!animate || !reuse || departing[i] == null || restored.Contains(departing[i].ViewId))
-                { Release(departing[i]); departing.RemoveAt(i); }
+                { CancelDiscardBatches(departing[i]); Release(departing[i]); departing.RemoveAt(i); }
         }
 
         private void AdvanceDepartures(float deltaTime)
@@ -66,10 +92,12 @@ namespace CardPresentation
                 if (view == null || !view.IsTransitioning)
                 { Release(view); departing.RemoveAt(i); }
             }
+            CompleteDiscardBatches();
         }
 
         private void ClearDepartures()
         {
+            CancelDiscardBatches();
             foreach (var view in departing) Release(view);
             departing.Clear();
         }

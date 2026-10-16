@@ -425,3 +425,9 @@ HandZoneView 默认最多选中 5 张，由 `SetMaxSelectedCards` 调整；此�
 项目已安装 `com.unity.inputsystem` 1.6.1，Active Input Handling 使用 Both，保留现有旧输入。优先使用 `Gamepad.current` 的双马达反馈；没有当前手柄时，Android 使用 `View.performHapticFeedback(KEYBOARD_TAP)`，iOS 使用轻触 `UIImpactFeedbackGenerator`。手机反馈的时长和强度由系统控制，Android 尊重系统触觉开关且不需要 VIBRATE 权限。无设备支持时不阻断卡牌操作。手柄计时使用实际时间，Time.timeScale 为 0 也会停止；牌区清理、停用、应用暂停、失焦和退出会停止本模块发出的持续震动。编辑器只能验证已连接手柄，手机触感须真机验证。
 
 参考：[Unity Input System 安装](https://docs.unity3d.com/Packages/com.unity.inputsystem@1.6/manual/Installation.html)、[Gamepad 双马达反馈](https://docs.unity3d.com/Packages/com.unity.inputsystem@1.6/manual/Gamepad.html)、[Android 系统触觉反馈](https://developer.android.com/develop/ui/views/haptics/haptic-feedback)、[Apple UIImpactFeedbackGenerator](https://developer.apple.com/documentation/uikit/uiimpactfeedbackgenerator)。
+
+## 卡牌动作完成接口
+
+`HandZoneView` 实现 `ICardActionView`，通过 `PresentActionCommitted(Play / Discard, ...)` 返回本次动作的 `CardActionViewOperation`。出牌当前立即移除并完成；弃牌在本批全部飞出后完成，剩余手牌理牌不影响此句柄。即时表现直接返回 Completed；清空、恢复或禁用取消未完成弃牌，迟到完成不改变终态。
+
+View 不引用 Actor。战斗宿主等待卡牌动作 Completed，再调用 Actor 表现协议并等待其完成；Cancelled / Failed 进入恢复同步，不启动后续 Actor 动画。未来出牌动画继续使用相同接口，由实际播放结束时完成句柄。

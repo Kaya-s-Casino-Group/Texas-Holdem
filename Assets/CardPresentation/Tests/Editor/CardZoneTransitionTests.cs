@@ -56,6 +56,51 @@ namespace CardPresentation.Tests
             }
         }
 
+        [Test] public void DiscardActionCompletesAfterItsLastDepartureIndependentlyOfReflow()
+        {
+            using (var f = new Fixture())
+            {
+                f.Zone.Present(Data(Card("a"), Card("b"), Card("c")), false);
+                var settings = f.Zone.TransitionSettings; settings.ReflowSeconds = 5; f.Zone.SetTransitionSettings(settings);
+                f.Zone.SetDiscardSettings(new CardZoneDiscardSettings { FlightSeconds = .1f, Interval = .2f });
+                int commits = 0;
+                var operation = ((ICardActionView)f.Zone).PresentActionCommitted(CardViewActionKind.Discard,
+                    Data(Card("c")), new[] { "a", "b" }, () => commits++, true);
+                Assert.AreEqual(1, commits); Assert.IsTrue(operation.keepWaiting);
+                f.Zone.AdvanceMotion(.15f); Assert.IsTrue(operation.keepWaiting);
+                f.Zone.AdvanceMotion(.2f);
+                Assert.AreEqual(CardActionViewStatus.Completed, operation.Status);
+                Assert.IsEmpty(f.Zone.DepartingViews);
+                Assert.IsTrue(f.Zone.IsTransitioning, "Retained-card reflow must not delay the action boundary.");
+                Assert.IsFalse(operation.Cancel(), "Late completion changes must be ignored.");
+            }
+        }
+        [TestCase(0)] [TestCase(1)] [TestCase(2)]
+        public void InterruptedDiscardCannotReportSuccessfulCompletion(int interruption)
+        {
+            using (var f = new Fixture())
+            {
+                f.Zone.Present(Data(Card("a")), false);
+                var operation = f.Zone.PresentActionCommitted(CardViewActionKind.Discard, Data(), new[] { "a" }, () => { });
+                if (interruption == 0) f.Zone.Clear();
+                else if (interruption == 1) f.Zone.enabled = false;
+                else f.Zone.Present(Data(Card("a")), false);
+                Assert.AreEqual(CardActionViewStatus.Cancelled, operation.Status);
+                f.Zone.AdvanceMotion(5); Assert.IsFalse(operation.Complete());
+            }
+        }
+        [TestCase(CardViewActionKind.Play)] [TestCase(CardViewActionKind.Discard)]
+        public void ImmediateCardActionsUseTheSameCompletedContract(CardViewActionKind action)
+        {
+            using (var f = new Fixture())
+            {
+                f.Zone.Present(Data(Card("a")), false); int commits = 0;
+                var operation = f.Zone.PresentActionCommitted(action, Data(), new[] { "a" }, () => commits++, false);
+                Assert.AreEqual(1, commits); Assert.AreEqual(CardActionViewStatus.Completed, operation.Status);
+                Assert.IsEmpty(f.Zone.Views); Assert.IsEmpty(f.Zone.DepartingViews);
+            }
+        }
+
         private static void SetAutoSize(HandZoneView zone, float height)
         {
             var layout = zone.Layout;

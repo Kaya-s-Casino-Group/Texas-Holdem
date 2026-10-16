@@ -491,7 +491,8 @@ MonoBehaviour:
   ArcHeight: 0.26083025
   DissolveSeconds: 0.24
   DissolveInterval: 0.06
-  LandingEffect: {fileID: 0}
+  LandingEffect: {fileID: 4730803687788644761, guid: 6ed79a03990f54153b8eb8b2867c4ee7, type: 3}
+  LandingEffectScale: 0.2
   LandingSound: {fileID: 8300000, guid: cf60dbc74e49f4bc8a83c9e708a4e943, type: 3}
   LandingVolume: 0.65
   BlockHitSound: {fileID: 0}

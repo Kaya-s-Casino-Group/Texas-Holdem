@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using CardArt;
@@ -69,6 +70,8 @@ namespace Poker.SingleBattle
         [Min(0)] public float DissolveInterval = .06f;
         [Header("落地反馈（逐张）")]
         public ParticleSystem LandingEffect;
+        [Tooltip("粒子 Prefab 的统一缩放 = 卡牌高度 × 此倍率；原始特效尺寸约 5 时，0.2 可缩到约一张牌高。")]
+        [Min(.001f)] public float LandingEffectScale = .2f;
         public AudioClip LandingSound;
         [Range(0, 1)] public float LandingVolume = .65f;
         public AudioClip BlockHitSound;
@@ -115,6 +118,7 @@ namespace Poker.SingleBattle
                 !Finite(ArcHeight) || ArcHeight < 0 || !Valid(SpawnCenter) || !Valid(RingCenter) ||
                 !Positive(SpawnSize) || !ValidAngleRange(PitchRange) || !ValidAngleRange(YawRange) || !ValidAngleRange(RollRange) ||
                 !Finite(OutwardChance) || OutwardChance < 0 || OutwardChance > 1 ||
+                !Finite(LandingEffectScale) || LandingEffectScale <= 0 ||
                 !Finite(RingInnerRadius) || RingInnerRadius < 0 || !Finite(RingOuterRadius) || RingOuterRadius < RingInnerRadius ||
                 !Finite(LandingHeightVariation) || LandingHeightVariation < 0 ||
                 !Finite(ArcCenterAngle) || !Finite(ArcAngle) || ArcAngle < 1 || ArcAngle > 360)
@@ -223,11 +227,29 @@ namespace Poker.SingleBattle
             visual.Flash = 1; visual.Apply();
             if (LandingEffect != null)
             {
-                var effect = Instantiate(LandingEffect, CardBottomPosition(visual.Root.transform), visual.Root.transform.rotation, transform);
-                effects.Add(effect.gameObject); effect.Play();
-                Destroy(effect.gameObject, Mathf.Max(.1f, effect.main.duration + effect.main.startLifetime.constantMax));
+                var effect = Instantiate(LandingEffect, CardBottomPosition(visual.Root.transform),
+                    visual.Root.transform.rotation * LandingEffect.transform.localRotation, transform);
+                effect.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+                effect.transform.localScale = LandingEffect.transform.localScale * (CardHeight * LandingEffectScale);
+                float lifetime = .1f;
+                foreach (var particles in effect.GetComponentsInChildren<ParticleSystem>(true))
+                {
+                    var main = particles.main;
+                    main.loop = false; main.playOnAwake = false; main.useUnscaledTime = true;
+                    main.scalingMode = ParticleSystemScalingMode.Hierarchy;
+                    lifetime = Mathf.Max(lifetime, (main.startDelay.constantMax + main.duration + main.startLifetime.constantMax) /
+                        Mathf.Max(.01f, main.simulationSpeed));
+                }
+                effects.Add(effect.gameObject); effect.Play(true);
+                StartCoroutine(ReleaseEffectAfter(effect.gameObject, lifetime));
             }
             PlaySound(LandingSound, LandingVolume); CardLanded?.Invoke(visual.Id);
+        }
+        private IEnumerator ReleaseEffectAfter(GameObject effect, float seconds)
+        {
+            yield return new WaitForSecondsRealtime(seconds);
+            effects.Remove(effect);
+            Release(effect);
         }
         private void PlaySound(AudioClip clip, float volume)
         {

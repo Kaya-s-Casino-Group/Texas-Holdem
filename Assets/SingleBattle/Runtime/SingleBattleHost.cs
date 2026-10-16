@@ -166,9 +166,10 @@ namespace Poker.SingleBattle
             State = result.State; busy = true;
             try
             {
-                // The logical played zone still participates in scoring/collection; no scene view or flight is created.
-                hand.GetComponent<HandZoneView>().PresentCommitted(frame.Project(hand.Zone.Id), () => match.Commit(frame), animate);
-                match.Notify(frame, hand); BeginPresentation(result, animate);
+                var view = (ICardActionView)hand.GetComponent<HandZoneView>();
+                var cardAction = view.PresentActionCommitted(CardViewActionKind.Play, frame.Project(hand.Zone.Id),
+                    ids.Select(id => id.Value), () => match.Commit(frame), animate);
+                match.Notify(frame, hand); BeginPresentation(result, animate, cardAction);
             }
             catch { SnapToState(); throw; }
             return ids.Length;
@@ -182,11 +183,10 @@ namespace Poker.SingleBattle
             State = result.State; busy = true;
             try
             {
-                bool insertsShields = actor.Presentation is IShieldPresentation && result.Events.Any(effect =>
-                    effect.Effect.Target == actor.ParticipantId && effect.Effect.Kind == CombatEffectKind.GainBlock && effect.After.Block > effect.Before.Block);
-                if (insertsShields) hand.GetComponent<HandZoneView>().PresentCommitted(frame.Project(hand.Zone.Id), () => match.Commit(frame), animate);
-                else hand.GetComponent<HandZoneView>().PresentDiscardCommitted(frame.Project(hand.Zone.Id), ids.Select(id => id.Value), () => match.Commit(frame), animate);
-                match.Notify(frame, hand); BeginPresentation(result, animate);
+                var view = (ICardActionView)hand.GetComponent<HandZoneView>();
+                var cardAction = view.PresentActionCommitted(CardViewActionKind.Discard, frame.Project(hand.Zone.Id),
+                    ids.Select(id => id.Value), () => match.Commit(frame), animate);
+                match.Notify(frame, hand); BeginPresentation(result, animate, cardAction);
             }
             catch { SnapToState(); throw; }
             return ids.Length;
@@ -203,12 +203,12 @@ namespace Poker.SingleBattle
                 shieldFrames[effect] = Actor(effect.Effect.Target).RecordBlockEffect(effect, cards);
             }
         }
-        private void BeginPresentation(CardDuelTransition result, bool animate)
+        private void BeginPresentation(CardDuelTransition result, bool animate, CardActionViewOperation cardAction = null)
         {
             shieldFrames.Clear(); RecordBlockEffects(result);
             if (animate && Application.isPlaying && isActiveAndEnabled)
             {
-                var running = StartCoroutine(RunPresentation(Present(result)));
+                var running = StartCoroutine(RunPresentation(PresentAfterCardAction(result, cardAction)));
                 playback = busy ? running : null;
             }
             else { Show(result); SnapEffects(result); CollectPlayed(); AdvanceEnemyImmediately(); Project(false); busy = false; Publish(); }
@@ -250,9 +250,16 @@ namespace Poker.SingleBattle
             if (operation.Status != BattlePresentationStatus.Completed)
                 throw new InvalidOperationException("Battle presentation did not complete: " + operation.Status, operation.Error);
         }
-        private IEnumerator Present(CardDuelTransition result)
+        private IEnumerator Present(CardDuelTransition result) => PresentAfterCardAction(result, null);
+        private IEnumerator PresentAfterCardAction(CardDuelTransition result, CardActionViewOperation cardAction)
         {
-            while (actions.Hand.GetComponent<HandZoneView>().IsTransitioning) yield return null;
+            if (cardAction != null)
+            {
+                yield return cardAction;
+                if (cardAction.Status != CardActionViewStatus.Completed)
+                    throw new InvalidOperationException("Card action View did not complete: " + cardAction.Status, cardAction.Error);
+            }
+            else while (actions.Hand.GetComponent<HandZoneView>().IsTransitioning) yield return null;
             Show(result);
             yield return PlayEffects(result);
             while (State.Duel.Phase == ScoredDuelPhase.AwaitingEnemyAction)

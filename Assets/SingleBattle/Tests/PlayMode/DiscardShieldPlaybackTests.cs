@@ -49,18 +49,26 @@ namespace Poker.SingleBattle.Tests
             root.transform.SetPositionAndRotation(new Vector3(3, 1, 2), Quaternion.Euler(0, 37, 0));
             root.transform.localScale = new Vector3(1.4f, 1.8f, .8f);
             view.CardHeight = .6f;
-            var template = new GameObject("Test Landing Effect"); template.transform.SetParent(root.transform, false);
-            var particle = template.AddComponent<ParticleSystem>();
-            particle.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
-            var main = particle.main; main.playOnAwake = false; main.duration = 2; main.startLifetime = 2;
-            view.LandingEffect = particle;
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Art/VFX/HitFlashes/Prefabs/Sword Slash 14 Hit Flashes.prefab");
+            var particle = prefab.GetComponent<ParticleSystem>();
+            view.LandingEffect = particle; view.LandingEffectScale = .2f;
             var expected = new System.Collections.Generic.List<Vector3>();
             view.CardLanded += id => expected.Add(DiscardShieldPresenter.CardBottomPosition(root.transform.Find("Shield " + id)));
             var operation = view.Present(Snapshot(), true);
             float deadline = Time.realtimeSinceStartup + 3;
             while (operation.keepWaiting && Time.realtimeSinceStartup < deadline) yield return null;
             Assert.AreEqual(BattlePresentationStatus.Completed, operation.Status);
-            var effects = root.GetComponentsInChildren<ParticleSystem>().Where(value => value != particle).ToArray();
+            var systems = root.GetComponentsInChildren<ParticleSystem>();
+            var effects = systems.Where(value => value.transform.parent == root.transform).ToArray();
+            Assert.AreEqual(9, systems.Length);
+            foreach (var system in systems)
+            {
+                Assert.IsFalse(system.main.loop);
+                Assert.IsTrue(system.main.useUnscaledTime);
+                Assert.AreEqual(ParticleSystemScalingMode.Hierarchy, system.main.scalingMode);
+            }
+            foreach (var effect in effects)
+                Assert.That(Vector3.Distance(effect.transform.localScale, Vector3.one * .12f), Is.LessThan(.0001f));
             Assert.AreEqual(3, expected.Count); Assert.AreEqual(3, effects.Length);
             foreach (var position in expected)
                 Assert.IsTrue(effects.Any(effect => Vector3.Distance(effect.transform.position, position) < .0001f));

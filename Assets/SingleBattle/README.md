@@ -221,12 +221,19 @@ Host、CardDuelEngine、TeamBattleEngine 已移除全局目标策略参数和配
 - 黄色 `RingCenter / RingInnerRadius / RingOuterRadius` 是围绕 Actor 的圆弧落地区域，以卡牌底部为锚点，可在 Scene 中直接移动圆心和拖动内外半径。`LandingHeightVariation` 控制底部高度随机范围。`ArcAngle` 控制圆弧角度（默认 60°），`ArcCenterAngle` 控制朝向（默认 0°，角色前方）。位置按圆弧区域面积随机分布，牌面随机朝内或朝外，并叠加独立俯仰、偏转和倾斜角度。
 - `CardHeight` 是唯一的卡牌尺寸参数（容器局部单位），宽度自动按图集原始牌面比例计算，Inspector 显示最终宽高。`PitchRange / YawRange / RollRange` 分别控制俯仰、朝向偏移、左右倾斜的最小/最大角度，允许非对称范围。`OutwardChance` 为朝外概率（0 全朝内、1 全朝外），`Seed` 控制随机结果；同一批次恢复时姿态保持一致。旧宽高及角度配置自动迁移，保留高度和原角度范围。
 - DOTween 使用不受 Time.timeScale 影响的时间：`FlightSeconds / CardInterval / ArcHeight` 控制逐张飞入，`DissolveSeconds / DissolveInterval` 控制逐张溶解。
-- 每张落地触发材质闪光、生成于卡牌底边中心的可选 `LandingEffect` 粒子（位置包含卡牌旋转与缩放）、`LandingSound` 与设备震动。当前落地音效复用手牌弃牌音效；粒子和 `BlockHitSound` 默认空，可自行配置。严格在实际播放非空且音量大于零的音效时请求一次震动；静默落地、Snap 和取消不会触发震动。手机与手柄能力沿用 `CardHapticsDriver`。
+- 每张落地触发材质闪光、生成于卡牌底边中心的可选 `LandingEffect` 粒子（位置包含卡牌旋转与缩放）、`LandingSound` 与设备震动。当前落地音效复用手牌弃牌音效；当前场景粒子绑定 `Sword Slash 14 Hit Flashes`，`LandingEffectScale = 0.2`，实例按卡牌高度等比缩放，整组粒子只播放一次，位置仍在牌底；`BlockHitSound` 默认空，可自行配置。严格在实际播放非空且音量大于零的音效时请求一次震动；静默落地、Snap 和取消不会触发震动。手机与手柄能力沿用 `CardHapticsDriver`。
 
-盾牌容器是 Actor 根节点的子节点，配置时采用 Visual 的位置与朝向，保持独立于模型攻击前冲和受击晃动。手牌弃牌时直接移除原牌，随后由盾牌容器创建独立实例，避免旧飞离动画与弃牌音效重复执行。没有盾牌表现入口的旧场景仍保留原弃牌路径。
+盾牌容器是 Actor 根节点的子节点，配置时采用 Visual 的位置与朝向，保持独立于模型攻击前冲和受击晃动。弃牌分两段顺序播放：先沿手牌原有 `DiscardAnchor / DiscardLocalPosition` 飞出，由 View 返回本批次 `CardActionViewOperation`，所有离场卡牌（含错峰队列）结束后由 View 标记完成；宿主等待这个完成信号，再调用 Actor 的 `GainBlock` 播放盾牌从 `SpawnCenter / SpawnSize` 飞入圆弧。飞出时播放弃牌音效，盾牌落地时播放落地音效，各自每次实际发声请求一次震动；补牌在盾牌插入完成后投影。跳过动画时直接同步最终状态。弃牌 View 不持有 Actor 引用；宿主只衔接完成协议，不估算飞行时长，也不把剩余手牌理牌动画作为弃牌结束条件。取消、清空或禁用 View 会取消未完成句柄，宿主走恢复同步而不继续播放 Actor 动画。
 
 渲染使用共享 Mesh、共享图集材质和 MaterialPropertyBlock 的实例属性，不创建逐牌材质。`CardArt/Shield Deferred` 提供 URP GBuffer、Forward、ShadowCaster、DepthOnly、DepthNormals Pass；牌面无原卡牌附加视觉效果。Perlin 噪声叠加牌面局部高度渐变，自上向下 alpha clip，两个 step 构成自发光边缘；深度和阴影使用相同裁剪。落地闪光为默认特效，外部粒子可选。
 
 旧单战场景可运行 `Tools > Poker > Single Battle > Configure Discard Shields` 建立绑定和共享资产；支持重复执行。Inspector 提供三张牌的临时预览及清除按钮，预览实例不保存到场景。
 
 专项验证：`DiscardShieldTests` 检查取整、FIFO、不可变快照、共享资源及实际 shader 渲染；`DiscardShieldPlaybackTests` 在 PlayMode 验证错峰落地、暂停时间、整张溶解和取消回调；`BattleActorTests` 覆盖真实弃牌奖励与协议路由。设备实际触感仍需在目标手机或手柄上调校。
+
+
+### 卡牌动作 View 与 Actor 的统一交接协议
+
+出牌与弃牌均通过 `ICardActionView.PresentActionCommitted(Play / Discard, ...)` 返回 `CardActionViewOperation`。卡牌 View 只负责已提交动作的卡牌表现，完成状态为 Pending / Completed / Cancelled / Failed；单个句柄只允许一次终态。卡牌 View 不引用 Actor，也不修改战斗结算。
+
+宿主等待本次卡牌动作句柄 Completed 后，才把结算结果送入 Actor 的 `IBattleActorPresentation`，再等待角色/盾牌表现完成，最后补牌和释放输入。出牌目前直接移除牌，立即完成；弃牌等该批所有牌飞到指定区域后完成。剩余手牌理牌不参与这个动作完成判定。取消或失败进入宿主恢复同步，不能当成成功继续播放 Actor；未来添加出牌飞行时只需要实现同一个 View 协议。

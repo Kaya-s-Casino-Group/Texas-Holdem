@@ -28,6 +28,27 @@ namespace Poker.SingleBattle.Editor
             AssetDatabase.SaveAssets(); EditorSceneManager.MarkSceneDirty(scene); EditorSceneManager.SaveScene(scene);
             Debug.Log("弃牌盾牌已配置：Actor 总表现入口、独立起点/落地区域、逐张 DOTween 飞入、格挡消耗溶解。");
         }
+        [MenuItem("Tools/Poker/Single Battle/Configure Shield Landing Flash")]
+        public static void ConfigureLandingFlash()
+        {
+            if (Application.isPlaying) throw new InvalidOperationException("请先停止 Play。");
+            const string path = "Assets/Art/VFX/HitFlashes/Prefabs/Sword Slash 14 Hit Flashes.prefab";
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+            var effect = prefab != null ? prefab.GetComponent<ParticleSystem>() : null;
+            if (effect == null) throw new InvalidOperationException("落地特效 Prefab 缺少根粒子系统：" + path);
+            var scene = SceneManager.GetActiveScene();
+            var views = scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<DiscardShieldPresenter>(true)).ToArray();
+            if (views.Length == 0) throw new InvalidOperationException("当前场景没有弃牌盾牌容器。");
+            foreach (var view in views)
+            {
+                Undo.RecordObject(view, "配置盾牌落地闪光");
+                view.LandingEffect = effect; view.LandingEffectScale = .2f;
+                EditorUtility.SetDirty(view); PrefabUtility.RecordPrefabInstancePropertyModifications(view);
+            }
+            EditorSceneManager.MarkSceneDirty(scene); EditorSceneManager.SaveScene(scene);
+            Debug.Log("盾牌落地已绑定 Sword Slash 14 Hit Flashes，缩放随卡牌高度变化，倍率 0.2。");
+        }
+
         public static void PrepareAssets(CardAtlasData atlas, out Mesh mesh, out Material material)
         {
             if (!AssetDatabase.IsValidFolder(Folder)) AssetDatabase.CreateFolder("Assets/SingleBattle", "ShieldAssets");
