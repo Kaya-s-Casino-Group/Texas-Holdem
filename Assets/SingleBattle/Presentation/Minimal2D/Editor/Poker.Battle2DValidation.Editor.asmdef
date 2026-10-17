@@ -1,0 +1,20 @@
+{
+  "name": "Poker.Battle2DValidation.Editor",
+  "rootNamespace": "Poker.Battle2DValidation.Editor",
+  "references": [
+    "Poker.Battle2DValidation.Runtime",
+    "Poker.BattleConfiguration.Runtime",
+    "CardArt.Runtime",
+    "CardArt.Editor",
+    "Poker.Rendering.Forward2D.Runtime",
+    "Unity.RenderPipelines.Universal.Runtime",
+    "Unity.RenderPipelines.Core.Runtime",
+    "Unity.TextMeshPro",
+    "Unity.ugui",
+    "Unity.InputSystem",
+    "Poker.BattleHosting.Runtime"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ]
+}

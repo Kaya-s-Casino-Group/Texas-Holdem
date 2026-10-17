@@ -61,7 +61,7 @@ namespace RetroRendering.Editor
             volume.bodyMaterial = material; EditorUtility.SetDirty(volume);
         }
 
-        [MenuItem("Tools/Rendering/Create Firefly Volume")]
+        [MenuItem("工具/渲染/创建萤火虫区域")]
         public static void Create()
         {
             var go = new GameObject("Firefly Volume"); go.SetActive(false);

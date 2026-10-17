@@ -1,0 +1,16 @@
+{
+  "name": "Poker.Battle2DValidation.Runtime",
+  "rootNamespace": "Poker.Battle2DValidation",
+  "references": [
+    "PokerEngine.Core",
+    "PokerEngine.Scoring",
+    "PokerEngine.Combat",
+    "PokerEngine.Composition",
+    "PokerEngine.Encounters",
+    "Poker.BattleConfiguration.Runtime",
+    "CardArt.Runtime",
+    "Unity.TextMeshPro",
+    "Unity.ugui",
+    "Poker.BattleHosting.Runtime"
+  ]
+}

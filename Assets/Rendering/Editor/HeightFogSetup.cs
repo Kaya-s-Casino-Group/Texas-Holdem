@@ -12,7 +12,7 @@ namespace RetroRendering.Editor
         public const string FogShaderPath = "Assets/Rendering/Shaders/HeightFog.shader";
         public const string LightShaderPath = "Assets/Rendering/Shaders/VolumetricLight.shader";
 
-        [MenuItem("Tools/Rendering/Enable Default 3D Fog Noise")]
+        [MenuItem("工具/渲染/高度雾与体积光/启用默认三维噪声")]
         public static void EnableDefaultNoise()
         {
             var data = AssetDatabase.LoadAssetAtPath<UniversalRendererData>(RendererPath);
@@ -26,7 +26,7 @@ namespace RetroRendering.Editor
             Debug.Log("已启用高度雾的动态 3D 噪声，体积光共用相同密度与步进；其他雾和灯光参数保持当前设置。");
         }
 
-        [MenuItem("Tools/Rendering/Install Height Fog and Volumetric Light")]
+        [MenuItem("工具/渲染/高度雾与体积光/安装效果")]
         public static void Install()
         {
             if (Application.isPlaying) throw new InvalidOperationException("请退出 Play 后安装高度雾。");

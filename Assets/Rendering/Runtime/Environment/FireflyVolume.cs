@@ -29,6 +29,8 @@ namespace RetroRendering
         [Min(.001f)] public float lightRange = .25f;
         public LightShadows shadows = LightShadows.None;
         [Header("体积光（统一覆盖每只的 VolumetricLight）")]
+        [Tooltip("控制所有萤火虫的体积散射；关闭后仍保留实体亮点和普通点光照明。")]
+        public bool volumetricLightEnabled = true;
         [Min(0)] public float scattering = .15f;
         [Range(-.95f, .95f)] public float anisotropy = .1f;
         [Min(.001f)] public float lightRadius = .025f;
@@ -150,6 +152,7 @@ namespace RetroRendering
             properties.SetColor(BaseColor, emission * pulse); fly.renderer.SetPropertyBlock(properties);
             fly.light.color = lightColor; fly.light.intensity = Mathf.Max(0, lightIntensity) * pulse;
             fly.light.range = Mathf.Max(.001f, lightRange); fly.light.shadows = shadows;
+            fly.volume.enabled = volumetricLightEnabled;
             fly.volume.scattering = Mathf.Max(0, scattering);
             fly.volume.anisotropy = Mathf.Clamp(anisotropy, -.95f, .95f);
             fly.volume.radius = Mathf.Max(.001f, lightRadius);

@@ -4,6 +4,13 @@
 
 ## [Unreleased]
 
+### 2026-10-17 — 最简 2D 战斗验证与固定前向渲染器
+
+- 新增 Minimal2D 场景，复用 BattleSession、共用 Host 和表现协议，覆盖出牌、弃牌、敌方回合与胜负。
+- 新增简单矩形角色与卡牌表现，使用 StandardClassic 图集及符合 CardArt 导出校验的 Unlit Shader。
+- 新增独立 Forward2D 程序集与固定 Renderer 资产，MainURP 保留原主 Renderer 并追加 2D 槽位。
+- 验证：目录迁移前相关 128 项 EditMode 测试通过，Unity 编译无警告。
+
 ### 2026-10-17 — 场景接入与卡牌交互职责分离
 
 - SingleBattle 共享配置、Hosting 与 Scene3D 表现分模块组织，场景 Host 继承 BaseBattleHost。

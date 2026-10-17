@@ -25,7 +25,7 @@ namespace RetroRendering.Editor
             public Vector2Int fogSize, scatteringSize;
         }
 
-        [MenuItem("Tools/Rendering/Validate Height Fog and Volumetric Light")]
+        [MenuItem("工具/渲染/高度雾与体积光/验证效果")]
         public static void Validate()
         {
             if (Application.isPlaying) throw new InvalidOperationException("请退出 Play 后验证高度雾。");
@@ -220,7 +220,7 @@ namespace RetroRendering.Editor
             }
         }
 
-        [MenuItem("Tools/Rendering/Capture Current Scene Height Fog")]
+        [MenuItem("工具/渲染/高度雾与体积光/捕获当前场景")]
         public static void CaptureCurrentScene()
         {
             if (Application.isPlaying) throw new InvalidOperationException("请退出 Play 后捕获高度雾对照。");

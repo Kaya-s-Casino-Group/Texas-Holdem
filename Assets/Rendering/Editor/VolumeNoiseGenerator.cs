@@ -132,7 +132,7 @@ namespace RetroRendering.Editor
             preview.SetPixels32(colors); preview.Apply(false, false); return preview;
         }
 
-        [MenuItem("Tools/Rendering/Generate Default 3D Fog Noise")]
+        [MenuItem("工具/渲染/三维噪声/生成默认雾噪声")]
         public static void GenerateDefault()
         {
             var texture = Save(DefaultPath, new Settings());

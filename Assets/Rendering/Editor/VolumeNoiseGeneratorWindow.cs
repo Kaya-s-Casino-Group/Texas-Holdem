@@ -13,7 +13,7 @@ namespace RetroRendering.Editor
         Texture2D preview;
         string error;
 
-        [MenuItem("Tools/Rendering/3D Noise Generator")]
+        [MenuItem("工具/渲染/三维噪声/噪声生成器")]
         public static void Open() => GetWindow<VolumeNoiseGeneratorWindow>("3D 噪声生成器");
 
         void OnEnable() { minSize = new Vector2(360, 520); Load(); }

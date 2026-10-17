@@ -11,7 +11,7 @@ namespace RetroRendering.Editor
         public const string RendererPath = "Assets/Settings/MainDeferredRenderer.asset";
         public const string ShaderPath = "Assets/Rendering/Shaders/LowResolutionSSAO.shader";
 
-        [MenuItem("Tools/Rendering/Install Low Resolution SSAO")]
+        [MenuItem("工具/渲染/环境光遮蔽/安装低分辨率效果")]
         public static void Install()
         {
             if (Application.isPlaying) throw new InvalidOperationException("请退出 Play 后安装 SSAO。");

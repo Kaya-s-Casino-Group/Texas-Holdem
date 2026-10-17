@@ -11,7 +11,7 @@ namespace RetroRendering.Editor
         public const string RendererPath = "Assets/Settings/MainDeferredRenderer.asset";
         public const string ShaderPath = "Assets/Rendering/Shaders/Bloom.shader";
 
-        [MenuItem("Tools/Rendering/Install Bloom")]
+        [MenuItem("工具/渲染/泛光/安装效果")]
         public static void Install()
         {
             if (Application.isPlaying) throw new InvalidOperationException("请退出 Play 后安装 Bloom。");

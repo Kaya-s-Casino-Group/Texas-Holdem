@@ -22,7 +22,7 @@ namespace RetroRendering.Editor
             public float curveDensityError, curveIntegralError, curveSharedError;
         }
 
-        [MenuItem("Tools/Rendering/Validate 3D Fog Noise")]
+        [MenuItem("工具/渲染/三维噪声/验证雾噪声")]
         public static void Validate()
         {
             if (Application.isPlaying) throw new InvalidOperationException("请退出 Play 后验证。");

@@ -23,7 +23,7 @@ namespace RetroRendering.Editor
             public Vector2Int aoSize;
             public float maximumDarkening;
         }
-        [MenuItem("Tools/Rendering/Validate Low Resolution SSAO")]
+        [MenuItem("工具/渲染/环境光遮蔽/验证低分辨率效果")]
         public static void Validate()
         {
             if (Application.isPlaying) throw new InvalidOperationException("请退出 Play 后验证 SSAO。");

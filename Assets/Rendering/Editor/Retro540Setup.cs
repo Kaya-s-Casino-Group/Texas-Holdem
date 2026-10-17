@@ -51,7 +51,7 @@ namespace RetroRendering.Editor
             return feature;
         }
 
-        [MenuItem("Tools/Rendering/Install Retro 540p and Migrate Card Scene")]
+        [MenuItem("工具/渲染/复古低分辨率/安装 540p 效果并迁移卡牌场景")]
         public static void InstallAndMigrate()
         {
             if (Application.isPlaying) throw new InvalidOperationException("Exit Play mode before migrating the scene.");
@@ -87,7 +87,7 @@ namespace RetroRendering.Editor
             Debug.Log("Retro 540p installed. Native camera output, aspect-preserving 540p targets, point final blit.");
         }
 
-        [MenuItem("Tools/Rendering/Capture Retro 540p Validation")]
+        [MenuItem("工具/渲染/复古低分辨率/捕获 540p 验证画面")]
         public static void CaptureValidation()
         {
             if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().path != "Assets/Scenes/CardRenderingValidation.unity")
@@ -127,7 +127,7 @@ namespace RetroRendering.Editor
             Debug.Log("Retro 540p validation passed: real Deferred color/depth/GBuffer sizes and Point output across four output sizes.");
         }
 
-        [MenuItem("Tools/Rendering/Validate Before Upscaling Event")]
+        [MenuItem("工具/渲染/复古低分辨率/验证放大前渲染时机")]
         public static void ValidateUpscalingEvent()
         {
             if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().path != "Assets/Scenes/CardRenderingValidation.unity")
@@ -212,7 +212,7 @@ namespace RetroRendering.Editor
         }
         [Serializable] sealed class UpscalingEventReport { public UpscalingEventRow[] rows; }
 
-        [MenuItem("Tools/Rendering/Validate Renderer and Post Independence")]
+        [MenuItem("工具/渲染/复古低分辨率/验证渲染器与后处理独立性")]
         public static void ValidateIndependence()
         {
             if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().path != "Assets/Scenes/CardRenderingValidation.unity")
@@ -322,7 +322,7 @@ namespace RetroRendering.Editor
             }
         }
 
-        [MenuItem("Tools/Rendering/Capture Retro Game Output")]
+        [MenuItem("工具/渲染/复古低分辨率/捕获游戏输出")]
         public static void CaptureGameOutput()
         {
             if (!Application.isPlaying) throw new InvalidOperationException("Enter Play mode to capture the screen output.");

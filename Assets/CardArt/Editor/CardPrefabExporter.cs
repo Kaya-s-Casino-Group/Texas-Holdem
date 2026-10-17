@@ -49,6 +49,7 @@ namespace CardArt.Editor
     public static class CardPrefabExporter
     {
         static readonly string[] RequiredPasses = { "UniversalGBuffer", "UniversalForward", "ShadowCaster", "DepthOnly", "DepthNormals" };
+        static readonly string[] RequiredUnlitPasses = { "UniversalForwardOnly", "DepthOnly" };
 
         public static CardPrefabCheck Validate(CardPrefabExportSettings settings)
         {
@@ -227,8 +228,10 @@ namespace CardArt.Editor
                     passes.Add(shader.FindPassTagValue(i, new ShaderTagId("LightMode")).name);
 
                 var materialType = probe.GetTag("UniversalMaterialType", false);
-                if (materialType != "Lit" && materialType != "SimpleLit")
-                    errors.Add("UniversalMaterialType 必须为 Lit 或 SimpleLit，以便 URP 正确解释 GBuffer。");
+                bool unlit = materialType == "Unlit";
+                var requiredPasses = unlit ? RequiredUnlitPasses : RequiredPasses;
+                if (!unlit && materialType != "Lit" && materialType != "SimpleLit")
+                    errors.Add("UniversalMaterialType 必须为 Lit、SimpleLit 或 Unlit；受光卡牌使用 GBuffer，无光照卡牌使用 ForwardOnly。");
                 if (probe.renderQueue > (int)RenderQueue.AlphaTest)
                     errors.Add("卡牌必须使用不透明 / AlphaTest 队列，不能使用透明队列。");
 
@@ -251,7 +254,7 @@ namespace CardArt.Editor
                     if (tag.Success && tag.Groups[1].Value == "ShadowCaster" && name.Success && probe.FindPass(name.Groups[1].Value) >= 0)
                         passes.Add("ShadowCaster");
                 }
-                foreach (var pass in RequiredPasses)
+                foreach (var pass in requiredPasses)
                     if (!passes.Contains(pass)) errors.Add("缺少 LightMode = " + pass + " 的 Pass。");
                 foreach (var property in new[] { "_FrontUVRect", "_ColorTint" })
                 {
@@ -263,7 +266,7 @@ namespace CardArt.Editor
                 foreach (var body in bodies)
                 {
                     var tag = Regex.Match(body, "\"LightMode\"\\s*=\\s*\"([^\"]+)\"");
-                    if (!tag.Success || !RequiredPasses.Contains(tag.Groups[1].Value)) continue;
+                    if (!tag.Success || !(requiredPasses.Contains(tag.Groups[1].Value) || unlit && tag.Groups[1].Value == "Universal2D")) continue;
                     var hasInstancing = Regex.IsMatch(body, @"#\s*pragma\s+multi_compile_instancing\b");
                     if (!hasInstancing)
                     {
@@ -534,13 +537,13 @@ namespace CardArt.Editor
                 }
                 var prefab = PrefabUtility.SaveAsPrefabAsset(root, check.prefabPath, out var success);
                 if (!success || prefab == null) throw new IOException("Prefab 保存失败：" + check.prefabPath);
-                AssetDatabase.SaveAssets();
+                AssetDatabase.SaveAssetIfDirty(material);
                 return prefab;
             }
             catch
             {
                 if (newMaterial) AssetDatabase.DeleteAsset(check.materialPath);
-                else if (backup != null) { EditorUtility.CopySerialized(backup, material); EditorUtility.SetDirty(material); AssetDatabase.SaveAssets(); }
+                else if (backup != null) { EditorUtility.CopySerialized(backup, material); EditorUtility.SetDirty(material); AssetDatabase.SaveAssetIfDirty(material); }
                 throw;
             }
             finally

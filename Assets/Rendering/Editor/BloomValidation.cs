@@ -23,7 +23,7 @@ namespace RetroRendering.Editor
             public float peakSource, peakHalo;
         }
 
-        [MenuItem("Tools/Rendering/Validate Bloom")]
+        [MenuItem("工具/渲染/泛光/验证效果")]
         public static void Validate()
         {
             if (Application.isPlaying) throw new InvalidOperationException("请退出 Play 后验证 Bloom。");
@@ -151,7 +151,7 @@ namespace RetroRendering.Editor
             }
         }
 
-        [MenuItem("Tools/Rendering/Capture Current Scene Bloom")]
+        [MenuItem("工具/渲染/泛光/捕获当前场景")]
         public static void CaptureCurrentScene()
         {
             if (Application.isPlaying) throw new InvalidOperationException("请退出 Play 后捕获 Bloom 对照。");

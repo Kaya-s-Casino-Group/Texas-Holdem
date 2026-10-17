@@ -1,0 +1,32 @@
+{
+  "name": "Poker.Battle2DValidation.Tests.Editor",
+  "rootNamespace": "Poker.Battle2DValidation.Tests",
+  "references": [
+    "Poker.Battle2DValidation.Runtime",
+    "Poker.Battle2DValidation.Editor",
+    "Poker.BattleConfiguration.Runtime",
+    "PokerEngine.Core",
+    "PokerEngine.Combat",
+    "PokerEngine.Scoring",
+    "PokerEngine.Composition",
+    "PokerEngine.Encounters",
+    "CardArt.Runtime",
+    "Poker.Rendering.Forward2D.Runtime",
+    "Unity.TextMeshPro",
+    "Unity.ugui",
+    "Unity.RenderPipelines.Core.Runtime",
+    "Unity.RenderPipelines.Universal.Runtime",
+    "Poker.BattleHosting.Runtime"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "overrideReferences": true,
+  "precompiledReferences": [
+    "nunit.framework.dll"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ],
+  "autoReferenced": false
+}
