@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace PokerEngine
 {
-    public enum CombatEffectKind { Damage = 1, Heal, GainBlock, ClearBlock }
+    public enum CombatEffectKind { Damage = 1, Heal = 2, GainBlock = 3, ClearBlock = 4, ApplyStatus = 5, Eliminate = 6 }
     public enum CombatError { None, InvalidState, StaleRevision, InvalidEffect, Overflow, InvalidDamageModifier }
 
     /// <summary>Authority-resolved effect, not a player command. The mode validates action costs, targets and amounts first.</summary>
@@ -16,10 +16,19 @@ namespace PokerEngine
         public long Amount { get; }
         public DamageModification AttackModification { get; }
         public AttackContext Attack { get; }
-        public CombatEffect(CombatEffectKind kind, ParticipantId source, ParticipantId target, long amount = 0, DamageModification attackModification = null, AttackContext attack = null)
+        /// <summary>Required only for ApplyStatus. Identity, attribution, stacks and duration are authority-resolved.</summary>
+        public StatusInstance Status { get; }
+        public CombatEffect(CombatEffectKind kind, ParticipantId source, ParticipantId target, long amount = 0, DamageModification attackModification = null, AttackContext attack = null, StatusInstance status = null)
         {
-            if (!Enum.IsDefined(typeof(CombatEffectKind), kind) || !source.IsValid || !target.IsValid || amount < 0 || kind == CombatEffectKind.ClearBlock && amount != 0)
+            if (!Enum.IsDefined(typeof(CombatEffectKind), kind) || !source.IsValid || !target.IsValid || amount < 0 ||
+                (kind == CombatEffectKind.ClearBlock || kind == CombatEffectKind.ApplyStatus || kind == CombatEffectKind.Eliminate) && amount != 0)
                 throw new ArgumentException("Invalid combat effect.");
+            if ((kind == CombatEffectKind.ApplyStatus) != (status != null))
+                throw new ArgumentException("Only ApplyStatus requires a status payload.");
+            if (status != null && (status.Source == null || status.Target == null ||
+                status.Source.Kind != EntityKind.Participant || status.Source.Id != source.Value ||
+                status.Target.Kind != EntityKind.Participant || status.Target.Id != target.Value))
+                throw new ArgumentException("Status attribution must match the effect's source and target participants.");
             if (attackModification != null && (kind != CombatEffectKind.Damage || attackModification.OutputAmount != amount))
                 throw new ArgumentException("Attack report must match the outgoing damage.");
             if (kind != CombatEffectKind.Damage && attack != null) throw new ArgumentException("Only damage effects carry attack facts.");
@@ -27,16 +36,23 @@ namespace PokerEngine
             if (Attack != null && (Attack.Source != source || Attack.BaseDamage != (attackModification?.InputAmount ?? amount)))
                 throw new ArgumentException("Attack facts must match the original damage request.");
             if (attackModification != null) DamageModification.Validate(attackModification, Attack.BaseDamage, Attack);
-            Kind = kind; Source = source; Target = target; Amount = amount; AttackModification = attackModification;
+            Kind = kind; Source = source; Target = target; Amount = amount; AttackModification = attackModification; Status = status;
         }
+        public static CombatEffect ApplyStatus(StatusInstance status)
+        {
+            if (status == null) throw new ArgumentNullException(nameof(status));
+            if (status.Source == null || status.Target == null || status.Source.Kind != EntityKind.Participant || status.Target.Kind != EntityKind.Participant)
+                throw new ArgumentException("Combat status effects require participant references.");
+            return new CombatEffect(CombatEffectKind.ApplyStatus, new ParticipantId(status.Source.Id), new ParticipantId(status.Target.Id), status: status);
+        }
+        public static CombatEffect Eliminate(ParticipantId source, ParticipantId target) => new CombatEffect(CombatEffectKind.Eliminate, source, target);
     }
-    public sealed class CombatEvent
+    public sealed class CombatEvent : CombatRuleEvent
     {
-        public long Revision { get; }
-        public int Index { get; }
-        public CombatEffect Effect { get; }
         public int BlockAbsorbed { get; }
+        /// <summary>Actual health decrease, including elimination. Damage reactions must use DamageToHealth instead.</summary>
         public int HealthLost { get; }
+        public int DamageToHealth => Effect.Kind == CombatEffectKind.Damage ? HealthLost : 0;
         public int HealthRestored { get; }
         public long Overkill { get; }
         public DamageModification IncomingModification { get; }
@@ -44,9 +60,12 @@ namespace PokerEngine
         public CombatantState Before { get; }
         public CombatantState After { get; }
         public bool Died => Before.IsAlive && !After.IsAlive;
+        public CombatDeathCause DeathCause => !Died ? CombatDeathCause.None :
+            Effect.Kind == CombatEffectKind.Eliminate ? CombatDeathCause.Eliminate : CombatDeathCause.Damage;
         internal CombatEvent(long revision, int index, CombatEffect effect, CombatantState before, CombatantState after, int absorbed, long overkill, DamageModification incomingModification = null)
+            : base(revision, index, effect)
         {
-            IncomingModification = incomingModification; Revision = revision; Index = index; Effect = effect; Before = before; After = after; BlockAbsorbed = absorbed; Overkill = overkill;
+            IncomingModification = incomingModification; Before = before; After = after; BlockAbsorbed = absorbed; Overkill = overkill;
             HealthLost = Math.Max(0, before.Health - after.Health); HealthRestored = Math.Max(0, after.Health - before.Health);
         }
     }
@@ -55,15 +74,21 @@ namespace PokerEngine
         public CombatState State { get; }
         public CombatError Error { get; }
         public bool Accepted => Error == CombatError.None;
+        public IReadOnlyList<CombatRuleEvent> RuleEvents { get; }
+        /// <summary>Compatibility projection of vitals events; Index still identifies the original effect position.</summary>
         public IReadOnlyList<CombatEvent> Events { get; }
-        internal CombatTransition(CombatState state, CombatError error = CombatError.None, IEnumerable<CombatEvent> events = null)
-        { State = state; Error = error; Events = Guard.View(Guard.Copy(events ?? new CombatEvent[0], nameof(events))); }
+        internal CombatTransition(CombatState state, CombatError error = CombatError.None, IEnumerable<CombatRuleEvent> events = null)
+        {
+            State = state; Error = error;
+            RuleEvents = Guard.View(Guard.Copy(events ?? Array.Empty<CombatRuleEvent>(), nameof(events)));
+            Events = Guard.View(RuleEvents.OfType<CombatEvent>().ToArray());
+        }
     }
 
     /// <summary>Shared deterministic authority resolver. No turn, AI, card score, faction targeting or reward policy.</summary>
     public static class CombatEngine
     {
-        public const string RulesVersion = "combat.2";
+        public const string RulesVersion = "combat.4";
         public static CombatTransition Resolve(CombatState state, long expectedRevision, IEnumerable<CombatEffect> effects, IIncomingDamageModifier incomingDamage = null)
         {
             if (state == null || effects == null) throw new ArgumentNullException();
@@ -74,12 +99,18 @@ namespace PokerEngine
             {
                 var batch = Guard.Copy(effects, nameof(effects));
                 if (batch.Length < 1 || batch.Length > 64) throw new ArgumentException("Resolve between 1 and 64 effects atomically.");
-                var units = state.Combatants.ToDictionary(unit => unit.Id); var events = new List<CombatEvent>();
+                var units = state.Combatants.ToDictionary(unit => unit.Id); var events = new List<CombatRuleEvent>();
+                var statuses = state.Statuses.ToList(); var statusIds = new HashSet<StatusInstanceId>(statuses.Select(status => status.Id));
+                var unitIds = new HashSet<ParticipantId>(units.Keys);
                 long revision = checked(state.Revision + 1);
-                foreach (var effect in batch)
+                for (int effectIndex = 0; effectIndex < batch.Length; effectIndex++)
                 {
+                    var effect = batch[effectIndex];
                     if (effect == null || !units.ContainsKey(effect.Source) || !units.ContainsKey(effect.Target) ||
-                        !units[effect.Source].IsAlive || !units[effect.Target].IsAlive) throw new ArgumentException("Effects require living known units.");
+                        !units[effect.Source].IsAlive) throw new ArgumentException("Effects require known units and a living source.");
+                    // Target selection is already bound. A defeated target consumes no effect, status slot or damage trigger.
+                    // Keep validating sources and identities above so a skipped target cannot hide an invalid command.
+                    if (!units[effect.Target].IsAlive) continue;
                     var before = units[effect.Target]; int health = before.Health, block = before.Block, absorbed = 0; long overkill = 0;
                     DamageModification incoming = null;
                     switch (effect.Kind)
@@ -88,7 +119,7 @@ namespace PokerEngine
                             try
                             {
                                 // Earlier effects in this atomic batch are visible to the next target-side modifier.
-                                var current = new CombatState(state.Id, state.Revision, state.Combatants.Select(unit => units[unit.Id]), state.Statuses);
+                                var current = new CombatState(state.Id, state.Revision, state.Combatants.Select(unit => units[unit.Id]), statuses);
                                 incoming = DamageModification.Validate(incomingDamage.Modify(
                                     new DamageModifierContext(current, effect.Source, effect.Target, effect.Amount, effect.Attack)), effect.Amount, effect.Attack);
                             }
@@ -99,12 +130,20 @@ namespace PokerEngine
                         case CombatEffectKind.Heal: health += (int)Math.Min(effect.Amount, before.MaxHealth - health); break;
                         case CombatEffectKind.GainBlock: block = checked(block + checked((int)effect.Amount)); break;
                         case CombatEffectKind.ClearBlock: block = 0; break;
+                        case CombatEffectKind.ApplyStatus:
+                            ValidateStatus(effect.Status, state, unitIds);
+                            if (statuses.Count >= 256 || !statusIds.Add(effect.Status.Id))
+                                throw new ArgumentException("Status capacity exceeded or instance already present.");
+                            statuses.Add(effect.Status);
+                            events.Add(new CombatStatusEvent(revision, effectIndex, effect));
+                            continue;
+                        case CombatEffectKind.Eliminate: health = 0; break;
                         default: throw new ArgumentException("Unknown combat effect.");
                     }
                     var after = before.WithVitals(health, block); units[after.Id] = after;
-                    events.Add(new CombatEvent(revision, events.Count, effect, before, after, absorbed, overkill, incoming));
+                    events.Add(new CombatEvent(revision, effectIndex, effect, before, after, absorbed, overkill, incoming));
                 }
-                return new CombatTransition(new CombatState(state.Id, revision, state.Combatants.Select(unit => units[unit.Id]), state.Statuses), events: events);
+                return new CombatTransition(new CombatState(state.Id, revision, state.Combatants.Select(unit => units[unit.Id]), statuses), events: events);
             }
             catch (ArgumentException) { return new CombatTransition(state, CombatError.InvalidEffect); }
             catch (OverflowException) { return new CombatTransition(state, CombatError.Overflow); }
@@ -126,24 +165,29 @@ namespace PokerEngine
                 foreach (var status in state.Statuses)
                 {
                     if (status == null || !statuses.Add(status.Id)) throw new ArgumentException("Missing or duplicate combat status.");
-                    new StatusInstance(status.Id, status.DefinitionId, status.Source, status.Target, status.Stacks, status.Duration);
-                    ValidateEntity(status.Source, state, ids); ValidateEntity(status.Target, state, ids);
-                    var d = status.Duration;
-                    switch (d.Kind)
-                    {
-                        case DurationKind.UntilRemoved:
-                            if (d.ScopeId != null || d.PhaseKey != null || d.RemainingTriggers.HasValue) throw new ArgumentException("Invalid unbounded status."); break;
-                        case DurationKind.UntilRoundEnd:
-                            if (string.IsNullOrWhiteSpace(d.ScopeId) || d.PhaseKey != null || d.RemainingTriggers.HasValue) throw new ArgumentException("Invalid round status."); break;
-                        case DurationKind.UntilPhaseEnd:
-                            if (string.IsNullOrWhiteSpace(d.ScopeId) || string.IsNullOrWhiteSpace(d.PhaseKey) || d.RemainingTriggers.HasValue) throw new ArgumentException("Invalid phase status."); break;
-                        case DurationKind.TriggerCount:
-                            if (!d.RemainingTriggers.HasValue || d.RemainingTriggers <= 0 || d.ScopeId != null || d.PhaseKey != null) throw new ArgumentException("Invalid trigger status."); break;
-                        default: throw new ArgumentException("Unknown duration.");
-                    }
+                    ValidateStatus(status, state, ids);
                 }
             }
             catch (NullReferenceException error) { throw new ArgumentException("Missing combat state data.", error); }
+        }
+        private static void ValidateStatus(StatusInstance status, CombatState state, HashSet<ParticipantId> ids)
+        {
+            if (status == null) throw new ArgumentException("Missing status payload.");
+            new StatusInstance(status.Id, status.DefinitionId, status.Source, status.Target, status.Stacks, status.Duration);
+            ValidateEntity(status.Source, state, ids); ValidateEntity(status.Target, state, ids);
+            var d = status.Duration;
+            switch (d.Kind)
+            {
+                case DurationKind.UntilRemoved:
+                    if (d.ScopeId != null || d.PhaseKey != null || d.RemainingTriggers.HasValue) throw new ArgumentException("Invalid unbounded status."); break;
+                case DurationKind.UntilRoundEnd:
+                    if (string.IsNullOrWhiteSpace(d.ScopeId) || d.PhaseKey != null || d.RemainingTriggers.HasValue) throw new ArgumentException("Invalid round status."); break;
+                case DurationKind.UntilPhaseEnd:
+                    if (string.IsNullOrWhiteSpace(d.ScopeId) || string.IsNullOrWhiteSpace(d.PhaseKey) || d.RemainingTriggers.HasValue) throw new ArgumentException("Invalid phase status."); break;
+                case DurationKind.TriggerCount:
+                    if (!d.RemainingTriggers.HasValue || d.RemainingTriggers <= 0 || d.ScopeId != null || d.PhaseKey != null) throw new ArgumentException("Invalid trigger status."); break;
+                default: throw new ArgumentException("Unknown duration.");
+            }
         }
         private static void ValidateEntity(EntityRef reference, CombatState state, HashSet<ParticipantId> ids)
         {

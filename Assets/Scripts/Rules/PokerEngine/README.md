@@ -83,6 +83,27 @@ graph TD
 
 弃牌收益与攻击结算独立：`IDiscardRewardRule.Resolve(DiscardRewardContext)` 接收权威弃牌快照和存活友方目标，返回 `DiscardRewardPlan`。默认 NoDiscardRewardRule 产生空计划，不判牌型、不计分、不创建 CombatEvent；有支持效果时仍通过 CombatEngine 原子应用，暂只允许 GainBlock / Heal，禁止改来源、攻击敌方或清空格挡。费用、次数和发牌继续由 TeamBattle / CardDuel 负责。`PreviewDiscard` 直接复用正式 Execute；`DiscardRewardResolution` 保存上下文及返回计划，供配置无关的只读面板投影。
 
+统一效果计划：Composition 的 `BattleEffectPlan` 保存有序、不可变的已解析 `CombatEffect` 批次及来源规则的版本、说明。出牌、敌人攻击或弃牌收益共用 `BattleEffectResolver`；非空计划只调用一次 CombatEngine，空弃牌计划保留同一个 CombatState，不增加其 Revision。`TeamBattleTransition.EffectPlan` 和 `CardDuelTransition.EffectPlan` 提供行动计划；旧伤害／弃牌路径继续提供原 `Damage`、`DiscardReward`。敌方阶段末尾的 ClearBlock 仍是独立维护批次，不混入行动计划。Start / EndTurn / CollectPlayed、纯判型预览及被拒绝命令没有 EffectPlan。费用、牌区、随机与 Session 原子提交语义保持不变。
+
+逐效果声明：通过 `BattlePlayerRules(effectRule: ...)` 注入 `IScoredHandEffectRule`，接收权威的 `ScoredHandEffectContext`（Combat、Source、Score、可选 Hand），返回 `BattleEffectSequence`。每个 `BattleEffectStep` 分别持有 `BattleEffectSpec` 与 `EffectTargetSpec`；前者只定义 Damage / Heal / GainBlock / ApplyStatus / Eliminate，后者独立决定自身、单体或全体目标。引擎通过 `BattleEffectBinder` 展开成已绑定目标的效果，再完成攻击修正、生成 BattleEffectPlan 并结算。未配置 EffectRule 时继续使用原 DamagePolicy；显式同时配置两种规则会拒绝。新路径的 Damage 为 null，读取 EffectPlan 和 RuleEvents；当前默认牌型映射和弃牌收益不变。
+
+`EffectTargetSpec` 的分组为 Self / Opponents / Allies（友方包含自身），选择方式为 Requested（必须指定一个）、FirstLiving、LowestHealth、HighestHealth、AllLiving 或 ActorPolicy。固定 AllLiving 取全部存活目标；ActorPolicy 则复用来源角色的 Attack / Support 策略及其旧请求行为。固定选择器以阵容顺序打破平局。Requested / ActorPolicy 可声明具名 RequestSlot，命令用不可变的 `BattleTargetBindings` 分别提供目标，例如攻击敌人使用 `attack`、治疗队友使用 `support`。未声明槽位名时使用 `default`；新规则下旧 targets 参数映射到该槽位，不能与非空 targetBindings 同时提交。缺少必需请求、未使用槽位、错误阵营、死亡或重复目标都会拒绝。targetBindings 只用于配置了 EffectRule 的出牌；CardDuel、Session 与 Playback 的执行及预览入口均透传，自动敌人行动不会继承玩家的绑定。
+
+```csharp
+// 在 IScoredHandEffectRule.Resolve 中声明两个彼此独立的目标。
+return new BattleEffectSequence(Version, "伤害指定敌人并治疗指定队友", new[] {
+    new BattleEffectStep(BattleEffectSpec.Damage(context.Score.Total),
+        EffectTargetSpec.Opponents(EffectTargetSelection.Requested, "attack")),
+    new BattleEffectStep(BattleEffectSpec.Heal(5),
+        EffectTargetSpec.Allies(EffectTargetSelection.Requested, "support"))
+});
+// 改为 AOE 只替换 Target 为 Opponents(AllLiving) / Allies(AllLiving)，基础操作不变。
+```
+
+所有步骤先按同一个行动开始快照解析存活目标，按“步骤顺序、目标顺序”展开，最多 64 个效果（包含结算时跳过的效果）；数值对每个目标完整应用，不自动分摊。攻击侧修正仍读取行动开始状态，承伤侧修正逐条读取批次内更新状态。结算时已死亡的目标直接跳过，不重新选目标、不产生事件、不调用承伤修正；后续其他目标和效果继续执行。例如伤害致死后施加状态，只跳过该目标的状态，不撤销致死伤害。事件 Index 保留原展开效果的位置，可有缺口。一次出牌只付一次费用；未知单位、死亡来源、溢出等真正错误仍回滚整次行动。
+
+ApplyStatus 使用 `StatusApplicationSpec` 声明定义、层数和期限，由引擎为每个目标生成独立 StatusInstance；实例 ID 由战斗 ID、行动 Revision、步骤及目标序号确定，预览与正式执行一致，不同有效行动分离。实例 ID 与状态容量在实际施加时校验，被跳过的状态不占位。来源和伤害的 Hand 快照由引擎附加，规则不能替换。状态写入同一个 CombatState.Statuses，当前不执行免疫、叠层刷新或期限消费。Eliminate 直接归零生命并独立报告死因，不计算伤害；ClearBlock 仍只作为内部维护操作。实际结算事实通过 `RuleEvents` 贯穿结算与 Team/Card 结果，旧 `Events` 保留生命／格挡事件投影。具体控制行为和正式牌型效果配置留待后续，契约与 combat.4 版本影响见 [Combat README](Runtime/Combat/README.md)。
+
 ## 通用基础层
 
 `CardDefinition` 为静态定义；`CardInstance` 为当前对局实体，`OriginId` 关联 Run 中的持久牌。复制牌产生新持久 ID 并继承强化，下一关重新创建实例牌。`StandardDeck` 提供标准 52 张牌，不依赖德州模块。

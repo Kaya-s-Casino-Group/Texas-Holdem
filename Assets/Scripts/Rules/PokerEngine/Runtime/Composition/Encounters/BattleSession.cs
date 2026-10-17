@@ -54,7 +54,7 @@ namespace PokerEngine
         }
 
         public BattleSessionResult Execute(long expectedRevision, ParticipantId actor, CardDuelAction action,
-            IEnumerable<CardInstanceId> selected = null, IEnumerable<ParticipantId> targets = null)
+            IEnumerable<CardInstanceId> selected = null, IEnumerable<ParticipantId> targets = null, BattleTargetBindings targetBindings = null)
         {
             var before = State;
             if (expectedRevision != before.Revision) return Reject(before, CardDuelError.StaleRevision);
@@ -64,7 +64,7 @@ namespace PokerEngine
 
             var steps = new List<BattleSessionStep>();
             var cards = new List<CardInstanceId>(selected ?? Array.Empty<CardInstanceId>()).ToArray();
-            var result = Engine.Execute(before, expectedRevision, actor, action, cards, targets);
+            var result = Engine.Execute(before, expectedRevision, actor, action, cards, targets, targetBindings);
             if (!result.Accepted) return Reject(before, result.Error);
             steps.Add(new BattleSessionStep(action, actor, before, result, cards));
             var next = result.State;

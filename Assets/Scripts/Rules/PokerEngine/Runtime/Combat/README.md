@@ -9,22 +9,28 @@
 | CombatantDefinition | 模板 ID、最大生命、初始格挡 | AI、手牌、奖励 |
 | CombatantState | 实例 ID、模板 ID、阵营、当前/最大生命、格挡 | 出牌、回合推进、Run 成长 |
 | CombatState | 本场 ID、Revision、全部单位、集中保存的 StatusInstance | 牌组、胜负、状态效果执行 |
-| CombatEngine | 伤害、治疗、获得/清除格挡，原子批量结算和事件 | 选目标、费用、分数换算、自动反击 |
+| CombatEngine | 伤害、治疗、获得/清除格挡、施加状态、直接消灭，原子批量结算和事件 | 选目标、费用、分数换算、自动反击 |
 | ScoredDuelEngine（Composition） | 最小单玩家/单怪物流程、牌型分数换伤害、玩家能量/结束回合、固定攻击、胜负投影 | 卡牌合法性、洗牌/抽牌、完整 Run、Unity 表现 |
 
 生命值直接存于 `CombatantState.Health`，类型为必填 `int`，范围 0..MaxHealth；`IsAlive` 从生命值派生。单位不再持有 ResourceState，也不携带筹码或能量。不要同时持有另一份可变 AbilityWorld 作为生命真相；未来接能力执行器时，需要由模式投影并原子回写同一权威状态。
 
 ScoredDuelState 组合持有独立的 PlayerTurnState（MaxEnergy / Energy），定义配置每回合能量和出牌消耗，费用与恢复时机由玩法控制；怪物行动由其行为规则决定，无需创建能量字段。既有 ResourceState 保留给 Draw/Holdem 及其能力执行流程，后续按具体玩法需要独立迁移。
 
-状态效果复用 `StatusInstance`，集中放在 CombatState，检查唯一 ID、持续时间与归属。当前只允许指向本场或本场单位；CombatEngine 保留状态但不执行触发、过期或伤害修正。最小 ScoredDuel 明确拒绝非空状态集合，避免把尚未实现的中毒等效果当成已生效。
+状态效果复用 `StatusInstance`，集中放在 CombatState，检查唯一 ID、持续时间与归属。存储只允许指向本场或本场单位；`CombatEffect.ApplyStatus(status)` 要求来源和目标都是对应的单位，并原子添加到该集合。一个实例 ID 只能存在一次，最多 256 个实例；同定义不同 ID 可共存，不隐式合并层数或刷新期限。定义是否合法以及何时施加由上层权威规则负责；当前不执行状态免疫、触发、过期或眩晕行为。最小 ScoredDuel 仍明确拒绝非空状态集合。
 
 ## 结算契约
 
 - `CombatEffect` 是上层完成合法性判断后的效果，不是玩家提交的命令。模式负责费用、阵营、目标和数值来源。
 - Damage 先扣格挡再扣生命；生命最低为 0，事件单独报告吸收、实际生命损失、溢出伤害和死亡。
-- Heal 最高恢复到 MaxHealth，不支持复活。来源与目标都必须是本场存活单位；死亡后的效果拒绝。
+- Heal 最高恢复到 MaxHealth，不支持复活。来源和目标必须是本场已知单位，来源必须仍存活；结算时目标已死亡则跳过该条效果，继续处理后续效果，不重新选目标。
 - 格挡不会自动在回合边界消失；模式需要时显式提交 ClearBlock。最小示例中格挡持续至消耗完毕。
-- 每批 1–64 个效果，共用一次 Revision；未知单位、死亡单位、溢出或任一步失败都回滚整批，不发事件。旧 Revision 拒绝，输入状态不修改。
+- ApplyStatus 的强类型 `Status` 载荷必须与效果来源、目标一致；Amount 为 0，不携带攻击上下文或攻击修正。新状态对同批后续承伤修正立即可见；实际施加时检查实例 ID 与容量，重复 ID、容量或载荷错误回滚整批。已死亡目标的状态效果不占容量、不预留 ID，Composition 不提前按计划中的状态数量拒绝。
+- `CombatEffect.Eliminate(source, target)` 直接将生命归零，不消耗格挡、不移除状态、不调用承伤修正；Amount 为 0，也不携带攻击上下文。它不代表巨额伤害；和伤害致死一样，后续对该死亡目标的任意效果都会跳过。
+- 每批 1–64 个效果，共用一次 Revision；未知单位、死亡来源、溢出或任一步真正失败仍回滚整批，不发事件。来源和身份校验先于死亡目标跳过，不能借跳过掩盖错误。非空批次即使全部跳过也接受并推进一次 Revision；旧 Revision 拒绝，输入状态不修改。
+
+`CombatTransition.RuleEvents` 是有序的实际结算事实：`CombatEvent` 记录生命／格挡变化，`CombatStatusEvent` 记录新施加的状态。跳过的效果不调用承伤修正、不产生任何规则或生命事件；原 EffectPlan 仍保留完整效果声明。旧 `Events` 是其中 CombatEvent 的只读投影，不伪造零伤害表示状态；Index 始终对应原批次效果的位置，RuleEvents 和 Events 的索引都可能不连续。Composition 的统一效果解析、TeamBattle 和 CardDuel 全程透传 RuleEvents，阶段末清盾仍保留独立批次。
+
+`CombatEvent.HealthLost` 保留实际生命差；伤害触发应使用 `DamageToHealth` 或检查 Damage 类型。Eliminate 的 DamageToHealth、SettledDamage、BlockAbsorbed 和 Overkill 均为 0，死亡原因是 `CombatDeathCause.Eliminate`；伤害致死为 Damage，未死亡为 None。默认牌型／弃牌规则尚不产出新操作；Composition 可通过可选的 IScoredHandEffectRule 声明五种基础操作及逐效果目标。正式启用消灭时，表现中把 HealthLost 直接当伤害的投影需要相应适配。
 - 公共层不判胜负，支持多个阵营/单位；一对一限制只在 ScoredDuel 示例中。
 
 ## 独立伤害修正规则
@@ -66,7 +72,7 @@ var progress = engine.ReadProgress(state);
 
 ## 存档与结果
 
-`ScoredDuelSnapshotCodec` schema v4 保存规则指纹、初始玩家生命、单位状态、玩家能量、完成回合数、阶段、计分与行动账本；反序列化按冻结配置重放行动账本，核对生命/格挡/能量/回合数/阶段/Revision，支持在等待怪物行动时恢复。v4 新增付费弃牌账本、独立最大/初始能量与两类消耗的规则指纹，允许合法的超过上限能量，但仍拒绝伪造能量；规则版本为 combat.2 / scored-duel.4，v1–v3 旧档明确拒绝。规则或数值变化拒绝旧档；暂不提供迁移或磁盘 I/O。该快照仍不包含 CardDuel 的四牌区和随机状态。
+`ScoredDuelSnapshotCodec` schema v4 保存规则指纹、初始玩家生命、单位状态、玩家能量、完成回合数、阶段、计分与行动账本；反序列化按冻结配置重放行动账本，核对生命/格挡/能量/回合数/阶段/Revision，支持在等待怪物行动时恢复。v4 新增付费弃牌账本、独立最大/初始能量与两类消耗的规则指纹，允许合法的超过上限能量，但仍拒绝伪造能量；规则版本为 combat.4 / scored-duel.4，v1–v3 旧档明确拒绝。combat.3 新增状态施加、消灭和类型化规则事件；combat.4 将已死亡目标改为跳过，事件索引保留原效果位置，存储形状未变。指纹包含 Combat 版本，因此旧 combat.2 / combat.3 快照也明确拒绝。规则或数值变化拒绝旧档；暂不提供迁移或磁盘 I/O。该快照仍不包含 CardDuel 的四牌区和随机状态。
 
 `EncounterContext`、`EncounterProgress`、`EncounterResult` 由状态即时投影，不重复存储。生命战的通用参与者描述只包含槽位/阵营，InitialResources 为 null；生命模板与初始生命由 ScoredDuelDefinition / ScoredDuelState 持有。结果包含双方胜负、原因、回合数和最终 Revision；奖励与幂等写回由 Run/宿主管理。
 

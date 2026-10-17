@@ -31,6 +31,13 @@ namespace PokerEngine.Tests
             public DiscardRewardPlan Resolve(DiscardRewardContext c)
             {
                 if (kind == 0) return null;
+                if (kind == 7 || kind == 8)
+                {
+                    var effect = kind == 7 ? CombatEffect.Eliminate(c.Source, c.Targets[0]) : CombatEffect.ApplyStatus(
+                        new StatusInstance(new StatusInstanceId("discard/status"), new StatusDefinitionId("mark"),
+                            EntityRef.Participant(c.Source), EntityRef.Participant(c.Targets[0]), 1, StatusDuration.UntilRemoved()));
+                    return new DiscardRewardPlan(Version, "new primitives are not discard rewards", new[] { effect });
+                }
                 return new DiscardRewardPlan(kind == 1 ? "wrong" : Version, "invalid", new[] {
                     new CombatEffect(kind == 4 ? CombatEffectKind.Damage : kind == 5 ? CombatEffectKind.ClearBlock : CombatEffectKind.GainBlock,
                         kind == 3 ? Ally : c.Source, kind == 2 ? Enemy : kind == 6 ? Ally : c.Targets[0], kind == 5 ? 0 : 7) });
@@ -72,13 +79,14 @@ namespace PokerEngine.Tests
             Assert.AreEqual(Player, result.Events.Single().Effect.Source); Assert.IsNull(result.Events.Single().Effect.Attack);
             Assert.IsNull(result.Score); Assert.AreEqual(3, result.State.Duel.Player(Ally).Energy.Energy);
         }
-        [TestCase(0)] [TestCase(1)] [TestCase(2)] [TestCase(3)] [TestCase(4)] [TestCase(5)] [TestCase(6)]
+        [TestCase(0)] [TestCase(1)] [TestCase(2)] [TestCase(3)] [TestCase(4)] [TestCase(5)] [TestCase(6)] [TestCase(7)] [TestCase(8)]
         public void InvalidRewardRejectsWholeDiscard(int kind)
         {
             var engine = Engine(); var state = Create(engine, reward: new BadReward(kind));
             var result = engine.Execute(state, state.Revision, Player, CardDuelAction.Discard, state.Zone(CardZoneKinds.Hand, Player).Cards.Take(1));
             Assert.AreEqual(CardDuelError.InvalidDiscardReward, result.Error); Assert.AreSame(state, result.State);
             Assert.IsEmpty(result.Events); Assert.IsNull(result.DiscardReward); Assert.AreEqual(3, state.DiscardsFor(Player));
+            Assert.IsEmpty(result.RuleEvents); Assert.IsNull(result.EffectPlan);
         }
         [Test] public void EnemyTargetIsRejectedEvenWhenRewardIsEmpty()
         {

@@ -28,8 +28,9 @@ namespace PokerEngine
 
         /// <summary>Submits a local input against the current authority revision. Explicit revision callers use Execute.</summary>
         public BattleSessionResult Submit(ParticipantId actor, CardDuelAction action,
-            IEnumerable<CardInstanceId> selected = null, IEnumerable<ParticipantId> targets = null, bool animate = true) =>
-            Execute(Session.State.Revision, actor, action, selected, targets, animate);
+            IEnumerable<CardInstanceId> selected = null, IEnumerable<ParticipantId> targets = null, bool animate = true,
+            BattleTargetBindings targetBindings = null) =>
+            Execute(Session.State.Revision, actor, action, selected, targets, animate, targetBindings);
 
         public bool CanAct(ParticipantId actor)
         {
@@ -63,28 +64,29 @@ namespace PokerEngine
         }
 
         public CardDuelTransition PreviewPlay(ParticipantId actor, IEnumerable<CardInstanceId> selected,
-            IEnumerable<ParticipantId> targets = null)
+            IEnumerable<ParticipantId> targets = null, BattleTargetBindings targetBindings = null)
         {
             if (!CanAct(actor)) return null;
             var state = Session.State;
-            return Session.Engine.PreviewPlay(state, state.Revision, actor, selected, targets);
+            return Session.Engine.PreviewPlay(state, state.Revision, actor, selected, targets, targetBindings);
         }
 
         public CardDuelTransition PreviewDiscard(ParticipantId actor, IEnumerable<CardInstanceId> selected,
-            IEnumerable<ParticipantId> targets = null)
+            IEnumerable<ParticipantId> targets = null, BattleTargetBindings targetBindings = null)
         {
             if (!CanAct(actor)) return null;
             var state = Session.State;
-            return Session.Engine.PreviewDiscard(state, state.Revision, actor, selected, targets);
+            return Session.Engine.PreviewDiscard(state, state.Revision, actor, selected, targets, targetBindings);
         }
 
         public BattleSessionResult Execute(long expectedRevision, ParticipantId actor, CardDuelAction action,
-            IEnumerable<CardInstanceId> selected = null, IEnumerable<ParticipantId> targets = null, bool animate = true)
+            IEnumerable<CardInstanceId> selected = null, IEnumerable<ParticipantId> targets = null, bool animate = true,
+            BattleTargetBindings targetBindings = null)
         {
             if (Presentation.IsPresenting)
                 return new BattleSessionResult(Session.State, Session.State, CardDuelError.InvalidPhase, Array.Empty<BattleSessionStep>());
 
-            var result = Session.Execute(expectedRevision, actor, action, selected, targets);
+            var result = Session.Execute(expectedRevision, actor, action, selected, targets, targetBindings);
             if (!result.Accepted) return result;
             try { Presentation.Present(result, animate); }
             catch

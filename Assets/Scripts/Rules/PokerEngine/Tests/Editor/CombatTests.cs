@@ -41,9 +41,11 @@ namespace PokerEngine.Tests
             Assert.That(result.Accepted, Is.True); Assert.That(result.State.Get(Enemy).Health, Is.Zero);
             Assert.That(result.Events[0].Died, Is.True); Assert.That(result.Events[0].Overkill, Is.EqualTo(long.MaxValue - 13));
             var repeat = CombatEngine.Resolve(result.State, 1, new[] { Damage(1) });
-            Assert.That(repeat.Error, Is.EqualTo(CombatError.InvalidEffect)); Assert.That(repeat.Events, Is.Empty);
+            Assert.That(repeat.Accepted, Is.True); Assert.That(repeat.State.Revision, Is.EqualTo(2));
+            Assert.That(repeat.Events, Is.Empty); Assert.That(repeat.RuleEvents, Is.Empty);
             var revive = CombatEngine.Resolve(result.State, 1, new[] { new CombatEffect(CombatEffectKind.Heal, Player, Enemy, 1) });
-            Assert.That(revive.Accepted, Is.False);
+            Assert.That(revive.Accepted, Is.True); Assert.That(revive.State.Get(Enemy).Health, Is.Zero);
+            Assert.That(revive.Events, Is.Empty); Assert.That(revive.RuleEvents, Is.Empty);
         }
         [Test] public void HealCapsAtMaximumAndBlockLifecycleIsExplicit()
         {
@@ -61,6 +63,50 @@ namespace PokerEngine.Tests
             var result = CombatEngine.Resolve(before, 0, new[] { Damage(100), new CombatEffect(CombatEffectKind.Damage, Enemy, Player, 1) });
             Assert.That(result.Error, Is.EqualTo(CombatError.InvalidEffect)); Assert.That(result.State, Is.SameAs(before));
             Assert.That(result.Events, Is.Empty); Assert.That(before.Get(Enemy).Health, Is.EqualTo(10));
+        }
+        private sealed class CountIncoming : IIncomingDamageModifier
+        {
+            public int Calls { get; private set; }
+            public DamageModification Modify(DamageModifierContext context)
+            {
+                Calls++;
+                return new DamageModification("count.1", "retain incoming damage", context.Amount, context.Amount);
+            }
+        }
+        [Test] public void LethalDamageSkipsFurtherHitsAndContinuesOnLivingTargets()
+        {
+            var before = Create(); var incoming = new CountIncoming();
+            var result = CombatEngine.Resolve(before, 0, new[] {
+                Damage(100), Damage(1), new CombatEffect(CombatEffectKind.Damage, Player, Player, 2)
+            }, incoming);
+            Assert.IsTrue(result.Accepted); Assert.AreEqual(1, result.State.Revision);
+            Assert.AreEqual(0, result.State.Get(Enemy).Health); Assert.AreEqual(18, result.State.Get(Player).Health);
+            Assert.AreEqual(2, incoming.Calls); Assert.AreEqual(2, result.Events.Count); Assert.AreEqual(2, result.RuleEvents.Count);
+            Assert.AreEqual(0, result.RuleEvents[0].Index); Assert.AreEqual(2, result.RuleEvents[1].Index);
+            Assert.IsTrue(result.Events[0].Died); Assert.IsFalse(result.Events[1].Died);
+            Assert.AreEqual(10, before.Get(Enemy).Health); Assert.AreEqual(20, before.Get(Player).Health);
+        }
+        [TestCase("unknown-source")] [TestCase("unknown-target")] [TestCase("dead-source")]
+        public void DeadTargetDoesNotHideInvalidReferencesOrDeadSources(string invalid)
+        {
+            var missing = new ParticipantId("missing");
+            var state = new CombatState("combat", 0, new[] { Create().Get(Player), new CombatantState(Enemy, "slime", "enemies", 10, 0, 3) });
+            var source = invalid == "unknown-source" ? missing : invalid == "dead-source" ? Enemy : Player;
+            var target = invalid == "unknown-target" ? missing : Enemy;
+            var result = CombatEngine.Resolve(state, 0, new[] { new CombatEffect(CombatEffectKind.Damage, source, target, 1) });
+            Assert.AreEqual(CombatError.InvalidEffect, result.Error); Assert.AreSame(state, result.State);
+            Assert.IsEmpty(result.Events); Assert.IsEmpty(result.RuleEvents);
+        }
+        [Test] public void ErrorAfterSkippedTargetStillRollsBackTheEntireBatch()
+        {
+            var state = Create();
+            var result = CombatEngine.Resolve(state, 0, new[] {
+                Damage(100), Damage(1), new CombatEffect(CombatEffectKind.GainBlock, Player, Player, 2),
+                new CombatEffect(CombatEffectKind.Damage, Enemy, Player, 1)
+            });
+            Assert.AreEqual(CombatError.InvalidEffect, result.Error); Assert.AreSame(state, result.State);
+            Assert.IsEmpty(result.Events); Assert.IsEmpty(result.RuleEvents);
+            Assert.AreEqual(10, state.Get(Enemy).Health); Assert.AreEqual(0, state.Get(Player).Block);
         }
         [Test] public void OverflowAndStaleCommandsProduceNoPartialEffects()
         {
