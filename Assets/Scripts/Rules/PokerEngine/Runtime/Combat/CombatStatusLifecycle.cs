@@ -80,6 +80,8 @@ namespace PokerEngine
                 definition.ValidateTriggerBudget(status.Duration.Kind == DurationKind.TriggerCount);
                 if (definition.Behaviors.Count > 0 && status.Target.Kind != EntityKind.Participant)
                     throw new ArgumentException("Behavior statuses require a participant target.");
+                if (definition.Behaviors.Any(item => item is PeriodicDamageSpec) && status.Source.Kind != EntityKind.Participant)
+                    throw new ArgumentException("Periodic damage requires a participant applier.");
             }
             if (state.Statuses.Where(status => catalog.Get(status.DefinitionId).ReapplyPolicy == StatusReapplyPolicy.KeepLonger)
                 .GroupBy(status => new { status.DefinitionId, status.Target.Kind, status.Target.Id }).Any(group => group.Count() > 1))

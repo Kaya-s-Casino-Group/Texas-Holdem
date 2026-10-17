@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Collections.Generic;
 
 namespace PokerEngine
 {
@@ -14,6 +15,22 @@ namespace PokerEngine
             if (state == null) throw new ArgumentNullException(nameof(state));
             if (roundsAhead < 0) throw new ArgumentOutOfRangeException(nameof(roundsAhead));
             return state.Combat.Id + "/round/" + checked(state.CompletedRounds + 1 + roundsAhead).ToString("D10", CultureInfo.InvariantCulture);
+        }
+
+        public static CombatTimingSignal ActionCompleted(TeamBattleState state, ParticipantId actor, ScoredDuelActionKind action)
+        {
+            if (state == null) throw new ArgumentNullException(nameof(state));
+            if (action != ScoredDuelActionKind.ScoredHand && action != ScoredDuelActionKind.Discard && action != ScoredDuelActionKind.EnemyAction)
+                throw new ArgumentException("Only actual completed actions emit an action clock.", nameof(action));
+            return CombatTimingSignal.ActionCompleted(state.Combat.Id + "/action/" + state.Revision.ToString("D20", CultureInfo.InvariantCulture),
+                actor, action.ToString());
+        }
+
+        public static CombatTimingSignal PhaseEnding(TeamBattleState state, IEnumerable<ParticipantId> participants, bool enemyPhase)
+        {
+            if (state == null) throw new ArgumentNullException(nameof(state));
+            string phase = enemyPhase ? EnemyPhase : PlayerPhase;
+            return CombatTimingSignal.PhaseEnding(RoundScope(state) + "/phase/" + phase, participants, phase);
         }
 
         public static StatusDuration Bind(TeamBattleState state, StatusLifetimeSpec lifetime)

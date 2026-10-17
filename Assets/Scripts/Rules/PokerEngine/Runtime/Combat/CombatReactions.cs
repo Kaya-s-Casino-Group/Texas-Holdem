@@ -106,7 +106,9 @@ namespace PokerEngine
         }
         internal CombatEffectProvenance(CombatReaction reaction, CombatRuleEvent parent)
         {
-            Origin = reaction.Origin; RootEffectIndex = parent.Provenance.RootEffectIndex; Depth = parent.Provenance.Depth + 1;
+            if (parent.Provenance == null && !(parent is CombatTimingEvent))
+                throw new ArgumentException("Derived effects require an effect fact or a clock boundary.");
+            Origin = reaction.Origin; RootEffectIndex = parent.Provenance?.RootEffectIndex ?? -1; Depth = (parent.Provenance?.Depth ?? 0) + 1;
             ParentRevision = parent.Revision; ParentSequenceIndex = parent.SequenceIndex;
             RuleId = reaction.RuleId; Owner = reaction.Owner; SourceInstanceId = reaction.SourceInstanceId;
             TriggerStatusId = reaction.TriggerStatusId;

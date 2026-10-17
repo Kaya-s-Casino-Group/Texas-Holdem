@@ -91,11 +91,26 @@ namespace PokerEngine
     /// <summary>Shared deterministic authority resolver. No turn, AI, card score, faction targeting or reward policy.</summary>
     public static class CombatEngine
     {
-        public const string RulesVersion = "combat.7";
+        public const string RulesVersion = "combat.8";
         public static CombatTransition Resolve(CombatState state, long expectedRevision, IEnumerable<CombatEffect> effects, IIncomingDamageModifier incomingDamage = null,
             CombatStatusCatalog statusCatalog = null, ICombatReactionProvider reactionProvider = null, CombatReactionLimits reactionLimits = null)
         {
             if (state == null || effects == null) throw new ArgumentNullException();
+            return ResolveCore(state, expectedRevision, effects, null, incomingDamage, statusCatalog, reactionProvider, reactionLimits);
+        }
+
+        /// <summary>Resolve one authority-owned boundary atomically. Periodic damage is a leaf and never re-enters reaction rules.</summary>
+        public static CombatTransition ResolveTiming(CombatState state, long expectedRevision, CombatTimingSignal signal,
+            IIncomingDamageModifier incomingDamage = null, CombatStatusCatalog statusCatalog = null, CombatReactionLimits reactionLimits = null)
+        {
+            if (state == null || signal == null) throw new ArgumentNullException();
+            return ResolveCore(state, expectedRevision, Array.Empty<CombatEffect>(), signal, incomingDamage, statusCatalog, null, reactionLimits);
+        }
+
+        private static CombatTransition ResolveCore(CombatState state, long expectedRevision, IEnumerable<CombatEffect> effects,
+            CombatTimingSignal signal, IIncomingDamageModifier incomingDamage, CombatStatusCatalog statusCatalog,
+            ICombatReactionProvider reactionProvider, CombatReactionLimits reactionLimits)
+        {
             try { Validate(state); CombatStatusRules.ValidateCatalog(state, statusCatalog); }
             catch (ArgumentException) { return new CombatTransition(state, CombatError.InvalidState); }
             if (state.Revision != expectedRevision) return new CombatTransition(state, CombatError.StaleRevision);
@@ -107,10 +122,13 @@ namespace PokerEngine
             try
             {
                 var batch = Guard.Copy(effects, nameof(effects));
-                if (batch.Length < 1 || batch.Length > 64) throw new ArgumentException("Resolve between 1 and 64 effects atomically.");
+                if (signal == null && (batch.Length < 1 || batch.Length > 64))
+                    throw new ArgumentException("Resolve between 1 and 64 effects atomically.");
                 var units = state.Combatants.ToDictionary(unit => unit.Id); var events = new List<CombatRuleEvent>();
                 var statuses = state.Statuses.ToList();
                 var unitIds = new HashSet<ParticipantId>(units.Keys);
+                if (signal != null && signal.Participants.Any(id => !unitIds.Contains(id)))
+                    throw new ArgumentException("Clock participants must belong to this combat.");
                 // Validate the entire primary declaration against the action-start state. Later deaths cancel
                 // active effects, but must never hide an initially dead source or an unknown participant.
                 foreach (var effect in batch)
@@ -118,12 +136,61 @@ namespace PokerEngine
                         throw new ArgumentException("Primary effects require known units and an initially living source.");
                 long revision = checked(state.Revision + 1);
                 var queue = new Stack<QueuedEffect>();
+                CombatTimingEvent clock = null;
+                if (signal != null)
+                {
+                    clock = new CombatTimingEvent(revision, events.Count, signal); events.Add(clock);
+                    // Eligibility/targets are evaluated when each status reaches the head, so an earlier
+                    // tick can kill a later holder. Snapshot only identities, in stable stored order.
+                    if (statusCatalog != null)
+                        for (int index = statuses.Count - 1; index >= 0; index--)
+                            if (statuses[index].Target.Kind == EntityKind.Participant &&
+                                signal.Participants.Contains(new ParticipantId(statuses[index].Target.Id)) &&
+                                statusCatalog.Get(statuses[index].DefinitionId).Behaviors.OfType<PeriodicDamageSpec>()
+                                    .Any(behavior => behavior.Timing == signal.Kind))
+                                queue.Push(new QueuedEffect(statuses[index].Id));
+                }
                 for (int index = batch.Length - 1; index >= 0; index--)
                     queue.Push(new QueuedEffect(batch[index], new CombatEffectProvenance(index)));
                 int reactionCount = 0;
                 while (queue.Count > 0)
                 {
-                    var queued = queue.Pop(); var effect = queued.Effect; var provenance = queued.Provenance;
+                    var queued = queue.Pop();
+                    if (queued.PeriodicStatusId.HasValue)
+                    {
+                        var status = statuses.FirstOrDefault(item => item.Id == queued.PeriodicStatusId.Value);
+                        if (status == null) continue;
+                        if (queued.ConsumePeriodic)
+                        {
+                            // Unlike reactive rewards, a periodic opportunity is spent even for zero or
+                            // fully absorbed damage. Consume after all siblings, including the final tick.
+                            CombatStatusRules.Consume(statuses, status, revision, -1, null, events, queued.Provenance);
+                            continue;
+                        }
+                        var holder = new ParticipantId(status.Target.Id);
+                        if (!units[holder].IsAlive) continue;
+                        var definition = statusCatalog.Get(status.DefinitionId);
+                        var behavior = definition.Behaviors.OfType<PeriodicDamageSpec>().Single(item => item.Timing == signal.Kind);
+                        var current = new CombatState(state.Id, state.Revision, state.Combatants.Select(unit => units[unit.Id]), statuses);
+                        var targets = CombatTargetResolver.Resolve(current, holder, behavior.Target);
+                        if (targets.Count == 0) continue;
+                        long amount = checked(behavior.DamagePerStack * status.Stacks);
+                        if (targets.Count > reactionLimits.MaxEffects - reactionCount)
+                            return new CombatTransition(state, CombatError.ReactionLimitExceeded);
+                        reactionCount += targets.Count;
+                        var source = new ParticipantId(status.Source.Id);
+                        string ruleId = statusCatalog.Version + "/" + definition.Id.Value + "/" + nameof(PeriodicDamageSpec);
+                        var ticks = targets.Select(target =>
+                        {
+                            var response = CombatReaction.FromStatus(new CombatEffect(CombatEffectKind.Damage, source, target, amount),
+                                ruleId, holder, status.Id, CombatEffectOrigin.Periodic, false, CombatReactionSourcePolicy.AllowDefeated);
+                            return new QueuedEffect(response.Effect, new CombatEffectProvenance(response, clock));
+                        }).ToArray();
+                        queue.Push(new QueuedEffect(status.Id, true, ticks[0].Provenance));
+                        for (int index = ticks.Length - 1; index >= 0; index--) queue.Push(ticks[index]);
+                        continue;
+                    }
+                    var effect = queued.Effect; var provenance = queued.Provenance;
                     int effectIndex = provenance.RootEffectIndex;
                     // Identities are checked before enqueueing. Death is a normal settlement result, not an error.
                     if (!units[effect.Source].IsAlive && provenance.SourcePolicy == CombatReactionSourcePolicy.RequireLiving) continue;
@@ -234,8 +301,12 @@ namespace PokerEngine
         {
             internal CombatEffect Effect { get; }
             internal CombatEffectProvenance Provenance { get; }
+            internal StatusInstanceId? PeriodicStatusId { get; }
+            internal bool ConsumePeriodic { get; }
             internal QueuedEffect(CombatEffect effect, CombatEffectProvenance provenance)
             { Effect = effect; Provenance = provenance; }
+            internal QueuedEffect(StatusInstanceId statusId, bool consume = false, CombatEffectProvenance provenance = null)
+            { PeriodicStatusId = statusId; ConsumePeriodic = consume; Provenance = provenance; }
         }
         public static void Validate(CombatState state)
         {

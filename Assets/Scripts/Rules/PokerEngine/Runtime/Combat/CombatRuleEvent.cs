@@ -10,13 +10,13 @@ namespace PokerEngine
         public int SequenceIndex { get; }
         /// <summary>Null for lifecycle facts that were not produced by an effect.</summary>
         public CombatEffect Effect { get; }
-        /// <summary>Null for lifecycle facts. Derived effects keep Index as their root's original plan position.</summary>
+        /// <summary>Null for uncaused lifecycle facts. Periodic effects and their consumption use root index -1.</summary>
         public CombatEffectProvenance Provenance { get; }
 
         internal CombatRuleEvent(long revision, int index, CombatEffect effect, int sequenceIndex = -1, CombatEffectProvenance provenance = null)
         {
             Revision = revision; Index = index; SequenceIndex = sequenceIndex < 0 ? index : sequenceIndex; Effect = effect;
-            Provenance = effect == null ? null : provenance ?? new CombatEffectProvenance(index);
+            Provenance = provenance ?? (effect == null ? null : new CombatEffectProvenance(index));
         }
     }
 

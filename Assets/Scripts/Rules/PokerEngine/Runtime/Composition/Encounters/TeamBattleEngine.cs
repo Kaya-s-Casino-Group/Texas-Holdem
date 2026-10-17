@@ -403,8 +403,39 @@ namespace PokerEngine
                     players[index] = new BattlePlayerTurn(actor, new PlayerTurnState(players[index].Energy.MaxEnergy, energy), energy == 0,
                         players[index].Rules, players[index].DamageRules, players[index].TargetRules);
                 }
+                // Action clocks run after the complete active batch and its reactions, once per successful action.
+                // Explicit end/skip commands are boundaries, not completed actions. A finished battle starts no new clock.
+                bool finished = IsFinished(combat, players, state.Enemies);
+                if (!finished && (action == ScoredDuelActionKind.ScoredHand || action == ScoredDuelActionKind.Discard || enemy && !blocked) &&
+                    HasPeriodic(combat, new[] { actor }, CombatTimingKind.ActionCompleted))
+                {
+                    var periodic = CombatEngine.ResolveTiming(combat, combat.Revision,
+                        BattleStatusTiming.ActionCompleted(state, actor, action), new ActorIncomingDamageModifier(state),
+                        Definition.StatusCatalog, Definition.ReactionLimits);
+                    if (!periodic.Accepted) return new TeamBattleTransition(state, EffectFailure(periodic.Error));
+                    combat = periodic.State; events = events.Concat(periodic.RuleEvents).ToArray();
+                    finished = IsFinished(combat, players, state.Enemies);
+                }
                 var pending = enemy ? state.PendingEnemies.Where(id => id != actor && combat.Get(id).IsAlive).ToArray() : state.PendingEnemies.ToArray();
-                // Expire only after the entire enemy phase, including its final round. Enemy block is independent.
+                bool playerPhaseEnded = !enemy && (finished || players.All(x => x.HasEnded || !combat.Get(x.Id).IsAlive));
+                bool enemyPhaseEnded = enemy && (pending.Length == 0 || finished);
+                if (!finished && (playerPhaseEnded || enemyPhaseEnded))
+                {
+                    // One clock for the entire team, including units whose action was skipped by control.
+                    var participants = enemyPhaseEnded ? state.Enemies.Select(x => x.Id).ToArray() : players.Select(x => x.Id).ToArray();
+                    if (HasPeriodic(combat, participants, CombatTimingKind.PhaseEnding))
+                    {
+                        var periodic = CombatEngine.ResolveTiming(combat, combat.Revision,
+                            BattleStatusTiming.PhaseEnding(state, participants, enemyPhaseEnded), new ActorIncomingDamageModifier(state),
+                            Definition.StatusCatalog, Definition.ReactionLimits);
+                        if (!periodic.Accepted) return new TeamBattleTransition(state, EffectFailure(periodic.Error));
+                        combat = periodic.State; events = events.Concat(periodic.RuleEvents).ToArray();
+                        // Periodic targets may include other participants. Rebuild scheduling from actual survivors.
+                        pending = pending.Where(id => combat.Get(id).IsAlive).ToArray();
+                        finished = IsFinished(combat, players, state.Enemies);
+                    }
+                }
+                // Retain shield through the last periodic tick; enemy block remains independent.
                 if (enemy && pending.Length == 0 && Definition.PlayerBlockExpiry == PlayerBlockExpiry.AfterEnemyPhase)
                 {
                     var clear = players.Select(x => combat.Get(x.Id)).Where(x => x.IsAlive && x.Block > 0)
@@ -417,10 +448,11 @@ namespace PokerEngine
                         combat = expired.State; events = events.Concat(expired.RuleEvents).ToArray();
                     }
                 }
-                // Close exact lifecycle boundaries after effects, including a phase whose final actor was skipped.
-                bool finished = state.Enemies.All(x => !combat.Get(x.Id).IsAlive) || players.All(x => !combat.Get(x.Id).IsAlive);
-                bool playerPhaseEnded = !enemy && (finished || players.All(x => x.HasEnded || !combat.Get(x.Id).IsAlive));
-                bool enemyPhaseEnded = enemy && (pending.Length == 0 || finished);
+                // Shield clearing may itself have custom reactions; preserve the original post-maintenance boundary check.
+                finished = IsFinished(combat, players, state.Enemies);
+                playerPhaseEnded = !enemy && (finished || players.All(x => x.HasEnded || !combat.Get(x.Id).IsAlive));
+                enemyPhaseEnded = enemy && (pending.Length == 0 || finished);
+                // Close exact lifecycle boundaries after periodic effects, including the final skipped action.
                 if (playerPhaseEnded || enemyPhaseEnded)
                 {
                     string scope = BattleStatusTiming.RoundScope(state);
@@ -462,6 +494,17 @@ namespace PokerEngine
             catch (OverflowException) { return new TeamBattleTransition(state, CardDuelError.Overflow); }
             catch (ArgumentException) { return new TeamBattleTransition(state, CardDuelError.InvalidTarget); }
         }
+        private static bool IsFinished(CombatState combat, IEnumerable<BattlePlayerTurn> players, IEnumerable<BattleEnemySetup> enemies) =>
+            enemies.All(unit => !combat.Get(unit.Id).IsAlive) || players.All(unit => !combat.Get(unit.Id).IsAlive);
+
+        private bool HasPeriodic(CombatState combat, IEnumerable<ParticipantId> participants, CombatTimingKind timing)
+        {
+            if (Definition.StatusCatalog == null) return false;
+            var living = new HashSet<string>(participants.Where(id => combat.Get(id).IsAlive).Select(id => id.Value));
+            return combat.Statuses.Any(status => status.Target.Kind == EntityKind.Participant && living.Contains(status.Target.Id) &&
+                Definition.StatusCatalog.Get(status.DefinitionId).Behaviors.OfType<PeriodicDamageSpec>().Any(behavior => behavior.Timing == timing));
+        }
+
         private static CardDuelError EffectFailure(CombatError error, bool discard = false) =>
             error == CombatError.Overflow ? CardDuelError.Overflow :
             error == CombatError.InvalidReaction ? CardDuelError.InvalidReaction :
