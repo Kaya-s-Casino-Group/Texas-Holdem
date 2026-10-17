@@ -14,13 +14,15 @@ namespace PokerEngine
         public string RuleVersion { get; }
         public string Explanation { get; }
         public IReadOnlyList<CombatEffect> Effects { get; }
+        /// <summary>Base/final named sequences and relic attribution, before targeting and numeric settlement. Null without structural changes.</summary>
+        public HandEffectModification HandModification { get; }
 
-        public BattleEffectPlan(string ruleVersion, string explanation, IEnumerable<CombatEffect> effects)
+        public BattleEffectPlan(string ruleVersion, string explanation, IEnumerable<CombatEffect> effects, HandEffectModification handModification = null)
         {
             RuleVersion = Guard.Text(ruleVersion, nameof(ruleVersion)); Explanation = Guard.Text(explanation, nameof(explanation));
             var copy = Guard.Copy(effects, nameof(effects));
             if (copy.Length > 64 || copy.Any(effect => effect == null)) throw new ArgumentException("Invalid battle effect plan.");
-            Effects = Guard.View(copy);
+            Effects = Guard.View(copy); HandModification = handModification;
         }
     }
 

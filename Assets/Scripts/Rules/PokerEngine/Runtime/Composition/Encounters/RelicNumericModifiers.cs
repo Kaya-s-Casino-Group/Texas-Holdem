@@ -38,14 +38,19 @@ namespace PokerEngine
     {
         public string Version { get; }
         public IReadOnlyList<RelicNumericModifierSpec> Modifiers { get; }
+        public IReadOnlyList<RelicHandEffectModifierSpec> HandEffects { get; }
         public static BattleRelicRules Empty { get; } = new BattleRelicRules("battle-relic.empty.1");
-        public BattleRelicRules(string version, IEnumerable<RelicNumericModifierSpec> modifiers = null)
+        public BattleRelicRules(string version, IEnumerable<RelicNumericModifierSpec> modifiers = null,
+            IEnumerable<RelicHandEffectModifierSpec> handEffects = null)
         {
             Version = Guard.Text(version, nameof(version));
             var items = Guard.Copy(modifiers ?? Array.Empty<RelicNumericModifierSpec>(), nameof(modifiers));
-            if (items.Length > 32 || items.Select(item => item.Id).Distinct(StringComparer.Ordinal).Count() != items.Length)
-                throw new ArgumentException("A relic supports at most 32 distinct numeric modifiers.", nameof(modifiers));
-            Modifiers = Guard.View(items);
+            var structural = Guard.Copy(handEffects ?? Array.Empty<RelicHandEffectModifierSpec>(), nameof(handEffects));
+            var ids = items.Select(item => item.Id).Concat(structural.Select(item => item.Id)).ToArray();
+            if (ids.Length > 32 || ids.Distinct(StringComparer.Ordinal).Count() != ids.Length)
+                throw new ArgumentException("A relic supports at most 32 distinctly named battle modifiers.");
+            RelicHandEffectValidation.Combinations(structural);
+            Modifiers = Guard.View(items); HandEffects = Guard.View(structural);
         }
         internal void Write(BinaryWriter writer)
         {
@@ -57,11 +62,20 @@ namespace PokerEngine
                 writer.Write(spec.HandCategory.HasValue); if (spec.HandCategory.HasValue) writer.Write((int)spec.HandCategory.Value);
             }
         }
+        internal void WriteHandEffects(BinaryWriter writer)
+        {
+            writer.Write(Version); writer.Write(HandEffects.Count);
+            foreach (var spec in HandEffects) spec.Write(writer);
+        }
         internal byte[] Bytes()
         {
             using (var stream = new MemoryStream())
             {
-                using (var writer = new BinaryWriter(stream, System.Text.Encoding.UTF8, true)) Write(writer);
+                using (var writer = new BinaryWriter(stream, System.Text.Encoding.UTF8, true))
+                {
+                    Write(writer);
+                    if (HandEffects.Count != 0) { writer.Write("battle-relic.hand-effects.1"); WriteHandEffects(writer); }
+                }
                 return stream.ToArray();
             }
         }

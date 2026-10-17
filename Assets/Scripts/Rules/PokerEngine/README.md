@@ -69,7 +69,7 @@ graph TD
 
 多人战局的出牌转换由各自 `BattlePlayerRules.DamagePolicy` 持有，TeamBattle 按出牌者读取，纯 C# 默认 EqualScoreDamageRule。公共 BattleRules 不再接受出牌伤害参数；旧 ScoredDuelDefinition 适配入口将转换规则转入默认玩家规则。转换协议位于 Composition：`IScoredHandDamageRule.Resolve(ScoredHandDamageContext)` 接收得分、来源和目标策略选出的目标，返回不可变 `DamagePlan`。默认 `EqualScoreDamageRule` 将得分等额作为每个目标的基础伤害。引擎验证来源、目标及规则版本后，调用 `IAttackDamageModifier`，再交给 `CombatEngine` 进行 `IIncomingDamageModifier`、格挡与生命结算；两个修正接口默认原值通过。`DamageModification` 与 CombatEvent 保留各阶段真实输入、输出、版本和说明。攻击修正读取攻击开始时的状态，目标承伤读取该原子批次的当前状态；怪物直接产生基础伤害请求并共用两个修正接口。`CardDuelEngine.PreviewPlay` 复用正式 `Execute`，调用方只读取返回结果而不提交新状态；所有注入策略须遵守纯函数约定。Unity 独立配置与中文只读验算面板见 `Assets/Scripts/Gameplay/SingleBattle/README.md`。
 
-个人牌型等级：`BattlePlayerRules.HandLevels` 持有不可变 `BattleHandLevels`，构造时复制每个 HandCategory 对应的正整数等级；未知/重复类别及非正等级拒绝，缺省类别补 1 级。Unity 在 PlayerBattleProfile 中逐牌型配置并于开战时生成快照，纯 C# 可用 `handLevels:` 注入。CardDuelEngine.PreviewHand 判型后从动作玩家读取对应等级，候选 UI、PreviewPlay 与正式 Play 共用；回合状态继续保留同一玩家 Rules。ScoreProfile 仅保存共享基础筹码、倍率、每级增长及单牌规则，不含个人等级。遗物实例绑定、运行状态及被动数值修正已接入，旧计分/主动触发能力与战斗内等级升级尚未启用，旧 Draw/Run 的等级模型不变。
+个人牌型等级：`BattlePlayerRules.HandLevels` 持有不可变 `BattleHandLevels`，构造时复制每个 HandCategory 对应的正整数等级；未知/重复类别及非正等级拒绝，缺省类别补 1 级。Unity 在 PlayerBattleProfile 中逐牌型配置并于开战时生成快照，纯 C# 可用 `handLevels:` 注入。CardDuelEngine.PreviewHand 判型后从动作玩家读取对应等级，候选 UI、PreviewPlay 与正式 Play 共用；回合状态继续保留同一玩家 Rules。ScoreProfile 仅保存共享基础筹码、倍率、每级增长及单牌规则，不含个人等级。遗物实例绑定、运行状态、被动数值及牌型效果结构修正已接入，旧计分/主动触发能力与战斗内等级升级尚未启用，旧 Draw/Run 的等级模型不变。
 
 角色伤害规则由 `BattleActorDamageRules` 表达，随各自 `BattlePlayerSetup` / `BattleEnemySetup` 输入，并保留在玩家回合状态与怪物阵容中。TeamBattleEngine 按攻击 Source 选攻击修正、按实际 Target 分派承伤修正，CombatEngine 仍提供该原子批次的最新只读上下文；不把这些规则放入序列化生命状态。`BattleRules` 不再持有攻击/承伤修正，双方 Setup 未指定角色修正规则时构建 Identity 快照。基础 ScaledAttackDamageModifier / ScaledIncomingDamageModifier 位于 Combat，支持倍率及固定增减，默认 1 倍、0 增减。Unity 作者配置位于角色 Profile，公共 BattleRulesProfile 不新增修正槽位。
 
@@ -85,7 +85,7 @@ graph TD
 
 统一效果计划：Composition 的 `BattleEffectPlan` 保存有序、不可变的已解析 `CombatEffect` 批次及来源规则的版本、说明。出牌、敌人攻击或弃牌收益共用 `BattleEffectResolver`；非空计划只调用一次 CombatEngine，空弃牌计划保留同一个 CombatState，不增加其 Revision。`TeamBattleTransition.EffectPlan` 和 `CardDuelTransition.EffectPlan` 提供行动计划；旧伤害／弃牌路径继续提供原 `Damage`、`DiscardReward`。敌方阶段末尾的 ClearBlock 仍是独立维护批次，不混入行动计划。Start / EndTurn / CollectPlayed、纯判型预览及被拒绝命令没有 EffectPlan。费用、牌区、随机与 Session 原子提交语义保持不变。
 
-逐效果声明：通过 `BattlePlayerRules(effectRule: ...)` 注入 `IScoredHandEffectRule`，接收权威的 `ScoredHandEffectContext`（Combat、Source、Score、可选 Hand），返回 `BattleEffectSequence`。每个 `BattleEffectStep` 分别持有 `BattleEffectSpec` 与 `EffectTargetSpec`；前者只定义 Damage / Heal / GainBlock / ApplyStatus / Eliminate，后者独立决定自身、单体或全体目标。引擎通过 `BattleEffectBinder` 展开成已绑定目标的效果，再完成攻击修正、生成 BattleEffectPlan 并结算。未配置 EffectRule 时继续使用原 DamagePolicy；显式同时配置两种规则会拒绝。新路径的 Damage 为 null，读取 EffectPlan 和 RuleEvents；当前默认牌型映射和弃牌收益不变。
+逐效果声明：通过 `BattlePlayerRules(effectRule: ...)` 注入 `IScoredHandEffectRule`，接收权威的 `ScoredHandEffectContext`（Combat、Source、Score、可选 Hand），返回 `BattleEffectSequence`。每个 `BattleEffectStep` 分别持有 `BattleEffectSpec` 与 `EffectTargetSpec`，可提供稳定语义 Id；前者只定义 Damage / Heal / GainBlock / ApplyStatus / Eliminate，后者独立决定自身、单体或全体目标。引擎先应用动作玩家的遗物结构修正，再通过 `BattleEffectBinder` 展开成已绑定目标的效果，再完成攻击修正、生成 BattleEffectPlan 并结算。未配置 EffectRule 时继续使用原 DamagePolicy；显式同时配置两种规则会拒绝。新路径的 Damage 为 null，读取 EffectPlan 和 RuleEvents；当前默认牌型映射和弃牌收益不变。
 
 `EffectTargetSpec` 的分组为 Self / Opponents / Allies（友方包含自身），选择方式为 Requested（必须指定一个）、FirstLiving、LowestHealth、HighestHealth、AllLiving 或 ActorPolicy。固定 AllLiving 取全部存活目标；ActorPolicy 则复用来源角色的 Attack / Support 策略及其旧请求行为。固定选择器以阵容顺序打破平局。Requested / ActorPolicy 可声明具名 RequestSlot，命令用不可变的 `BattleTargetBindings` 分别提供目标，例如攻击敌人使用 `attack`、治疗队友使用 `support`。未声明槽位名时使用 `default`；新规则下旧 targets 参数映射到该槽位，不能与非空 targetBindings 同时提交。缺少必需请求、未使用槽位、错误阵营、死亡或重复目标都会拒绝。targetBindings 只用于配置了 EffectRule 的出牌；CardDuel、Session 与 Playback 的执行及预览入口均透传，自动敌人行动不会继承玩家的绑定。
 
@@ -328,11 +328,11 @@ var persistentRelics = restored.ExportRunRelics();
 
 `CardDuelEngine.UpdateRelicRuntime`（以及 TeamBattleEngine 同名入口）供权威规则侧提交完整运行状态，要求当前 Revision，禁止改实例、持有者、定义、顺序及入场等级/成长。成功返回新状态并推进对应 Revision，失败保留原引用；不扣能量、不推进回合、不记录出牌/弃牌动作、不产生战斗事件。它不是玩家命令，BattleSession 仍只接收原有操作。运行状态只由当前 BattlePlayerTurn 持有，出牌、收牌、弃牌、结束、控制跳过、敌方行动和胜负转换均保留它。
 
-本步不自动激活 ScoreEffects / AbilityId，不计算遗物成长、不消耗次数或冷却、不清理 Round 计数；这些生命周期由后续具体遗物行为接入。未配置数值修正时，现有牌型效果、目标选择、弃牌收益/费用/次数、补牌和随机流程保持原样。`ExportRunRelics()` 创建新的持久实例，仅导出 Encounter 计数并丢弃 Round 计数/UsesThisRound，不自动写回 Run。旧 Draw/Holdem 的能力安装、成长和存档契约不变。
+本步不自动激活 ScoreEffects / AbilityId，不计算遗物成长、不消耗次数或冷却、不清理 Round 计数；这些生命周期由后续具体遗物行为接入。未配置遗物修正时，现有牌型效果、目标选择、弃牌收益/费用/次数、补牌和随机流程保持原样。`ExportRunRelics()` 创建新的持久实例，仅导出 Encounter 计数并丢弃 Round 计数/UsesThisRound，不自动写回 Run。旧 Draw/Holdem 的能力安装、成长和存档契约不变。
 
 ## 遗物的被动数值修正
 
-`BattleRelicRules` 属于 Composition，作为 `BattleRelicSetup(..., battleRules: ...)` 的可选静态配置；Runs 的 RelicDefinition 不反向引用战斗组装层。每件遗物最多 32 条唯一 Id 的 `RelicNumericModifierSpec`。六种 `BattleNumericStat` 是 DamageDealt / DamageReceived、HealingDone / HealingReceived、BlockGranted / BlockReceived；固定整数增减用 AddFlat，百分比增减用 AddRate（0.2 表示 +20%）。不开放预算、费用、目标变化、重复执行或状态参数。
+`BattleRelicRules` 属于 Composition，作为 `BattleRelicSetup(..., battleRules: ...)` 的可选静态配置；Runs 的 RelicDefinition 不反向引用战斗组装层。每件遗物的数值与结构修正合计最多 32 条，Id 不可重复；数值条目使用 `RelicNumericModifierSpec`。六种 `BattleNumericStat` 是 DamageDealt / DamageReceived、HealingDone / HealingReceived、BlockGranted / BlockReceived；固定整数增减用 AddFlat，百分比增减用 AddRate（0.2 表示 +20%）。数值入口只改变数值；效果、目标、段数和状态参数通过下述结构修正入口配置，预算与费用尚未开放。
 
 ```csharp
 var numeric = new BattleRelicRules("relic.edge.1", new[] {
@@ -355,6 +355,38 @@ Origins 必填且不能重复，按 Primary / Triggered / Periodic / Reflection 
 查询和预览不写状态、不隐式消耗 Charges / UsesThisRound / CooldownRounds / Memory；被动修正也不自动受这些字段限制。消耗次数的“下一次强化”应由后续触发提交机制负责。任何溢出或非法修正输出拒绝整个事务，包括已执行的前序效果、牌区、资源和随机状态。无修正时既有数值/事件语义与状态转换保持不变。
 
 非空数值配置（含版本、条目及条件）扩展绑定指纹；全部配置为空时沿用原有字节布局与指纹。配置本身不写进运行状态 JSON，读档时仍由外部绑定注入；不同配置拒绝读取同一快照。旧 Run / Draw / Holdem 契约不变，Combat 的可选参数默认关闭，状态存档格式和 RulesVersion 不变。
+
+## 遗物对牌型效果的结构修正
+
+在 `BattleRelicRules(..., handEffects: ...)` 配置 `RelicHandEffectModifierSpec`。仅对动作玩家的 `IScoredHandEffectRule` 输出执行一次：基础 BattleEffectSequence → IHandEffectModifier / RelicHandEffectModifier → 目标绑定 → 既有角色与双方数值修正 → Combat 队列。敌人、弃牌、即时反应和周期效果不进入结构修正。需要次数或冷却的触发遗物仍需后续运行状态提交机制；本入口为被动配置，预览/查询不修改或消费运行状态。
+
+`BattleEffectStep(id, effect, target)` 的 Id 在序列内唯一且不依赖数组下标。PokerHandEffectSteps 提供 DamageHit(1) / DamageHit(2)…（`damage/1`…）、Heal、Stun、ControlImmunity、Eliminate；同花治疗、葫芦的两种状态均可分别定位。原两参数构造保留，未命名步骤正常结算，但不能作为具名修改的目标。改变牌型基础规则时应保留同一语义步骤的 Id。
+
+```csharp
+var rules = new BattleRelicRules("relic.hand-shape.1", handEffects: new[] {
+    RelicHandEffectModifierSpec.Append("flush-shield", HandCategory.Flush,
+        BattleEffectSpec.GainBlock(5), EffectTargetSpec.Self()),
+    RelicHandEffectModifierSpec.AddHits("straight-extra", HandCategory.Straight,
+        PokerHandEffectSteps.DamageHit(1), 1),
+    RelicHandEffectModifierSpec.Replace("flush-convert", HandCategory.Flush,
+        PokerHandEffectSteps.Heal, BattleEffectSpec.GainBlock(8)),
+    RelicHandEffectModifierSpec.Retarget("full-house-aoe", HandCategory.FullHouse,
+        PokerHandEffectSteps.Stun, EffectTargetSpec.Opponents(EffectTargetSelection.AllLiving))
+});
+var setup = new BattleRelicSetup(relicDefinition, runRelic, rules);
+```
+
+- Append 在整条基础序列处理完后追加一个效果，效果和目标必须分别指定；追加眩晕、流血、中毒或其他状态复用 ApplyStatus 与目录中的状态定义。
+- AddHits 的 count 是额外段数（1–63），只复制指定的一段基础伤害，紧跟该步骤插入；不会将整条顺子序列再执行一次。该步骤的替换和目标修改先合并，新增段继承合并后的效果与目标，且仍逐段/逐目标参与普通数值修正及触发。
+- Replace 只替换指定步骤的 Effect，保留 Id 和 Target；Retarget 只替换 Target，保留效果。两者可组合，替换状态时可配置状态类型、层数和相对时长。AddHits 与非伤害替换冲突会拒绝。
+- 所有匹配只看原始牌型与基础步骤。类别不符或没有该具名步骤时不修改（例如皇家同花顺没有 damage/1）；配置拼错步骤 Id 同样不会生效，内容应以具名常量并配测试验证。新增步骤不会再被其他条目匹配。新增 Id 根据遗物实例 Id、条目 Id 和副本编号生成，长度编码避免分隔符碰撞；最终序列仍验证唯一性。
+- 多个 AddHits 相加；追加效果与新增段按实例 Id、条目 Id 的序数顺序排列，装配/条目换序不改变执行顺序。同类别/同一步骤的 Replace 或 Retarget，载荷相同则合并并保留各来源记录，不同则在配置或装配时拒绝，不使用隐式后写覆盖。
+
+`BattleEffectPlan.HandModification` 保存 Input / Output 具名序列，以及 Changes 中的遗物实例、规则、操作、原步骤和结果步骤 Id。没有实际结构修改时该字段为 null，基础 RuleVersion / Explanation 保持不变；完整变化以报告为准。这些序列是目标展开和数值修正之前的声明，真正结算结果仍读取 Effects / RuleEvents。
+
+绑定时校验状态目录依赖；静态配置使用相对 StatusLifetimeSpec（或永久/次数 StatusDuration），拒绝捕获其他战局回合、阶段 scope 的状态配置。旧 DamagePolicy 路径不承载结构修正，绑定非空结构配置但未提供 EffectRule 时在开战前拒绝。目标绑定以修正后的序列校验请求槽，不忽略失效的旧请求。序列及目标展开后仍各限 64 条，结构错误报告 InvalidHandEffectModifier，目标/展开错误沿用 InvalidTarget / InvalidEffectPlan；后续失败依然回滚整次行动，已死亡目标沿用跳过规则。
+
+非空结构配置单独扩展遗物绑定指纹，包含操作、牌型、步骤 Id、额外段数、完整效果/状态/目标载荷及版本。旧空配置与纯数值配置的字节布局、指纹和 schema v1 运行状态快照保持兼容；带结构配置的快照必须用相同外部配置恢复。未配置或未匹配结构修正时保持现有牌型效果和弃牌行为。
 
 ## 计分模块
 

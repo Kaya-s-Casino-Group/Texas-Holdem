@@ -3,6 +3,17 @@ using System.Collections.Generic;
 
 namespace PokerEngine
 {
+    /// <summary>Stable base-step names, independent of sequence positions and configured hit count.</summary>
+    public static class PokerHandEffectSteps
+    {
+        public const string Heal = "heal", Stun = "stun", ControlImmunity = "control-immunity", Eliminate = "eliminate";
+        public static string DamageHit(int number)
+        {
+            if (number < 1 || number > 64) throw new ArgumentOutOfRangeException(nameof(number));
+            return "damage/" + number.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        }
+    }
+
     /// <summary>Documented hand effects. Target expansion, modifiers and state mutation remain in the shared pipeline.</summary>
     public sealed class PokerHandEffectRule : IScoredHandEffectRule, IBattleStatusCatalogValidator
     {
@@ -43,14 +54,14 @@ namespace PokerEngine
                     throw new ArgumentException("Straight flush effects require authoritative hand facts to distinguish a royal flush.", nameof(context));
                 if (context.Hand.Pattern.TieBreakRanks[0] == (int)Rank.Ace)
                     return new BattleEffectSequence(Version, "皇家同花顺：消灭全部存活敌人", new[] {
-                        new BattleEffectStep(BattleEffectSpec.Eliminate(), EffectTargetSpec.Opponents(EffectTargetSelection.AllLiving))
+                        new BattleEffectStep(PokerHandEffectSteps.Eliminate, BattleEffectSpec.Eliminate(), EffectTargetSpec.Opponents(EffectTargetSelection.AllLiving))
                     });
             }
             if (category == HandCategory.FullHouse)
                 return new BattleEffectSequence(Version, "葫芦：单体眩晕与自身提前免控", new[] {
-                    new BattleEffectStep(BattleEffectSpec.ApplyStatus(new StatusApplicationSpec(Profile.StunStatusId, 1,
+                    new BattleEffectStep(PokerHandEffectSteps.Stun, BattleEffectSpec.ApplyStatus(new StatusApplicationSpec(Profile.StunStatusId, 1,
                         StatusDuration.ForTriggers(Profile.StunActionWindows))), SingleTarget),
-                    new BattleEffectStep(BattleEffectSpec.ApplyStatus(StatusApplicationSpec.WithLifetime(Profile.ControlImmunityStatusId,
+                    new BattleEffectStep(PokerHandEffectSteps.ControlImmunity, BattleEffectSpec.ApplyStatus(StatusApplicationSpec.WithLifetime(Profile.ControlImmunityStatusId,
                         Profile.ControlImmunityLifetime)), EffectTargetSpec.Self())
                 });
 
@@ -60,9 +71,9 @@ namespace PokerEngine
                 ? EffectTargetSpec.Opponents(EffectTargetSelection.AllLiving) : SingleTarget;
             var steps = new List<BattleEffectStep>();
             for (int hit = 0; hit < settings.HitCount; hit++)
-                steps.Add(new BattleEffectStep(BattleEffectSpec.Damage(damage), target));
+                steps.Add(new BattleEffectStep(PokerHandEffectSteps.DamageHit(hit + 1), BattleEffectSpec.Damage(damage), target));
             if (category == HandCategory.Flush)
-                steps.Add(new BattleEffectStep(BattleEffectSpec.Heal(Scale(context.Score.Points, Profile.FlushHealPerChip)), EffectTargetSpec.Self()));
+                steps.Add(new BattleEffectStep(PokerHandEffectSteps.Heal, BattleEffectSpec.Heal(Scale(context.Score.Points, Profile.FlushHealPerChip)), EffectTargetSpec.Self()));
             // Ordinary straight flush and five of a kind have no documented skill; retain explicit single-hit damage fallbacks.
             return new BattleEffectSequence(Version, category == HandCategory.Flush ? "同花：伤害与按筹码回血" :
                 category == HandCategory.Straight ? "顺子：按配置逐段伤害" :

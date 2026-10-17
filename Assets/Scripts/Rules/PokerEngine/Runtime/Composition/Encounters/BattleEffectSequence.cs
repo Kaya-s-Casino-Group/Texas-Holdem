@@ -49,10 +49,14 @@ namespace PokerEngine
 
     public sealed class BattleEffectStep
     {
+        /// <summary>Stable semantic identity within the base sequence. Null only for legacy unnamed steps.</summary>
+        public string Id { get; }
         public BattleEffectSpec Effect { get; }
         public EffectTargetSpec Target { get; }
         public BattleEffectStep(BattleEffectSpec effect, EffectTargetSpec target)
         { Effect = effect ?? throw new ArgumentNullException(nameof(effect)); Target = target ?? throw new ArgumentNullException(nameof(target)); }
+        public BattleEffectStep(string id, BattleEffectSpec effect, EffectTargetSpec target) : this(effect, target)
+        { Id = Guard.Text(id, nameof(id)); }
     }
 
     /// <summary>Ordered declarations before targeting. All steps bind against the same action-start snapshot.</summary>
@@ -66,6 +70,8 @@ namespace PokerEngine
             RuleVersion = Guard.Text(ruleVersion, nameof(ruleVersion)); Explanation = Guard.Text(explanation, nameof(explanation));
             var copy = Guard.Copy(steps, nameof(steps));
             if (copy.Length == 0 || copy.Length > 64 || copy.Any(step => step == null)) throw new ArgumentException("Invalid effect sequence.");
+            var ids = copy.Where(step => step.Id != null).Select(step => step.Id).ToArray();
+            if (ids.Distinct(StringComparer.Ordinal).Count() != ids.Length) throw new ArgumentException("Effect step IDs must be unique within the sequence.");
             Steps = Guard.View(copy);
         }
     }

@@ -227,8 +227,10 @@ namespace PokerEngine
                 p.Select(x => x.Definition.Create(x.Id, "player", x.InitialHealth)).Concat(e.Select(x => x.Definition.Create(x.Id, "enemy")))),
                 p.Select(x => {
                     var rules = x.Rules ?? new BattlePlayerRules();
+                    var relics = new BattleRelicLoadout(x.Id, x.Relics);
+                    RelicHandEffectValidation.Catalog(relics, rules, Definition.StatusCatalog);
                     return new BattlePlayerTurn(x.Id, new PlayerTurnState(rules.MaxEnergy, rules.InitialEnergy), false, rules, x.DamageRules, x.TargetRules,
-                        new BattleRelicLoadout(x.Id, x.Relics));
+                        relics);
                 }),
                 e, ScoredDuelPhase.AwaitingPlayerHand, new ParticipantId[0]);
         }
@@ -350,6 +352,7 @@ namespace PokerEngine
                         scores = scores.Concat(new[] { score }).ToArray();
                     }
                     IEnumerable<CombatEffect> baseEffects; string ruleVersion, explanation;
+                    HandEffectModification handModification = null;
                     var effectRule = enemy ? null : state.Player(actor).Rules.EffectRule;
                     var enemyEffectRule = enemy ? state.Enemies.Single(unit => unit.Id == actor).EffectRule : null;
                     if (effectRule != null || enemyEffectRule != null)
@@ -363,6 +366,16 @@ namespace PokerEngine
                                 return new TeamBattleTransition(state, CardDuelError.InvalidEffectPlan);
                         }
                         catch (ArgumentException) { return new TeamBattleTransition(state, CardDuelError.InvalidEffectPlan); }
+                        if (!enemy)
+                        {
+                            try
+                            {
+                                var modified = new RelicHandEffectModifier().Modify(new HandEffectModifierContext(state.Player(actor).Relics,
+                                    new ScoredHandEffectContext(combat, actor, score, hand), sequence));
+                                if (!modified.IsIdentity) { handModification = modified; sequence = modified.Output; }
+                            }
+                            catch (ArgumentException) { return new TeamBattleTransition(state, CardDuelError.InvalidHandEffectModifier); }
+                        }
                         var bound = BattleEffectBinder.Bind(state, actor, sequence, requestedTargets, targetBindings, hand,
                             enemy ? AttackOrigin.EnemyAttack : hand == null ? AttackOrigin.Other : AttackOrigin.ScoredHand);
                         if (bound.Error != CardDuelError.None) return new TeamBattleTransition(state, bound.Error);
@@ -406,7 +419,7 @@ namespace PokerEngine
                         }
                     }
                     catch (ArgumentException) { return new TeamBattleTransition(state, CardDuelError.InvalidDamageModifier); }
-                    effectPlan = new BattleEffectPlan(ruleVersion, explanation, effects);
+                    effectPlan = new BattleEffectPlan(ruleVersion, explanation, effects, handModification);
                 }
                 if (action == ScoredDuelActionKind.Discard)
                 {
