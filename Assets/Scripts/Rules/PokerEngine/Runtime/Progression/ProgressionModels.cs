@@ -5,10 +5,10 @@ using System.Runtime.Serialization;
 
 namespace PokerEngine
 {
-    public enum UnlockKind { Card = 1, Joker, StartingDeck, Character, GameMode, Difficulty, Challenge }
+    public enum UnlockKind { Card = 1, Relic = 2, StartingDeck, Character, GameMode, Difficulty, Challenge }
     public enum RunOutcome { Won = 1, Lost, Abandoned }
 
-    /// <summary>Permission to use a definition in future Runs; never a card or Joker instance.</summary>
+    /// <summary>Permission to use a definition in future Runs; never a card or Relic instance.</summary>
     [DataContract]
     public sealed class ProgressionUnlock : IEquatable<ProgressionUnlock>
     {

@@ -10,7 +10,7 @@
 
 - 继续使用现有德州识别方式；只计入构成当前牌型的牌，高牌只计最高点数那张。筹码配置不改变牌型大小或选牌结果。
 - 例如 K♠、K♥、A♣ 识别一对，A 不计分，默认结果 `(10 + 10 + 10) × 2 = 60`。
-- 每张计分牌按配置基础筹码 + 牌实例 BonusPoints 计算；保留现有逐牌倍率、重触发和有序 Joker 扩展。失效牌仍组成牌型但不触发逐牌贡献。
+- 每张计分牌按配置基础筹码 + 牌实例 BonusPoints 计算；保留现有逐牌倍率、重触发和有序 Relic 扩展。失效牌仍组成牌型但不触发逐牌贡献。
 - 最终得分由独立 ScoredHandDamageProfile 构建的 IScoredHandDamageRule 用于攻击；默认 EqualScoreDamageRule 完整保留得分作为基础伤害。攻击强度与目标承伤分别由战斗侧 IAttackDamageModifier / IIncomingDamageModifier 扩展，不反向修改筹码倍率。这里的“筹码”是计分值，不进入角色资源或德州下注钱包。
 
 ## 默认值
@@ -39,7 +39,7 @@
 - `Poker.Scoring.Runtime` 的 PokerScoreProfile 是 Unity 编辑资产。`Build()` 创建独立快照，无场景/角色状态依赖。
 - `BattleRulesProfile` 引用该资产；SingleBattleHost 创建 CardDuelEngine 时注入快照，双方 Demo 共用 DemoBattleRules。Host 不存牌型数值。修改配置只影响下一场战局。
 - Run 可将同一资产的 `Build()` 结果传给现有 `RunFlowAsset.BuildDefinition(scoreProfile)` / RunDefinition；Run 继续持有自己的 HandLevels。Run 编辑器与等级自动带入单局的适配尚未扩展。
-- 单局通过 PlayerBattleProfile 配置每个牌型等级，开战后由该玩家的 BattlePlayerRules.HandLevels 持有快照；候选预览与正式计分读取同一玩家等级。此公共资产仅保存基础值与每级增长公式。Joker 列表仍为空，旧 Draw/Run 链路保持各自等级模型。
+- 单局通过 PlayerBattleProfile 配置每个牌型等级，开战后由该玩家的 BattlePlayerRules.HandLevels 持有快照；候选预览与正式计分读取同一玩家等级。此公共资产仅保存基础值与每级增长公式。Relic 列表仍为空，旧 Draw/Run 链路保持各自等级模型。
 - ICardScoreSource 提供只读基础筹码查询，PlayerBattleActor 读取战局快照。手牌和牌库提示优先消费该来源，不在 CardZone 或美术里维护计分配置。不支持该协议的旧宿主沿用默认查询。
 - ScoringCard.BasePoints / PointsPerTrigger 是默认表的便捷查询；使用自定义配置时必须调用 GetBasePoints(profile.CardPoints) / GetPointsPerTrigger(profile.CardPoints)。正式结算已使用后者。
 

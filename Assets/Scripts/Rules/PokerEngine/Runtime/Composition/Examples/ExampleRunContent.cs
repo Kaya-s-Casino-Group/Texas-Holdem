@@ -31,11 +31,11 @@ namespace PokerEngine
                 new RunRewardNodeDefinition("final-reward")
             }), RunFloorKind.Boss));
             var offers = sample.Definition.ShopPool.Select(sample.Offer).ToArray();
-            var jokers = offers.Where(o => o.Kind == RunOfferKind.Joker).Select(o => o.JokerId)
-                .Concat(sample.Definition.StartingJokers).Distinct().Select(sample.Joker);
+            var relics = offers.Where(o => o.Kind == RunOfferKind.Relic).Select(o => o.RelicId)
+                .Concat(sample.Definition.StartingRelics).Distinct().Select(sample.Relic);
             var definition = new RunDefinition(drawMode ? "run.draw.four-floors.1" : "run.holdem.four-floors.1", sample.Definition.Scoring,
-                floors, sample.Definition.ShopPool, sample.Definition.RewardPool, sample.Definition.StartingJokers);
-            return new RunContent(sample.CardsAndAbilities, definition, jokers, offers, sample.StartingDeckVersion, sample.StartingDeck);
+                floors, sample.Definition.ShopPool, sample.Definition.RewardPool, sample.Definition.StartingRelics);
+            return new RunContent(sample.CardsAndAbilities, definition, relics, offers, sample.StartingDeckVersion, sample.StartingDeck);
         }
         /// <summary>A normal/elite branch that merges at a shop before the final boss.</summary>
         public static RunContent CreateBranching(bool drawMode = true)
@@ -52,11 +52,11 @@ namespace PokerEngine
                 new RunRewardNodeDefinition("final-reward")
             });
             var offers = sample.Definition.ShopPool.Select(sample.Offer).ToArray();
-            var jokers = offers.Where(o => o.Kind == RunOfferKind.Joker).Select(o => o.JokerId)
-                .Concat(sample.Definition.StartingJokers).Distinct().Select(sample.Joker);
+            var relics = offers.Where(o => o.Kind == RunOfferKind.Relic).Select(o => o.RelicId)
+                .Concat(sample.Definition.StartingRelics).Distinct().Select(sample.Relic);
             var definition = new RunDefinition(drawMode ? "run.draw.branching.1" : "run.holdem.branching.1", sample.Definition.Scoring,
-                tree, sample.Definition.ShopPool, sample.Definition.RewardPool, sample.Definition.StartingJokers);
-            return new RunContent(sample.CardsAndAbilities, definition, jokers, offers, sample.StartingDeckVersion, sample.StartingDeck);
+                tree, sample.Definition.ShopPool, sample.Definition.RewardPool, sample.Definition.StartingRelics);
+            return new RunContent(sample.CardsAndAbilities, definition, relics, offers, sample.StartingDeckVersion, sample.StartingDeck);
         }
         public static RunContent Create(bool drawMode = false)
         {
@@ -69,15 +69,15 @@ namespace PokerEngine
                     new[] { new AbilityCondition(ConditionKind.OwnerIsCurrentActor), new AbilityCondition(ConditionKind.UsesThisRoundBelow, 1) })
             };
             var catalog = new ContentCatalog(drawMode ? "roguelike.draw.example.2" : "roguelike.holdem.example.2", StandardDeck.Cards(), definitions, new StatusDefinitionId[0]);
-            var jokers = new[] {
-                new JokerDefinition("steady", new[] { new ScoreEffect(ScoreTiming.AfterCards, ScoreOperation.AddMultiplier, 4, perLevel: 2) }),
-                new JokerDefinition("double", new[] { new ScoreEffect(ScoreTiming.AfterCards, ScoreOperation.MultiplyMultiplier, 2, perLevel: 0.5m) }),
-                new JokerDefinition("growing", new[] { new ScoreEffect(ScoreTiming.AfterCards, ScoreOperation.AddPoints, 10, perGrowth: 5) }, growthPerScoredRound: 1),
-                new JokerDefinition("focus", new[] { new ScoreEffect(ScoreTiming.PerCard, ScoreOperation.AddPoints, 3, suit: Suit.Hearts) }, abilityId: CallEnergy),
-                new JokerDefinition("exchange", new ScoreEffect[0], abilityId: SwapCard),
-                new JokerDefinition("peek", new ScoreEffect[0], abilityId: PeekDeck)
+            var relics = new[] {
+                new RelicDefinition("steady", new[] { new ScoreEffect(ScoreTiming.AfterCards, ScoreOperation.AddMultiplier, 4, perLevel: 2) }),
+                new RelicDefinition("double", new[] { new ScoreEffect(ScoreTiming.AfterCards, ScoreOperation.MultiplyMultiplier, 2, perLevel: 0.5m) }),
+                new RelicDefinition("growing", new[] { new ScoreEffect(ScoreTiming.AfterCards, ScoreOperation.AddPoints, 10, perGrowth: 5) }, growthPerScoredRound: 1),
+                new RelicDefinition("focus", new[] { new ScoreEffect(ScoreTiming.PerCard, ScoreOperation.AddPoints, 3, suit: Suit.Hearts) }, abilityId: CallEnergy),
+                new RelicDefinition("exchange", new ScoreEffect[0], abilityId: SwapCard),
+                new RelicDefinition("peek", new ScoreEffect[0], abilityId: PeekDeck)
             };
-            var offers = jokers.Select(j => new RunOfferDefinition("buy-" + j.Id, RunOfferKind.Joker, 5, jokerId: j.Id)).Concat(new[] {
+            var offers = relics.Select(j => new RunOfferDefinition("buy-" + j.Id, RunOfferKind.Relic, 5, relicId: j.Id)).Concat(new[] {
                 new RunOfferDefinition("enhance", RunOfferKind.EnhanceCard, 3, amount: 10, multiplier: 1),
                 new RunOfferDefinition("retrigger", RunOfferKind.EnhanceCard, 4, retriggers: 1),
                 new RunOfferDefinition("duplicate", RunOfferKind.DuplicateCard, 3),
@@ -88,7 +88,7 @@ namespace PokerEngine
             var definition = new RunDefinition(drawMode ? "run.draw.2" : "run.holdem-score.2", ScoreProfile.Default,
                 new[] { new RunStageDefinition("opening", 200, 6), new RunStageDefinition("middle", 800, 8), new RunStageDefinition("final", 2000, 8) },
                 offers.Select(o => o.Id), offers.Select(o => o.Id), new[] { "steady", "focus" });
-            return new RunContent(catalog, definition, jokers, offers, "standard52.1", StandardDeck.Cards().Select(card => card.Id));
+            return new RunContent(catalog, definition, relics, offers, "standard52.1", StandardDeck.Cards().Select(card => card.Id));
         }
         public static AbilityRuntime Runtime(bool drawMode = false)
         {

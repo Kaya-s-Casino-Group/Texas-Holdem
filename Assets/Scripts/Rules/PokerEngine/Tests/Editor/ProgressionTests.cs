@@ -9,13 +9,13 @@ namespace PokerEngine.Tests
     {
         private static readonly ParticipantId Player = new ParticipantId("player");
         private static ProgressionUnlock BaseDeck => new ProgressionUnlock(UnlockKind.StartingDeck, "deck.basic");
-        private static ProgressionUnlock Joker => new ProgressionUnlock(UnlockKind.Joker, "joker.steady");
+        private static ProgressionUnlock Relic => new ProgressionUnlock(UnlockKind.Relic, "joker.steady");
         private static ProgressionDefinition Definition(long firstCost = 5) => new ProgressionDefinition("meta.1", new[] { "shards", "tokens" },
-            new[] { BaseDeck, Joker, new ProgressionUnlock(UnlockKind.Card, "joker.steady") },
-            new[] { new ProgressionUpgradeDefinition("starting-gold", "shards", new[] { firstCost, 10L }, Joker) }, new[] { BaseDeck });
+            new[] { BaseDeck, Relic, new ProgressionUnlock(UnlockKind.Card, "joker.steady") },
+            new[] { new ProgressionUpgradeDefinition("starting-gold", "shards", new[] { firstCost, 10L }, Relic) }, new[] { BaseDeck });
         private static RunSettlement Settlement(string id = "run-1", long shards = 20, RunOutcome outcome = RunOutcome.Won, string mode = "draw") =>
             new RunSettlement(id, Player, outcome, mode, "flow.1", "deck.1", 500, outcome == RunOutcome.Won ? 4 : 2, 4,
-                new ProgressionReward(new[] { new ProgressionCurrency("shards", shards) }, new[] { Joker }));
+                new ProgressionReward(new[] { new ProgressionCurrency("shards", shards) }, new[] { Relic }));
         private static PlayerProgressionState Copy(PlayerProgressionState source, ProgressionCurrency[] wallet = null,
             ProgressionUpgradeLevel[] upgrades = null, ProgressionUnlock[] unlocks = null, RunSettlement[] settlements = null, long? revision = null) =>
             new PlayerProgressionState(source.PlayerId, revision ?? source.Revision, source.RulesVersion, source.RulesFingerprint,
@@ -26,14 +26,14 @@ namespace PokerEngine.Tests
             var definition = Definition(); var state = new ProgressionEngine(definition).Create(Player);
             ProgressionValidator.Validate(state, definition);
             Assert.AreEqual(0, state.Revision); Assert.AreEqual(0, state.Balance("shards")); Assert.AreEqual(0, state.UpgradeLevel("starting-gold"));
-            Assert.IsTrue(state.IsUnlocked(BaseDeck)); Assert.IsFalse(state.IsUnlocked(Joker)); Assert.AreEqual(0, state.Statistics.RunsFinished);
-            Assert.IsFalse(typeof(PlayerProgressionState).GetProperties().Any(p => p.Name == "Deck" || p.Name == "Jokers" || p.Name == "Encounter"));
+            Assert.IsTrue(state.IsUnlocked(BaseDeck)); Assert.IsFalse(state.IsUnlocked(Relic)); Assert.AreEqual(0, state.Statistics.RunsFinished);
+            Assert.IsFalse(typeof(PlayerProgressionState).GetProperties().Any(p => p.Name == "Deck" || p.Name == "Relics" || p.Name == "Encounter"));
         }
 
         [Test] public void SettlementGrantsOnceAndStatisticsAreDerivedWithoutDoubleCounting()
         {
             var engine = new ProgressionEngine(Definition()); var initial = engine.Create(Player); var first = engine.Settle(initial, Settlement(), 0, Player);
-            Assert.AreEqual(20, first.Balance("shards")); Assert.IsTrue(first.IsUnlocked(Joker)); Assert.AreEqual(1, first.Statistics.Wins);
+            Assert.AreEqual(20, first.Balance("shards")); Assert.IsTrue(first.IsUnlocked(Relic)); Assert.AreEqual(1, first.Statistics.Wins);
             Assert.AreSame(first, engine.Settle(first, Settlement(), 0, Player));
             var lost = engine.Settle(first, Settlement("run-2", 3, RunOutcome.Lost), first.Revision, Player);
             var abandoned = engine.Settle(lost, Settlement("run-3", 0, RunOutcome.Abandoned, "holdem"), lost.Revision, Player);
@@ -56,14 +56,28 @@ namespace PokerEngine.Tests
         {
             var definition = Definition(); var engine = new ProgressionEngine(definition);
             var reward = new ProgressionReward(new[] { new ProgressionCurrency("shards", 8), new ProgressionCurrency("tokens", 3) },
-                new[] { Joker, new ProgressionUnlock(UnlockKind.Card, Joker.Id) });
+                new[] { Relic, new ProgressionUnlock(UnlockKind.Card, Relic.Id) });
             var original = new RunSettlement("run", Player, RunOutcome.Won, "draw", "flow", "deck", 10, 1, 1, reward);
             var state = engine.Settle(engine.Create(Player), original, 0, Player);
             var reordered = new RunSettlement("run", Player, RunOutcome.Won, "draw", "flow", "deck", 10, 1, 1,
                 new ProgressionReward(reward.Currencies.Reverse(), reward.Unlocks.Reverse()));
             Assert.AreSame(state, engine.Settle(state, reordered, 0, Player));
-            Assert.IsTrue(state.IsUnlocked(new ProgressionUnlock(UnlockKind.Card, Joker.Id)));
+            Assert.IsTrue(state.IsUnlocked(new ProgressionUnlock(UnlockKind.Card, Relic.Id)));
             Assert.AreEqual(3, state.Unlocks.Count);
+        }
+
+        [Test] public void PreRenameProgressionSnapshotPreservesRelicUnlockFingerprintAndSettlementIdempotency()
+        {
+            var definition = Definition();
+            Assert.AreEqual("a3545eb42c95da1330adfc4d66e4e1758a18ccab3d7f46c5b7abb8115b9aa18b", definition.Fingerprint);
+            var restored = ProgressionSnapshotCodec.Deserialize(LegacyRelicSnapshots.Progression, definition);
+            Assert.IsTrue(restored.IsUnlocked(Relic)); Assert.IsTrue(restored.IsUnlocked(BaseDeck));
+            Assert.AreEqual(15, restored.Balance("shards")); Assert.AreEqual(1, restored.UpgradeLevel("starting-gold"));
+            Assert.AreEqual(LegacyRelicSnapshots.Progression, ProgressionSnapshotCodec.Serialize(restored, definition));
+            var engine = new ProgressionEngine(definition); Assert.AreSame(restored, engine.Settle(restored, Settlement(), 0, Player));
+            var upgraded = engine.PurchaseUpgrade(restored, "starting-gold", restored.Revision, Player);
+            Assert.AreEqual(5, upgraded.Balance("shards")); Assert.AreEqual(2, upgraded.UpgradeLevel("starting-gold"));
+            Assert.IsTrue(upgraded.IsUnlocked(Relic)); Assert.AreEqual(1, upgraded.Statistics.RunsFinished);
         }
 
         [Test] public void PermanentUpgradeSpendsMetaCurrencyAndPersistsAcrossSnapshot()
@@ -131,36 +145,36 @@ namespace PokerEngine.Tests
                 new ProgressionReward(new[] { new ProgressionCurrency("run-gold", 10) }));
             Assert.Throws<StateValidationException>(() => engine.Settle(initial, unknown, 0, Player));
             var unknownUnlock = new RunSettlement("unknown-unlock", Player, RunOutcome.Won, "draw", "flow", "deck", 1, 1, 1,
-                new ProgressionReward(unlocks: new[] { new ProgressionUnlock(UnlockKind.Joker, "unknown") }));
+                new ProgressionReward(unlocks: new[] { new ProgressionUnlock(UnlockKind.Relic, "unknown") }));
             Assert.Throws<StateValidationException>(() => engine.Settle(initial, unknownUnlock, 0, Player));
             Assert.AreEqual(long.MaxValue, full.Balance("shards")); Assert.IsEmpty(initial.Settlements);
         }
 
         [Test] public void DefinitionCopiesInputsAndFingerprintsCatalogSemantics()
         {
-            var costs = new[] { 5L, 10L }; var unlocks = new[] { BaseDeck, Joker };
+            var costs = new[] { 5L, 10L }; var unlocks = new[] { BaseDeck, Relic };
             var definition = new ProgressionDefinition("meta", new[] { "shards" }, unlocks,
                 new[] { new ProgressionUpgradeDefinition("upgrade", "shards", costs) }, new[] { BaseDeck });
             costs[0] = 999; unlocks[1] = BaseDeck;
-            Assert.AreEqual(5, definition.Upgrade("upgrade").LevelCosts[0]); Assert.IsTrue(definition.Unlocks.Contains(Joker));
-            var reordered = new ProgressionDefinition("meta", new[] { "shards" }, new[] { Joker, BaseDeck }, definition.Upgrades, new[] { BaseDeck });
+            Assert.AreEqual(5, definition.Upgrade("upgrade").LevelCosts[0]); Assert.IsTrue(definition.Unlocks.Contains(Relic));
+            var reordered = new ProgressionDefinition("meta", new[] { "shards" }, new[] { Relic, BaseDeck }, definition.Upgrades, new[] { BaseDeck });
             Assert.AreEqual(definition.Fingerprint, reordered.Fingerprint);
             Assert.Throws<ArgumentException>(() => new ProgressionDefinition("meta", new[] { "x", "x" }, new ProgressionUnlock[0]));
-            Assert.Throws<ArgumentException>(() => new ProgressionDefinition("meta", new[] { "x" }, new[] { BaseDeck }, initialUnlocks: new[] { Joker }));
-            Assert.Throws<ArgumentException>(() => new ProgressionReward(unlocks: new[] { Joker, Joker }));
+            Assert.Throws<ArgumentException>(() => new ProgressionDefinition("meta", new[] { "x" }, new[] { BaseDeck }, initialUnlocks: new[] { Relic }));
+            Assert.Throws<ArgumentException>(() => new ProgressionReward(unlocks: new[] { Relic, Relic }));
             Assert.Throws<ArgumentException>(() => new RunSettlement("x", Player, RunOutcome.Won, "draw", "flow", "deck", 1, 1, 4, new ProgressionReward()));
         }
 
         [Test] public void RealRunCompletionProducesSeparateMetaSettlementAndActiveRunNeedsExplicitAbandonment()
         {
             var sample = ExampleRunContent.Create(true); var offers = sample.Definition.ShopPool.Select(sample.Offer).ToArray();
-            var jokers = offers.Where(o => o.Kind == RunOfferKind.Joker).Select(o => o.JokerId).Distinct().Select(sample.Joker);
+            var relics = offers.Where(o => o.Kind == RunOfferKind.Relic).Select(o => o.RelicId).Distinct().Select(sample.Relic);
             var definition = new RunDefinition("one-floor", sample.Definition.Scoring, new[] { new RunStageDefinition("battle", 1, 6) },
                 sample.Definition.ShopPool, sample.Definition.RewardPool);
-            var content = new RunContent(sample.CardsAndAbilities, definition, jokers, offers, sample.StartingDeckVersion, sample.StartingDeck);
+            var content = new RunContent(sample.CardsAndAbilities, definition, relics, offers, sample.StartingDeckVersion, sample.StartingDeck);
             var adapter = new DrawRunAdapter(ExampleRunContent.Runtime(true)); var engine = new RunEngine<DrawState, DrawCommand, DrawEvent>(content, adapter);
             var state = engine.Create("real-run", Player, HmacDeckShuffler.FromSeed(new byte[32]));
-            var reward = new ProgressionReward(new[] { new ProgressionCurrency("shards", 7) }, new[] { Joker });
+            var reward = new ProgressionReward(new[] { new ProgressionCurrency("shards", 7) }, new[] { Relic });
             Assert.Throws<InvalidOperationException>(() => RunProgressionSettlement.Create(state, content, adapter, reward));
             var abandoned = RunProgressionSettlement.Create(state, content, adapter, new ProgressionReward(), abandoned: true);
             Assert.AreEqual(RunOutcome.Abandoned, abandoned.Outcome);
@@ -182,7 +196,7 @@ namespace PokerEngine.Tests
             var profile = meta.Settle(meta.Create(Player), settlement, 0, Player);
             Assert.AreEqual(RunOutcome.Won, settlement.Outcome); Assert.AreEqual(1, settlement.CompletedFloors);
             Assert.AreEqual(state.Scores.Sum(s => s.Total), profile.Statistics.BestScore);
-            Assert.AreEqual(7, profile.Balance("shards")); Assert.IsTrue(profile.IsUnlocked(Joker));
+            Assert.AreEqual(7, profile.Balance("shards")); Assert.IsTrue(profile.IsUnlocked(Relic));
             Assert.Throws<InvalidOperationException>(() => RunProgressionSettlement.Create(state, content, adapter, reward, abandoned: true));
             Assert.AreEqual(RunPhase.Completed, state.Phase);
         }

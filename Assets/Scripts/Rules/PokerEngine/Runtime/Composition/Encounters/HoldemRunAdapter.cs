@@ -30,9 +30,9 @@ namespace PokerEngine
     {
         [DataMember(Order = 1, IsRequired = true)] public MatchState Match { get; private set; }
         [DataMember(Order = 2)] public ScoreResult LastScore { get; private set; }
-        [DataMember(Order = 3, IsRequired = true)] public bool GrowJokers { get; private set; }
-        public HoldemEncounterState(MatchState match, ScoreResult lastScore = null, bool growJokers = false)
-        { Match = match ?? throw new ArgumentNullException(nameof(match)); LastScore = lastScore; GrowJokers = growJokers; }
+        [DataMember(Name = "GrowJokers", Order = 3, IsRequired = true)] public bool GrowRelics { get; private set; }
+        public HoldemEncounterState(MatchState match, ScoreResult lastScore = null, bool growRelics = false)
+        { Match = match ?? throw new ArgumentNullException(nameof(match)); LastScore = lastScore; GrowRelics = growRelics; }
     }
     public sealed class HoldemRunAdapter : IRunEncounter<HoldemEncounterState, MatchCommand, MatchEvent>
     {
@@ -80,7 +80,7 @@ namespace PokerEngine
             else if (!isSystem && command is AbilityCommand) result = engine.Execute(state.Match, (AbilityCommand)command, actor);
             else return new RunEncounterTransition<HoldemEncounterState, MatchEvent>(state, error: "InvalidCommandRoute");
             if (!result.Accepted) return new RunEncounterTransition<HoldemEncounterState, MatchEvent>(state, error: result.Error.ToString());
-            var next = new HoldemEncounterState(result.State, state.LastScore, state.GrowJokers);
+            var next = new HoldemEncounterState(result.State, state.LastScore, state.GrowRelics);
             if (Checkpoint(next.Match) && next.LastScore?.Id != next.Match.CurrentHand.Settlement.SettlementId) next = Score(c, next.Match);
             return new RunEncounterTransition<HoldemEncounterState, MatchEvent>(next, result.Events);
         }
@@ -101,7 +101,7 @@ namespace PokerEngine
                 });
                 score = ScoreEngine.Evaluate(settlement.SettlementId, c.Content.Definition.Scoring, evaluation.Category,
                     c.HandLevels.First(l => l.Category == evaluation.Category).Level, cards,
-                    c.Jokers.Select(j => new ScoringJoker(j.Id, j.Level, j.Growth, c.Content.Joker(j.DefinitionId).ScoreEffects)));
+                    c.Relics.Select(j => new ScoringRelic(j.Id, j.Level, j.Growth, c.Content.Relic(j.DefinitionId).ScoreEffects)));
             }
             else score = ScoreEngine.Fixed(settlement.SettlementId, won && evaluation == null ? settings.FoldWinPoints : 0);
             return new HoldemEncounterState(match, score, scored);
@@ -111,15 +111,15 @@ namespace PokerEngine
             var m = state.Match; bool checkpoint = Checkpoint(m);
             return new RunEncounterProgress(m.Random, checkpoint,
                 exhausted: checkpoint && (m.Status == MatchStatus.Completed || m.Participants.Single(p => p.Id == c.PlayerId).Resources.Chips == Chips.Zero),
-                score: checkpoint ? state.LastScore : null, growJokers: checkpoint && state.GrowJokers,
-                jokers: checkpoint ? RunAbilityLoadout.Export(m.Abilities) : null);
+                score: checkpoint ? state.LastScore : null, growRelics: checkpoint && state.GrowRelics,
+                relics: checkpoint ? RunAbilityLoadout.Export(m.Abilities) : null);
         }
         public HoldemEncounterState SyncBuild(RunEncounterContext c, HoldemEncounterState state)
         {
             var m = state.Match;
             return new HoldemEncounterState(new MatchState(m.Id, m.Revision, m.Definition, m.Status, m.Table, m.Participants,
                 RunAbilityLoadout.Sync(c, m.Abilities), m.Statuses, m.CurrentHand, m.ActiveDecision, m.Resolution, m.Random, m.AbilityWindow, m.Knowledge),
-                state.LastScore, state.GrowJokers);
+                state.LastScore, state.GrowRelics);
         }
         public LegalBettingActions GetLegalActions(RunEncounterContext context, HoldemEncounterState state, ParticipantId player) => Engine(context).GetLegalActions(state.Match, player);
         public IReadOnlyList<MatchEvent> FilterEvents(HoldemEncounterState state, IEnumerable<MatchEvent> events, ParticipantId viewer)
@@ -135,7 +135,7 @@ namespace PokerEngine
                 m.Definition.Mode != MatchMode.Solo || m.Definition.MaxSeats != 2 || m.Definition.SmallBlind != d.SmallBlind || m.Definition.BigBlind != d.BigBlind ||
                 m.Participants.Count != 2 || !m.Participants.Any(p => p.Id == c.PlayerId) || !m.Participants.Any(p => p.Id == OpponentId))
                 throw new StateValidationException("InvalidHoldemEncounter", "Encounter.Definition");
-            if (state.GrowJokers && state.LastScore == null || Checkpoint(m) && state.LastScore?.Id != m.CurrentHand.Settlement.SettlementId)
+            if (state.GrowRelics && state.LastScore == null || Checkpoint(m) && state.LastScore?.Id != m.CurrentHand.Settlement.SettlementId)
                 throw new StateValidationException("InvalidHoldemCheckpoint", "Encounter.LastScore");
             if (state.LastScore != null && !state.LastScore.Id.StartsWith(c.EncounterId + "/", StringComparison.Ordinal))
                 throw new StateValidationException("InvalidHoldemCheckpoint", "Encounter.LastScore");

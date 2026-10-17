@@ -69,7 +69,7 @@ graph TD
 
 多人战局的出牌转换由各自 `BattlePlayerRules.DamagePolicy` 持有，TeamBattle 按出牌者读取，纯 C# 默认 EqualScoreDamageRule。公共 BattleRules 不再接受出牌伤害参数；旧 ScoredDuelDefinition 适配入口将转换规则转入默认玩家规则。转换协议位于 Composition：`IScoredHandDamageRule.Resolve(ScoredHandDamageContext)` 接收得分、来源和目标策略选出的目标，返回不可变 `DamagePlan`。默认 `EqualScoreDamageRule` 将得分等额作为每个目标的基础伤害。引擎验证来源、目标及规则版本后，调用 `IAttackDamageModifier`，再交给 `CombatEngine` 进行 `IIncomingDamageModifier`、格挡与生命结算；两个修正接口默认原值通过。`DamageModification` 与 CombatEvent 保留各阶段真实输入、输出、版本和说明。攻击修正读取攻击开始时的状态，目标承伤读取该原子批次的当前状态；怪物直接产生基础伤害请求并共用两个修正接口。`CardDuelEngine.PreviewPlay` 复用正式 `Execute`，调用方只读取返回结果而不提交新状态；所有注入策略须遵守纯函数约定。Unity 独立配置与中文只读验算面板见 `Assets/Scripts/Gameplay/SingleBattle/README.md`。
 
-个人牌型等级：`BattlePlayerRules.HandLevels` 持有不可变 `BattleHandLevels`，构造时复制每个 HandCategory 对应的正整数等级；未知/重复类别及非正等级拒绝，缺省类别补 1 级。Unity 在 PlayerBattleProfile 中逐牌型配置并于开战时生成快照，纯 C# 可用 `handLevels:` 注入。CardDuelEngine.PreviewHand 判型后从动作玩家读取对应等级，候选 UI、PreviewPlay 与正式 Play 共用；回合状态继续保留同一玩家 Rules。ScoreProfile 仅保存共享基础筹码、倍率、每级增长及单牌规则，不含个人等级。Joker 与战斗内等级升级尚未接入，旧 Draw/Run 的等级模型不变。
+个人牌型等级：`BattlePlayerRules.HandLevels` 持有不可变 `BattleHandLevels`，构造时复制每个 HandCategory 对应的正整数等级；未知/重复类别及非正等级拒绝，缺省类别补 1 级。Unity 在 PlayerBattleProfile 中逐牌型配置并于开战时生成快照，纯 C# 可用 `handLevels:` 注入。CardDuelEngine.PreviewHand 判型后从动作玩家读取对应等级，候选 UI、PreviewPlay 与正式 Play 共用；回合状态继续保留同一玩家 Rules。ScoreProfile 仅保存共享基础筹码、倍率、每级增长及单牌规则，不含个人等级。遗物与战斗内等级升级尚未接入，旧 Draw/Run 的等级模型不变。
 
 角色伤害规则由 `BattleActorDamageRules` 表达，随各自 `BattlePlayerSetup` / `BattleEnemySetup` 输入，并保留在玩家回合状态与怪物阵容中。TeamBattleEngine 按攻击 Source 选攻击修正、按实际 Target 分派承伤修正，CombatEngine 仍提供该原子批次的最新只读上下文；不把这些规则放入序列化生命状态。`BattleRules` 不再持有攻击/承伤修正，双方 Setup 未指定角色修正规则时构建 Identity 快照。基础 ScaledAttackDamageModifier / ScaledIncomingDamageModifier 位于 Combat，支持倍率及固定增减，默认 1 倍、0 增减。Unity 作者配置位于角色 Profile，公共 BattleRulesProfile 不新增修正槽位。
 
@@ -196,7 +196,7 @@ next = next.RemoveEffects(CardEffects.Ineffective); // 强化/塑封保留，禁
 
 WithEffects / AddEffects / RemoveEffects / WithDisabled 返回新实例；未知位（含负数掩码）在构造和存档校验时拒绝。DeckEntry 可携带 Effects / IsDisabled，CardDuel 创建也保留这些属性与 Run 来源，玩家出/弃拒绝禁用牌；德州初始化和洗牌后重分配 ID 会保留这些属性。任意 CardZone 转移接口仍仅处理成员/顺序；Draw 的打出与丢弃命令统一检查所选牌的卡牌权限，在转移前原子拒绝包含禁用牌的请求。能力强制移牌不被这项玩家操作限制隐式禁止。
 
-ScoringCard 携带 Effects。失效牌仍进入完整牌型判定，其逐牌点数、加分/加倍率/乘倍率、重触发及逐牌小丑计分都跳过；牌型基础分、等级和 BeforeCards / AfterCards 的整手效果照常结算。Draw 与 Holdem 的 Run 计分适配器均传递实例牌效果；两种玩法的牌型分类器不因失效而过滤卡牌。
+ScoringCard 携带 Effects。失效牌仍进入完整牌型判定，其逐牌点数、加分/加倍率/乘倍率、重触发及逐牌遗物计分都跳过；牌型基础分、等级和 BeforeCards / AfterCards 的整手效果照常结算。Draw 与 Holdem 的 Run 计分适配器均传递实例牌效果；两种玩法的牌型分类器不因失效而过滤卡牌。
 
 `CardZone.Cards` 是唯一位置事实，Deck 最后一个元素为牌顶。牌区 Kind 使用稳定字符串：通用 `CardZoneKinds` 包含 Deck/Hand/Played/Discard/Removed；德州专属 HoleCards/Board/Burn 在 `HoldemZoneKinds`。基础层允许可选控制者，具体玩法校验控制者及区域数量，不把“两张底牌”写进共享模型。
 
@@ -310,17 +310,17 @@ Draw 使用相同 AbilityExecutor、选择状态、费用、修正与生命周�
 
 ## 计分模块
 
-ScoreEngine 不知道下注、底池、胜者、商店或关卡。输入由模式明确选择：牌型、牌型等级、实际计分的 ScoringCard 子集、有序 ScoringJoker。
+ScoreEngine 不知道下注、底池、胜者、商店或关卡。输入由模式明确选择：牌型、牌型等级、实际计分的 ScoringCard 子集、有序 ScoringRelic。
 
 1. 从 ScoreProfile 取得牌型等级的基础分和基础倍率。
-2. 按小丑槽位顺序执行 BeforeCards。
-3. 逐张计分牌：点数 + 强化 → 卡牌加倍率/乘倍率 → 小丑 PerCard；重触发重复这一过程。
-4. 按小丑顺序执行 AfterCards。
+2. 按遗物槽位顺序执行 BeforeCards。
+3. 逐张计分牌：点数 + 强化 → 卡牌加倍率/乘倍率 → 遗物 PerCard；重触发重复这一过程。
+4. 按遗物顺序执行 AfterCards。
 5. `Total = floor(Points × Multiplier)`，最后取整；long 分数、decimal 倍率，检查溢出。
 
-支持零张到 512 张显式计分牌（零张可供纯基础分/小丑规则），最多 32 个小丑、每牌额外 8 次重触发、总计最多 1,024 步。花色/点数/牌型条件及等级/成长系数由 ScoreEffect 表达。
+支持零张到 512 张显式计分牌（零张可供纯基础分/遗物规则），最多 32 个遗物、每牌额外 8 次重触发、总计最多 1,024 步。花色/点数/牌型条件及等级/成长系数由 ScoreEffect 表达。
 
-点数分 2–10 按点数、J/Q/K 为 10、A 为 11。`31 × (1+4) × 2 = 310` 与 `31 × (1×2+4) = 186` 不同，故小丑顺序属于持久构筑。每步保存来源、操作量及操作后值，供动画解释。`ScoreEngine.Validate` 重算 trace 验证存档内部一致性，不证明历史行为真实性。
+点数分 2–10 按点数、J/Q/K 为 10、A 为 11。`31 × (1+4) × 2 = 310` 与 `31 × (1×2+4) = 186` 不同，故遗物顺序属于持久构筑。每步保存来源、操作量及操作后值，供动画解释。`ScoreEngine.Validate` 重算 trace 验证存档内部一致性，不证明历史行为真实性。
 
 ### 单牌点数查询与悬停数据
 
@@ -336,7 +336,7 @@ ScoreEngine 不知道下注、底池、胜者、商店或关卡。输入由模�
 | `CanScore` | 是否被失效状态禁止逐牌计分；不代表必然属于本手计分子集 |
 | `BonusMultiplier / MultiplierFactor / Retriggers` | 已有倍率修正和额外重触发次数，可单独展示 |
 
-失效牌仍返回原基础/额外/单次点数，CanScore 为 false。PointsPerTrigger 不含倍率、重复触发、小丑、牌型基础分，也不是“这张牌本次最终贡献”；实际贡献以 `ScoreResult.Steps` 为准。禁用控制能否提交，失效控制逐牌计分，两者继续分离。强化/塑封标记本身不产生隐含数值。PointsPerTrigger 溢出会抛出 OverflowException，BasePoints 与 BonusPoints 仍可单独读取；引擎保留先过滤失效、再计算数值的行为。
+失效牌仍返回原基础/额外/单次点数，CanScore 为 false。PointsPerTrigger 不含倍率、重复触发、遗物、牌型基础分，也不是“这张牌本次最终贡献”；实际贡献以 `ScoreResult.Steps` 为准。禁用控制能否提交，失效控制逐牌计分，两者继续分离。强化/塑封标记本身不产生隐含数值。PointsPerTrigger 溢出会抛出 OverflowException，BasePoints 与 BonusPoints 仍可单独读取；引擎保留先过滤失效、再计算数值的行为。
 
 ```csharp
 long printedPoints = CardScoreRules.GetBasePoints(definition);
@@ -355,7 +355,9 @@ bool canScore = info.CanScore;              // 失效时 false，仍可显示 11
 
 ## Run 与玩法组装
 
-Run 负责牌组、小丑槽位/副本数、等级/成长、牌型等级、金币，以及楼层序列、每层统一节点与分支路线。状态、命令和事件通过泛型保持强类型，运行时不 switch 玩法，也不保存任意 JSON/object 代替状态。
+规则 API 的局内构筑统一称为遗物（`Relic`），使用 `RunRelic`、`RelicDefinition`、`ScoringRelic`、`DrawRelic` 和 `UnlockKind.Relic`。此次仅调整源码命名；为兼容既有存档，`RunJoker` 数据契约名、JSON 的 `Jokers` / `GrowJokers` 字段、`/joker/` 实例 ID 前缀及既有枚举数值、规则版本和指纹保持不变。这些旧线协议名称是刻意保留，不能随 API 批量替换。固定旧版 Run、德州与局外成长快照覆盖读取、继续执行及原格式回写。
+
+Run 负责牌组、遗物槽位/副本数、等级/成长、牌型等级、金币，以及楼层序列、每层统一节点与分支路线。状态、命令和事件通过泛型保持强类型，运行时不 switch 玩法，也不保存任意 JSON/object 代替状态。
 
 ### 完整 Run 与多楼层
 
@@ -386,7 +388,7 @@ var definition = new RunDefinition("run.floors.1", ScoreProfile.Default,
 
 `state.FloorIndex` 是当前层的零基索引；`state.Floors` 保存所有层的 FloorId、Kind、Nodes 和 IsCompleted，`state.Nodes` 是当前层节点进度的便捷访问。之前的层必须全部完成，未来层必须未访问；存档会校验每一层的身份、图版本及指纹，未来层也提前固定。每层可重复使用相同节点 Id、Stage.Id，身份按楼层区分，计分仍使用跨层唯一的战斗索引。
 
-金币、牌组、小丑、等级、成长和积分历史属于整局 Run，换层不重置；只有进入新的战斗节点才重置该战斗的分数、回合预算和模式状态。下一层若从商店或奖励开始，上一场冻结对局会继续保留，直到新战斗启动。`RunEncounterContext.Floor/FloorIndex` 指向当前或最近那场战斗所属的层，因此在跨层后的非战斗节点中可能不同于 `state.FloorIndex`。
+金币、牌组、遗物、等级、成长和积分历史属于整局 Run，换层不重置；只有进入新的战斗节点才重置该战斗的分数、回合预算和模式状态。下一层若从商店或奖励开始，上一场冻结对局会继续保留，直到新战斗启动。`RunEncounterContext.Floor/FloorIndex` 指向当前或最近那场战斗所属的层，因此在跨层后的非战斗节点中可能不同于 `state.FloorIndex`。
 
 旧的 stages 或单 NodeTree 构造仍可用，会包装为一个默认楼层。`RunDefinition.NodeTree` 仅用于单层配置，多层配置必须访问 `definition.Floors[index].NodeTree`；对多层配置读取该兼容属性会拒绝。
 
@@ -454,7 +456,7 @@ var run = engine.Create("draw-run-001", new ParticipantId("player"));
 
 RunAction.PlayerEncounter/SystemEncounter 包装具体命令；玩家/系统权限由 adapter 转交模式引擎验证。商店购买、卖出、升级、排序及刷新仍使用普通 RunAction。删除牌的下限来自 adapter（默认德州 12，Draw 8），不再写死在 Run 中。起始牌组及其版本由 RunContent 显式注入。
 
-下注筹码、商店金币和关卡积分独立。默认德州每关重新提供 1,000/1,000 筹码和配置能量，10/20 盲注；Run 不包含这些德州字段。能力 portable Memory 只迁移 Encounter counters，实体 marks 不跨对局。`build.level/build.growth` 从 RunJoker 的唯一事实注入，不当作另一份可迁移构筑存档。
+下注筹码、商店金币和关卡积分独立。默认德州每关重新提供 1,000/1,000 筹码和配置能量，10/20 盲注；Run 不包含这些德州字段。能力 portable Memory 只迁移 Encounter counters，实体 marks 不跨对局。`build.level/build.growth` 从 RunRelic 的唯一事实注入，不当作另一份可迁移构筑存档。
 
 ```text
 Preparing → 入口节点 → 完成 → 单后继：下一节点
@@ -463,7 +465,7 @@ Preparing → 入口节点 → 完成 → 单后继：下一节点
             战斗失败 → Failed
 ```
 
-只有未完成效果/选择全部关闭的 checkpoint 才能记分或离开关卡。达到积分目标发奖励金币，耗尽轮数或对局无法继续则失败。历史得分在进入奖励前冻结；商店卖小丑、改牌和后续成长不会重算旧得分。
+只有未完成效果/选择全部关闭的 checkpoint 才能记分或离开关卡。达到积分目标发奖励金币，耗尽轮数或对局无法继续则失败。历史得分在进入奖励前冻结；商店卖遗物、改牌和后续成长不会重算旧得分。
 
 RunSnapshotCodec<TState> schema **v4** 将当前楼层、每层节点路线及完成记录、构筑、当前具体玩法状态、报价、随机和积分账本一起保存，固定内容/Run/计分/起始牌组及玩法身份、规则和存档版本，并保存所有楼层的节点图版本与配置指纹。16 MiB/500,000 对象上限；旧 Run v1–v3 明确拒绝，无迁移器。反序列化后同时校验楼层身份/顺序、图身份、路径连接、完成顺序、已访问战斗的积分及注入 adapter 的模式状态；修改楼层顺序、任一层图连接、节点顺序或战斗配置即使沿用同一个版本也不能读取旧路径。
 
@@ -497,7 +499,7 @@ EncounterProgress 是粗粒度进度投影，EncounterResult 是含各参与者�
 
 ## 跨 Run 局外成长
 
-`PlayerProgressionState` 是完整 Run 之外的玩家成长对象，包含玩家身份/Revision、成长规则版本/指纹、局外货币、类型化内容解锁、永久升级等级及幂等 Run 结算记录。统计由结算记录汇总，可按玩法查询；不保存本局卡牌或小丑实例。
+`PlayerProgressionState` 是完整 Run 之外的玩家成长对象，包含玩家身份/Revision、成长规则版本/指纹、局外货币、类型化内容解锁、永久升级等级及幂等 Run 结算记录。统计由结算记录汇总，可按玩法查询；不保存本局卡牌或遗物实例。
 
 静态 `ProgressionDefinition` 与策划地图、单局 RunDefinition 分开。`ProgressionEngine.Settle` 接受宿主解析后的结果/奖励，按 RunId 去重；`PurchaseUpgrade` 校验解锁、等级与货币后扣费。Composition 的 `RunProgressionSettlement.Create` 从经校验的 Run 提取终局摘要，不自动转移 Run 金币或构筑。
 

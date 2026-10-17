@@ -16,12 +16,12 @@ namespace PokerEngine.Tests
             var offers = new[] {
                 new RunOfferDefinition("enhance", RunOfferKind.EnhanceCard, 2, amount: 7, multiplier: 1),
                 new RunOfferDefinition("remove", RunOfferKind.RemoveCard, 2),
-                new RunOfferDefinition("double", RunOfferKind.Joker, 2, jokerId: "double")
+                new RunOfferDefinition("double", RunOfferKind.Relic, 2, relicId: "double")
             };
             return new RunContent(sample.CardsAndAbilities, new RunDefinition("integration.run.1", ScoreProfile.Default,
                 new[] { new RunStageDefinition("first", target, 4), new RunStageDefinition("second", target, 4) },
                 offers.Select(o => o.Id), new[] { "enhance" }, starters ?? new[] { "growing", "focus" }, startingGold: 50, offerCount: 3),
-                ids.Select(sample.Joker), offers, sample.StartingDeckVersion, sample.StartingDeck);
+                ids.Select(sample.Relic), offers, sample.StartingDeckVersion, sample.StartingDeck);
         }
         private sealed class DrawFixture
         {
@@ -63,6 +63,27 @@ namespace PokerEngine.Tests
             public string Offer(string id) => State.Offers.Single(o => o.DefinitionId == id).Id;
         }
 
+        [Test] public void PreRenameHoldemSnapshotKeepsGrowRelicsAndFrozenScoresAcrossShopActions()
+        {
+            var content = Content(false, starters: new[] { "growing", "steady" });
+            var adapter = new HoldemRunAdapter(ExampleRunContent.Runtime(), new HoldemEncounterSettings(winnersOnly: false));
+            var state = RunSnapshotCodec<HoldemEncounterState>.Deserialize(LegacyRelicSnapshots.Holdem, content, adapter);
+            Assert.IsTrue(state.Encounter.GrowRelics); Assert.AreEqual(RunPhase.Reward, state.Phase);
+            Assert.AreEqual(664, state.StageScore); Assert.AreEqual(664, state.Encounter.LastScore.Total);
+            Assert.AreEqual(1, state.Relics.Single(item => item.DefinitionId == "growing").Growth);
+            Assert.AreEqual("legacy-holdem/joker/start/0", state.Relics[0].Id);
+            Assert.AreEqual(LegacyRelicSnapshots.Holdem, RunSnapshotCodec<HoldemEncounterState>.Serialize(state, content, adapter));
+            var engine = new RunEngine<HoldemEncounterState, MatchCommand, MatchEvent>(content, adapter);
+            var skipped = engine.Execute(state, new RunCommand<MatchCommand>("shop", state.Revision, RunAction.SkipReward), Player);
+            Assert.IsTrue(skipped.Accepted); Assert.AreEqual(RunPhase.Shop, skipped.State.Phase);
+            var bought = engine.Execute(skipped.State, new RunCommand<MatchCommand>("buy", skipped.State.Revision, RunAction.Buy,
+                skipped.State.Offers.Single(offer => offer.DefinitionId == "double").Id), Player);
+            Assert.IsTrue(bought.Accepted); Assert.AreEqual(3, bought.State.Relics.Count);
+            StringAssert.Contains("/joker/", bought.State.Relics.Single(item => item.DefinitionId == "double").Id);
+            Assert.AreEqual(664, bought.State.Scores.Single().Total); Assert.IsTrue(bought.State.Encounter.GrowRelics);
+            Assert.AreEqual(1, bought.State.Relics.Single(item => item.DefinitionId == "growing").Growth);
+        }
+
         [Test] public void SameRunBuildAndRewardsComposeWithBothEncounterModes()
         {
             var content = Content(false, starters: new[] { "growing", "steady" });
@@ -73,7 +94,7 @@ namespace PokerEngine.Tests
             var h = holdem.Create("same-run", Player, HmacDeckShuffler.FromSeed(new byte[32]));
             var d = draw.Create("same-run", Player, HmacDeckShuffler.FromSeed(new byte[32]));
             CollectionAssert.AreEqual(h.Deck.Select(c => c.Id), d.Deck.Select(c => c.Id));
-            CollectionAssert.AreEqual(h.Jokers.Select(j => j.DefinitionId), d.Jokers.Select(j => j.DefinitionId));
+            CollectionAssert.AreEqual(h.Relics.Select(j => j.DefinitionId), d.Relics.Select(j => j.DefinitionId));
             var hs = holdem.ExecuteSystem(h, new RunCommand<MatchCommand>("start", h.Revision, RunAction.StartEncounter)); Assert.IsTrue(hs.Accepted); h = hs.State;
             int guard = 0;
             while (h.Phase == RunPhase.Encounter)
@@ -95,28 +116,28 @@ namespace PokerEngine.Tests
             Assert.IsTrue(played.Accepted, played.Error + "/" + played.EncounterError); d = played.State;
             Assert.AreEqual(RunPhase.Reward, h.Phase); Assert.AreEqual(RunPhase.Reward, d.Phase);
             Assert.AreEqual(h.Gold, d.Gold); Assert.AreEqual(h.RoundsScored, d.RoundsScored);
-            Assert.AreEqual(0, h.Jokers.First().Growth, "Fold wins follow the Holdem score policy.");
-            Assert.AreEqual(1, d.Jokers.First().Growth, "Draw scoring advances the same Run growth mechanism.");
+            Assert.AreEqual(0, h.Relics.First().Growth, "Fold wins follow the Holdem score policy.");
+            Assert.AreEqual(1, d.Relics.First().Growth, "Draw scoring advances the same Run growth mechanism.");
         }
         [Test] public void DrawRunCompletesRewardsShopUpgradeAndNextEncounterAfterRestoring()
         {
             var f = new DrawFixture(); f.Run(RunAction.StartEncounter); f.Draw(DrawAction.Play, f.Hand.Take(1));
             Assert.AreEqual(RunPhase.Reward, f.State.Phase); Assert.AreEqual(55, f.State.Gold);
-            Assert.AreEqual(1, f.State.Jokers.Single(j => j.DefinitionId == "growing").Growth);
-            Assert.AreEqual(1, f.State.Jokers.Single(j => j.DefinitionId == "focus").Memory.CounterValue("calls"));
+            Assert.AreEqual(1, f.State.Relics.Single(j => j.DefinitionId == "growing").Growth);
+            Assert.AreEqual(1, f.State.Relics.Single(j => j.DefinitionId == "focus").Memory.CounterValue("calls"));
             string enhanced = f.State.Deck[0].Id;
             f.Run(RunAction.ChooseReward, f.State.Offers.Single().Id, enhanced);
             f.Run(RunAction.Buy, f.Offer("double"));
-            string doubleId = f.State.Jokers.Single(j => j.DefinitionId == "double").Id;
-            f.Run(RunAction.UpgradeJoker, doubleId); f.Run(RunAction.ReorderJokers, order: f.State.Jokers.Reverse().Select(j => j.Id));
+            string doubleId = f.State.Relics.Single(j => j.DefinitionId == "double").Id;
+            f.Run(RunAction.UpgradeRelic, doubleId); f.Run(RunAction.ReorderRelics, order: f.State.Relics.Reverse().Select(j => j.Id));
             f.Restore(); f.Run(RunAction.StartEncounter);
             Assert.AreEqual(1, f.State.StageIndex); Assert.AreEqual(0, f.State.StageScore);
             Assert.AreEqual(7, f.State.Encounter.Cards.Single(c => c.Card.OriginId == enhanced).BonusPoints);
-            Assert.AreEqual(2, f.State.Jokers.Single(j => j.Id == doubleId).Level);
+            Assert.AreEqual(2, f.State.Relics.Single(j => j.Id == doubleId).Level);
             f.Draw(DrawAction.Play, f.Hand.Take(1)); f.Run(RunAction.SkipReward); f.Restore();
             Assert.AreEqual(RunPhase.Completed, f.State.Phase); Assert.AreEqual(2, f.State.Scores.Count);
-            Assert.AreEqual(2, f.State.Jokers.Single(j => j.DefinitionId == "growing").Growth);
-            Assert.AreEqual(2, f.State.Jokers.Single(j => j.DefinitionId == "focus").Memory.CounterValue("calls"));
+            Assert.AreEqual(2, f.State.Relics.Single(j => j.DefinitionId == "growing").Growth);
+            Assert.AreEqual(2, f.State.Relics.Single(j => j.DefinitionId == "focus").Memory.CounterValue("calls"));
         }
         [Test] public void DrawRunRestoresPaidCardSelectionAndResumesWithoutDoubleCost()
         {
@@ -143,22 +164,22 @@ namespace PokerEngine.Tests
         [Test] public void DrawCheckpointFreezesScoreBeforeGrowthAndDoesNotHarvestOnContinue()
         {
             var f = new DrawFixture(target: 100000); f.Run(RunAction.StartEncounter); f.Draw(DrawAction.Play, f.Hand.Take(1));
-            var growing = f.State.Jokers.Single(j => j.DefinitionId == "growing"); var first = f.State.Scores.Single();
+            var growing = f.State.Relics.Single(j => j.DefinitionId == "growing"); var first = f.State.Scores.Single();
             Assert.AreEqual(10, first.Steps.Single(s => s.SourceId == growing.Id).Amount); Assert.AreEqual(1, growing.Growth);
             f.Restore(); Assert.AreEqual(first.Total, f.State.Encounter.Scores.Single().Total);
             f.Draw(DrawAction.Continue, system: true); Assert.AreEqual(1, f.State.RoundsScored); Assert.AreEqual(first.Total, f.State.StageScore);
             f.Draw(DrawAction.Play, f.Hand.Take(1));
             Assert.AreEqual(15, f.State.Scores[1].Steps.Single(s => s.SourceId == growing.Id).Amount);
-            Assert.AreEqual(2, f.State.Jokers.Single(j => j.Id == growing.Id).Growth); Assert.AreEqual(50, f.State.Gold);
+            Assert.AreEqual(2, f.State.Relics.Single(j => j.Id == growing.Id).Growth); Assert.AreEqual(50, f.State.Gold);
         }
-        [Test] public void DrawShopCanRemoveScoringCardAndSellSourceJokerWithoutRecomputingHistory()
+        [Test] public void DrawShopCanRemoveScoringCardAndSellSourceRelicWithoutRecomputingHistory()
         {
             var f = new DrawFixture(); f.Run(RunAction.StartEncounter); var selected = f.Hand[0];
             string origin = f.State.Encounter.Cards.Single(c => c.Card.Id == selected).Card.OriginId;
             f.Draw(DrawAction.Play, new[] { selected }); var recorded = f.State.Scores.Single();
-            string growing = f.State.Jokers.Single(j => j.DefinitionId == "growing").Id;
+            string growing = f.State.Relics.Single(j => j.DefinitionId == "growing").Id;
             f.Run(RunAction.SkipReward); f.Run(RunAction.Sell, growing); f.Run(RunAction.Buy, f.Offer("remove"), origin); f.Restore();
-            Assert.IsFalse(f.State.Deck.Any(c => c.Id == origin)); Assert.IsFalse(f.State.Jokers.Any(j => j.Id == growing));
+            Assert.IsFalse(f.State.Deck.Any(c => c.Id == origin)); Assert.IsFalse(f.State.Relics.Any(j => j.Id == growing));
             Assert.IsTrue(f.State.Encounter.Cards.Any(c => c.Card.OriginId == origin));
             Assert.AreEqual(recorded.Total, f.State.Scores.Single().Total); Assert.AreEqual(recorded.Total, f.State.Encounter.Scores.Single().Total);
             Assert.IsTrue(f.State.Scores.Single().Steps.Any(s => s.SourceId == growing));
@@ -200,10 +221,10 @@ namespace PokerEngine.Tests
             f.Run(RunAction.StartEncounter); f.Draw(DrawAction.Play, f.Hand.Take(1));
             Assert.AreEqual(DrawPhase.AfterScoring, f.State.Encounter.Phase); Assert.Greater(f.State.Encounter.Score, 0);
             Assert.AreEqual(0, f.State.StageScore); Assert.AreEqual(0, f.State.Scores.Count); Assert.AreEqual(RunPhase.Encounter, f.State.Phase);
-            Assert.AreEqual(0, f.State.Jokers.Single(j => j.DefinitionId == "growing").Growth); f.Restore();
+            Assert.AreEqual(0, f.State.Relics.Single(j => j.DefinitionId == "growing").Growth); f.Restore();
             f.Draw(DrawAction.Timeout, system: true);
             Assert.AreEqual(RunPhase.Reward, f.State.Phase); Assert.AreEqual(1, f.State.Scores.Count);
-            Assert.AreEqual(1, f.State.Jokers.Single(j => j.DefinitionId == "growing").Growth);
+            Assert.AreEqual(1, f.State.Relics.Single(j => j.DefinitionId == "growing").Growth);
         }
     }
 }

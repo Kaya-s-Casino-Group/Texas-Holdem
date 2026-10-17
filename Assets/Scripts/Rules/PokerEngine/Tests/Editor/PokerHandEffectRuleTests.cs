@@ -22,7 +22,7 @@ namespace PokerEngine.Tests
         {
             var scoring = new ScoreProfile("poker-effects.score.1", Enum.GetValues(typeof(HandCategory)).Cast<HandCategory>()
                 .Select(item => new HandScoreRule(item, points, multiplier)));
-            var score = ScoreEngine.Evaluate("poker-effects/score", scoring, category, 1, Array.Empty<ScoringCard>(), Array.Empty<ScoringJoker>());
+            var score = ScoreEngine.Evaluate("poker-effects/score", scoring, category, 1, Array.Empty<ScoringCard>(), Array.Empty<ScoringRelic>());
             var combat = new CombatState("poker-effects", 0, new[] {
                 new CombatantDefinition("hero", 100).Create(Player, "player", 40),
                 new CombatantDefinition("foe", 100).Create(Enemy, "enemy")

@@ -4,6 +4,13 @@
 
 ## [Unreleased]
 
+### 2026-10-17 — 规则层遗物命名统一为 Relic
+
+- 将 JokerDefinition、RunJoker、RunJokerRuntime、ScoringJoker、DrawJoker 及关联属性、命令和解锁类型统一为 Relic；同步 Run、Draw、Holdem、计分、成长和流程资产接入引用。
+- 保留旧快照的 Jokers / GrowJokers 字段、RunJoker 数据契约名、枚举数值、内容 ID 与实例 ID 前缀，快照和规则版本不变；流程资产通过 FormerlySerializedAs 读取旧字段。
+- 同步测试和接口文档，补充重命名前快照的恢复与继续结算、旧成长指纹及旧流程资产字段兼容测试；现有计分、遗物成长、购买升级与弃牌行为不变。
+- 验证：规则全量回归 724 通过、1 项既有计分断言失败（预期 72、实际 52，已在重命名前代码复现）；随后新增兼容测试及相关 Run / Holdem / Progression 测试 35/35 通过。Unity 流程资产测试 9/9 通过，脚本编译零警告。
+
 ### 2026-10-17 — 自研脚本与模块资源统一目录
 
 - 自研 C# 集中到 `Assets/Scripts`，按 Rules / Gameplay / Presentation / Infrastructure / Tools 分组，模块内部保留 Runtime / Editor / Tests。

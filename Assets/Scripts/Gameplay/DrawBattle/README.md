@@ -21,7 +21,7 @@
 - DrawState.Cards 表示本战局牌组，World.Zones 保存当前位置。常规出/弃/补牌只移动原身份，所有牌区（含移除区）总量等于本战局牌组数量；弃牌并不等于从 Run.Deck 永久删牌。永久构筑变更必须通过 Run 层明确提交。
 - StartBattle 仅供独立战局验证，固定创建标准 52 张和新的随机种子，场景预览只提供美术映射。已绑定外部命令提交委托时拒绝调用此入口，避免 Run 牌组被意外重置。正式 Run 进入下一场或读档使用 StartEncounter 绑定该 Run 已创建/恢复的状态。
 
-Run 中的 Joker 构筑由 RunState.Jokers 单独持有，不混入这套扑克牌。完整 Run 场景宿主仍待接入；以上牌组传递已由纯 C# Run/DrawRunAdapter 支持。
+Run 中的 Relic 构筑由 RunState.Relics 单独持有，不混入这套扑克牌。完整 Run 场景宿主仍待接入；以上牌组传递已由纯 C# Run/DrawRunAdapter 支持。
 
 ## 数据及按钮流
 

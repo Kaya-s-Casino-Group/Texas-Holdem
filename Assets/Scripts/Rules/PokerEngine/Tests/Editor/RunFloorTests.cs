@@ -30,7 +30,7 @@ namespace PokerEngine.Tests
             var sample = ExampleRunContent.Create(true);
             var definition = new RunDefinition("floors.run.1", ScoreProfile.Default, floors, new[] { "enhance" }, new[] { "gold" },
                 new[] { "growing" }, startingGold: 50);
-            return new RunContent(sample.CardsAndAbilities, definition, new[] { sample.Joker("growing") },
+            return new RunContent(sample.CardsAndAbilities, definition, new[] { sample.Relic("growing") },
                 new[] { sample.Offer("enhance"), sample.Offer("gold"), sample.Offer("pair-level") }, sample.StartingDeckVersion, sample.StartingDeck);
         }
         private sealed class Fixture
@@ -92,7 +92,7 @@ namespace PokerEngine.Tests
             Assert.AreEqual(RunNodeKind.Boss, RunEncounterContext.From(f.State, f.Content).Node.Kind);
             Assert.AreEqual(4, f.State.HandLevels.Single(l => l.Category == HandCategory.OnePair).Level);
             f.Play(); Assert.AreEqual(RunPhase.Reward, f.State.Phase); Assert.IsFalse(f.State.Floors[3].IsCompleted);
-            Assert.AreEqual(7, f.State.Scores.Count); Assert.AreEqual(7, f.State.Jokers.Single().Growth);
+            Assert.AreEqual(7, f.State.Scores.Count); Assert.AreEqual(7, f.State.Relics.Single().Growth);
             var gold = f.State.Gold; f.Apply(RunAction.ChooseReward, item: f.State.Offers.Single().Id); f.Restore();
             Assert.AreEqual(gold + 3, f.State.Gold); Assert.AreEqual(RunPhase.Completed, f.State.Phase);
             Assert.IsTrue(f.State.Floors.All(s => s.IsCompleted));

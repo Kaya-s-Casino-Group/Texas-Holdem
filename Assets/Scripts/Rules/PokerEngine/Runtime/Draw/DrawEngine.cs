@@ -208,7 +208,7 @@ namespace PokerEngine
                     var cards = pending.Select(id => source.Cards.Single(c => c.Card.Id == id).WithFace(engine.runtime.Resolve(World, engine.catalog, id))).ToArray();
                     lastPattern = PokerHandClassifier.Classify(cards.Select(c => new EffectiveCard(new CardInstanceId(c.Id), c.Face.Rank, c.Face.Suit)));
                     var score = ScoreEngine.EvaluatePattern(source.Id + "/score/" + scores.Count, engine.definition.Scoring, lastPattern,
-                        engine.definition.Level(lastPattern.Category), cards, engine.definition.Jokers.Select(j => j.At(scores.Count)));
+                        engine.definition.Level(lastPattern.Category), cards, engine.definition.Relics.Select(j => j.At(scores.Count)));
                     score = engine.runtime.ModifyOutcome(World, engine.catalog, score); ScoreEngine.Validate(score);
                     if (score.Id != source.Id + "/score/" + scores.Count) throw new ArgumentException("Score modifiers must preserve result identity.");
                     scores.Add(score); Score = checked(Score + score.Total); HandsRemaining--; Emit(DrawEventKind.Scored, pending, score);

@@ -33,7 +33,7 @@ namespace PokerEngine.Tests
             Assert.AreEqual(20, card.BonusPoints); Assert.AreEqual(31, card.PointsPerTrigger);
             Assert.AreEqual(2, card.BonusMultiplier); Assert.AreEqual(1.5m, card.MultiplierFactor); Assert.AreEqual(2, card.Retriggers);
             Assert.IsTrue(card.CanScore);
-            var result = ScoreEngine.Evaluate("score", ScoreProfile.Default, HandCategory.HighCard, 1, new[] { card }, new ScoringJoker[0]);
+            var result = ScoreEngine.Evaluate("score", ScoreProfile.Default, HandCategory.HighCard, 1, new[] { card }, new ScoringRelic[0]);
             var additions = result.Steps.Where(step => step.CardId == card.Id && step.Operation == ScoreOperation.AddPoints).ToArray();
             Assert.AreEqual(3, additions.Length);
             Assert.IsTrue(additions.All(step => step.Amount == card.PointsPerTrigger));
@@ -49,8 +49,8 @@ namespace PokerEngine.Tests
             var card = new ScoringCard("inactive", face, 20, 3, 2, 2, effects);
             Assert.AreEqual(11, card.BasePoints); Assert.AreEqual(20, card.BonusPoints); Assert.AreEqual(31, card.PointsPerTrigger);
             Assert.IsFalse(card.CanScore);
-            var joker = new ScoringJoker("per-card", 1, 0, new[] { new ScoreEffect(ScoreTiming.PerCard, ScoreOperation.AddPoints, 100) });
-            var result = ScoreEngine.Evaluate("score", ScoreProfile.Default, HandCategory.HighCard, 1, new[] { card }, new[] { joker });
+            var relic = new ScoringRelic("per-card", 1, 0, new[] { new ScoreEffect(ScoreTiming.PerCard, ScoreOperation.AddPoints, 100) });
+            var result = ScoreEngine.Evaluate("score", ScoreProfile.Default, HandCategory.HighCard, 1, new[] { card }, new[] { relic });
             Assert.IsEmpty(result.Steps); Assert.AreEqual(result.BasePoints, result.Points); Assert.AreEqual(result.BaseMultiplier, result.Multiplier);
             Assert.AreEqual(effects, card.Effects); Assert.AreEqual(31, card.PointsPerTrigger);
             // Markers alone do not invent enhancement values.
@@ -66,7 +66,7 @@ namespace PokerEngine.Tests
                 new ScoringCard("ace", new CardFace(Rank.Ace, Suit.Clubs), bonusPoints: 20)
             };
             var pattern = PokerHandClassifier.Classify(cards.Select(card => new EffectiveCard(new CardInstanceId(card.Id), card.Face.Rank, card.Face.Suit)));
-            var result = ScoreEngine.EvaluatePattern("score", ScoreProfile.Default, pattern, 1, cards, new ScoringJoker[0]);
+            var result = ScoreEngine.EvaluatePattern("score", ScoreProfile.Default, pattern, 1, cards, new ScoringRelic[0]);
             Assert.IsTrue(cards[2].CanScore); Assert.AreEqual(31, cards[2].PointsPerTrigger);
             CollectionAssert.AreEquivalent(new[] { "q1", "q2" }, result.Steps.Select(step => step.CardId));
             Assert.AreEqual(result.BasePoints + 20, result.Points);
@@ -78,9 +78,9 @@ namespace PokerEngine.Tests
             Assert.AreEqual(11, card.BasePoints); Assert.AreEqual(long.MaxValue, card.BonusPoints);
             Assert.Throws<OverflowException>(() => { var unused = card.PointsPerTrigger; });
             Assert.Throws<OverflowException>(() => ScoreEngine.Evaluate("score", ScoreProfile.Default, HandCategory.HighCard, 1,
-                new[] { card }, new ScoringJoker[0]));
+                new[] { card }, new ScoringRelic[0]));
             var inactive = new ScoringCard(card.Id, card.Face, card.BonusPoints, effects: CardEffects.Ineffective);
-            var result = ScoreEngine.Evaluate("skip", ScoreProfile.Default, HandCategory.HighCard, 1, new[] { inactive }, new ScoringJoker[0]);
+            var result = ScoreEngine.Evaluate("skip", ScoreProfile.Default, HandCategory.HighCard, 1, new[] { inactive }, new ScoringRelic[0]);
             Assert.IsEmpty(result.Steps); Assert.AreEqual(result.BasePoints, result.Points);
         }
     }

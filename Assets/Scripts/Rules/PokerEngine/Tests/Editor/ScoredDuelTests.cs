@@ -26,7 +26,7 @@ namespace PokerEngine.Tests
             var cards = faces.Select((face, i) => new EffectiveCard(new CardInstanceId("card" + i), face.Rank, face.Suit)).ToArray();
             var pattern = PokerHandClassifier.Classify(cards);
             var score = ScoreEngine.EvaluatePattern(engine.NextScoreId(state), ScoreProfile.Default, pattern, 1,
-                faces.Select((face, i) => new ScoringCard("card" + i, face)), new ScoringJoker[0]);
+                faces.Select((face, i) => new ScoringCard("card" + i, face)), new ScoringRelic[0]);
             var result = engine.ResolveScoredHand(state, 0, score);
             Assert.That(result.Accepted, Is.True); Assert.That(result.Events.Single().Effect.Amount, Is.EqualTo(score.Total / 10));
             Assert.That(result.State.Scores.Single(), Is.SameAs(score)); Assert.That(result.State.Phase, Is.EqualTo(ScoredDuelPhase.AwaitingEnemyAction));

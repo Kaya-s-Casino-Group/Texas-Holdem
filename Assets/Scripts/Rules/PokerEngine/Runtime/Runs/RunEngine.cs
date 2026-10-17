@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace PokerEngine
 {
-    public enum RunAction { StartEncounter = 1, PlayerEncounter, SystemEncounter, ChooseReward, SkipReward, Buy, Sell, UpgradeJoker, ReorderJokers, Reroll,
+    public enum RunAction { StartEncounter = 1, PlayerEncounter, SystemEncounter, ChooseReward, SkipReward, Buy, Sell, UpgradeRelic = 8, ReorderRelics = 9, Reroll,
         StartRun, CompleteNode, ChooseNextNode }
     public sealed class RunCommand<TCommand> where TCommand : class
     {
@@ -70,9 +70,10 @@ namespace PokerEngine
         public RunState<TState> Create(string id, ParticipantId player, RandomState random = null, IEnumerable<RunCard> deck = null)
         {
             var cards = deck ?? content.StartingDeck.Select((definition, i) => new RunCard(id + "/card/" + i, definition));
-            var jokers = content.Definition.StartingJokers.Select((definition, i) => new RunJoker(id + "/joker/start/" + i, definition, charges: content.Joker(definition).Charges));
+            // Persisted instance IDs also identify ability and score sources; keep the legacy prefix.
+            var relics = content.Definition.StartingRelics.Select((definition, i) => new RunRelic(id + "/joker/start/" + i, definition, charges: content.Relic(definition).Charges));
             var state = new RunState<TState>(id, 0, content.CardsAndAbilities.Version, content.Definition.Version, content.Definition.Scoring.Version, player,
-                RunPhase.Preparing, -1, content.Definition.StartingGold, 0, 0, cards, jokers,
+                RunPhase.Preparing, -1, content.Definition.StartingGold, 0, 0, cards, relics,
                 Enum.GetValues(typeof(HandCategory)).Cast<HandCategory>().Select(c => new HandLevel(c, 1)), new RunOffer[0], new ScoreResult[0],
                 random ?? HmacDeckShuffler.CreateRandomState(), encounter.Kind, encounter.RulesVersion, encounter.SchemaVersion, content.StartingDeckVersion,
                 0, content.Definition.Floors.Select(RunFloorState.Initial));
@@ -122,7 +123,7 @@ namespace PokerEngine
         {
             private readonly RunEngine<TState, TCommand, TEvent> engine; private readonly RunState<TState> source; private readonly long revision;
             private RunPhase phase; private int stage, rounds; private long gold, score;
-            private List<RunCard> deck; private List<RunJoker> jokers; private List<HandLevel> levels; private List<RunOffer> offers;
+            private List<RunCard> deck; private List<RunRelic> relics; private List<HandLevel> levels; private List<RunOffer> offers;
             private List<ScoreResult> scores; private RandomState random; private TState encounterState;
             private string currentNode; private readonly List<string> path; private readonly List<string> completed;
             private int floorIndex; private bool floorCompleted; private readonly List<RunFloorState> floors;
@@ -132,11 +133,11 @@ namespace PokerEngine
             private RunFloorDefinition Floor => Content.Definition.Floors[floorIndex];
             private RunNodeTree Tree => Floor.NodeTree;
             private RunNodeDefinition Node => Tree.Node(currentNode);
-            private RunEncounterContext Context => new RunEncounterContext(source.Id, source.PlayerId, phase, stage, Content, deck, jokers, levels, random);
+            private RunEncounterContext Context => new RunEncounterContext(source.Id, source.PlayerId, phase, stage, Content, deck, relics, levels, random);
             public Work(RunEngine<TState, TCommand, TEvent> engine, RunState<TState> state, long revision)
             {
                 this.engine = engine; source = state; this.revision = revision; phase = state.Phase; stage = state.StageIndex;
-                rounds = state.RoundsScored; gold = state.Gold; score = state.StageScore; deck = state.Deck.ToList(); jokers = state.Jokers.ToList();
+                rounds = state.RoundsScored; gold = state.Gold; score = state.StageScore; deck = state.Deck.ToList(); relics = state.Relics.ToList();
                 levels = state.HandLevels.ToList(); offers = state.Offers.ToList(); scores = state.Scores.ToList(); random = state.Random; encounterState = state.Encounter;
                 currentNode = state.Nodes.CurrentNodeId; path = state.Nodes.Path.ToList(); completed = state.Nodes.CompletedNodeIds.ToList();
                 floorIndex = state.FloorIndex; floors = state.Floors.ToList(); floorCompleted = floors[floorIndex].IsCompleted;
@@ -145,7 +146,7 @@ namespace PokerEngine
             private string EntityId(string kind)
             {
                 string root = Id(kind), id = root; int suffix = 0;
-                while (deck.Any(c => c.Id == id) || jokers.Any(j => j.Id == id)) id = root + "/" + (++suffix);
+                while (deck.Any(c => c.Id == id) || relics.Any(j => j.Id == id)) id = root + "/" + (++suffix);
                 return id;
             }
             private void Spend(long amount) { if (amount > gold) throw new Denied(RunError.InsufficientGold); gold = checked(gold - amount); }
@@ -168,23 +169,23 @@ namespace PokerEngine
                     case RunAction.SkipReward: Require(RunPhase.Reward); EndReward(); break;
                     case RunAction.Buy: Require(RunPhase.Shop); Claim(command, false); break;
                     case RunAction.Sell:
-                        BuildPhase(); var sold = jokers.FirstOrDefault(entry => entry.Id == command.ItemId) ?? throw new Denied(RunError.InvalidTarget);
-                        gold = checked(gold + Content.Joker(sold.DefinitionId).SellPrice); jokers.Remove(sold); break;
-                    case RunAction.UpgradeJoker:
-                        BuildPhase(); int index = jokers.FindIndex(entry => entry.Id == command.ItemId); if (index < 0) throw new Denied(RunError.InvalidTarget);
-                        var j = jokers[index]; var def = Content.Joker(j.DefinitionId);
+                        BuildPhase(); var sold = relics.FirstOrDefault(entry => entry.Id == command.ItemId) ?? throw new Denied(RunError.InvalidTarget);
+                        gold = checked(gold + Content.Relic(sold.DefinitionId).SellPrice); relics.Remove(sold); break;
+                    case RunAction.UpgradeRelic:
+                        BuildPhase(); int index = relics.FindIndex(entry => entry.Id == command.ItemId); if (index < 0) throw new Denied(RunError.InvalidTarget);
+                        var j = relics[index]; var def = Content.Relic(j.DefinitionId);
                         if (j.Level >= def.MaxLevel) throw new Denied(RunError.InvalidTarget);
-                        Spend(checked(def.UpgradeCost * j.Level)); jokers[index] = Copy(j, level: j.Level + 1); break;
-                    case RunAction.ReorderJokers:
-                        BuildPhase(); if (command.Order.Count != jokers.Count || command.Order.Distinct().Count() != jokers.Count ||
-                            !new HashSet<string>(command.Order).SetEquals(jokers.Select(x => x.Id))) throw new Denied(RunError.InvalidTarget);
-                        jokers = command.Order.Select(id => jokers.First(x => x.Id == id)).ToList(); break;
+                        Spend(checked(def.UpgradeCost * j.Level)); relics[index] = Copy(j, level: j.Level + 1); break;
+                    case RunAction.ReorderRelics:
+                        BuildPhase(); if (command.Order.Count != relics.Count || command.Order.Distinct().Count() != relics.Count ||
+                            !new HashSet<string>(command.Order).SetEquals(relics.Select(x => x.Id))) throw new Denied(RunError.InvalidTarget);
+                        relics = command.Order.Select(id => relics.First(x => x.Id == id)).ToList(); break;
                     case RunAction.Reroll: Require(RunPhase.Shop); Spend(Content.Definition.RerollCost); GenerateOffers(false); break;
                     default: throw new Denied(RunError.InvalidCommand);
                 }
             }
-            private static RunJoker Copy(RunJoker j, int? level = null, long? growth = null) =>
-                new RunJoker(j.Id, j.DefinitionId, level ?? j.Level, growth ?? j.Growth, j.Charges, j.CooldownRounds, j.Memory);
+            private static RunRelic Copy(RunRelic j, int? level = null, long? growth = null) =>
+                new RunRelic(j.Id, j.DefinitionId, level ?? j.Level, growth ?? j.Growth, j.Charges, j.CooldownRounds, j.Memory);
             private void Start()
             {
                 if (phase == RunPhase.Preparing) { EnterNode(Tree.EntryNodeId); return; }
@@ -248,12 +249,12 @@ namespace PokerEngine
                 {
                     if (!progress.Score.Id.StartsWith(Context.EncounterId + "/", StringComparison.Ordinal)) throw new Denied(RunError.InvalidState);
                     Score = progress.Score; score = checked(score + Score.Total); scores.Add(Score); rounds++;
-                    if (progress.Jokers.Select(j => j.Id).Distinct().Count() != progress.Jokers.Count || progress.Jokers.Any(j => jokers.All(owned => owned.Id != j.Id)))
+                    if (progress.Relics.Select(j => j.Id).Distinct().Count() != progress.Relics.Count || progress.Relics.Any(j => relics.All(owned => owned.Id != j.Id)))
                         throw new Denied(RunError.InvalidState);
-                    jokers = jokers.Select(j => {
-                        var runtime = progress.Jokers.FirstOrDefault(a => a.Id == j.Id);
-                        long growth = checked(j.Growth + (progress.GrowJokers ? Content.Joker(j.DefinitionId).GrowthPerScoredRound : 0));
-                        return new RunJoker(j.Id, j.DefinitionId, j.Level, growth, runtime == null ? j.Charges : runtime.Charges,
+                    relics = relics.Select(j => {
+                        var runtime = progress.Relics.FirstOrDefault(a => a.Id == j.Id);
+                        long growth = checked(j.Growth + (progress.GrowRelics ? Content.Relic(j.DefinitionId).GrowthPerScoredRound : 0));
+                        return new RunRelic(j.Id, j.DefinitionId, j.Level, growth, runtime == null ? j.Charges : runtime.Charges,
                             runtime == null ? j.CooldownRounds : runtime.CooldownRounds, runtime == null ? j.Memory : runtime.Memory);
                     }).ToList();
                     encounterState = engine.encounter.SyncBuild(Context, encounterState);
@@ -280,11 +281,11 @@ namespace PokerEngine
                 var definition = Content.Offer(offer.DefinitionId); if (!reward) Spend(definition.Price);
                 switch (definition.Kind)
                 {
-                    case RunOfferKind.Joker:
-                        var joker = Content.Joker(definition.JokerId);
-                        if (jokers.Sum(j => Content.Joker(j.DefinitionId).Slots) + joker.Slots > Content.Definition.JokerCapacity ||
-                            jokers.Count(j => j.DefinitionId == joker.Id) >= joker.MaxCopies) throw new Denied(RunError.Capacity);
-                        jokers.Add(new RunJoker(EntityId("joker"), joker.Id, charges: joker.Charges)); break;
+                    case RunOfferKind.Relic:
+                        var relic = Content.Relic(definition.RelicId);
+                        if (relics.Sum(j => Content.Relic(j.DefinitionId).Slots) + relic.Slots > Content.Definition.RelicCapacity ||
+                            relics.Count(j => j.DefinitionId == relic.Id) >= relic.MaxCopies) throw new Denied(RunError.Capacity);
+                        relics.Add(new RunRelic(EntityId("joker"), relic.Id, charges: relic.Charges)); break;
                     case RunOfferKind.Gold: gold = checked(gold + definition.Amount); break;
                     case RunOfferKind.UpgradeHand:
                         int levelIndex = levels.FindIndex(l => l.Category == definition.HandCategory.Value);
@@ -311,7 +312,7 @@ namespace PokerEngine
             {
                 SaveFloor();
                 return new RunState<TState>(source.Id, revision, source.ContentVersion, source.RulesVersion, source.ScoreVersion, source.PlayerId,
-                    phase, stage, gold, score, rounds, deck, jokers, levels, offers, scores, random, source.EncounterKind,
+                    phase, stage, gold, score, rounds, deck, relics, levels, offers, scores, random, source.EncounterKind,
                     source.EncounterRulesVersion, source.EncounterSchemaVersion, source.StartingDeckVersion, floorIndex, floors, encounterState);
             }
             public IReadOnlyList<TEvent> EventsFor(ParticipantId viewer) => Guard.View(eventBatches.SelectMany(batch => batch(viewer)).ToArray());

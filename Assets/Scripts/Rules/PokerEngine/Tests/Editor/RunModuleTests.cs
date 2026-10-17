@@ -102,7 +102,7 @@ namespace PokerEngine.Tests
             var definition = new RunDefinition("run.1", ScoreProfile.Default, new[] {
                 new RunStageDefinition("first", target, 5, clearGold: 0), new RunStageDefinition("second", target, 5, clearGold: 0)
             }, new[] { "remove" }, new[] { "gold" }, new[] { "grower" }, startingGold: 50);
-            return new RunContent(catalog, definition, new[] { new JokerDefinition("grower", new ScoreEffect[0], growthPerScoredRound: 1) }, new[] {
+            return new RunContent(catalog, definition, new[] { new RelicDefinition("grower", new ScoreEffect[0], growthPerScoredRound: 1) }, new[] {
                 new RunOfferDefinition("remove", RunOfferKind.RemoveCard, 1), new RunOfferDefinition("gold", RunOfferKind.Gold, 0, amount: 1)
             }, deckVersion, cards.Select(c => c.Id));
         }
@@ -128,12 +128,27 @@ namespace PokerEngine.Tests
             public void RoundTrip() => State = RunSnapshotCodec<TestEncounter>.Deserialize(RunSnapshotCodec<TestEncounter>.Serialize(State, Content, Adapter), Content, Adapter);
         }
 
+        [Test] public void PreRenameRunSnapshotRestoresRelicsAndContinuesGrowthWithoutChangingItsWireFormat()
+        {
+            var content = Content(); var adapter = new Adapter();
+            var restored = RunSnapshotCodec<TestEncounter>.Deserialize(LegacyRelicSnapshots.Run, content, adapter);
+            Assert.AreEqual("97e6c90cceba31b0a14d56bf60ec394fc6cbdc4b46ccf22c5d30ee477a06ff33", content.Definition.NodeTree.Fingerprint);
+            Assert.AreEqual("test-run/joker/start/0", restored.Relics.Single().Id);
+            Assert.AreEqual(1, restored.Relics.Single().Growth); Assert.AreEqual(10, restored.StageScore);
+            Assert.AreEqual(LegacyRelicSnapshots.Run, RunSnapshotCodec<TestEncounter>.Serialize(restored, content, adapter));
+            var result = new RunEngine<TestEncounter, Command, Event>(content, adapter).Execute(restored,
+                new RunCommand<Command>("resume", restored.Revision, RunAction.PlayerEncounter, encounterCommand: new Command("score")), Player);
+            Assert.IsTrue(result.Accepted, result.Error.ToString()); Assert.AreEqual(20, result.State.StageScore);
+            Assert.AreEqual(2, result.State.Relics.Single().Growth); Assert.AreEqual(2, result.State.Scores.Count);
+            Assert.AreEqual(restored.Relics.Single().Id, result.State.Relics.Single().Id);
+        }
+
         [Test] public void TypedEncounterSurvivesSnapshotWithoutAnyGameplayDependency()
         {
             var f = new Fixture(); f.Apply(RunAction.StartEncounter); f.Apply(RunAction.PlayerEncounter, "score"); f.RoundTrip();
             Assert.That(f.State.Encounter.Id, Is.EqualTo("test-run/stage/0"));
             Assert.That(f.State.Encounter.LastScore.Total, Is.EqualTo(10));
-            Assert.That(f.State.Jokers.Single().Growth, Is.EqualTo(1));
+            Assert.That(f.State.Relics.Single().Growth, Is.EqualTo(1));
             f.Apply(RunAction.PlayerEncounter, "score"); Assert.That(f.State.StageScore, Is.EqualTo(20));
         }
         [Test] public void SnapshotPinsModeRulesFormatAndStartingDeckVersion()
@@ -163,7 +178,7 @@ namespace PokerEngine.Tests
             var random = HmacDeckShuffler.FromSeed(new byte[32]);
             Assert.Throws<ArgumentException>(() => new RunEncounterProgress(random, false, score: ScoreEngine.Fixed("score", 10)));
             Assert.Throws<ArgumentException>(() => new RunEncounterProgress(random, false, exhausted: true));
-            Assert.Throws<ArgumentException>(() => new RunEncounterProgress(random, true, growJokers: true));
+            Assert.Throws<ArgumentException>(() => new RunEncounterProgress(random, true, growRelics: true));
         }
         [Test] public void RepeatedCheckpointIsHarvestedOnceAcrossRestoration()
         {
@@ -171,7 +186,7 @@ namespace PokerEngine.Tests
             var repeated = f.Apply(RunAction.PlayerEncounter, "repeat");
             Assert.That(repeated.ScoredRound, Is.Null); Assert.That(f.State.Scores.Count, Is.EqualTo(1));
             Assert.That(f.State.RoundsScored, Is.EqualTo(1)); Assert.That(f.State.StageScore, Is.EqualTo(10));
-            Assert.That(f.State.Jokers.Single().Growth, Is.EqualTo(1));
+            Assert.That(f.State.Relics.Single().Growth, Is.EqualTo(1));
         }
         [Test] public void ExhaustionWithoutAScoreFailsAtAResolvedCheckpoint()
         {
@@ -224,7 +239,7 @@ namespace PokerEngine.Tests
                 new RunEncounterNodeDefinition("second", sample.Definition.Stages[1])
             });
             var definition = new RunDefinition("run.direct.1", ScoreProfile.Default, tree, sample.Definition.ShopPool, sample.Definition.RewardPool);
-            var content = new RunContent(sample.CardsAndAbilities, definition, new JokerDefinition[0],
+            var content = new RunContent(sample.CardsAndAbilities, definition, new RelicDefinition[0],
                 new[] { sample.Offer("remove"), sample.Offer("gold") }, sample.StartingDeckVersion, sample.StartingDeck);
             var adapter = new Adapter(); var engine = new RunEngine<TestEncounter, Command, Event>(content, adapter);
             var initial = engine.Create("direct", Player);

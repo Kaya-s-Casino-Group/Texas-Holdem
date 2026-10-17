@@ -220,43 +220,43 @@ namespace PokerEngine.Tests
         }
 
         private static ScoringCard[] Cards() => new[] { 2, 3, 4, 5, 7 }.Select((rank, i) => new ScoringCard("c" + i, new CardFace((Rank)rank, (Suit)(i % 4 + 1)))).ToArray();
-        [Test] public void JokerOrderChangesAddThenMultiplyResult()
+        [Test] public void RelicOrderChangesAddThenMultiplyResult()
         {
-            var plus = new ScoringJoker("plus", 1, 0, new[] { new ScoreEffect(ScoreTiming.AfterCards, ScoreOperation.AddMultiplier, 4) });
-            var times = new ScoringJoker("times", 1, 0, new[] { new ScoreEffect(ScoreTiming.AfterCards, ScoreOperation.MultiplyMultiplier, 2) });
+            var plus = new ScoringRelic("plus", 1, 0, new[] { new ScoreEffect(ScoreTiming.AfterCards, ScoreOperation.AddMultiplier, 4) });
+            var times = new ScoringRelic("times", 1, 0, new[] { new ScoreEffect(ScoreTiming.AfterCards, ScoreOperation.MultiplyMultiplier, 2) });
             var a = ScoreEngine.Evaluate("a", ScoreProfile.Default, HandCategory.HighCard, 1, Cards(), new[] { plus, times });
             var b = ScoreEngine.Evaluate("b", ScoreProfile.Default, HandCategory.HighCard, 1, Cards(), new[] { times, plus });
             Assert.That(a.Total, Is.EqualTo(260)); Assert.That(b.Total, Is.EqualTo(156));
             Assert.That(a.Steps.Last().SourceId, Is.EqualTo("times")); Assert.That(a.Points, Is.EqualTo(26));
         }
-        [Test] public void CardRetriggersAndJokerGrowthAppearInScoreTrace()
+        [Test] public void CardRetriggersAndRelicGrowthAppearInScoreTrace()
         {
             var cards = Cards(); cards[0] = new ScoringCard("c0", cards[0].Face, bonusPoints: 3, retriggers: 1);
-            var joker = new ScoringJoker("growing", 2, 3, new[] { new ScoreEffect(ScoreTiming.AfterCards, ScoreOperation.AddPoints, 5, perLevel: 2, perGrowth: 4) });
-            var result = ScoreEngine.Evaluate("score", ScoreProfile.Default, HandCategory.HighCard, 2, cards, new[] { joker });
+            var relic = new ScoringRelic("growing", 2, 3, new[] { new ScoreEffect(ScoreTiming.AfterCards, ScoreOperation.AddPoints, 5, perLevel: 2, perGrowth: 4) });
+            var result = ScoreEngine.Evaluate("score", ScoreProfile.Default, HandCategory.HighCard, 2, cards, new[] { relic });
             Assert.That(result.Points, Is.EqualTo(63)); Assert.That(result.Multiplier, Is.EqualTo(2)); Assert.That(result.Total, Is.EqualTo(126));
             Assert.That(result.Steps.Count(s => s.CardId == "c0"), Is.EqualTo(2));
         }
         [Test] public void ScoreUsesDecimalAndFloorsOnlyFinalTotal()
         {
-            var joker = new ScoringJoker("fraction", 1, 0, new[] { new ScoreEffect(ScoreTiming.AfterCards, ScoreOperation.MultiplyMultiplier, 1.5m) });
-            var score = ScoreEngine.Evaluate("fraction", ScoreProfile.Default, HandCategory.HighCard, 1, Cards(), new[] { joker });
+            var relic = new ScoringRelic("fraction", 1, 0, new[] { new ScoreEffect(ScoreTiming.AfterCards, ScoreOperation.MultiplyMultiplier, 1.5m) });
+            var score = ScoreEngine.Evaluate("fraction", ScoreProfile.Default, HandCategory.HighCard, 1, Cards(), new[] { relic });
             Assert.That(score.Total, Is.EqualTo(39)); Assert.That(score.Multiplier, Is.EqualTo(1.5m));
             Assert.Throws<OverflowException>(() => ScoreEngine.Evaluate("overflow", ScoreProfile.Default, HandCategory.HighCard, 1, Cards(),
-                new[] { new ScoringJoker("huge", 1, 0, new[] { new ScoreEffect(ScoreTiming.AfterCards, ScoreOperation.MultiplyMultiplier, decimal.MaxValue) }) }));
+                new[] { new ScoringRelic("huge", 1, 0, new[] { new ScoreEffect(ScoreTiming.AfterCards, ScoreOperation.MultiplyMultiplier, decimal.MaxValue) }) }));
         }
 
         private static RunContent RunContent(long target = 1, int hands = 4, string[] starters = null, int capacity = 5, bool growingAbility = false)
         {
             var sample = ExampleRunContent.Create(); var ids = new[] { "steady", "double", "focus", "exchange", "growing" };
-            var offers = ids.Select(id => new RunOfferDefinition("buy-" + id, RunOfferKind.Joker, 5, jokerId: id)).Concat(new[] {
+            var offers = ids.Select(id => new RunOfferDefinition("buy-" + id, RunOfferKind.Relic, 5, relicId: id)).Concat(new[] {
                 new RunOfferDefinition("enhance", RunOfferKind.EnhanceCard, 2, amount: 7, multiplier: 1),
                 new RunOfferDefinition("copy", RunOfferKind.DuplicateCard, 2), new RunOfferDefinition("remove", RunOfferKind.RemoveCard, 2),
                 new RunOfferDefinition("level", RunOfferKind.UpgradeHand, 2, handCategory: HandCategory.OnePair)
             }).ToArray();
             return new RunContent(sample.CardsAndAbilities, new RunDefinition("run.test.1", ScoreProfile.Default,
                 new[] { new RunStageDefinition("one", target, hands), new RunStageDefinition("two", target, hands) },
-                offers.Select(o => o.Id), new[] { "enhance" }, starters, capacity, startingGold: 50, offerCount: 10), ids.Select(id => growingAbility && id == "focus" ? new JokerDefinition("focus", sample.Joker(id).ScoreEffects, growthPerScoredRound: 1, abilityId: ExampleRunContent.CallEnergy) : sample.Joker(id)), offers, sample.StartingDeckVersion, sample.StartingDeck);
+                offers.Select(o => o.Id), new[] { "enhance" }, starters, capacity, startingGold: 50, offerCount: 10), ids.Select(id => growingAbility && id == "focus" ? new RelicDefinition("focus", sample.Relic(id).ScoreEffects, growthPerScoredRound: 1, abilityId: ExampleRunContent.CallEnergy) : sample.Relic(id)), offers, sample.StartingDeckVersion, sample.StartingDeck);
         }
         private sealed class R
         {
@@ -290,7 +290,7 @@ namespace PokerEngine.Tests
         {
             var r = new R(RunContent(starters: new[] { "focus" })); r.WinByFold();
             Assert.That(r.State.StageScore, Is.EqualTo(20)); Assert.That(r.State.RoundsScored, Is.EqualTo(1)); Assert.That(r.State.Gold, Is.EqualTo(55));
-            Assert.That(r.State.Jokers.Single().Memory.CounterValue("calls"), Is.EqualTo(1));
+            Assert.That(r.State.Relics.Single().Memory.CounterValue("calls"), Is.EqualTo(1));
             r.Command(RunAction.ChooseReward, r.State.Offers.Single().Id, r.State.Deck[0].Id);
             Assert.That(r.State.Phase, Is.EqualTo(RunPhase.Shop)); r.Restore(); r.WinByFold();
             r.Command(RunAction.SkipReward); Assert.That(r.State.Phase, Is.EqualTo(RunPhase.Completed)); Assert.That(r.State.Scores.Count, Is.EqualTo(2));
@@ -301,9 +301,9 @@ namespace PokerEngine.Tests
             r.Command(RunAction.Buy, r.Offer("buy-steady")); r.Command(RunAction.Buy, r.Offer("buy-double"));
             var before = r.State; var denied = r.Engine.Execute(before, new RunCommand<MatchCommand>("full", before.Revision, RunAction.Buy, r.Offer("buy-focus")), Player);
             Assert.That(denied.Error, Is.EqualTo(RunError.Capacity)); Assert.That(denied.State, Is.SameAs(before));
-            var first = r.State.Jokers[0].Id; r.Command(RunAction.UpgradeJoker, first); Assert.That(r.State.Jokers[0].Level, Is.EqualTo(2));
-            r.Command(RunAction.ReorderJokers, order: r.State.Jokers.Reverse().Select(j => j.Id).ToArray()); Assert.That(r.State.Jokers[1].Id, Is.EqualTo(first));
-            r.Command(RunAction.Sell, first); Assert.That(r.State.Jokers.Count, Is.EqualTo(1));
+            var first = r.State.Relics[0].Id; r.Command(RunAction.UpgradeRelic, first); Assert.That(r.State.Relics[0].Level, Is.EqualTo(2));
+            r.Command(RunAction.ReorderRelics, order: r.State.Relics.Reverse().Select(j => j.Id).ToArray()); Assert.That(r.State.Relics[1].Id, Is.EqualTo(first));
+            r.Command(RunAction.Sell, first); Assert.That(r.State.Relics.Count, Is.EqualTo(1));
         }
         [Test] public void DeckEnhancementCopyRemovalAndHandLevelsReachNextMatch()
         {
@@ -359,7 +359,7 @@ namespace PokerEngine.Tests
             Assert.Throws<SnapshotException>(() => RunSnapshotCodec<HoldemEncounterState>.Deserialize(json.Replace("\"EncounterSchemaVersion\":" + MatchSnapshotCodec.SchemaVersion, "\"EncounterSchemaVersion\":3"), r.Content, r.Adapter));
             Assert.Throws<SnapshotException>(() => RunSnapshotCodec<HoldemEncounterState>.Deserialize(json.Replace("run.test.1", "run.test.2"), r.Content, r.Adapter));
         }
-        [Test] public void ShowdownScoresGrowJokersAcrossSavedHandsWithoutCreatingChips()
+        [Test] public void ShowdownScoresGrowRelicsAcrossSavedHandsWithoutCreatingChips()
         {
             var r = new R(RunContent(target: 100000, starters: new[] { "growing", "focus" }, growingAbility: true), winnersOnly: false); r.Start();
             for (int hand = 0; hand < 2; hand++)
@@ -375,12 +375,12 @@ namespace PokerEngine.Tests
                     r.Bet(legal.CanCheck ? BettingAction.Check : BettingAction.Call);
                 }
                 Assert.That(r.State.Scores[hand].Total, Is.GreaterThan(0));
-                var joker = r.State.Jokers.Single(j => j.DefinitionId == "growing");
-                Assert.That(joker.Growth, Is.EqualTo(hand + 1));
-                Assert.That(r.State.Scores[hand].Steps.Single(s => s.SourceId == joker.Id).Amount, Is.EqualTo(10 + hand * 5));
+                var relic = r.State.Relics.Single(j => j.DefinitionId == "growing");
+                Assert.That(relic.Growth, Is.EqualTo(hand + 1));
+                Assert.That(r.State.Scores[hand].Steps.Single(s => s.SourceId == relic.Id).Amount, Is.EqualTo(10 + hand * 5));
                 Assert.That(r.State.Encounter.Match.Participants.Sum(p => p.Resources.Chips.Value), Is.EqualTo(2000));
                 Assert.That(r.State.Gold, Is.EqualTo(50));
-                var focus = r.State.Jokers.Single(j => j.DefinitionId == "focus");
+                var focus = r.State.Relics.Single(j => j.DefinitionId == "focus");
                 Assert.That(focus.Growth, Is.EqualTo(hand + 1));
                 Assert.That(focus.Memory.Counters.Any(c => c.Key.StartsWith("build.", StringComparison.Ordinal)), Is.False);
                 Assert.That(r.State.Encounter.Match.Abilities.Single(a => a.Id.Value == focus.Id).Memory.CounterValue("build.growth"), Is.EqualTo(hand + 1));

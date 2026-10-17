@@ -69,7 +69,7 @@ namespace PokerEngine
         public long GetBasePoints(CardPointProfile profile) => (profile ?? throw new ArgumentNullException(nameof(profile))).GetBasePoints(Face);
         public long GetPointsPerTrigger(CardPointProfile profile) => checked(GetBasePoints(profile) + BonusPoints);
         public long BonusPoints { get; }
-        /// <summary>Nominal points for one trigger: base + bonus. Excludes multipliers, retriggers, jokers and hand points.
+        /// <summary>Nominal points for one trigger: base + bonus. Excludes multipliers, retriggers, relics and hand points.
         /// Check CanScore and the hand's scoring subset before applying; ineffective cards still expose their original value.</summary>
         public long PointsPerTrigger => checked(BasePoints + BonusPoints);
         public decimal BonusMultiplier { get; }
@@ -86,15 +86,15 @@ namespace PokerEngine
             BonusPoints = bonusPoints; BonusMultiplier = bonusMultiplier; MultiplierFactor = multiplierFactor; Retriggers = retriggers;
         }
     }
-    public sealed class ScoringJoker
+    public sealed class ScoringRelic
     {
         public string Id { get; }
         public int Level { get; }
         public long Growth { get; }
         public IReadOnlyList<ScoreEffect> Effects { get; }
-        public ScoringJoker(string id, int level, long growth, IEnumerable<ScoreEffect> effects)
+        public ScoringRelic(string id, int level, long growth, IEnumerable<ScoreEffect> effects)
         {
-            Id = Guard.Text(id, nameof(id)); if (level < 1 || growth < 0) throw new ArgumentException("Invalid joker score state.");
+            Id = Guard.Text(id, nameof(id)); if (level < 1 || growth < 0) throw new ArgumentException("Invalid relic score state.");
             Level = level; Growth = growth; Effects = Guard.View(Guard.Copy(effects, nameof(effects)));
         }
     }
@@ -104,12 +104,12 @@ namespace PokerEngine
     {
         public const int MaxSteps = 1024;
         public static ScoreResult Evaluate(string id, ScoreProfile profile, HandCategory category, int handLevel,
-            IEnumerable<ScoringCard> scoringCards, IEnumerable<ScoringJoker> orderedJokers)
+            IEnumerable<ScoringCard> scoringCards, IEnumerable<ScoringRelic> orderedRelics)
         {
             if (profile == null || handLevel < 1) throw new ArgumentException("Invalid score input.");
-            var cards = Guard.Copy(scoringCards, nameof(scoringCards)); var jokers = Guard.Copy(orderedJokers, nameof(orderedJokers));
-            if (!Enum.IsDefined(typeof(HandCategory), category) || cards.Length > 512 || cards.Select(c => c.Id).Distinct().Count() != cards.Length || jokers.Length > 32 || jokers.Select(j => j.Id).Distinct().Count() != jokers.Length)
-                throw new ArgumentException("Provide the explicit scoring subset and unique joker instances.");
+            var cards = Guard.Copy(scoringCards, nameof(scoringCards)); var relics = Guard.Copy(orderedRelics, nameof(orderedRelics));
+            if (!Enum.IsDefined(typeof(HandCategory), category) || cards.Length > 512 || cards.Select(c => c.Id).Distinct().Count() != cards.Length || relics.Length > 32 || relics.Select(j => j.Id).Distinct().Count() != relics.Length)
+                throw new ArgumentException("Provide the explicit scoring subset and unique relic instances.");
             var rule = profile.Rule(category);
             long initialPoints = checked(rule.BasePoints + checked(rule.PointsPerLevel * (handLevel - 1)));
             decimal initialMultiplier = checked(rule.BaseMultiplier + rule.MultiplierPerLevel * (handLevel - 1));
@@ -122,14 +122,14 @@ namespace PokerEngine
                 steps.Add(new ScoreStep(source, card, op, amount, points, multiplier));
             };
             Action<ScoreTiming, ScoringCard> modifiers = (timing, card) => {
-                foreach (var joker in jokers)
-                foreach (var effect in joker.Effects.Where(e => e.Timing == timing && (!e.Category.HasValue || e.Category == category) &&
+                foreach (var relic in relics)
+                foreach (var effect in relic.Effects.Where(e => e.Timing == timing && (!e.Category.HasValue || e.Category == category) &&
                     (!e.Suit.HasValue || e.Suit == card?.Face.Suit) && (!e.Rank.HasValue || e.Rank == card?.Face.Rank)))
-                    apply(joker.Id, card?.Id, effect.Operation, checked(effect.Amount + effect.PerLevel * (joker.Level - 1) + effect.PerGrowth * joker.Growth));
+                    apply(relic.Id, card?.Id, effect.Operation, checked(effect.Amount + effect.PerLevel * (relic.Level - 1) + effect.PerGrowth * relic.Growth));
             };
             modifiers(ScoreTiming.BeforeCards, null);
             // Ineffective cards still participate in classification and the hand's base score.
-            // Skip their entire per-card contribution, including enhancements, retriggers and per-card joker effects.
+            // Skip their entire per-card contribution, including enhancements, retriggers and per-card relic effects.
             foreach (var card in cards.Where(c => c.CanScore))
             {
                 long pointsPerTrigger = card.GetPointsPerTrigger(profile.CardPoints);
@@ -146,7 +146,7 @@ namespace PokerEngine
         }
         /// <summary>Pattern-only scoring. Unscored kickers remain submitted cards but produce no card effects.</summary>
         public static ScoreResult EvaluatePattern(string id, ScoreProfile profile, PokerHandClassification pattern, int handLevel,
-            IEnumerable<ScoringCard> submittedCards, IEnumerable<ScoringJoker> orderedJokers)
+            IEnumerable<ScoringCard> submittedCards, IEnumerable<ScoringRelic> orderedRelics)
         {
             if (pattern == null) throw new ArgumentNullException(nameof(pattern));
             var cards = Guard.Copy(submittedCards, nameof(submittedCards));
@@ -154,7 +154,7 @@ namespace PokerEngine
                 !new HashSet<string>(cards.Select(c => c.Id), StringComparer.Ordinal).SetEquals(pattern.SubmittedCards.Select(c => c.Value)))
                 throw new ArgumentException("Scoring input must contain exactly the submitted instances.");
             var byId = cards.ToDictionary(c => c.Id, StringComparer.Ordinal);
-            return Evaluate(id, profile, pattern.Category, handLevel, pattern.ScoringCards.Select(c => byId[c.Value]), orderedJokers);
+            return Evaluate(id, profile, pattern.Category, handLevel, pattern.ScoringCards.Select(c => byId[c.Value]), orderedRelics);
         }
         public static ScoreResult Fixed(string id, long points)
         {

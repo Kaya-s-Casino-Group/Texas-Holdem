@@ -64,13 +64,13 @@ namespace PokerEngine.Tests
                 new ScoringCard("a", new CardFace(Rank.Ace, Suit.Clubs), long.MaxValue, 100, 100, 8,
                     CardEffects.Enhanced | CardEffects.Laminated | CardEffects.Ineffective),
                 new ScoringCard("b", new CardFace(Rank.Ace, Suit.Hearts), effects: CardEffects.Enhanced | CardEffects.Laminated) };
-            var joker = new ScoringJoker("joker", 1, 0, new[] { new ScoreEffect(ScoreTiming.PerCard, ScoreOperation.AddPoints, 5) });
-            var result = ScoreEngine.EvaluatePattern("score", ScoreProfile.Default, pattern, 1, cards, new[] { joker });
-            Assert.AreEqual(72, result.Total); // (pair base 20 + live ace 11 + joker 5) * 2
+            var relic = new ScoringRelic("joker", 1, 0, new[] { new ScoreEffect(ScoreTiming.PerCard, ScoreOperation.AddPoints, 5) });
+            var result = ScoreEngine.EvaluatePattern("score", ScoreProfile.Default, pattern, 1, cards, new[] { relic });
+            Assert.AreEqual(72, result.Total); // (pair base 20 + live ace 11 + relic 5) * 2
             Assert.AreEqual(2, result.Steps.Count); Assert.IsTrue(result.Steps.All(s => s.CardId == "b"));
             ScoreEngine.Validate(result);
             var allIneffective = cards.Select(c => new ScoringCard(c.Id, c.Face, effects: CardEffects.Ineffective));
-            var baseOnly = ScoreEngine.EvaluatePattern("base", ScoreProfile.Default, pattern, 1, allIneffective, new ScoringJoker[0]);
+            var baseOnly = ScoreEngine.EvaluatePattern("base", ScoreProfile.Default, pattern, 1, allIneffective, new ScoringRelic[0]);
             Assert.AreEqual(40, baseOnly.Total); Assert.AreEqual(HandCategory.OnePair, baseOnly.Category); Assert.AreEqual(0, baseOnly.Steps.Count);
         }
     }

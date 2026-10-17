@@ -26,10 +26,10 @@ namespace Poker.RunFlow.Editor
             GUILayout.Label("整局规则", EditorStyles.boldLabel);
             asset.RulesVersion = EditorGUILayout.TextField(new GUIContent("规则版本", "运行存档必须匹配此版本。"), asset.RulesVersion);
             asset.StartingGold = EditorGUILayout.LongField("起始金币", asset.StartingGold);
-            asset.JokerCapacity = EditorGUILayout.IntField("小丑槽位", asset.JokerCapacity);
+            asset.RelicCapacity = EditorGUILayout.IntField("遗物槽位", asset.RelicCapacity);
             asset.RerollCost = EditorGUILayout.LongField("商店刷新价格", asset.RerollCost);
             asset.OfferCount = EditorGUILayout.IntField("每批报价数量", asset.OfferCount);
-            DrawIds("初始小丑 ID", asset.StartingJokers);
+            DrawIds("初始遗物 ID", asset.StartingRelics);
             DrawIds("默认商品 ID", asset.ShopPool); DrawIds("默认奖励 ID", asset.RewardPool);
         }
         private void DrawFloorSettings()

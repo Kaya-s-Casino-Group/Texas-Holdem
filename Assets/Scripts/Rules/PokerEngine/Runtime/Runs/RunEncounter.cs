@@ -19,33 +19,33 @@ namespace PokerEngine
         /// <summary>Floor owning this encounter, including while its frozen state is retained on a later floor.</summary>
         public RunFloorDefinition Floor => Content.Definition.Floors[FloorIndex];
         public IReadOnlyList<RunCard> Deck { get; }
-        public IReadOnlyList<RunJoker> Jokers { get; }
+        public IReadOnlyList<RunRelic> Relics { get; }
         public IReadOnlyList<HandLevel> HandLevels { get; }
         public RandomState Random { get; }
         public RunEncounterContext(string runId, ParticipantId playerId, RunPhase phase, int stageIndex, RunContent content,
-            IEnumerable<RunCard> deck, IEnumerable<RunJoker> jokers, IEnumerable<HandLevel> handLevels, RandomState random)
+            IEnumerable<RunCard> deck, IEnumerable<RunRelic> relics, IEnumerable<HandLevel> handLevels, RandomState random)
         {
             RunId = Guard.Text(runId, nameof(runId)); PlayerId = playerId; Phase = phase; StageIndex = stageIndex;
             Content = content ?? throw new ArgumentNullException(nameof(content));
-            Deck = Guard.View(Guard.Copy(deck, nameof(deck))); Jokers = Guard.View(Guard.Copy(jokers, nameof(jokers)));
+            Deck = Guard.View(Guard.Copy(deck, nameof(deck))); Relics = Guard.View(Guard.Copy(relics, nameof(relics)));
             HandLevels = Guard.View(Guard.Copy(handLevels, nameof(handLevels))); Random = random ?? throw new ArgumentNullException(nameof(random));
         }
         public static RunEncounterContext From<TState>(RunState<TState> state, RunContent content) where TState : class =>
-            new RunEncounterContext(state.Id, state.PlayerId, state.Phase, state.StageIndex, content, state.Deck, state.Jokers, state.HandLevels, state.Random);
+            new RunEncounterContext(state.Id, state.PlayerId, state.Phase, state.StageIndex, content, state.Deck, state.Relics, state.HandLevels, state.Random);
     }
 
-    /// <summary>Portable changes to an installed joker; references local to an encounter must not escape here.</summary>
-    public sealed class RunJokerRuntime
+    /// <summary>Portable changes to an installed relic; references local to an encounter must not escape here.</summary>
+    public sealed class RunRelicRuntime
     {
         public string Id { get; }
         public int? Charges { get; }
         public int CooldownRounds { get; }
         public AbilityMemory Memory { get; }
-        public RunJokerRuntime(string id, int? charges, int cooldownRounds, AbilityMemory memory)
+        public RunRelicRuntime(string id, int? charges, int cooldownRounds, AbilityMemory memory)
         {
             Id = Guard.Text(id, nameof(id)); Charges = charges; CooldownRounds = cooldownRounds;
             Memory = memory ?? throw new ArgumentNullException(nameof(memory));
-            if (charges < 0 || cooldownRounds < 0) throw new ArgumentException("Invalid portable joker state.");
+            if (charges < 0 || cooldownRounds < 0) throw new ArgumentException("Invalid portable relic state.");
         }
     }
 
@@ -58,14 +58,14 @@ namespace PokerEngine
         public bool IsCheckpoint { get; }
         public bool Exhausted { get; }
         public ScoreResult Score { get; }
-        public bool GrowJokers { get; }
-        public IReadOnlyList<RunJokerRuntime> Jokers { get; }
+        public bool GrowRelics { get; }
+        public IReadOnlyList<RunRelicRuntime> Relics { get; }
         public RunEncounterProgress(RandomState random, bool isCheckpoint, bool exhausted = false, ScoreResult score = null,
-            bool growJokers = false, IEnumerable<RunJokerRuntime> jokers = null)
+            bool growRelics = false, IEnumerable<RunRelicRuntime> relics = null)
         {
             Random = random ?? throw new ArgumentNullException(nameof(random)); IsCheckpoint = isCheckpoint; Exhausted = exhausted;
-            Score = score; GrowJokers = growJokers; Jokers = Guard.View(Guard.Copy(jokers ?? new RunJokerRuntime[0], nameof(jokers)));
-            if ((score != null || growJokers || exhausted) && !isCheckpoint || growJokers && score == null)
+            Score = score; GrowRelics = growRelics; Relics = Guard.View(Guard.Copy(relics ?? new RunRelicRuntime[0], nameof(relics)));
+            if ((score != null || growRelics || exhausted) && !isCheckpoint || growRelics && score == null)
                 throw new ArgumentException("Only a fully resolved checkpoint can report scores or exhaustion.");
         }
     }

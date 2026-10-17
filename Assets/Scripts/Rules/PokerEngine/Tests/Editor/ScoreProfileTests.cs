@@ -12,7 +12,7 @@ namespace PokerEngine.Tests
             .Select(category => ScoreProfile.Default.Rule(category)), points);
         private static ScoringCard Card(string id, Rank rank, Suit suit, CardEffects effects = CardEffects.None) => new ScoringCard(id, new CardFace(rank, suit), effects: effects);
         private static ScoreResult Score(ScoreProfile profile, int level, params ScoringCard[] cards) => ScoreEngine.EvaluatePattern("test", profile,
-            PokerHandClassifier.Classify(cards.Select(card => new EffectiveCard(new CardInstanceId(card.Id), card.Face.Rank, card.Face.Suit))), level, cards, new ScoringJoker[0]);
+            PokerHandClassifier.Classify(cards.Select(card => new EffectiveCard(new CardInstanceId(card.Id), card.Face.Rank, card.Face.Suit))), level, cards, new ScoringRelic[0]);
 
         [TestCase(HandCategory.HighCard, 5, 1, 10, 1)]
         [TestCase(HandCategory.OnePair, 10, 2, 15, 1)]
@@ -26,7 +26,7 @@ namespace PokerEngine.Tests
         [TestCase(HandCategory.FiveOfAKind, 120, 12, 35, 3)]
         public void DefaultBaseAndGrowthMatchReference(HandCategory category, long chips, int mult, long growthChips, int growthMult)
         {
-            var score = ScoreEngine.Evaluate("level3", ScoreProfile.Default, category, 3, new ScoringCard[0], new ScoringJoker[0]);
+            var score = ScoreEngine.Evaluate("level3", ScoreProfile.Default, category, 3, new ScoringCard[0], new ScoringRelic[0]);
             Assert.AreEqual(chips + 2 * growthChips, score.BasePoints);
             Assert.AreEqual(mult + 2 * growthMult, score.BaseMultiplier); ScoreEngine.Validate(score);
         }

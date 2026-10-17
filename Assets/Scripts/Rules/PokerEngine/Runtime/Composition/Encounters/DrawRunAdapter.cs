@@ -29,7 +29,7 @@ namespace PokerEngine
         { this.runtime = runtime ?? throw new ArgumentNullException(nameof(runtime)); this.settings = settings ?? new DrawEncounterSettings(); }
         private DrawDefinition Definition(RunEncounterContext c) =>
             new DrawDefinition(RulesVersion, c.Stage.TargetScore, settings.HandSize, c.Stage.RoundLimit, settings.Discards, settings.MaxSelection,
-                c.Content.Definition.Scoring, c.Jokers.Select(j => new DrawJoker(new ScoringJoker(j.Id, j.Level, j.Growth, c.Content.Joker(j.DefinitionId).ScoreEffects))),
+                c.Content.Definition.Scoring, c.Relics.Select(j => new DrawRelic(new ScoringRelic(j.Id, j.Level, j.Growth, c.Content.Relic(j.DefinitionId).ScoreEffects))),
                 c.HandLevels.Select(l => new DrawHandLevel(l.Category, l.Level)));
         public DrawEngine Engine(RunEncounterContext c) => new DrawEngine(c.Content.CardsAndAbilities, Definition(c), runtime);
         /// <summary>Shared encounter description plus the concrete rules used by this adapter.</summary>

@@ -16,17 +16,17 @@ namespace PokerEngine
     public enum DrawAction { Play = 1, Discard, ActivateAbility, SelectAbilityTargets, Continue, Timeout }
     public enum DrawError { None, InvalidState, StaleRevision, Unauthorized, InvalidAction, InvalidSelection, InvalidAbility, Overflow }
 
-    public sealed class DrawJoker
+    public sealed class DrawRelic
     {
-        public ScoringJoker Scoring { get; }
+        public ScoringRelic Scoring { get; }
         public long GrowthPerScoredHand { get; }
-        public DrawJoker(ScoringJoker scoring, long growthPerScoredHand = 0)
+        public DrawRelic(ScoringRelic scoring, long growthPerScoredHand = 0)
         {
             Scoring = scoring ?? throw new ArgumentNullException(nameof(scoring));
             if (growthPerScoredHand < 0) throw new ArgumentOutOfRangeException(nameof(growthPerScoredHand));
             GrowthPerScoredHand = growthPerScoredHand;
         }
-        public ScoringJoker At(int handsScored) => new ScoringJoker(Scoring.Id, Scoring.Level,
+        public ScoringRelic At(int handsScored) => new ScoringRelic(Scoring.Id, Scoring.Level,
             checked(Scoring.Growth + checked(GrowthPerScoredHand * handsScored)), Scoring.Effects);
     }
     public sealed class DrawHandLevel
@@ -49,18 +49,18 @@ namespace PokerEngine
         public int Discards { get; }
         public int MaxSelection { get; }
         public ScoreProfile Scoring { get; }
-        public IReadOnlyList<DrawJoker> Jokers { get; }
+        public IReadOnlyList<DrawRelic> Relics { get; }
         private readonly Dictionary<HandCategory, int> levels;
         public DrawDefinition(string version, long targetScore, int handSize = 8, int hands = 4, int discards = 3, int maxSelection = 5,
-            ScoreProfile scoring = null, IEnumerable<DrawJoker> jokers = null, IEnumerable<DrawHandLevel> handLevels = null)
+            ScoreProfile scoring = null, IEnumerable<DrawRelic> relics = null, IEnumerable<DrawHandLevel> handLevels = null)
         {
             Version = Guard.Text(version, nameof(version));
             if (targetScore <= 0 || handSize < 1 || handSize > 64 || hands < 1 || hands > 1000 || discards < 0 || discards > 1000 || maxSelection < 1 || maxSelection > 5 || maxSelection > handSize)
                 throw new ArgumentException("Invalid draw encounter rules.");
             TargetScore = targetScore; HandSize = handSize; Hands = hands; Discards = discards; MaxSelection = maxSelection;
-            Scoring = scoring ?? ScoreProfile.Default; Jokers = Guard.View(Guard.Copy(jokers ?? new DrawJoker[0], nameof(jokers)));
-            if (Jokers.Count > 32 || Jokers.Select(j => j.Scoring.Id).Distinct(StringComparer.Ordinal).Count() != Jokers.Count)
-                throw new ArgumentException("Joker instances must be unique and fit the score budget.");
+            Scoring = scoring ?? ScoreProfile.Default; Relics = Guard.View(Guard.Copy(relics ?? new DrawRelic[0], nameof(relics)));
+            if (Relics.Count > 32 || Relics.Select(j => j.Scoring.Id).Distinct(StringComparer.Ordinal).Count() != Relics.Count)
+                throw new ArgumentException("Relic instances must be unique and fit the score budget.");
             levels = Guard.Copy(handLevels ?? new DrawHandLevel[0], nameof(handLevels)).ToDictionary(h => h.Category, h => h.Level);
         }
         public int Level(HandCategory category) { int result; return levels.TryGetValue(category, out result) ? result : 1; }

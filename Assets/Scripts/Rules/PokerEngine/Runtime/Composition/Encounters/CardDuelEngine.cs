@@ -177,7 +177,7 @@ namespace PokerEngine
                 var pattern = PokerHandClassifier.Classify(ordered.Select(card => new EffectiveCard(card.Id, Face(card).Rank, Face(card).Suit)));
                 var level = state.Duel.Player(actor).Rules.HandLevels.LevelFor(pattern.Category);
                 var score = ScoreEngine.EvaluatePattern(Duel.NextScoreId(state.Duel), Scoring, pattern, level,
-                    ordered.Select(card => new ScoringCard(card.Id.Value, new CardFace(Face(card).Rank, Face(card).Suit), effects: card.Effects)), new ScoringJoker[0]);
+                    ordered.Select(card => new ScoringCard(card.Id.Value, new CardFace(Face(card).Rank, Face(card).Suit), effects: card.Effects)), new ScoringRelic[0]);
                 return new CardDuelTransition(state, score: score, pattern: pattern);
             }
             catch (OverflowException) { return new CardDuelTransition(state, CardDuelError.Overflow); }

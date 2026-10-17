@@ -6,9 +6,9 @@ using System.Runtime.Serialization;
 namespace PokerEngine
 {
     public enum RunPhase { Preparing = 1, Encounter, Reward, Shop, Completed, Failed, NodeChoice }
-    public enum RunOfferKind { Joker = 1, EnhanceCard, DuplicateCard, RemoveCard, TransformCard, UpgradeHand, Gold }
+    public enum RunOfferKind { Relic = 1, EnhanceCard, DuplicateCard, RemoveCard, TransformCard, UpgradeHand, Gold }
 
-    public sealed class JokerDefinition
+    public sealed class RelicDefinition
     {
         public string Id { get; }
         public int Slots { get; }
@@ -20,12 +20,12 @@ namespace PokerEngine
         public AbilityDefinitionId? AbilityId { get; }
         public int? Charges { get; }
         public IReadOnlyList<ScoreEffect> ScoreEffects { get; }
-        public JokerDefinition(string id, IEnumerable<ScoreEffect> effects, long sellPrice = 1, long upgradeCost = 5,
+        public RelicDefinition(string id, IEnumerable<ScoreEffect> effects, long sellPrice = 1, long upgradeCost = 5,
             int slots = 1, int maxCopies = 1, int maxLevel = 3, long growthPerScoredRound = 0, AbilityDefinitionId? abilityId = null, int? charges = null)
         {
             Id = Guard.Text(id, nameof(id)); ScoreEffects = Guard.View(Guard.Copy(effects, nameof(effects)));
             if (sellPrice < 0 || upgradeCost < 0 || slots < 1 || slots > 32 || maxCopies < 1 || maxLevel < 1 || maxLevel > 100 || growthPerScoredRound < 0 || charges < 0 ||
-                abilityId.HasValue && !abilityId.Value.IsValid || !abilityId.HasValue && charges.HasValue) throw new ArgumentException("Invalid joker definition.");
+                abilityId.HasValue && !abilityId.Value.IsValid || !abilityId.HasValue && charges.HasValue) throw new ArgumentException("Invalid relic definition.");
             SellPrice = sellPrice; UpgradeCost = upgradeCost; Slots = slots; MaxCopies = maxCopies; MaxLevel = maxLevel;
             GrowthPerScoredRound = growthPerScoredRound; AbilityId = abilityId; Charges = charges;
         }
@@ -35,21 +35,21 @@ namespace PokerEngine
         public string Id { get; }
         public RunOfferKind Kind { get; }
         public long Price { get; }
-        public string JokerId { get; }
+        public string RelicId { get; }
         public long Amount { get; }
         public decimal Multiplier { get; }
         public int Retriggers { get; }
         public HandCategory? HandCategory { get; }
         public CardDefinitionId? CardDefinition { get; }
-        public RunOfferDefinition(string id, RunOfferKind kind, long price, string jokerId = null, long amount = 0,
+        public RunOfferDefinition(string id, RunOfferKind kind, long price, string relicId = null, long amount = 0,
             decimal multiplier = 0, int retriggers = 0, HandCategory? handCategory = null, CardDefinitionId? cardDefinition = null)
         {
             Id = Guard.Text(id, nameof(id));
             if (!Enum.IsDefined(typeof(RunOfferKind), kind) || price < 0 || amount < 0 || multiplier < 0 || retriggers < 0 || retriggers > 8 ||
-                (kind == RunOfferKind.Joker) != (jokerId != null) || (kind == RunOfferKind.UpgradeHand) != handCategory.HasValue ||
+                (kind == RunOfferKind.Relic) != (relicId != null) || (kind == RunOfferKind.UpgradeHand) != handCategory.HasValue ||
                 (kind == RunOfferKind.TransformCard) != cardDefinition.HasValue || handCategory.HasValue && !Enum.IsDefined(typeof(HandCategory), handCategory.Value))
                 throw new ArgumentException("Invalid run offer.");
-            Kind = kind; Price = price; JokerId = jokerId; Amount = amount; Multiplier = multiplier; Retriggers = retriggers;
+            Kind = kind; Price = price; RelicId = relicId; Amount = amount; Multiplier = multiplier; Retriggers = retriggers;
             HandCategory = handCategory; CardDefinition = cardDefinition;
         }
     }
@@ -72,7 +72,7 @@ namespace PokerEngine
     {
         public string Version { get; }
         public ScoreProfile Scoring { get; }
-        public int JokerCapacity { get; }
+        public int RelicCapacity { get; }
         public long StartingGold { get; }
         public long RerollCost { get; }
         public int OfferCount { get; }
@@ -81,18 +81,18 @@ namespace PokerEngine
         public IReadOnlyList<RunEncounterNodeDefinition> EncounterNodes { get; }
         /// <summary>Compatibility view for single-floor definitions; multi-floor callers must select a floor.</summary>
         public RunNodeTree NodeTree => Floors.Count == 1 ? Floors[0].NodeTree : throw new InvalidOperationException("Select a floor's NodeTree from Floors.");
-        public IReadOnlyList<string> StartingJokers { get; }
+        public IReadOnlyList<string> StartingRelics { get; }
         public IReadOnlyList<string> ShopPool { get; }
         public IReadOnlyList<string> RewardPool { get; }
         public RunDefinition(string version, ScoreProfile scoring, IEnumerable<RunStageDefinition> stages, IEnumerable<string> shopPool,
-            IEnumerable<string> rewardPool, IEnumerable<string> startingJokers = null, int jokerCapacity = 5, long startingGold = 10, long rerollCost = 2, int offerCount = 3)
-            : this(version, scoring, RunNodeTree.Linear(stages), shopPool, rewardPool, startingJokers, jokerCapacity, startingGold, rerollCost, offerCount) { }
+            IEnumerable<string> rewardPool, IEnumerable<string> startingRelics = null, int relicCapacity = 5, long startingGold = 10, long rerollCost = 2, int offerCount = 3)
+            : this(version, scoring, RunNodeTree.Linear(stages), shopPool, rewardPool, startingRelics, relicCapacity, startingGold, rerollCost, offerCount) { }
         public RunDefinition(string version, ScoreProfile scoring, RunNodeTree nodeTree, IEnumerable<string> shopPool,
-            IEnumerable<string> rewardPool, IEnumerable<string> startingJokers = null, int jokerCapacity = 5, long startingGold = 10, long rerollCost = 2, int offerCount = 3)
-            : this(version, scoring, new[] { new RunFloorDefinition("default", nodeTree) }, shopPool, rewardPool, startingJokers,
-                jokerCapacity, startingGold, rerollCost, offerCount) { }
+            IEnumerable<string> rewardPool, IEnumerable<string> startingRelics = null, int relicCapacity = 5, long startingGold = 10, long rerollCost = 2, int offerCount = 3)
+            : this(version, scoring, new[] { new RunFloorDefinition("default", nodeTree) }, shopPool, rewardPool, startingRelics,
+                relicCapacity, startingGold, rerollCost, offerCount) { }
         public RunDefinition(string version, ScoreProfile scoring, IEnumerable<RunFloorDefinition> floors, IEnumerable<string> shopPool,
-            IEnumerable<string> rewardPool, IEnumerable<string> startingJokers = null, int jokerCapacity = 5, long startingGold = 10, long rerollCost = 2, int offerCount = 3)
+            IEnumerable<string> rewardPool, IEnumerable<string> startingRelics = null, int relicCapacity = 5, long startingGold = 10, long rerollCost = 2, int offerCount = 3)
         {
             Version = Guard.Text(version, nameof(version)); Scoring = scoring ?? throw new ArgumentNullException(nameof(scoring));
             var floorArray = Guard.Copy(floors, nameof(floors));
@@ -100,12 +100,12 @@ namespace PokerEngine
                 throw new ArgumentException("Invalid floors or duplicate floor identities.");
             Floors = Guard.View(floorArray); EncounterNodes = Guard.View(floorArray.SelectMany(f => f.NodeTree.EncounterNodes).ToArray());
             Stages = Guard.View(EncounterNodes.Select(n => n.Stage).ToArray()); ShopPool = Guard.View(Guard.Copy(shopPool, nameof(shopPool)));
-            RewardPool = Guard.View(Guard.Copy(rewardPool, nameof(rewardPool))); StartingJokers = Guard.View(Guard.Copy(startingJokers ?? new string[0], nameof(startingJokers)));
-            if (jokerCapacity < 0 || jokerCapacity > 32 ||
+            RewardPool = Guard.View(Guard.Copy(rewardPool, nameof(rewardPool))); StartingRelics = Guard.View(Guard.Copy(startingRelics ?? new string[0], nameof(startingRelics)));
+            if (relicCapacity < 0 || relicCapacity > 32 ||
                 startingGold < 0 || rerollCost < 1 || offerCount < 1 || offerCount > 10 || ShopPool.Count == 0 || RewardPool.Count == 0 ||
                 ShopPool.Any(string.IsNullOrWhiteSpace) || RewardPool.Any(string.IsNullOrWhiteSpace) ||
                 ShopPool.Distinct().Count() != ShopPool.Count || RewardPool.Distinct().Count() != RewardPool.Count) throw new ArgumentException("Invalid run definition.");
-            JokerCapacity = jokerCapacity; StartingGold = startingGold; RerollCost = rerollCost; OfferCount = offerCount;
+            RelicCapacity = relicCapacity; StartingGold = startingGold; RerollCost = rerollCost; OfferCount = offerCount;
         }
         public int StageIndex(int floorIndex, string nodeId)
         {
@@ -126,13 +126,13 @@ namespace PokerEngine
     }
     public sealed class RunContent
     {
-        private readonly Dictionary<string, JokerDefinition> jokers;
+        private readonly Dictionary<string, RelicDefinition> relics;
         private readonly Dictionary<string, RunOfferDefinition> offers;
         public ContentCatalog CardsAndAbilities { get; }
         public RunDefinition Definition { get; }
         public string StartingDeckVersion { get; }
         public IReadOnlyList<CardDefinitionId> StartingDeck { get; }
-        public RunContent(ContentCatalog cardsAndAbilities, RunDefinition definition, IEnumerable<JokerDefinition> jokers, IEnumerable<RunOfferDefinition> offers,
+        public RunContent(ContentCatalog cardsAndAbilities, RunDefinition definition, IEnumerable<RelicDefinition> relics, IEnumerable<RunOfferDefinition> offers,
             string startingDeckVersion, IEnumerable<CardDefinitionId> startingDeck)
         {
             CardsAndAbilities = cardsAndAbilities ?? throw new ArgumentNullException(nameof(cardsAndAbilities)); Definition = definition ?? throw new ArgumentNullException(nameof(definition));
@@ -140,16 +140,16 @@ namespace PokerEngine
             StartingDeck = Guard.View(Guard.Copy(startingDeck, nameof(startingDeck)));
             if (StartingDeck.Count == 0 || StartingDeck.Count > 512 || StartingDeck.Any(id => !cardsAndAbilities.Contains(id)))
                 throw new ArgumentException("Invalid starting deck.");
-            this.jokers = Guard.Copy(jokers, nameof(jokers)).ToDictionary(j => j.Id, StringComparer.Ordinal);
+            this.relics = Guard.Copy(relics, nameof(relics)).ToDictionary(j => j.Id, StringComparer.Ordinal);
             this.offers = Guard.Copy(offers, nameof(offers)).ToDictionary(o => o.Id, StringComparer.Ordinal);
-            if (definition.StartingJokers.Any(id => !this.jokers.ContainsKey(id)) || definition.ShopPool.Concat(definition.RewardPool).Any(id => !this.offers.ContainsKey(id)) ||
+            if (definition.StartingRelics.Any(id => !this.relics.ContainsKey(id)) || definition.ShopPool.Concat(definition.RewardPool).Any(id => !this.offers.ContainsKey(id)) ||
                 definition.Floors.Any(f => f.NodeTree.Nodes.Where(n => n.Kind == RunNodeKind.Reward || n.Kind == RunNodeKind.Shop)
                     .SelectMany(n => f.NodeTree.OfferPool(n, definition)).Any(id => !this.offers.ContainsKey(id))) ||
-                this.jokers.Values.Any(j => j.AbilityId.HasValue && !cardsAndAbilities.Contains(j.AbilityId.Value)) ||
-                this.offers.Values.Any(o => o.Kind == RunOfferKind.Joker && !this.jokers.ContainsKey(o.JokerId) ||
+                this.relics.Values.Any(j => j.AbilityId.HasValue && !cardsAndAbilities.Contains(j.AbilityId.Value)) ||
+                this.offers.Values.Any(o => o.Kind == RunOfferKind.Relic && !this.relics.ContainsKey(o.RelicId) ||
                     o.CardDefinition.HasValue && !cardsAndAbilities.Contains(o.CardDefinition.Value))) throw new ArgumentException("Unresolved run content.");
         }
-        public JokerDefinition Joker(string id) => jokers.TryGetValue(id, out var value) ? value : throw new ArgumentException("Unknown joker.");
+        public RelicDefinition Relic(string id) => relics.TryGetValue(id, out var value) ? value : throw new ArgumentException("Unknown relic.");
         public RunOfferDefinition Offer(string id) => offers.TryGetValue(id, out var value) ? value : throw new ArgumentException("Unknown offer.");
     }
 
@@ -167,8 +167,9 @@ namespace PokerEngine
             DefinitionId = definition; BonusPoints = bonusPoints; BonusMultiplier = bonusMultiplier; Retriggers = retriggers;
         }
     }
-    [DataContract]
-    public sealed class RunJoker
+    // Preserve the persisted contract identity; the rules API uses Relic.
+    [DataContract(Name = "RunJoker")]
+    public sealed class RunRelic
     {
         [DataMember(Order = 1, IsRequired = true)] public string Id { get; private set; }
         [DataMember(Order = 2, IsRequired = true)] public string DefinitionId { get; private set; }
@@ -177,10 +178,10 @@ namespace PokerEngine
         [DataMember(Order = 5)] public int? Charges { get; private set; }
         [DataMember(Order = 6, IsRequired = true)] public int CooldownRounds { get; private set; }
         [DataMember(Order = 7, IsRequired = true)] public AbilityMemory Memory { get; private set; }
-        public RunJoker(string id, string definition, int level = 1, long growth = 0, int? charges = null, int cooldownRounds = 0, AbilityMemory memory = null)
+        public RunRelic(string id, string definition, int level = 1, long growth = 0, int? charges = null, int cooldownRounds = 0, AbilityMemory memory = null)
         {
             Id = Guard.Text(id, nameof(id)); DefinitionId = Guard.Text(definition, nameof(definition));
-            if (level < 1 || growth < 0 || charges < 0 || cooldownRounds < 0) throw new ArgumentException("Invalid run joker.");
+            if (level < 1 || growth < 0 || charges < 0 || cooldownRounds < 0) throw new ArgumentException("Invalid run relic.");
             Level = level; Growth = growth; Charges = charges; CooldownRounds = cooldownRounds; Memory = memory ?? AbilityMemory.Empty;
         }
     }
@@ -213,7 +214,7 @@ namespace PokerEngine
         [DataMember(Order = 10, IsRequired = true)] public long StageScore { get; private set; }
         [DataMember(Order = 11, IsRequired = true)] public int RoundsScored { get; private set; }
         [DataMember(Name = "Deck", Order = 12, IsRequired = true)] private RunCard[] deck;
-        [DataMember(Name = "Jokers", Order = 13, IsRequired = true)] private RunJoker[] jokers;
+        [DataMember(Name = "Jokers", Order = 13, IsRequired = true)] private RunRelic[] relics;
         [DataMember(Name = "HandLevels", Order = 14, IsRequired = true)] private HandLevel[] levels;
         [DataMember(Name = "Offers", Order = 15, IsRequired = true)] private RunOffer[] offers;
         [DataMember(Name = "Scores", Order = 16, IsRequired = true)] private ScoreResult[] scores;
@@ -228,18 +229,18 @@ namespace PokerEngine
         public IReadOnlyList<RunFloorState> Floors => Guard.View(floors);
         public RunNodeState Nodes => floors[FloorIndex].Nodes;
         public IReadOnlyList<RunCard> Deck => Guard.View(deck);
-        public IReadOnlyList<RunJoker> Jokers => Guard.View(jokers);
+        public IReadOnlyList<RunRelic> Relics => Guard.View(relics);
         public IReadOnlyList<HandLevel> HandLevels => Guard.View(levels);
         public IReadOnlyList<RunOffer> Offers => Guard.View(offers);
         public IReadOnlyList<ScoreResult> Scores => Guard.View(scores);
         public RunState(string id, long revision, string contentVersion, string rulesVersion, string scoreVersion, ParticipantId player,
-            RunPhase phase, int stageIndex, long gold, long stageScore, int roundsScored, IEnumerable<RunCard> deck, IEnumerable<RunJoker> jokers,
+            RunPhase phase, int stageIndex, long gold, long stageScore, int roundsScored, IEnumerable<RunCard> deck, IEnumerable<RunRelic> relics,
             IEnumerable<HandLevel> levels, IEnumerable<RunOffer> offers, IEnumerable<ScoreResult> scores, RandomState random, string encounterKind, string encounterRulesVersion,
             int encounterSchemaVersion, string startingDeckVersion, int floorIndex, IEnumerable<RunFloorState> floors, TState encounter = null)
         {
             Id = Guard.Text(id, nameof(id)); Revision = revision; ContentVersion = contentVersion; RulesVersion = rulesVersion; ScoreVersion = scoreVersion;
             PlayerId = player; Phase = phase; StageIndex = stageIndex; Gold = gold; StageScore = stageScore; RoundsScored = roundsScored;
-            this.deck = Guard.Copy(deck, nameof(deck)); this.jokers = Guard.Copy(jokers, nameof(jokers)); this.levels = Guard.Copy(levels, nameof(levels));
+            this.deck = Guard.Copy(deck, nameof(deck)); this.relics = Guard.Copy(relics, nameof(relics)); this.levels = Guard.Copy(levels, nameof(levels));
             this.offers = Guard.Copy(offers, nameof(offers)); this.scores = Guard.Copy(scores, nameof(scores)); Random = random; Encounter = encounter;
             EncounterKind = encounterKind; EncounterRulesVersion = encounterRulesVersion; EncounterSchemaVersion = encounterSchemaVersion; StartingDeckVersion = startingDeckVersion;
             FloorIndex = floorIndex; this.floors = Guard.Copy(floors, nameof(floors));

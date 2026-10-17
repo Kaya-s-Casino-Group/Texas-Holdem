@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace PokerEngine
 {
-    /// <summary>The host resolves meta rewards. Run gold, cards and Jokers are never implicitly transferred.</summary>
+    /// <summary>The host resolves meta rewards. Run gold, cards and Relics are never implicitly transferred.</summary>
     public static class RunProgressionSettlement
     {
         public static RunSettlement Create<TState>(RunState<TState> state, RunContent content, IRunEncounterState<TState> encounter,

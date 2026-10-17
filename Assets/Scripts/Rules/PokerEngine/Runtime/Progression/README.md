@@ -1,6 +1,6 @@
 # 跨 Run 局外成长
 
-`PlayerProgressionState` 是一次完整 Run 之外的玩家成长数据。`PokerEngine.Progression` 为独立纯 C# 程序集，仅引用 Core，不保存战斗状态、Run 牌组、小丑实例或地图配置，也不访问文件/网络/时钟。
+`PlayerProgressionState` 是一次完整 Run 之外的玩家成长数据。`PokerEngine.Progression` 为独立纯 C# 程序集，仅引用 Core，不保存战斗状态、Run 牌组、遗物实例或地图配置，也不访问文件/网络/时钟。
 
 ## 数据归属
 
@@ -18,7 +18,7 @@
 └── Preferences                   音量等用户设置
 ```
 
-`ProgressionUnlock` 用 `(UnlockKind, Id)` 标识解锁资格，支持卡牌、小丑、起始牌组、角色、玩法、难度、挑战。不同种类可使用同名 ID，大小写敏感。这里只保存定义 ID；“解锁小丑”表示它可以被开局内容策略纳入后续 Run，而不是把上局的小丑实例、等级或成长带入新局。角色/挑战等类型只是内容标识，不代表这些玩法已实现。
+`ProgressionUnlock` 用 `(UnlockKind, Id)` 标识解锁资格，支持卡牌、遗物、起始牌组、角色、玩法、难度、挑战。不同种类可使用同名 ID，大小写敏感。这里只保存定义 ID；“解锁遗物”表示它可以被开局内容策略纳入后续 Run，而不是把上局的遗物实例、等级或成长带入新局。角色/挑战等类型只是内容标识，不代表这些玩法已实现。
 
 `ProgressionCurrency` 是局外货币，例如 shards；与 Run 内 Gold 分开。`ProgressionUpgradeLevel` 保存升级 ID 和等级，例如 starting-gold 2 级；等级对应的具体效果由开局组装规则解释，不直接修改运行中的 Run。可只配置 Unlocks 而不配置货币/升级，实现纯内容解锁的成长模式。
 
@@ -30,14 +30,14 @@
 
 新玩家货币和升级等级均为 0，仅获得 InitialUnlocks。创建时复制输入集合；之后所有操作返回新状态。每次成功结算或升一级，Revision 加 1。配置指纹按内容排序生成，单纯调整目录顺序不改变指纹；费用、解锁目录或默认解锁改变会改变指纹。
 
-本层验证解锁 ID 在成长目录中存在；该目录与真正的卡牌/小丑等内容目录的一致性由宿主组装负责。解锁条件、通关奖励公式、难度进阶条件目前由受信任宿主计算，不内置一套具体游戏数值。
+本层验证解锁 ID 在成长目录中存在；该目录与真正的卡牌/遗物等内容目录的一致性由宿主组装负责。解锁条件、通关奖励公式、难度进阶条件目前由受信任宿主计算，不内置一套具体游戏数值。
 
 ## 使用
 
 ```csharp
 var player = new ParticipantId("player");
 var basicDeck = new ProgressionUnlock(UnlockKind.StartingDeck, "deck.basic");
-var steady = new ProgressionUnlock(UnlockKind.Joker, "joker.steady");
+var steady = new ProgressionUnlock(UnlockKind.Relic, "joker.steady");
 var rules = new ProgressionDefinition("meta.1", new[] { "shards" },
     new[] { basicDeck, steady },
     upgrades: new[] {
@@ -61,7 +61,7 @@ bool unlocked = profile.IsUnlocked(steady);
 int level = profile.UpgradeLevel("starting-gold");
 ```
 
-`RunProgressionSettlement` 位于 Composition。默认仅接受 Completed/Failed 的有效 Run，经 RunValidator 校验后提取结果；显式 `abandoned: true` 仅接受尚未结束的 Run。奖励由宿主提供，不把 Run 金币、卡牌或小丑隐式转换成局外奖励。放弃后，宿主必须终止并清除该 Run 的继续游戏入口。
+`RunProgressionSettlement` 位于 Composition。默认仅接受 Completed/Failed 的有效 Run，经 RunValidator 校验后提取结果；显式 `abandoned: true` 仅接受尚未结束的 Run。奖励由宿主提供，不把 Run 金币、卡牌或遗物隐式转换成局外奖励。放弃后，宿主必须终止并清除该 Run 的继续游戏入口。
 
 `Settle` 对同一 RunId 与相同结果/奖励返回已有状态，即使重试仍携带原 Revision；不会重复发奖励或重复计入统计。相同 RunId 携带不同结果/奖励时拒绝。新的结算和升级要求正确玩家与当前 Revision；未知奖励、锁定升级、超出等级、余额不足和溢出均不会修改输入状态。
 

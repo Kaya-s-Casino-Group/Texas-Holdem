@@ -4,6 +4,8 @@
 
 菜单统一位于 **工具 > 关卡流程**，提供“流程编辑器”和“创建四层示例”；窗口名为“关卡流程编辑器”。类名与资产格式保持不变。
 
+遗物字段统一为 `RelicCapacity`、`StartingRelics`；通过 `FormerlySerializedAs` 兼容旧资产中的 `JokerCapacity`、`StartingJokers`，无需手动重建配置。内容 ID 不随代码命名变化。
+
 
 策划在 Unity 编辑节点地图，保存为 `RunFlowAsset`（ScriptableObject `.asset`）。每份资产描述一次完整 Run：有序楼层列表，每层独立入口、节点和连接，整局构筑/金币/默认内容池。节点位置与显示名称也保存，便于继续编辑。
 
@@ -11,9 +13,9 @@
 
 菜单 `工具 > 关卡流程 > 流程编辑器` 打开窗口；双击流程资产也可打开。已有示例为 `Configs/RunFlow_ThreeFloorsAndBoss.asset`，包含三棵普通分支树和一棵独立 Boss 树。窗口“三层 + Boss 示例”会创建新资产，不覆盖原资产。
 
-- 左侧添加、删除、调整楼层顺序；“整局规则”配置开局金币、小丑、奖励池和商店池。
+- 左侧添加、删除、调整楼层顺序；“整局规则”配置开局金币、遗物、奖励池和商店池。
 - 中间通过“+ 节点”添加普通战斗、精英、Boss、奖励、商店。拖动节点改变排布；右侧圆点连接到目标左侧圆点或节点框，支持分支及汇合。
-- 右侧编辑楼层入口与类型、节点名称/类型，以及战斗目标、回合上限、通关金币、能量。奖励与商店可指定独立内容池；为空时使用整局默认池。内容池填的是 `RunOfferDefinition.Id`，开局小丑填 `JokerDefinition.Id`。
+- 右侧编辑楼层入口与类型、节点名称/类型，以及战斗目标、回合上限、通关金币、能量。奖励与商店可指定独立内容池；为空时使用整局默认池。内容池填的是 `RunOfferDefinition.Id`，开局遗物填 `RelicDefinition.Id`。
 - 后继列表中移除连接；删除节点会清理指向它的连接。禁止重复连线、自连接和循环。中键平移、滚轮缩放，“自动排列”整理节点，“适配”显示整张图，Ctrl/Cmd+Z 撤销。
 - “校验”检查图和数值；“保存”只保存当前流程资产。允许保存未完成草稿，但草稿无法初始化 Run。Play 期间也可以编辑资产，新配置在下一次编译初始化时生效。
 
@@ -24,7 +26,7 @@
 ```text
 RunFlowAsset.asset
     → BuildDefinition(scoring) → 不可变 RunDefinition（有序 Floors / NodeTree）
-    → BuildContent(...)       → RunContent（绑定牌、能力、小丑、商品及起始牌组）
+    → BuildContent(...)       → RunContent（绑定牌、能力、遗物、商品及起始牌组）
     → RunEngine.Create(...)   → 本次 RunState
     → RunSnapshotCodec        → 本次进度 JSON
 ```
@@ -40,10 +42,10 @@ using PokerEngine;
 
 var source = ExampleRunContent.Create(drawMode: true);
 var offers = source.Definition.ShopPool.Select(source.Offer).ToArray();
-var jokers = offers.Where(o => o.Kind == RunOfferKind.Joker)
-    .Select(o => o.JokerId).Distinct().Select(source.Joker);
+var relics = offers.Where(o => o.Kind == RunOfferKind.Relic)
+    .Select(o => o.RelicId).Distinct().Select(source.Relic);
 var content = flow.BuildContent(source.CardsAndAbilities, source.Definition.Scoring,
-    jokers, offers, source.StartingDeckVersion, source.StartingDeck);
+    relics, offers, source.StartingDeckVersion, source.StartingDeck);
 var adapter = new DrawRunAdapter(ExampleRunContent.Runtime(drawMode: true));
 var engine = new RunEngine<DrawState, DrawCommand, DrawEvent>(content, adapter);
 var state = engine.Create("run-001", new ParticipantId("player"),

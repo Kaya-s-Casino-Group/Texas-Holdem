@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using PokerEngine;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Poker.RunFlow
 {
@@ -60,11 +61,11 @@ namespace Poker.RunFlow
         public const int CurrentFormatVersion = 1;
         public int FormatVersion = CurrentFormatVersion;
         public string RulesVersion = "run.flow.1";
-        public int JokerCapacity = 5;
+        [FormerlySerializedAs("JokerCapacity")] public int RelicCapacity = 5;
         public long StartingGold = 10;
         public long RerollCost = 2;
         public int OfferCount = 3;
-        public List<string> StartingJokers = new List<string>();
+        [FormerlySerializedAs("StartingJokers")] public List<string> StartingRelics = new List<string>();
         public List<string> ShopPool = new List<string> { "buy-steady" };
         public List<string> RewardPool = new List<string> { "buy-steady" };
         public List<RunFlowFloorData> Floors = new List<RunFlowFloorData>();
@@ -75,20 +76,20 @@ namespace Poker.RunFlow
             if (scoring == null) throw new ArgumentNullException(nameof(scoring));
             if (Floors == null || Floors.Any(f => f == null)) throw new ArgumentException("存在空楼层。");
             return new RunDefinition(RulesVersion, scoring, Floors.Select(f => f.Build()), ShopPool, RewardPool,
-                StartingJokers, JokerCapacity, StartingGold, RerollCost, OfferCount);
+                StartingRelics, RelicCapacity, StartingGold, RerollCost, OfferCount);
         }
-        public RunContent BuildContent(ContentCatalog catalog, ScoreProfile scoring, IEnumerable<JokerDefinition> jokers,
+        public RunContent BuildContent(ContentCatalog catalog, ScoreProfile scoring, IEnumerable<RelicDefinition> relics,
             IEnumerable<RunOfferDefinition> offers, string startingDeckVersion, IEnumerable<CardDefinitionId> startingDeck) =>
-            new RunContent(catalog, BuildDefinition(scoring), jokers, offers, startingDeckVersion, startingDeck);
+            new RunContent(catalog, BuildDefinition(scoring), relics, offers, startingDeckVersion, startingDeck);
 
         /// <summary>Copies rule data into editable Unity data; no runtime definition or mutable list is shared.</summary>
         public void CopyFrom(RunDefinition definition)
         {
             if (definition == null) throw new ArgumentNullException(nameof(definition));
             FormatVersion = CurrentFormatVersion; RulesVersion = definition.Version;
-            JokerCapacity = definition.JokerCapacity; StartingGold = definition.StartingGold;
+            RelicCapacity = definition.RelicCapacity; StartingGold = definition.StartingGold;
             RerollCost = definition.RerollCost; OfferCount = definition.OfferCount;
-            StartingJokers = definition.StartingJokers.ToList(); ShopPool = definition.ShopPool.ToList(); RewardPool = definition.RewardPool.ToList();
+            StartingRelics = definition.StartingRelics.ToList(); ShopPool = definition.ShopPool.ToList(); RewardPool = definition.RewardPool.ToList();
             Floors = definition.Floors.Select((floor, index) => new RunFlowFloorData {
                 Id = floor.Id, DisplayName = floor.Kind == RunFloorKind.Boss ? "Boss 层" : "第 " + (index + 1) + " 层",
                 Kind = floor.Kind, TreeVersion = floor.NodeTree.Version, EntryNodeId = floor.NodeTree.EntryNodeId,

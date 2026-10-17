@@ -139,7 +139,7 @@ var state = engine.Create("encounter-1", new ParticipantId("player"), new Partic
 
 // authoritativeHost 已验证实际提交牌组，并调用既有分类和 ScoreEngine：
 var score = ScoreEngine.EvaluatePattern(engine.NextScoreId(state), scoreProfile,
-    classification, handLevel, submittedCards, orderedJokers);
+    classification, handLevel, submittedCards, orderedRelics);
 var hand = engine.ResolveScoredHand(state, state.Revision, score);
 if (hand.Accepted) state = hand.State;
 // 宿主消费 hand.Events 播放动画；能量尚有余额可继续出牌。

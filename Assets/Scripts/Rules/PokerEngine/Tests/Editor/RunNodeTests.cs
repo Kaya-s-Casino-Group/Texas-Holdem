@@ -25,7 +25,7 @@ namespace PokerEngine.Tests
         {
             var sample = ExampleRunContent.Create(true);
             return new RunContent(sample.CardsAndAbilities, new RunDefinition("nodes.run.1", ScoreProfile.Default, tree,
-                new[] { "remove" }, new[] { "gold" }, startingGold: 50), new JokerDefinition[0],
+                new[] { "remove" }, new[] { "gold" }, startingGold: 50), new RelicDefinition[0],
                 new[] { sample.Offer("remove"), sample.Offer("gold"), sample.Offer("pair-level"), sample.Offer("enhance") }, sample.StartingDeckVersion, sample.StartingDeck);
         }
         private sealed class Fixture

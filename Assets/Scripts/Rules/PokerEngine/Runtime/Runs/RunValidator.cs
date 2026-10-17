@@ -32,16 +32,16 @@ namespace PokerEngine
             Need(s.Deck.Count >= encounter.MinimumDeckSize && s.Deck.Count <= 512, "Deck.Count"); Unique(s.Deck.Select(c => c.Id), "Deck");
             foreach (var card in s.Deck)
                 Need(content.CardsAndAbilities.Contains(card.DefinitionId) && card.BonusPoints >= 0 && card.BonusMultiplier >= 0 && card.Retriggers >= 0 && card.Retriggers <= 8, "Deck.Enhancements");
-            Need(s.Jokers.Count <= 32 && s.Jokers.Sum(j => content.Joker(j.DefinitionId).Slots) <= d.JokerCapacity, "Jokers.Capacity");
-            Unique(s.Jokers.Select(j => j.Id), "Jokers");
-            foreach (var j in s.Jokers)
+            Need(s.Relics.Count <= 32 && s.Relics.Sum(j => content.Relic(j.DefinitionId).Slots) <= d.RelicCapacity, "Relics.Capacity");
+            Unique(s.Relics.Select(j => j.Id), "Relics");
+            foreach (var j in s.Relics)
             {
-                var definition = content.Joker(j.DefinitionId);
+                var definition = content.Relic(j.DefinitionId);
                 Need(j.Level > 0 && j.Level <= definition.MaxLevel && j.Growth >= 0 && j.CooldownRounds >= 0 &&
-                    j.Charges.HasValue == definition.Charges.HasValue && !(j.Charges < 0) && (!j.Charges.HasValue || j.Charges <= definition.Charges), "Jokers.State");
-                Need(s.Jokers.Count(x => x.DefinitionId == j.DefinitionId) <= definition.MaxCopies, "Jokers.Copies");
-                Need(j.Memory.Version == 1 && j.Memory.Marks.Count == 0, "Jokers.Memory"); Unique(j.Memory.Counters.Select(c => c.Key), "Jokers.Memory.Keys");
-                Need(j.Memory.Counters.All(c => c.Scope == MemoryScope.Encounter && c.Value >= 0), "Jokers.Memory.Scope");
+                    j.Charges.HasValue == definition.Charges.HasValue && !(j.Charges < 0) && (!j.Charges.HasValue || j.Charges <= definition.Charges), "Relics.State");
+                Need(s.Relics.Count(x => x.DefinitionId == j.DefinitionId) <= definition.MaxCopies, "Relics.Copies");
+                Need(j.Memory.Version == 1 && j.Memory.Marks.Count == 0, "Relics.Memory"); Unique(j.Memory.Counters.Select(c => c.Key), "Relics.Memory.Keys");
+                Need(j.Memory.Counters.All(c => c.Scope == MemoryScope.Encounter && c.Value >= 0), "Relics.Memory.Scope");
             }
             Need(s.HandLevels.Count == Enum.GetValues(typeof(HandCategory)).Length && s.HandLevels.Select(l => l.Category).Distinct().Count() == s.HandLevels.Count &&
                 s.HandLevels.All(l => Enum.IsDefined(typeof(HandCategory), l.Category) && l.Level > 0), "HandLevels");

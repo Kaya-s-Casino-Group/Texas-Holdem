@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using NUnit.Framework;
 using Poker.RunFlow.Editor;
@@ -17,10 +18,39 @@ namespace Poker.RunFlow.Tests
         private static RunContent Bind(RunFlowAsset asset)
         {
             var source = ExampleRunContent.Create(true); var offers = source.Definition.ShopPool.Select(source.Offer).ToArray();
-            var jokers = offers.Where(o => o.Kind == RunOfferKind.Joker).Select(o => o.JokerId).Distinct().Select(source.Joker);
-            return asset.BuildContent(source.CardsAndAbilities, source.Definition.Scoring, jokers, offers, source.StartingDeckVersion, source.StartingDeck);
+            var relics = offers.Where(o => o.Kind == RunOfferKind.Relic).Select(o => o.RelicId).Distinct().Select(source.Relic);
+            return asset.BuildContent(source.CardsAndAbilities, source.Definition.Scoring, relics, offers, source.StartingDeckVersion, source.StartingDeck);
         }
         private static void Destroy(RunFlowAsset asset) { Undo.ClearUndo(asset); UnityEngine.Object.DestroyImmediate(asset); }
+
+        [Test] public void LegacyAssetFieldNamesPreserveRelicCapacityAndStartingDefinitions()
+        {
+            var asset = Example();
+            string prefix = "Assets/Scripts/Gameplay/RunFlow/Tests/RunFlowLegacy-" + Guid.NewGuid().ToString("N");
+            string currentPath = prefix + ".asset", legacyPath = prefix + "-old.asset";
+            try
+            {
+                asset.RelicCapacity = 7;
+                asset.StartingRelics.Clear(); asset.StartingRelics.Add("steady"); asset.StartingRelics.Add("echo");
+                AssetDatabase.CreateAsset(asset, currentPath); AssetDatabase.SaveAssetIfDirty(asset);
+                string yaml = File.ReadAllText(currentPath);
+                StringAssert.Contains("RelicCapacity: 7", yaml); StringAssert.Contains("StartingRelics:", yaml);
+                File.WriteAllText(legacyPath, yaml.Replace("RelicCapacity:", "JokerCapacity:").Replace("StartingRelics:", "StartingJokers:"));
+                AssetDatabase.ImportAsset(legacyPath, ImportAssetOptions.ForceSynchronousImport | ImportAssetOptions.ForceUpdate);
+                var restored = AssetDatabase.LoadAssetAtPath<RunFlowAsset>(legacyPath);
+                Assert.IsNotNull(restored);
+                Assert.AreEqual(7, restored.RelicCapacity);
+                CollectionAssert.AreEqual(new[] { "steady", "echo" }, restored.StartingRelics);
+                var definition = restored.BuildDefinition(ScoreProfile.Default);
+                Assert.AreEqual(7, definition.RelicCapacity);
+                CollectionAssert.AreEqual(restored.StartingRelics, definition.StartingRelics);
+            }
+            finally
+            {
+                AssetDatabase.DeleteAsset(legacyPath); AssetDatabase.DeleteAsset(currentPath);
+                if (asset != null) Destroy(asset);
+            }
+        }
 
         [Test] public void SavedUnityAssetReimportsAllRulesConnectionsPositionsAndFourFloors()
         {
@@ -36,7 +66,7 @@ namespace Poker.RunFlow.Tests
                 CollectionAssert.AreEqual(expected.Floors.Select(f => f.NodeTree.Fingerprint), definition.Floors.Select(f => f.NodeTree.Fingerprint));
                 Assert.AreEqual(new Vector2(223, -82), restored.Floors[0].Nodes[0].Position);
                 Assert.AreEqual("策划命名", restored.Floors[0].Nodes[0].DisplayName);
-                CollectionAssert.AreEqual(expected.ShopPool, definition.ShopPool); CollectionAssert.AreEqual(expected.StartingJokers, definition.StartingJokers);
+                CollectionAssert.AreEqual(expected.ShopPool, definition.ShopPool); CollectionAssert.AreEqual(expected.StartingRelics, definition.StartingRelics);
                 Assert.AreEqual(expected.RerollCost, definition.RerollCost);
             }
             finally { AssetDatabase.DeleteAsset(path); if (asset != null) Destroy(asset); }

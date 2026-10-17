@@ -67,7 +67,7 @@ Host 不再保存生命、攻击、能量、牌数等数值，仅持有玩家/�
 
 `PlayerBattleProfile.BuildHandLevels()` 将作者数据复制成不可变 `BattleHandLevels`，保存在 `BattlePlayerRules.HandLevels`；纯 C# 可通过 BattlePlayerRules 构造参数 `handLevels:` 注入。等级与玩家 Rules 一起跨扣费、结束回合、敌人阶段和能量恢复保留；修改作者配置仅影响下次开战。独立玩家配置可以赋予不同等级，公共 ScoreProfile 不保存个人等级。
 
-`CardDuelEngine.PreviewHand` 判型后按 actor 读取 `HandLevels.LevelFor(pattern.Category)`；左侧候选面板、出牌伤害预览与正式 Play 共用这条计分路径。基础筹码 = 牌型基础值 + 每级筹码增长 × (等级 − 1)，基础倍率同理；之后照常加入有效计分牌等效果。当前未加入战斗内升级命令、Run 等级自动带入或 Joker 接线。
+`CardDuelEngine.PreviewHand` 判型后按 actor 读取 `HandLevels.LevelFor(pattern.Category)`；左侧候选面板、出牌伤害预览与正式 Play 共用这条计分路径。基础筹码 = 牌型基础值 + 每级筹码增长 × (等级 − 1)，基础倍率同理；之后照常加入有效计分牌等效果。当前未加入战斗内升级命令、Run 等级自动带入或 Relic 接线。
 
 ## 独立弃牌收益与只读验算
 
@@ -93,7 +93,7 @@ Host 不再保存生命、攻击、能量、牌数等数值，仅持有玩家/�
 - `PlayerBattleProfile` →「出牌伤害配置」引用独立 `ScoredHandDamageProfile`。现有 SingleBattlePlayer / DemoPlayer 均迁移原 `DemoScoreDamage.asset` 引用，保持得分等额基础伤害；不同玩家可以绑定不同资产。入口 `工具/卡牌战斗/默认配置/出牌伤害` 打开单局玩家实际绑定的资产。新建玩家配置必须绑定伤害配置，缺失或工厂返回空规则时报错；公共规则与怪物配置不持有该槽位。
 - `ScoredHandDamageProfile.BuildRule()` 在开战时构建纯 C#、不可变的 `IScoredHandDamageRule`，保存于该玩家的 `BattlePlayerRules.DamagePolicy`。预览与正式出牌按出牌者选取规则；怪物直接提供基础攻击，不调用玩家的出牌伤害规则。修改资产下一场生效，已有回合转换保留玩家规则快照。新增策略通过实现接口与派生配置资产接入；公共战局配置、Host 和牌区不维护转换参数。
 - `ScoredHandDamageContext` 包含计分结果、攻击者、由目标策略验证后的目标列表、只读 CombatState 和正式出牌生成的 HandAttackInfo。`DamagePlan` 返回每个目标的 `DamageRequest` 及说明。当前协议要求每个已选目标按顺序恰好一条请求，不允许偷换来源/目标/规则版本；异常输出会原子拒绝本次出牌。
-- 边界为：牌型计分 → 构建基础伤害 → 攻击修正 → 目标承伤修正 → 格挡与生命。卡牌/Joker 对筹码倍率的影响属于计分层，不再在伤害阶段重复计算。
+- 边界为：牌型计分 → 构建基础伤害 → 攻击修正 → 目标承伤修正 → 格挡与生命。卡牌/Relic 对筹码倍率的影响属于计分层，不再在伤害阶段重复计算。
 - 攻击与承伤规则由各角色的 `BattleActorProfile` 独立资产生成，并在开战时冻结到 `BattleActorDamageRules`。攻击阶段按 Source、承伤阶段按 Target 取对应角色规则；空槽位使用 Identity 原值通过。`BattleRules` 不再接受全局攻击/承伤修正；纯 C# 调用也必须通过各自 Setup 的 `BattleActorDamageRules` 配置，未提供时使用 Identity。上下文包含只读 CombatState、目标、该阶段输入伤害，以及共用的 `AttackContext`（攻击者、来源类型、基础伤害和出牌快照）。`Amount` 是该阶段输入，`Attack.BaseDamage` 始终是原始基础伤害；返回 `DamageModification`，记录版本、说明、输入与输出及可选触发原因，只能改变数值，不能偷换来源快照、目标或修改状态。
 - 攻击修正在 TeamBattleEngine 构建各目标请求时执行，读取本次攻击开始时的状态；目标承伤修正在 `CombatEngine.Resolve` 内、格挡前执行，读取同一原子批次前序效果结算后的状态。无效输出或数值溢出会拒绝整个动作，已计算的中间结果不写回。
 - 只有 `CombatEngine.Resolve` 扣格挡/生命并生成掉血、溢出、死亡事件。怪物普通攻击直接产生 DamageRequest，不经过牌型计分，但仍经过攻击与承伤两个修正接口。
@@ -118,7 +118,7 @@ Host 不再保存生命、攻击、能量、牌数等数值，仅持有玩家/�
 
 ## 回合与牌组
 
-1. Create 时每位玩家分别创建标准无 Joker 的 52 张牌，拥有自己的抽牌、手牌、出牌、弃牌四区，起手为 0。Start 首次进入玩家阶段，为所有玩家按各自策略免费发牌。
+1. Create 时每位玩家分别创建标准不含大小王的 52 张牌，拥有自己的抽牌、手牌、出牌、弃牌四区，起手为 0。Start 首次进入玩家阶段，为所有玩家按各自策略免费发牌。
 2. 存活玩家共享行动阶段，可交错出牌/弃牌，每人独立扣费。能量为 0 自动标记该玩家结束；也可手动结束。初始能量为 0 时仍可手动空过，费用不足但非 0 时不强行结束。
 3. 所有存活玩家均结束，才进入怪物阶段。存活怪物按阵容列表顺序行动。BattleSession 在本次玩家命令内自动结算整个怪物队列；表现层按步骤逐个播放，不再提交怪物命令。
 4. 全部怪物完成后算一整轮。仍在战斗时，所有存活玩家恢复各自能量并按各自策略补牌。死亡玩家不再参与行动/等待条件，也不恢复能量或补牌。
@@ -177,7 +177,7 @@ Host 不再保存生命、攻击、能量、牌数等数值，仅持有玩家/�
 
 尚待后续拆分的边界：
 
-- 个人牌型等级已从玩家配置接入开战快照；Joker 仍为空，战斗中升级及 Run 成长带入尚未接入。
+- 个人牌型等级已从玩家配置接入开战快照；Relic 仍为空，战斗中升级及 Run 成长带入尚未接入。
 - SingleBattleHud 同时处理信息显示、按钮命令、Tab 切换和世界空间意图对象的生命周期。未来可拆成信息展示、操作绑定和意图 Presenter；游戏数值仍由规则层提供。
 
 ## 角色目标配置
@@ -246,7 +246,7 @@ Host、CardDuelEngine、TeamBattleEngine 已移除全局目标策略参数和配
 
 **动画等待只发生在表现层。**BattleSession 在返回玩家命令前已结算到下一玩家决策点或终局，包括敌人队列、收牌和补牌；BattleSessionPlayback 通过共用接口把整批结果交给表现。3D 层延后播放对应步骤、输入释放与终局界面，不能延后或重复规则结算。播放失败、取消、`SnapToState` 或禁用宿主都只取消演出、补齐盾牌来源记录并同步到 Session.State；重新启用不会再执行敌人命令。不会用任意超时提前结束动画，协议实现必须报告完成或失败。
 
-`CardDuelEngine.Create` 可传入每位玩家的 `BattlePlayerSetup`（包含当前 `DeckEntry` 列表），保留 OriginId 并按当前构筑数量实例化，例如 53/51 张；当前 Demo 启动入口使用标准 52 张。这里支持标准牌面与卡牌效果标记，尚未接入 RunCard 的完整增强、Joker、能力选择或 Run 宿主。
+`CardDuelEngine.Create` 可传入每位玩家的 `BattlePlayerSetup`（包含当前 `DeckEntry` 列表），保留 OriginId 并按当前构筑数量实例化，例如 53/51 张；当前 Demo 启动入口使用标准 52 张。这里支持标准牌面与卡牌效果标记，尚未接入 RunCard 的完整增强、Relic、能力选择或 Run 宿主。
 
 组合状态目前只在内存中运行。**不要单独保存 ScoredDuelSnapshot 来恢复这个 Demo**：它不包含四牌区、洗牌状态和弃牌次数。完整 CardDuel 快照、跨节点生命/构筑写回、Run 结果账本与奖励结算是下一层工作。当前没有磁盘存档或中途续局按钮。
 
