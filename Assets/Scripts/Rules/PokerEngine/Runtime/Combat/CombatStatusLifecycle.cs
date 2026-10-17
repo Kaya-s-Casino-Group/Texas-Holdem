@@ -87,7 +87,7 @@ namespace PokerEngine
         }
 
         internal static void Apply(CombatState state, List<StatusInstance> statuses, CombatEffect effect, CombatStatusCatalog catalog,
-            long revision, int effectIndex, List<CombatRuleEvent> events)
+            long revision, int effectIndex, List<CombatRuleEvent> events, CombatEffectProvenance provenance = null)
         {
             var incoming = effect.Status;
             var definition = catalog?.Get(incoming.DefinitionId);
@@ -100,8 +100,8 @@ namespace PokerEngine
                         .Any(behavior => (behavior.BlockedTags & definition.Tags) != 0));
                 if (blocker != null)
                 {
-                    events.Add(new CombatStatusBlockedEvent(revision, effectIndex, events.Count, effect, blocker.Id));
-                    Consume(statuses, blocker, revision, effectIndex, effect, events);
+                    events.Add(new CombatStatusBlockedEvent(revision, effectIndex, events.Count, effect, blocker.Id, provenance));
+                    Consume(statuses, blocker, revision, effectIndex, effect, events, provenance);
                     return;
                 }
             }
@@ -115,16 +115,17 @@ namespace PokerEngine
                 var refreshed = new StatusInstance(existing.Id, existing.DefinitionId, incoming.Source, existing.Target,
                     Math.Max(existing.Stacks, incoming.Stacks), duration);
                 statuses[statuses.IndexOf(existing)] = refreshed;
-                events.Add(new CombatStatusChangedEvent(revision, effectIndex, events.Count, effect, existing, refreshed, CombatStatusChangeReason.Refreshed));
+                events.Add(new CombatStatusChangedEvent(revision, effectIndex, events.Count, effect, existing, refreshed, CombatStatusChangeReason.Refreshed,
+                    provenance: provenance));
                 return;
             }
             if (statuses.Count >= 256) throw new ArgumentException("Status capacity exceeded.");
             statuses.Add(incoming);
-            events.Add(new CombatStatusEvent(revision, effectIndex, effect, events.Count));
+            events.Add(new CombatStatusEvent(revision, effectIndex, effect, events.Count, provenance));
         }
 
         internal static void Consume(List<StatusInstance> statuses, StatusInstance status, long revision, int effectIndex,
-            CombatEffect effect, List<CombatRuleEvent> events)
+            CombatEffect effect, List<CombatRuleEvent> events, CombatEffectProvenance provenance = null)
         {
             if (status.Duration.Kind != DurationKind.TriggerCount) return;
             int index = statuses.FindIndex(item => item.Id == status.Id);
@@ -132,7 +133,8 @@ namespace PokerEngine
             var after = status.Duration.RemainingTriggers.Value == 1 ? null : new StatusInstance(status.Id, status.DefinitionId,
                 status.Source, status.Target, status.Stacks, StatusDuration.ForTriggers(status.Duration.RemainingTriggers.Value - 1));
             if (after == null) statuses.RemoveAt(index); else statuses[index] = after;
-            events.Add(new CombatStatusChangedEvent(revision, effectIndex, events.Count, effect, status, after, CombatStatusChangeReason.Consumed));
+            events.Add(new CombatStatusChangedEvent(revision, effectIndex, events.Count, effect, status, after, CombatStatusChangeReason.Consumed,
+                provenance: provenance));
         }
 
         private static StatusDuration Longer(string combatId, StatusDuration before, StatusDuration incoming)

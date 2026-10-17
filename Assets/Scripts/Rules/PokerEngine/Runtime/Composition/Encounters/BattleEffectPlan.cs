@@ -48,11 +48,11 @@ namespace PokerEngine
     internal static class BattleEffectResolver
     {
         internal static BattleEffectResolution Resolve(CombatState state, BattleEffectPlan plan, IIncomingDamageModifier incomingDamage = null,
-            CombatStatusCatalog statusCatalog = null)
+            CombatStatusCatalog statusCatalog = null, ICombatReactionProvider reactionProvider = null, CombatReactionLimits reactionLimits = null)
         {
             if (state == null || plan == null) throw new ArgumentNullException();
             if (plan.Effects.Count == 0) return new BattleEffectResolution(state);
-            var result = CombatEngine.Resolve(state, state.Revision, plan.Effects, incomingDamage, statusCatalog);
+            var result = CombatEngine.Resolve(state, state.Revision, plan.Effects, incomingDamage, statusCatalog, reactionProvider, reactionLimits);
             return new BattleEffectResolution(result.State, result.Error, result.RuleEvents);
         }
     }

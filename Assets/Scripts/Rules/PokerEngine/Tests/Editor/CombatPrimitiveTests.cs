@@ -174,10 +174,10 @@ namespace PokerEngine.Tests
 
         [Test] public void InvalidEffectAfterEliminationRollsBackBothTheDeathAndEarlierStatus()
         {
-            var state = Create();
+            var state = Create(); var first = Status("rollback");
+            var duplicate = new StatusInstance(first.Id, first.DefinitionId, first.Source, EntityRef.Participant(Player), first.Stacks, first.Duration);
             var result = CombatEngine.Resolve(state, state.Revision, new[] {
-                CombatEffect.ApplyStatus(Status("rollback")), CombatEffect.Eliminate(Player, Enemy),
-                new CombatEffect(CombatEffectKind.Damage, Enemy, Player, 1)
+                CombatEffect.ApplyStatus(first), CombatEffect.Eliminate(Player, Enemy), CombatEffect.ApplyStatus(duplicate)
             });
             Assert.AreEqual(CombatError.InvalidEffect, result.Error); Assert.AreSame(state, result.State);
             Assert.IsEmpty(result.RuleEvents); Assert.IsEmpty(result.Events); Assert.IsEmpty(state.Statuses); Assert.AreEqual(10, state.Get(Enemy).Health);
@@ -240,7 +240,7 @@ namespace PokerEngine.Tests
             Assert.AreEqual(1, result.Events.Count); Assert.IsInstanceOf<CombatStatusEvent>(result.RuleEvents[1]);
         }
 
-        [TestCase("combat.2")] [TestCase("combat.3")] [TestCase("combat.4")]
+        [TestCase("combat.2")] [TestCase("combat.3")] [TestCase("combat.4")] [TestCase("combat.5")]
         public void CombatStateRoundTripPreservesStatusAndEliminationAndRejectsTheOldRulesVersion(string oldVersion)
         {
             var state = Create(); var status = Status("persisted", 3, StatusDuration.ForTriggers(2));
@@ -251,14 +251,14 @@ namespace PokerEngine.Tests
             {
                 serializer.WriteObject(stream, result.State); json = Encoding.UTF8.GetString(stream.ToArray()); stream.Position = 0;
                 var restored = (CombatState)serializer.ReadObject(stream); CombatEngine.Validate(restored);
-                Assert.AreEqual(result.State.Revision, restored.Revision); Assert.AreEqual("combat.5", restored.RulesVersion);
+                Assert.AreEqual(result.State.Revision, restored.Revision); Assert.AreEqual("combat.6", restored.RulesVersion);
                 Assert.AreEqual(0, restored.Get(Enemy).Health); Assert.AreEqual(3, restored.Get(Enemy).Block);
                 Assert.AreEqual(status.Id, restored.Statuses.Single().Id); Assert.AreEqual(status.DefinitionId, restored.Statuses[0].DefinitionId);
                 Assert.AreEqual(status.Source.Kind, restored.Statuses[0].Source.Kind); Assert.AreEqual(status.Source.Id, restored.Statuses[0].Source.Id);
                 Assert.AreEqual(status.Target.Id, restored.Statuses[0].Target.Id); Assert.AreEqual(3, restored.Statuses[0].Stacks);
                 Assert.AreEqual(DurationKind.TriggerCount, restored.Statuses[0].Duration.Kind); Assert.AreEqual(2, restored.Statuses[0].Duration.RemainingTriggers);
             }
-            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(json.Replace("combat.5", oldVersion))))
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(json.Replace("combat.6", oldVersion))))
             {
                 var old = (CombatState)serializer.ReadObject(stream);
                 Assert.Throws<ArgumentException>(() => CombatEngine.Validate(old));

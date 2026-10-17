@@ -10,9 +10,14 @@ namespace PokerEngine
         public int SequenceIndex { get; }
         /// <summary>Null for lifecycle facts that were not produced by an effect.</summary>
         public CombatEffect Effect { get; }
+        /// <summary>Null for lifecycle facts. Derived effects keep Index as their root's original plan position.</summary>
+        public CombatEffectProvenance Provenance { get; }
 
-        internal CombatRuleEvent(long revision, int index, CombatEffect effect, int sequenceIndex = -1)
-        { Revision = revision; Index = index; SequenceIndex = sequenceIndex < 0 ? index : sequenceIndex; Effect = effect; }
+        internal CombatRuleEvent(long revision, int index, CombatEffect effect, int sequenceIndex = -1, CombatEffectProvenance provenance = null)
+        {
+            Revision = revision; Index = index; SequenceIndex = sequenceIndex < 0 ? index : sequenceIndex; Effect = effect;
+            Provenance = effect == null ? null : provenance ?? new CombatEffectProvenance(index);
+        }
     }
 
     /// <summary>A newly applied status. It is not a zero-damage or other vitals event.</summary>
@@ -20,7 +25,8 @@ namespace PokerEngine
     {
         public StatusInstance Status => Effect.Status;
 
-        internal CombatStatusEvent(long revision, int index, CombatEffect effect, int sequenceIndex = -1) : base(revision, index, effect, sequenceIndex) { }
+        internal CombatStatusEvent(long revision, int index, CombatEffect effect, int sequenceIndex = -1, CombatEffectProvenance provenance = null)
+            : base(revision, index, effect, sequenceIndex, provenance) { }
     }
 
     public enum CombatStatusChangeReason { Refreshed = 1, Consumed = 2, Expired = 3 }
@@ -32,16 +38,18 @@ namespace PokerEngine
         public string ScopeId { get; }
         public string PhaseKey { get; }
         internal CombatStatusChangedEvent(long revision, int index, int sequenceIndex, CombatEffect effect,
-            StatusInstance before, StatusInstance after, CombatStatusChangeReason reason, string scopeId = null, string phaseKey = null)
-            : base(revision, index, effect, sequenceIndex)
+            StatusInstance before, StatusInstance after, CombatStatusChangeReason reason, string scopeId = null, string phaseKey = null,
+            CombatEffectProvenance provenance = null)
+            : base(revision, index, effect, sequenceIndex, provenance)
         { StatusBefore = before; StatusAfter = after; Reason = reason; ScopeId = scopeId; PhaseKey = phaseKey; }
     }
     public sealed class CombatStatusBlockedEvent : CombatRuleEvent
     {
         public StatusInstance Status => Effect.Status;
         public StatusInstanceId BlockingStatusId { get; }
-        internal CombatStatusBlockedEvent(long revision, int index, int sequenceIndex, CombatEffect effect, StatusInstanceId blockingStatusId)
-            : base(revision, index, effect, sequenceIndex) { BlockingStatusId = blockingStatusId; }
+        internal CombatStatusBlockedEvent(long revision, int index, int sequenceIndex, CombatEffect effect, StatusInstanceId blockingStatusId,
+            CombatEffectProvenance provenance = null)
+            : base(revision, index, effect, sequenceIndex, provenance) { BlockingStatusId = blockingStatusId; }
     }
     public sealed class CombatActionWindowSkippedEvent : CombatRuleEvent
     {

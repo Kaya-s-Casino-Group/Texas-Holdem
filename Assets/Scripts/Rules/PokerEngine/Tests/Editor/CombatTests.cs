@@ -57,10 +57,10 @@ namespace PokerEngine.Tests
             var cleared = CombatEngine.Resolve(healed.State, 2, new[] { new CombatEffect(CombatEffectKind.ClearBlock, Enemy, Enemy) });
             Assert.That(cleared.State.Get(Enemy).Block, Is.Zero);
         }
-        [Test] public void InvalidLaterEffectRollsBackWholeBatch()
+        [Test] public void UnknownLaterSourceRejectsTheWholeBatch()
         {
             var before = Create();
-            var result = CombatEngine.Resolve(before, 0, new[] { Damage(100), new CombatEffect(CombatEffectKind.Damage, Enemy, Player, 1) });
+            var result = CombatEngine.Resolve(before, 0, new[] { Damage(100), new CombatEffect(CombatEffectKind.Damage, new ParticipantId("missing"), Player, 1) });
             Assert.That(result.Error, Is.EqualTo(CombatError.InvalidEffect)); Assert.That(result.State, Is.SameAs(before));
             Assert.That(result.Events, Is.Empty); Assert.That(before.Get(Enemy).Health, Is.EqualTo(10));
         }
@@ -86,6 +86,19 @@ namespace PokerEngine.Tests
             Assert.IsTrue(result.Events[0].Died); Assert.IsFalse(result.Events[1].Died);
             Assert.AreEqual(10, before.Get(Enemy).Health); Assert.AreEqual(20, before.Get(Player).Health);
         }
+        [Test] public void SourceDefeatedDuringTheBatchSkipsItsLaterEffectsAndLivingSourcesContinue()
+        {
+            var state = Create();
+            var result = CombatEngine.Resolve(state, 0, new[] {
+                Damage(100), new CombatEffect(CombatEffectKind.Damage, Enemy, Player, 5),
+                new CombatEffect(CombatEffectKind.GainBlock, Player, Player, 2)
+            });
+            Assert.IsTrue(result.Accepted); Assert.AreEqual(1, result.State.Revision);
+            Assert.AreEqual(0, result.State.Get(Enemy).Health); Assert.AreEqual(20, result.State.Get(Player).Health);
+            Assert.AreEqual(2, result.State.Get(Player).Block); Assert.AreEqual(2, result.RuleEvents.Count);
+            Assert.AreEqual(0, result.RuleEvents[0].Index); Assert.AreEqual(2, result.RuleEvents[1].Index);
+            Assert.AreEqual(10, state.Get(Enemy).Health); Assert.AreEqual(0, state.Get(Player).Block);
+        }
         [TestCase("unknown-source")] [TestCase("unknown-target")] [TestCase("dead-source")]
         public void DeadTargetDoesNotHideInvalidReferencesOrDeadSources(string invalid)
         {
@@ -102,9 +115,9 @@ namespace PokerEngine.Tests
             var state = Create();
             var result = CombatEngine.Resolve(state, 0, new[] {
                 Damage(100), Damage(1), new CombatEffect(CombatEffectKind.GainBlock, Player, Player, 2),
-                new CombatEffect(CombatEffectKind.Damage, Enemy, Player, 1)
+                new CombatEffect(CombatEffectKind.GainBlock, Player, Player, int.MaxValue)
             });
-            Assert.AreEqual(CombatError.InvalidEffect, result.Error); Assert.AreSame(state, result.State);
+            Assert.AreEqual(CombatError.Overflow, result.Error); Assert.AreSame(state, result.State);
             Assert.IsEmpty(result.Events); Assert.IsEmpty(result.RuleEvents);
             Assert.AreEqual(10, state.Get(Enemy).Health); Assert.AreEqual(0, state.Get(Player).Block);
         }

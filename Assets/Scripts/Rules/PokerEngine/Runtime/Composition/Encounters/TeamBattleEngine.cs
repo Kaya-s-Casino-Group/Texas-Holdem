@@ -13,8 +13,11 @@ namespace PokerEngine
         public int RoundLimit { get; }
         public PlayerBlockExpiry PlayerBlockExpiry { get; }
         public CombatStatusCatalog StatusCatalog { get; }
+        public ICombatReactionProvider ReactionProvider { get; }
+        public CombatReactionLimits ReactionLimits { get; }
         public BattleRules(string version, int roundLimit,
-            PlayerBlockExpiry playerBlockExpiry = PlayerBlockExpiry.Retain, CombatStatusCatalog statusCatalog = null)
+            PlayerBlockExpiry playerBlockExpiry = PlayerBlockExpiry.Retain, CombatStatusCatalog statusCatalog = null,
+            ICombatReactionProvider reactionProvider = null, CombatReactionLimits reactionLimits = null)
         {
             Version = Guard.Text(version, nameof(version));
             if (roundLimit < 1 || roundLimit > 1000) throw new ArgumentOutOfRangeException(nameof(roundLimit));
@@ -26,6 +29,8 @@ namespace PokerEngine
             RoundLimit = roundLimit;
             PlayerBlockExpiry = playerBlockExpiry;
             StatusCatalog = statusCatalog;
+            ReactionProvider = reactionProvider;
+            ReactionLimits = reactionLimits ?? new CombatReactionLimits();
         }
     }
     /// <summary>Immutable player-specific card rules, action budget and discard reward, captured when entering the encounter.</summary>
@@ -387,11 +392,8 @@ namespace PokerEngine
                 if (effectPlan != null)
                 {
                     var resolved = BattleEffectResolver.Resolve(combat, effectPlan,
-                        action == ScoredDuelActionKind.Discard ? null : new ActorIncomingDamageModifier(state), Definition.StatusCatalog);
-                    if (!resolved.Accepted) return new TeamBattleTransition(state,
-                        resolved.Error == CombatError.Overflow ? CardDuelError.Overflow :
-                        action == ScoredDuelActionKind.Discard ? CardDuelError.InvalidDiscardReward :
-                        resolved.Error == CombatError.InvalidDamageModifier ? CardDuelError.InvalidDamageModifier : CardDuelError.InvalidTarget);
+                        new ActorIncomingDamageModifier(state), Definition.StatusCatalog, Definition.ReactionProvider, Definition.ReactionLimits);
+                    if (!resolved.Accepted) return new TeamBattleTransition(state, EffectFailure(resolved.Error, action == ScoredDuelActionKind.Discard));
                     combat = resolved.State; events = resolved.RuleEvents;
                 }
                 if (!enemy)
@@ -409,9 +411,9 @@ namespace PokerEngine
                         .Select(x => new CombatEffect(CombatEffectKind.ClearBlock, x.Id, x.Id)).ToArray();
                     if (clear.Length > 0)
                     {
-                        var expired = CombatEngine.Resolve(combat, combat.Revision, clear, statusCatalog: Definition.StatusCatalog);
-                        if (!expired.Accepted) return new TeamBattleTransition(state,
-                            expired.Error == CombatError.Overflow ? CardDuelError.Overflow : CardDuelError.InvalidTarget);
+                        var expired = CombatEngine.Resolve(combat, combat.Revision, clear, new ActorIncomingDamageModifier(state),
+                            Definition.StatusCatalog, Definition.ReactionProvider, Definition.ReactionLimits);
+                        if (!expired.Accepted) return new TeamBattleTransition(state, EffectFailure(expired.Error));
                         combat = expired.State; events = events.Concat(expired.RuleEvents).ToArray();
                     }
                 }
@@ -460,6 +462,13 @@ namespace PokerEngine
             catch (OverflowException) { return new TeamBattleTransition(state, CardDuelError.Overflow); }
             catch (ArgumentException) { return new TeamBattleTransition(state, CardDuelError.InvalidTarget); }
         }
+        private static CardDuelError EffectFailure(CombatError error, bool discard = false) =>
+            error == CombatError.Overflow ? CardDuelError.Overflow :
+            error == CombatError.InvalidReaction ? CardDuelError.InvalidReaction :
+            error == CombatError.ReactionLimitExceeded ? CardDuelError.ReactionLimitExceeded :
+            error == CombatError.InvalidDamageModifier ? CardDuelError.InvalidDamageModifier :
+            discard ? CardDuelError.InvalidDiscardReward : CardDuelError.InvalidTarget;
+
         // Dispatch by the actual target. CombatEngine still supplies the up-to-date atomic-batch context.
         private sealed class ActorIncomingDamageModifier : IIncomingDamageModifier
         {

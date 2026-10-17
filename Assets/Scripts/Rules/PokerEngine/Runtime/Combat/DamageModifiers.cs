@@ -24,9 +24,14 @@ namespace PokerEngine
         public long Amount { get; }
         public AttackContext Attack { get; }
         public DamageModifierContext(CombatState combat, ParticipantId source, ParticipantId target, long amount, AttackContext attack = null)
+            : this(combat, source, target, amount, attack, false) { }
+
+        // Only the resolver can admit defeated sources for explicit authority-generated reactions.
+        internal DamageModifierContext(CombatState combat, ParticipantId source, ParticipantId target, long amount, AttackContext attack, bool allowDefeatedSource)
         {
             Combat = combat ?? throw new ArgumentNullException(nameof(combat));
-            if (amount < 0 || !combat.Get(source).IsAlive || !combat.Get(target).IsAlive)
+            var sourceUnit = combat.Get(source);
+            if (amount < 0 || (!allowDefeatedSource && !sourceUnit.IsAlive) || !combat.Get(target).IsAlive)
                 throw new ArgumentException("Damage modifiers require living units and nonnegative damage.");
             Attack = attack ?? new AttackContext(source, AttackOrigin.Other, amount);
             if (Attack.Source != source) throw new ArgumentException("Attack source cannot change between stages.");
