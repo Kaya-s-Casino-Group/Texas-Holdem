@@ -61,7 +61,7 @@ namespace PokerEngine
 
     /// <summary>
     /// Ordered immutable battle binding. Runtime replacement may update only existing instances' runtime fields.
-    /// Definitions and the fingerprint describe the static binding, including passive numeric and structural configuration.
+    /// Definitions and the fingerprint describe the static binding, including passive amounts, effect structure and battle rules.
     /// </summary>
     public sealed class BattleRelicLoadout
     {
@@ -79,6 +79,7 @@ namespace PokerEngine
             // Repeat setup validation so objects restored without constructors cannot bypass the binding contract.
             foreach (var item in setup) new BattleRelicSetup(item.Definition, item.Instance, item.BattleRules);
             RelicHandEffectValidation.Combinations(setup.SelectMany(item => item.BattleRules.HandEffects));
+            RelicRuleValidation.Refills(setup.SelectMany(item => item.BattleRules.RefillRules));
             if (setup.Select(item => item.Instance.Id).Distinct(StringComparer.Ordinal).Count() != setup.Length)
                 throw new ArgumentException("Battle relic instance identities must be unique.", nameof(relics));
             foreach (var group in setup.GroupBy(item => item.Definition.Id, StringComparer.Ordinal))
@@ -170,6 +171,11 @@ namespace PokerEngine
                     {
                         writer.Write("battle-relic.hand-effects.1");
                         foreach (var state in Relics) RulesFor(state.InstanceId).WriteHandEffects(writer);
+                    }
+                    if (Relics.Any(state => RulesFor(state.InstanceId).RuleValues.Count != 0 || RulesFor(state.InstanceId).RefillRules.Count != 0))
+                    {
+                        writer.Write("battle-relic.rules.1");
+                        foreach (var state in Relics) RulesFor(state.InstanceId).WriteRules(writer);
                     }
                 }
                 using (var hash = SHA256.Create())

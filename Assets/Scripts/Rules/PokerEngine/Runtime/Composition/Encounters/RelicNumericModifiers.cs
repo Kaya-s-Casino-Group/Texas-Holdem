@@ -39,18 +39,26 @@ namespace PokerEngine
         public string Version { get; }
         public IReadOnlyList<RelicNumericModifierSpec> Modifiers { get; }
         public IReadOnlyList<RelicHandEffectModifierSpec> HandEffects { get; }
+        public IReadOnlyList<RelicRuleValueSpec> RuleValues { get; }
+        public IReadOnlyList<RelicRefillRuleSpec> RefillRules { get; }
         public static BattleRelicRules Empty { get; } = new BattleRelicRules("battle-relic.empty.1");
         public BattleRelicRules(string version, IEnumerable<RelicNumericModifierSpec> modifiers = null,
-            IEnumerable<RelicHandEffectModifierSpec> handEffects = null)
+            IEnumerable<RelicHandEffectModifierSpec> handEffects = null, IEnumerable<RelicRuleValueSpec> ruleValues = null,
+            IEnumerable<RelicRefillRuleSpec> refillRules = null)
         {
             Version = Guard.Text(version, nameof(version));
             var items = Guard.Copy(modifiers ?? Array.Empty<RelicNumericModifierSpec>(), nameof(modifiers));
             var structural = Guard.Copy(handEffects ?? Array.Empty<RelicHandEffectModifierSpec>(), nameof(handEffects));
-            var ids = items.Select(item => item.Id).Concat(structural.Select(item => item.Id)).ToArray();
+            var values = Guard.Copy(ruleValues ?? Array.Empty<RelicRuleValueSpec>(), nameof(ruleValues));
+            var refills = Guard.Copy(refillRules ?? Array.Empty<RelicRefillRuleSpec>(), nameof(refillRules));
+            var ids = items.Select(item => item.Id).Concat(structural.Select(item => item.Id))
+                .Concat(values.Select(item => item.Id)).Concat(refills.Select(item => item.Id)).ToArray();
             if (ids.Length > 32 || ids.Distinct(StringComparer.Ordinal).Count() != ids.Length)
                 throw new ArgumentException("A relic supports at most 32 distinctly named battle modifiers.");
             RelicHandEffectValidation.Combinations(structural);
+            RelicRuleValidation.Refills(refills);
             Modifiers = Guard.View(items); HandEffects = Guard.View(structural);
+            RuleValues = Guard.View(values); RefillRules = Guard.View(refills);
         }
         internal void Write(BinaryWriter writer)
         {
@@ -75,9 +83,17 @@ namespace PokerEngine
                 {
                     Write(writer);
                     if (HandEffects.Count != 0) { writer.Write("battle-relic.hand-effects.1"); WriteHandEffects(writer); }
+                    if (RuleValues.Count != 0 || RefillRules.Count != 0) { writer.Write("battle-relic.rules.1"); WriteRules(writer); }
                 }
                 return stream.ToArray();
             }
+        }
+        internal void WriteRules(BinaryWriter writer)
+        {
+            writer.Write(Version); writer.Write(RuleValues.Count);
+            foreach (var spec in RuleValues) spec.Write(writer);
+            writer.Write(RefillRules.Count);
+            foreach (var spec in RefillRules) spec.Write(writer);
         }
     }
 

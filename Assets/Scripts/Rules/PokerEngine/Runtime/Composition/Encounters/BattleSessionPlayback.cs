@@ -50,7 +50,8 @@ namespace PokerEngine
             var player = state.Duel.Player(actor);
             var rules = player.Rules;
             if (discard && !state.HasDiscardBudgetFor(actor) ||
-                player.Energy.Energy < (discard ? rules.DiscardEnergyCost : rules.PlayEnergyCost)) return false;
+                !Session.Engine.Duel.QueryActionCost(state.Duel, actor,
+                    discard ? ScoredDuelActionKind.Discard : ScoredDuelActionKind.ScoredHand).CanAfford) return false;
             int limit = discard ? rules.MaxDiscardCards : rules.MaxPlayCards;
             var hand = new HashSet<CardInstanceId>(state.Zone(CardZoneKinds.Hand, actor).Cards);
             var seen = new HashSet<CardInstanceId>();

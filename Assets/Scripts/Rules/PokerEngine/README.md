@@ -332,7 +332,7 @@ var persistentRelics = restored.ExportRunRelics();
 
 ## 遗物的被动数值修正
 
-`BattleRelicRules` 属于 Composition，作为 `BattleRelicSetup(..., battleRules: ...)` 的可选静态配置；Runs 的 RelicDefinition 不反向引用战斗组装层。每件遗物的数值与结构修正合计最多 32 条，Id 不可重复；数值条目使用 `RelicNumericModifierSpec`。六种 `BattleNumericStat` 是 DamageDealt / DamageReceived、HealingDone / HealingReceived、BlockGranted / BlockReceived；固定整数增减用 AddFlat，百分比增减用 AddRate（0.2 表示 +20%）。数值入口只改变数值；效果、目标、段数和状态参数通过下述结构修正入口配置，预算与费用尚未开放。
+`BattleRelicRules` 属于 Composition，作为 `BattleRelicSetup(..., battleRules: ...)` 的可选静态配置；Runs 的 RelicDefinition 不反向引用战斗组装层。每件遗物的数值、效果结构、规则数值与补牌修正合计最多 32 条，Id 跨四类不可重复；数值条目使用 `RelicNumericModifierSpec`。六种 `BattleNumericStat` 是 DamageDealt / DamageReceived、HealingDone / HealingReceived、BlockGranted / BlockReceived；固定整数增减用 AddFlat，百分比增减用 AddRate（0.2 表示 +20%）。此入口只改变战斗效果数值；效果结构和行动规则分别通过下述专用入口配置。
 
 ```csharp
 var numeric = new BattleRelicRules("relic.edge.1", new[] {
@@ -387,6 +387,39 @@ var setup = new BattleRelicSetup(relicDefinition, runRelic, rules);
 绑定时校验状态目录依赖；静态配置使用相对 StatusLifetimeSpec（或永久/次数 StatusDuration），拒绝捕获其他战局回合、阶段 scope 的状态配置。旧 DamagePolicy 路径不承载结构修正，绑定非空结构配置但未提供 EffectRule 时在开战前拒绝。目标绑定以修正后的序列校验请求槽，不忽略失效的旧请求。序列及目标展开后仍各限 64 条，结构错误报告 InvalidHandEffectModifier，目标/展开错误沿用 InvalidTarget / InvalidEffectPlan；后续失败依然回滚整次行动，已死亡目标沿用跳过规则。
 
 非空结构配置单独扩展遗物绑定指纹，包含操作、牌型、步骤 Id、额外段数、完整效果/状态/目标载荷及版本。旧空配置与纯数值配置的字节布局、指纹和 schema v1 运行状态快照保持兼容；带结构配置的快照必须用相同外部配置恢复。未配置或未匹配结构修正时保持现有牌型效果和弃牌行为。
+
+## 遗物对能量、费用、手牌和补牌的规则修正
+
+`BattleRelicRules(..., ruleValues: ..., refillRules: ...)` 保存被动规则配置。`RelicRuleValueSpec` 支持 MaxEnergy、InitialEnergy、PlayEnergyCost、DiscardEnergyCost、HandLimit 的固定整数增减；基础值加所有 Delta 后统一校验/截断，不连乘、不逐条截断。贡献按实例 Id / 条目 Id 的序数排序，装配顺序不影响结果。费用最低为 0；有效能量上限至少 1、初始能量至少 0、手牌上限 1–52，非法容量或 int 溢出在创建对局时拒绝。上限与初始能量分别配置，上限 +1 不自动增加初始能量；初始能量允许超过上限，沿用原规则。
+
+```csharp
+var rules = new BattleRelicRules("relic.budget.1", ruleValues: new[] {
+    new RelicRuleValueSpec("max-energy", BattleRuleValueKey.MaxEnergy, 1),
+    new RelicRuleValueSpec("initial-energy", BattleRuleValueKey.InitialEnergy, 1),
+    new RelicRuleValueSpec("free-discard", BattleRuleValueKey.DiscardEnergyCost, -1),
+    new RelicRuleValueSpec("larger-hand", BattleRuleValueKey.HandLimit, 2)
+}, refillRules: new[] {
+    new RelicRefillRuleSpec("refill-after-play", CardDuelDealTrigger.AfterPlay, BattleRefillMode.FillToLimit),
+    new RelicRefillRuleSpec("opening-count", CardDuelDealTrigger.OpeningTurn, BattleRefillMode.FixedCount, 5)
+});
+var setup = new BattleRelicSetup(relicDefinition, runRelic, rules);
+```
+
+`IBattleRuleResolver` / `BattleRuleResolver` 提供 ResolveLimits、ResolveActionCost、ResolveDeal 三个纯查询。`BattlePlayerTurn.Rules` 保留基础配置；`Limits` 保存开战时计算的有效容量和贡献明细。最大能量写入 PlayerTurnState，后续玩家阶段按该上限恢复；牌组最少张数、开局与各时机补牌使用有效 HandLimit。手牌上限不改变 MaxPlayCards / MaxDiscardCards 的选牌限制，也不自动生成牌。此版不支持中途动态换装或临时容量状态。
+
+`TeamBattleEngine.QueryActionCost(state, actor, action)` 查询出牌/弃牌的当前费用与 CanAfford；只判断资源，不替代行动阶段、控制、选牌和弃牌次数校验。CardDuelEngine、TeamBattleEngine 和规则侧 BattleSessionPlayback 输入预算判断统一调用它，真正扣费由权威状态重算，不接收外部报价。成功出牌/弃牌的 transition.ActionCost 记录基础值、贡献、费用及扣费前能量；结束、跳过和失败没有费用报告。
+
+本次只接规则层。现有 HUD、弃牌提示和审计窗口中的费用/补牌文案仍读取基础 Rules；表现层后续应改为读取查询/报告，避免把基础值当作最终费用或补牌结果。
+
+能量扣至 0 时，只要出牌或弃牌任一种有效费用为 0，就保留玩家行动窗口，允许继续提交免费行动；即使当前无牌或弃牌次数耗尽也不隐式关窗，可主动 EndTurn。免费弃牌仍检查并消耗有限弃牌次数，UnlimitedDiscards 语义不变。主动结束与眩晕 SkipPlayerTurn 总会关闭窗口，免费行动不能绕过控制、已结束状态、Played 收牌边界或修订号。BattleSession 只自动推进既有跳过/敌方/收牌步骤，不自动重复免费操作。没有免费费用时仍按原规则在能量耗尽时自动结束。
+
+`RelicRefillRuleSpec` 指定 OpeningTurn / AfterPlay / AfterDiscard / PlayerTurnStart 中的一个时机。Mode 为 null 时继承现有 `ICardDuelDealPolicy`；Skip 禁止该次补牌，FillToLimit 补至上限，FixedCount 使用明确张数（可为 0）。同一时机相同模式及固定张数可合并；不同模式或不同固定张数在绑定时拒绝，没有最后一件覆盖前一件的规则。不同玩家、不同触发时机各自独立。
+
+补牌顺序为：移出出牌/弃牌 → 用新牌区与有效手牌上限构造 CardDuelDealContext → 校验基础策略输出在 0..MissingCards → 选择基础量或替换模式 → 累加所有 CountDelta → 截断到 0..MissingCards → 抽取牌。Skip 始终为 0，不被加张数重新开启；继承模式可以把基础 0 次补牌加为 1。基础策略非法不会被遗物模式掩盖，返回 InvalidDealPlan；非法规则查询返回 InvalidRuleModifier，溢出沿用 Overflow。
+
+`CardDuelTransition.Draws` 按执行顺序保存 BattleDrawRecord（计划 Plan 与实际 DrawnCount）；计划包含基础张数、模式、所选张数、总增减、上限、缺额和各遗物贡献。牌源不足可少抽，AfterPlay 时 Played 仍不可洗回，只有现有 Discard 牌堆参与洗牌；CollectPlayed 本身不触发补牌。预览复用完整流水线，不修改输入和 RNG。任意后续失败保留原状态且不发布费用/抽牌报告；Session 自动步骤失败也撤销整次用户命令。
+
+新增配置非空时才追加 `battle-relic.rules.1` 指纹段，旧空配置、纯数值和结构配置的指纹保持兼容。schema v1 仍仅存遗物运行状态，读取新配置快照必须提供相同外部绑定。规则查询不消费 Charges / UsesThisRound / CooldownRounds / Memory；首回合优惠、限定次数免单和动态条件留给后续触发提交机制。没有新修正时保留既有牌型效果、弃牌收益/次数及洗牌流程。
 
 ## 计分模块
 
