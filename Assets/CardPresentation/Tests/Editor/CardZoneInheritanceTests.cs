@@ -159,7 +159,7 @@ namespace CardPresentation.Tests
         [Test] public void OriginalMonoScriptGuidNowResolvesHandAndInheritedSerializedFieldsSurvive()
         {
             var oldScriptPath = AssetDatabase.GUIDToAssetPath("a21570f253844baebbfb3dbd4cda93d9");
-            Assert.AreEqual("Assets/CardPresentation/Runtime/HandZoneView.cs", oldScriptPath);
+            Assert.AreEqual("Assets/CardPresentation/Runtime/World/HandZoneView.cs", oldScriptPath);
             Assert.AreEqual(typeof(HandZoneView), AssetDatabase.LoadAssetAtPath<MonoScript>(oldScriptPath).GetClass());
             using (var f = new Fixture())
             {

@@ -7,6 +7,7 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem.UI;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
@@ -18,7 +19,7 @@ namespace CardPresentation.Editor
         public const string PrefabPath = "Assets/CardPresentation/Prefabs/HandActionPanel.prefab";
         public static bool HasPrefab => AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath) != null;
 
-        [MenuItem("Tools/Cards/Prepare Hand Action Panel Prefab")]
+        [MenuItem("工具/卡牌表现/界面预制体/准备手牌操作面板")]
         public static void Prepare()
         {
             if (HasPrefab) return; // Preserve authored layout and styling when preparing again.
@@ -55,8 +56,7 @@ namespace CardPresentation.Editor
             finally { Object.DestroyImmediate(root); }
         }
 
-        [MenuItem("Tools/Cards/Use Compact Hand Action UI Camera")]
-        [MenuItem("Tools/Cards/Update Player Hand UI")]
+        [MenuItem("工具/卡牌表现/界面布局/更新玩家手牌界面")]
         public static void UseCompactUICamera()
         {
             if (EditorApplication.isPlayingOrWillChangePlaymode) throw new InvalidOperationException("请退出 Play 后配置 UI Camera。");
@@ -126,13 +126,13 @@ namespace CardPresentation.Editor
             // Card mouse input already excludes EventSystem UI hits. Only button graphics intercept the pointer.
             if (!Object.FindObjectsOfType<EventSystem>().Any(item => item.isActiveAndEnabled))
             {
-                var root = new GameObject("Card UI EventSystem", typeof(EventSystem), typeof(StandaloneInputModule));
+                var root = new GameObject("Card UI EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
                 SceneManager.MoveGameObjectToScene(root, scene); Undo.RegisterCreatedObjectUndo(root, "创建 UI 输入");
             }
             EditorSceneManager.MarkSceneDirty(scene); return presenter;
         }
 
-        [MenuItem("Tools/Cards/Configure Hand Action Buttons")]
+        [MenuItem("工具/卡牌表现/场景接入/配置手牌操作按钮")]
         public static void ConfigureInCurrentScene()
         {
             if (EditorApplication.isPlayingOrWillChangePlaymode) throw new InvalidOperationException("请退出 Play 后配置操作按钮。");

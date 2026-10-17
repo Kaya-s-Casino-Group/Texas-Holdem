@@ -26,10 +26,10 @@ namespace CardPresentation.Editor
         public const string AtlasPath = "Assets/Art/CardAtlases/FourBeastsAtlas.asset";
         public const string CapturePath = "Library/DeckOverviewValidation/overview.png";
 
-        [MenuItem("Tools/Cards/Prepare Canvas Deck Overview Prefab")]
+        [MenuItem("工具/卡牌表现/界面预制体/准备牌库总览")]
         public static void Prepare() => Prepare(false);
 
-        [MenuItem("Tools/Cards/Update Canvas Deck Overview Layout")]
+        [MenuItem("工具/卡牌表现/界面布局/更新牌库总览")]
         public static void UpdateLayout() { Prepare(true); Show(); }
 
         private static void Prepare(bool updateLayout)
@@ -83,9 +83,9 @@ namespace CardPresentation.Editor
             {
                 foreach (Transform child in canvasRoot.transform.Cast<Transform>().ToArray()) Object.DestroyImmediate(child.gameObject);
                 canvasRoot.layer = LayerMask.NameToLayer("UI");
-                var canvas = canvasRoot.GetComponent<Canvas>(); canvas.renderMode = RenderMode.ScreenSpaceCamera;
+                var canvas = canvasRoot.GetComponent<Canvas>(); canvas.renderMode = RenderMode.ScreenSpaceOverlay;
                 if (canvasRoot.GetComponent<CanvasGroup>() == null) canvasRoot.AddComponent<CanvasGroup>();
-                canvas.pixelPerfect = true; canvas.sortingOrder = 250; canvas.planeDistance = 1;
+                canvas.pixelPerfect = true; canvas.sortingOrder = 500; canvas.planeDistance = 1;
                 canvas.additionalShaderChannels |= CardUIGraphic.RequiredChannels;
                 var scaler = canvasRoot.GetComponent<CanvasScaler>(); scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
                 scaler.referenceResolution = new Vector2(1280,720); scaler.matchWidthOrHeight = .5f;
@@ -199,7 +199,7 @@ namespace CardPresentation.Editor
             image.color = color; image.raycastTarget = false; return rect;
         }
 
-        [MenuItem("Tools/Cards/Show Canvas Deck Overview")]
+        [MenuItem("工具/卡牌表现/界面预览/显示牌库总览")]
         public static void Show()
         {
             var scene = SceneManager.GetActiveScene();
@@ -248,7 +248,7 @@ namespace CardPresentation.Editor
             EditorUtility.SetDirty(presenter); EditorUtility.SetDirty(canvas); EditorSceneManager.MarkSceneDirty(scene); return presenter;
         }
 
-        [MenuItem("Tools/Cards/Capture Canvas Deck Overview Prefab")]
+        [MenuItem("工具/卡牌表现/截图/牌库总览")]
         public static void Capture()
         {
             Prepare(); var scene = EditorSceneManager.NewPreviewScene();

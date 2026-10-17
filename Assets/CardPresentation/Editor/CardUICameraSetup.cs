@@ -86,7 +86,7 @@ namespace CardPresentation.Editor
             EditorSceneManager.MarkSceneDirty(scene); return uiCamera;
         }
 
-        [MenuItem("Tools/Cards/Capture UI Camera Stack In Play")]
+        [MenuItem("工具/卡牌表现/截图/运行时界面相机叠加")]
         public static void CaptureInPlay()
         {
             if (!Application.isPlaying) throw new InvalidOperationException("进入 Play 后捕获 UI Stack。");

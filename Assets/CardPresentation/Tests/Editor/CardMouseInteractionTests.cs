@@ -49,6 +49,32 @@ namespace CardPresentation.Tests
             }
         }
 
+        [Test] public void TouchHoldHoversAndReleaseSelectsOnceThenClearsHover()
+        {
+            using (var f = new Fixture())
+            {
+                var ray = f.RayAt(f.Zone.Views[0]);
+                f.Pointer.ProcessPointer(ray, pressed: true);
+                Assert.IsTrue(f.Model.Cards[0].IsHovered);
+                Assert.IsFalse(f.Model.Cards[0].IsSelected);
+                f.Pointer.ProcessPointer(ray);
+                Assert.IsFalse(f.Model.Cards[0].IsSelected, "Holding must not commit a click.");
+                f.Pointer.ProcessPointer(ray, released: true);
+                f.Pointer.CancelPointer();
+                Assert.IsTrue(f.Model.Cards[0].IsSelected);
+                Assert.IsFalse(f.Model.Cards[0].IsHovered);
+                Assert.AreEqual(1, f.Zone.Views[0].HoverScale);
+                ray = f.RayAt(f.Zone.Views[0]);
+                f.Pointer.ProcessPointer(ray, pressed: true);
+                f.Pointer.ProcessPointer(ray, released: true); f.Pointer.CancelPointer();
+                Assert.IsFalse(f.Model.Cards[0].IsSelected);
+                f.Pointer.ProcessPointer(ray, pressed: true);
+                f.Pointer.CancelPointer();
+                f.Pointer.ProcessPointer(ray, released: true); f.Pointer.CancelPointer();
+                Assert.IsFalse(f.Model.Cards.Any(card => card.IsSelected || card.IsHovered));
+            }
+        }
+
         [Test] public void DefaultSelectionLimitRejectsSixthCardAndDeselectingFreesASlot()
         {
             using (var f = new Fixture(6))

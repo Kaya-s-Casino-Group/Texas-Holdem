@@ -11,7 +11,7 @@ namespace CardPresentation.Editor
     public static class DeckSummarySetup
     {
         public const string PrefabPath = "Assets/CardPresentation/Prefabs/DeckSummary.prefab";
-        [MenuItem("Tools/Cards/Prepare Deck Hover Summary Prefab")]
+        [MenuItem("工具/卡牌表现/界面预制体/准备牌堆悬停摘要")]
         public static void Prepare()
         {
             var existing = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);

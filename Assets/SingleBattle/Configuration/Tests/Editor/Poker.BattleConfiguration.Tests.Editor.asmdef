@@ -1,0 +1,23 @@
+{
+  "name": "Poker.BattleConfiguration.Tests.Editor",
+  "rootNamespace": "Poker.SingleBattle.Configuration.Tests",
+  "references": [
+    "Poker.BattleConfiguration.Runtime",
+    "Poker.Scoring.Runtime",
+    "PokerEngine.Core",
+    "PokerEngine.Combat",
+    "PokerEngine.Scoring",
+    "PokerEngine.Composition"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "overrideReferences": true,
+  "precompiledReferences": [
+    "nunit.framework.dll"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ],
+  "autoReferenced": false
+}

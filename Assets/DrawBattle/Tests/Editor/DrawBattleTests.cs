@@ -104,6 +104,53 @@ namespace Poker.DrawBattle.Tests
                 Assert.AreEqual(authored, JsonUtility.ToJson(f.Match)); f.AssertLocations();
             }
         }
+
+        [TestCase(false)] [TestCase(true)]
+        public void DataCommandsUseCapturedSelectionAndTheModesBoundPresentation(bool discard)
+        {
+            using (var f = new Fixture())
+            {
+                f.Select(2); var captured = f.Hand.CaptureSelection();
+                var request = new CardSelectionRequest(captured.MatchId, captured.ZoneId, captured.ControllerId, captured.Cards.Reverse());
+                bool sawPlayed = false;
+                f.Battle.EventPresented += item => {
+                    if (item.Kind != DrawEventKind.CardsPlayed) return;
+                    sawPlayed = true; CollectionAssert.AreEqual(request.Cards, item.Cards);
+                };
+                foreach (var card in f.Hand.Cards) f.Hand.SetInteraction(card.Id, default);
+                var replacement = f.Hand.Cards.First(card => !request.Cards.Contains(card.Card.Id)).Card.Id;
+                f.Hand.SetInteraction(replacement.Value, new CardInteractionState(isSelected: true));
+                f.Hand.Publish(); f.HandView.CompleteTransitions();
+                ICardMatchCommands commands = f.Battle;
+                Assert.AreEqual(2, discard ? commands.Discard(request, false) : commands.Play(request, false));
+                Assert.AreEqual(!discard, sawPlayed);
+                CollectionAssert.AreEquivalent(request.Cards, f.Hand.DiscardedCards.Select(card => card.Card.Id));
+                Assert.IsTrue(f.Hand.Zone.Cards.Contains(replacement));
+                Assert.AreEqual(0, discard ? commands.Discard(request, false) : commands.Play(request, false));
+                f.AssertLocations();
+            }
+        }
+
+        [Test] public void DataCommandsRejectForeignIdentitiesWithoutChangingAuthorityOrMirror()
+        {
+            using (var f = new Fixture())
+            {
+                f.Select(); var input = f.Hand.CaptureSelection();
+                var requests = new[] {
+                    new CardSelectionRequest(new MatchId("foreign"), input.ZoneId, input.ControllerId, input.Cards),
+                    new CardSelectionRequest(input.MatchId, input.ZoneId, new ParticipantId("other"), input.Cards),
+                    new CardSelectionRequest(input.MatchId, f.Hand.DeckZone.Id, input.ControllerId, input.Cards),
+                    new CardSelectionRequest(input.MatchId, input.ZoneId, input.ControllerId, new[] { f.Hand.DeckCards[0].Card.Id })
+                };
+                var state = f.Battle.State; var mirror = f.Match.State; var visual = f.HandView.Data;
+                foreach (var request in requests)
+                {
+                    Assert.IsFalse(f.Battle.CanPlay(request)); Assert.IsFalse(f.Battle.CanDiscard(request));
+                    Assert.AreEqual(0, f.Battle.Play(request, false)); Assert.AreEqual(0, f.Battle.Discard(request, false));
+                    Assert.AreSame(state, f.Battle.State); Assert.AreSame(mirror, f.Match.State); Assert.AreSame(visual, f.HandView.Data);
+                }
+            }
+        }
         [Test] public void DefaultDeckKeepsIdentitiesAcrossMovesAndNewBattlesCreateIndependentDecks()
         {
             using (var f = new Fixture())
@@ -133,6 +180,8 @@ namespace Poker.DrawBattle.Tests
         {
             using (var f = new Fixture())
             {
+                // Allow the UI to supply six cards so this exercises the gameplay limit, not the input cap.
+                f.HandView.SetMaxSelectedCards(6);
                 f.Select(6); var before = f.Battle.State; var mirror = f.Match.State;
                 Assert.IsFalse(f.Actions.CanPlay); Assert.IsFalse(f.Actions.CanDiscard); Assert.AreEqual(0, f.Hand.DiscardSelected(false));
                 Assert.AreSame(before, f.Battle.State); Assert.AreSame(mirror, f.Match.State);

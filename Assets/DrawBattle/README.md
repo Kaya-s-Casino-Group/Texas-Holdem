@@ -1,10 +1,15 @@
-# Draw 战局与现有卡牌 UI
+# 独立分数挑战（DrawBattle）
+
+本模块在有限出牌次数内累计分数、达到目标分数，作为独立模式保留。它不承担主线角色战斗的生命、格挡和敌方回合，也不是通用抽牌服务。主线玩法见 [卡牌战斗（SingleBattle）](../SingleBattle/README.md)。现有类名、规则和资源路径保持不变。
+
 
 `Poker.DrawBattle.Runtime` 是 Unity 场景桥接层。依赖既有 Draw/Core/Abilities/Scoring、CardInteraction 和 CardPresentation，GameCore 仍是纯 C#。一场战局只有 `DrawState` 持有权威玩法状态；`CardMatchHost` 在接入时成为本地展示镜像，允许动画帧临时保留出牌，不参与玩法结算和存档。
 
+出牌/弃牌统一通过 `ICardMatchCommands` 接收 `CardSelectionRequest`，参数仅包含对局、玩家、源牌区和卡牌 ID。`DrawBattleHost` 从 `DrawState` 校验请求，再使用配置时绑定的手牌、出牌区和飞行路径完成原有表现；调用者不再向命令传递场景对象。与 SingleBattle 共用接口，但各模式继续拥有各自的演出流程。
+
 ## 当前场景接入
 
-在包含一个已配置手牌操作面板的场景执行 **Tools > Cards > Connect Draw Battle In Current Scene**。工具在对应 Card Match 上添加/配置 `DrawBattleHost`，复用手牌、出牌区、出牌路径、按钮、抽牌堆图标和完整牌库总览；支持 Undo，不自动保存场景。当前 CardRenderingValidation 已配置，进入 Play 即可开始一场 Draw。关闭宿主的 Start On Enable 可由正式 Run 宿主显式初始化。
+在包含一个已配置手牌操作面板的场景执行 **工具 > 分数挑战 > 接入当前场景**。工具在对应 Card Match 上添加/配置 `DrawBattleHost`，复用手牌、出牌区、出牌路径、按钮、抽牌堆图标和完整牌库总览；支持 Undo，不自动保存场景。当前仓库内没有直接挂载 `DrawBattleHost` 的场景或 Prefab；保留接入工具与测试，不将 CardRenderingValidation 视为已接入的分数挑战场景。关闭宿主的 Start On Enable 可由正式 Run 宿主显式初始化。
 
 默认参数在宿主 Inspector：8 张手牌、4 次出牌、3 次弃牌、目标 200，属于可玩验证参数。
 
@@ -48,6 +53,6 @@ battle.StartEncounter(rules, run.Encounter, resolveArt, command => {
 
 ## 验证入口
 
-- **Tools > 测试面板 > 编辑模式测试 > 更多模块 / 全量回归 > 分数目标战局逻辑**：同步 NUnit 回归，使用独立 PreviewScene，不替换当前场景。
-- Play 中 **Tools > 测试面板 > 实战验证 > 分数目标战局**：调用真实按钮和指针事件，等待真实飞行/补牌动画，检查重复提交锁定、计分、次数、四区、牌堆数字、悬停统计、点击牌库与排序。完成恢复原战局；报告 `Library/DrawBattleTests/play.json`。不模拟系统鼠标。
+- **工具 > 测试面板 > 编辑模式测试 > 更多模块 / 全量回归 > 分数挑战逻辑**：同步 NUnit 回归，使用独立 PreviewScene，不替换当前场景。
+- Play 中 **工具 > 测试面板 > 实战验证 > 分数挑战完整流程**：调用真实按钮和指针事件，等待真实飞行/补牌动画，检查重复提交锁定、计分、次数、四区、牌堆数字、悬停统计、点击牌库与排序。完成恢复原战局；报告 `Library/DrawBattleTests/play.json`。不模拟系统鼠标。
 - 既有 **Run Card Presentation In Current Scene** 保留原验证/预览模式回归。

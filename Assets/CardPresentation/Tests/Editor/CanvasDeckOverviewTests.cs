@@ -44,7 +44,7 @@ namespace CardPresentation.Tests
         {
             var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(DeckOverviewSetup.PrefabPath);
             Assert.IsNotNull(prefab); Assert.IsNotNull(prefab.GetComponent<GraphicRaycaster>());
-            Assert.AreEqual((int)RenderMode.ScreenSpaceCamera,new SerializedObject(prefab.GetComponent<Canvas>()).FindProperty("m_RenderMode").intValue);
+            Assert.AreEqual((int)RenderMode.ScreenSpaceOverlay,new SerializedObject(prefab.GetComponent<Canvas>()).FindProperty("m_RenderMode").intValue);
             Assert.IsNull(prefab.GetComponent<Canvas>().worldCamera); Assert.IsEmpty(prefab.GetComponentsInChildren<MeshRenderer>(true));
             var view = prefab.GetComponent<DeckOverviewView>(); Assert.AreSame(AssetDatabase.LoadAssetAtPath<CardAtlasData>(DeckOverviewSetup.AtlasPath),view.Atlas);
             Assert.AreEqual("CardPresentation/Card Canvas",view.CardMaterial.shader.name);
@@ -299,10 +299,10 @@ namespace CardPresentation.Tests
             public bool Allow = true;
             public CardInstanceId Queried;
             public bool CanInteract => false;
-            public bool CanPlay(CardZonePlayHost hand) => false;
-            public bool CanDiscard(CardZonePlayHost hand) => false;
-            public int Play(CardZonePlayHost hand, CardZonePlayHost destination, CardZoneTransferPresenter route, bool animate) => 0;
-            public int Discard(CardZonePlayHost hand, bool animate) => 0;
+            public bool CanPlay(CardSelectionRequest request) => false;
+            public bool CanDiscard(CardSelectionRequest request) => false;
+            public int Play(CardSelectionRequest request, bool animate) => 0;
+            public int Discard(CardSelectionRequest request, bool animate) => 0;
             public bool TryGetCardBasePoints(CardInstanceId card, out long points) { Queried = card; points = 123; return Allow; }
         }
         [Test] public void OverviewQueriesGameplayByCardIdentityAndDoesNotReplaceDeniedValuesWithDefaults()

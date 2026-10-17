@@ -26,7 +26,7 @@ namespace CardPresentation.Editor
         private const string PreviewPath = "Library/CardTooltipValidation/tooltip.png";
         private static bool importingTextMeshPro;
 
-        [MenuItem("Tools/Cards/Prepare Suit And Chips Tooltip Prefab")]
+        [MenuItem("工具/卡牌表现/界面预制体/准备花色与筹码提示")]
         public static void Prepare()
         {
             EnsureFolder(Path.GetDirectoryName(FontPath));
@@ -54,7 +54,7 @@ namespace CardPresentation.Editor
             background.raycastTarget = false;
         }
 
-        [MenuItem("Tools/Cards/Use Compact Suit And Chips Tooltip Style")]
+        [MenuItem("工具/卡牌表现/界面布局/应用紧凑提示样式")]
         public static void UseCompactStyle()
         {
             var root = PrefabUtility.LoadPrefabContents(PrefabPath);
@@ -289,7 +289,7 @@ namespace CardPresentation.Editor
                 throw new InvalidOperationException("Tooltip must bind its display component and all four native font suit glyphs.");
         }
 
-        [MenuItem("Tools/Cards/Capture Suit And Chips Tooltip Prefab")]
+        [MenuItem("工具/卡牌表现/截图/花色与筹码提示")]
         public static void Capture()
         {
             var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);

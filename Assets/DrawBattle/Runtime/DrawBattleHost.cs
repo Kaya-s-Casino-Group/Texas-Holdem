@@ -105,45 +105,64 @@ namespace Poker.DrawBattle
             var rank = card.Rank == Rank.Ace ? "a" : card.Rank == Rank.King ? "k" : card.Rank == Rank.Queen ? "q" : card.Rank == Rank.Jack ? "j" : ((int)card.Rank).ToString("00", CultureInfo.InvariantCulture);
             return card.Suit.ToString().ToLowerInvariant() + "_" + rank;
         }
-        private CardInstanceId[] Selected(CardZonePlayHost hand) => hand.Cards.Where(card => card.Interaction.IsSelected).Select(card => card.Card.Id).ToArray();
-        private bool CanSubmit(CardZonePlayHost hand, bool discard)
+        private bool CanSubmit(CardSelectionRequest request, bool discard)
         {
-            if (!CanInteract || hand != actions.Hand || (discard && State.DiscardsRemaining == 0)) return false;
-            var selected = Selected(hand);
-            return selected.Length > 0 && selected.Length <= Definition.MaxSelection && selected.All(id =>
+            if (!CanInteract || request == null || request.MatchId != new MatchId(State.Id) ||
+                request.ControllerId != State.PlayerId || request.ZoneId != DrawEngine.Zone(State.Id, CardZoneKinds.Hand) ||
+                (discard && State.DiscardsRemaining == 0)) return false;
+            var selected = request.Cards;
+            return selected.Count > 0 && selected.Count <= Definition.MaxSelection && selected.All(id =>
                 State.World.Zones.Single(zone => zone.Kind == CardZoneKinds.Hand).Cards.Contains(id) &&
-                (discard ? match.State.GetCard(id).CanDiscard : match.State.GetCard(id).CanPlay));
+                (discard ? State.World.Cards.Single(card => card.Id == id).CanDiscard : State.World.Cards.Single(card => card.Id == id).CanPlay));
         }
-        public bool CanPlay(CardZonePlayHost hand) => CanSubmit(hand, false);
-        public bool CanDiscard(CardZonePlayHost hand) => CanSubmit(hand, true);
-
-        public int Play(CardZonePlayHost hand, CardZonePlayHost destination, CardZoneTransferPresenter route, bool animate)
+        public bool CanPlay(CardSelectionRequest request)
         {
-            if (!CanPlay(hand) || destination != actions.Played || route != actions.PlayRoute || route.IsTransferring) return 0;
-            var ids = Selected(hand);
+            if (!CanSubmit(request, false)) return false;
+            // Route readiness belongs to this mode's presentation binding, never to the command payload.
+            var route = actions.PlayRoute; var destination = actions.Played;
+            return route != null && route.isActiveAndEnabled && !route.IsTransferring &&
+                route.Source == actions.Hand.GetComponent<HandZoneView>() && destination != null && destination.IsRunning &&
+                destination.isActiveAndEnabled && route.Destination.isActiveAndEnabled &&
+                route.Source.CardPrefab == route.Destination.CardPrefab &&
+                request.Cards.Count <= PlayedZoneView.SlotCount - destination.Cards.Count;
+        }
+        public bool CanDiscard(CardSelectionRequest request) => CanSubmit(request, true);
+
+        public int Play(CardSelectionRequest request, bool animate)
+        {
+            if (!CanPlay(request)) return 0;
+            var hand = actions.Hand; var destination = actions.Played; var route = actions.PlayRoute;
+            if (route.Source.Data == null || route.Destination.Data == null ||
+                !route.Source.Data.Cards.Select(card => card.ViewId).SequenceEqual(hand.Cards.Select(card => card.Id)) ||
+                !route.Destination.Data.Cards.Select(card => card.ViewId).SequenceEqual(destination.Cards.Select(card => card.Id)))
+                throw new InvalidOperationException("Refresh stale zone presentations before transfer.");
+            var ids = request.Cards.ToArray();
             // Prepare the visual handoff before the command; its callback only assigns this already validated mirror update.
             var frame = match.PrepareExternalPlay(this, hand.Zone.Id, destination.Zone.Id, ids, PlayedZoneView.SlotCount);
             if (!Execute(new DrawCommand(Guid.NewGuid().ToString("N"), State.Revision, DrawAction.Play, ids), out var events)) return 0;
             busy = true;
             try
             {
-                route.PresentTransfer(frame.Project(hand.Zone.Id), frame.Project(destination.Zone.Id), ids.Select(id => id.Value), animate, () => match.Commit(frame));
-                match.Notify(frame, hand, destination);
+                // The command preserves captured input order; the visual handoff follows the current mirror order.
+                route.PresentTransfer(frame.Project(hand.Zone.Id), frame.Project(destination.Zone.Id),
+                    frame.Change.Transferred.Select(id => id.Value), animate, () => match.Commit(frame));
+                match.Notify(frame, route.Source.Data, route.Destination.Data);
                 StartPlayback(events, animate, true);
             }
             catch { SnapToState(); throw; }
             return ids.Length;
         }
-        public int Discard(CardZonePlayHost hand, bool animate)
+        public int Discard(CardSelectionRequest request, bool animate)
         {
-            if (!CanDiscard(hand)) return 0;
-            var ids = Selected(hand); var frame = match.PrepareExternalDiscard(this, hand.Zone.Id, hand.DiscardZone.Id, ids);
+            if (!CanDiscard(request)) return 0;
+            var hand = actions.Hand;
+            var ids = request.Cards.ToArray(); var frame = match.PrepareExternalDiscard(this, hand.Zone.Id, hand.DiscardZone.Id, ids);
             if (!Execute(new DrawCommand(Guid.NewGuid().ToString("N"), State.Revision, DrawAction.Discard, ids), out var events)) return 0;
             busy = true;
             try
             {
                 hand.GetComponent<HandZoneView>().PresentDiscardCommitted(frame.Project(hand.Zone.Id), ids.Select(id => id.Value), () => match.Commit(frame), animate);
-                match.Notify(frame, hand); StartPlayback(events, animate, false);
+                match.Notify(frame, hand.GetComponent<HandZoneView>().Data); StartPlayback(events, animate, false);
             }
             catch { SnapToState(); throw; }
             return ids.Length;
@@ -213,7 +232,7 @@ namespace Poker.DrawBattle
             // Explicit presentation handles animate=false as well as card removals/refills; other observers read the same mirror.
             actions.Hand.GetComponent<HandZoneView>().PresentCommitted(update.Project(actions.Hand.Zone.Id), () => match.Commit(update), animate);
             actions.Played.GetComponent<PlayedZoneView>().Present(update.Project(actions.Played.Zone.Id), animate);
-            match.Notify(update, actions.Hand, actions.Played); overview?.Refresh(); drawPile?.Refresh();
+            match.Notify(update, actions.Hand.GetComponent<HandZoneView>().Data, actions.Played.GetComponent<PlayedZoneView>().Data); overview?.Refresh(); drawPile?.Refresh();
             if (zones.Single(zone => zone.Kind == CardZoneKinds.Hand).Cards.Any(id => !oldHand.ContainsKey(id)))
                 actions.Hand.RequestSortAfterLanding(actions.Hand.SortOrder);
         }

@@ -53,13 +53,13 @@ namespace CardPresentation.Editor
             (HasLiveBattle && Host.Match.Commands.CanInteract && !target.IsTransitioning));
         private int CurrentCapacity => target != null ? target.CardCapacity ?? 0 : 0;
 
-        [MenuItem("Tools/Cards/Card Zone Validator")]
+        [MenuItem("工具/卡牌表现/实战牌区验证")]
         public static void Open()
         {
             var window = GetWindow<CardZoneValidationWindow>("实战牌区验证");
             window.minSize = new Vector2(360, 300); window.Show();
         }
-        [MenuItem("Tools/Cards/Card Zone Animation Lab")]
+        [MenuItem("工具/卡牌表现/牌区动画调试")]
         public static void OpenAnimationLab()
         {
             Open(); var window = GetWindow<CardZoneValidationWindow>(); window.page = 1; window.stylePage = 1;

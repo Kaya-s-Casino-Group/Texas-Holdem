@@ -76,7 +76,7 @@ namespace CardPresentation.Tests
                 Left = Hand("left"); Right = Hand("right");
             }
             private static CardZone Row(string id, string kind, params CardInstanceId[] cards) => new CardZone(new ZoneId(id), kind, null, cards);
-            private CardZonePlayHost Hand(string id)
+            public CardZonePlayHost Hand(string id)
             {
                 var root = new GameObject(id); SceneManager.MoveGameObjectToScene(root, Scene);
                 var view = root.AddComponent<HandZoneView>();
@@ -114,6 +114,53 @@ namespace CardPresentation.Tests
                 Assert.Throws<ArgumentException>(() => f.Left.DrawCards(1));
                 Assert.AreSame(before, f.Match.State); Assert.AreSame(data, f.Left.GetComponent<HandZoneView>().Data);
                 Assert.AreEqual(1, f.Right.DeckCards.Count); Assert.IsEmpty(f.Left.Cards);
+            }
+        }
+
+        [Test] public void SelectionRequestCopiesInputAndDoesNotTrackLaterInteraction()
+        {
+            using (var f = new Fixture())
+            {
+                f.Left.DrawCards(1, false);
+                var id = f.Left.Cards.Single().Card.Id;
+                f.Left.SetInteraction(id.Value, new CardInteractionState(isSelected: true));
+                var request = f.Left.CaptureSelection();
+                f.Left.SetInteraction(id.Value, default);
+                Assert.AreEqual(f.Match.State.MatchId, request.MatchId);
+                Assert.AreEqual(f.Left.Zone.Id, request.ZoneId);
+                Assert.AreEqual(f.Left.Zone.ControllerId, request.ControllerId);
+                CollectionAssert.AreEqual(new[] { id }, request.Cards);
+                Assert.IsEmpty(f.Left.CaptureSelection().Cards);
+
+                var input = new[] { id };
+                var copied = new CardSelectionRequest(request.MatchId, request.ZoneId, null, input);
+                input[0] = new CardInstanceId("replacement");
+                CollectionAssert.AreEqual(new[] { id }, copied.Cards);
+                Assert.Throws<ArgumentException>(() => new CardSelectionRequest(request.MatchId, request.ZoneId, null, new[] { id, id }));
+                Assert.Throws<ArgumentException>(() => new CardSelectionRequest(default, request.ZoneId, null, new[] { id }));
+            }
+        }
+
+        [Test] public void PresentedSnapshotSkipsOnlyItsViewAndStillRefreshesAnotherObserverOfTheSameZone()
+        {
+            using (var f = new Fixture())
+            {
+                var observer = f.Hand("left");
+                var primary = f.Left.GetComponent<HandZoneView>();
+                var secondary = observer.GetComponent<HandZoneView>();
+                int notifications = 0;
+                f.Match.Changed += (change, presented) => {
+                    notifications++;
+                    Assert.AreSame(primary.Data, presented.Single(), "The source must not be presented twice.");
+                    Assert.AreNotSame(primary.Data, secondary.Data);
+                    CollectionAssert.AreEqual(primary.Data.Cards.Select(card => card.ViewId), secondary.Data.Cards.Select(card => card.ViewId));
+                };
+                f.Left.DrawCards(1, false);
+                Assert.AreEqual(1, secondary.Views.Count);
+                f.Left.SetInteraction(f.Left.Cards.Single().Id, new CardInteractionState(isSelected: true));
+                f.Left.DiscardSelected(false);
+                Assert.IsEmpty(secondary.Views);
+                Assert.AreEqual(2, notifications);
             }
         }
 

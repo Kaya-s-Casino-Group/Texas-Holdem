@@ -50,7 +50,7 @@ namespace CardPresentation.Editor
             return presenter;
         }
 
-        [MenuItem("Tools/Cards/Configure Card Hover Tooltip")]
+        [MenuItem("工具/卡牌表现/场景接入/配置悬停提示")]
         public static void ConfigureInCurrentScene()
         {
             if (Application.isPlaying) throw new InvalidOperationException("请退出 Play 后配置场景悬停提示。");

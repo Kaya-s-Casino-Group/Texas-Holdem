@@ -4,6 +4,12 @@
 
 ## [Unreleased]
 
+### 2026-10-17 — 场景接入与卡牌交互职责分离
+
+- SingleBattle 共享配置、Hosting 与 Scene3D 表现分模块组织，场景 Host 继承 BaseBattleHost。
+- CardInteraction 以纯身份数据提交选牌命令，CardMatchHost 保留牌桌镜像与本地交互；DrawBattle 接入同一命令契约。
+- CardPresentation 按协议、World、Canvas、美术和反馈组织，补齐安全区适配与交互回归。
+
 ### 2026-10-17 — 纯 C# 战斗会话与生命周期
 
 - 新增 BattleSession，原子结算玩家命令及后续自动步骤；规则推进独立于动画。

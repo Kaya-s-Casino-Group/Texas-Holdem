@@ -34,8 +34,8 @@ namespace CardPresentation.Editor
 
         private void OnSceneGUI()
         {
-            if (targets.Length != 1) return;
-            var zone = (CardZoneView)target;
+            var zone = target as CardZoneView;
+            if (zone == null) return;
             var size = zone.Layout.Size;
             using (new Handles.DrawingScope(Color.cyan, zone.transform.localToWorldMatrix))
             {
@@ -44,9 +44,12 @@ namespace CardPresentation.Editor
                 float height = DragEdge(Vector3.forward, size.y);
                 if (EditorGUI.EndChangeCheck())
                 {
-                    serializedObject.Update();
-                    serializedObject.FindProperty("layout").FindPropertyRelative("Size").vector2Value = new Vector2(width, height);
-                    serializedObject.ApplyModifiedProperties();
+                    // Scene GUI runs once per target; keep handle edits scoped to that zone.
+                    using (var zoneObject = new SerializedObject(zone))
+                    {
+                        zoneObject.FindProperty("layout").FindPropertyRelative("Size").vector2Value = new Vector2(width, height);
+                        zoneObject.ApplyModifiedProperties();
+                    }
                     EditorApplication.QueuePlayerLoopUpdate();
                 }
             }

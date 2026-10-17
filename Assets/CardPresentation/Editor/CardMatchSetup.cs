@@ -21,7 +21,7 @@ namespace CardPresentation.Editor
             Undo.RegisterCreatedObjectUndo(root, "创建局内对局"); match = Undo.AddComponent<CardMatchHost>(root);
             match.ConfigureInitial(Array.Empty<CardMatchZoneSnapshot>()); return match;
         }
-        [MenuItem("Tools/Cards/Migrate Scene To Card Match")]
+        [MenuItem("工具/卡牌表现/场景接入/迁移牌桌状态")]
         public static void MigrateCurrentScene()
         {
             if (EditorApplication.isPlayingOrWillChangePlaymode) throw new InvalidOperationException("退出 Play 后迁移局内对局。");

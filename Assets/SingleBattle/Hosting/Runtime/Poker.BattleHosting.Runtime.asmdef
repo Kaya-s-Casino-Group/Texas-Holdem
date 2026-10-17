@@ -1,0 +1,8 @@
+{
+  "name": "Poker.BattleHosting.Runtime",
+  "rootNamespace": "Poker.BattleHosting",
+  "references": [
+    "PokerEngine.Core",
+    "PokerEngine.Composition"
+  ]
+}

@@ -1,8 +1,34 @@
-# 卡牌鼠标交互
+# 共用卡牌交互（CardInteraction）
 
-`CardInteraction.Runtime` 是可选输入及本地交互适配模块，依赖 `CardPresentation.Runtime`、`CardArt.Runtime`、`PokerEngine.Core`、`PokerEngine.Scoring` 和 Unity UGUI。展示模块不反向引用输入模块。运行时程序集与 link.xml 进入首包；编辑器验证入口留在 `CardPresentation.Editor`。
+本模块为主线 [卡牌战斗](../SingleBattle/README.md) 与独立 [分数挑战](../DrawBattle/README.md) 共用的输入和表现桥接层，不是第三种玩法。场景接入、界面预制体、输入诊断统一归 **工具 > 卡牌表现**；具体玩法接入分别位于 **工具 > 卡牌战斗** 和 **工具 > 分数挑战**。
+
+
+`CardInteraction.Runtime` 是可选输入及本地交互适配模块，依赖 `CardPresentation.Runtime`、`CardArt.Runtime`、`PokerEngine.Core`、`PokerEngine.Scoring`、Unity UGUI、Input System 和 `UIFoundation.Runtime`。展示模块不反向引用输入模块。运行时程序集与 link.xml 进入首包；编辑器验证入口留在 `CardPresentation.Editor`。
 
 Draw 实际玩法接入见 [Draw 战局桥接](../DrawBattle/README.md)。外部权威模式下，CardMatchHost 仅保存展示镜像，ICardMatchCommands 将按钮提交给玩法；排序仅作用于本地显示，原编辑器/独立卡牌验证模式保持。
+
+## 代码目录与程序集
+
+运行时代码按职责分组，全部仍归 `CardInteraction.Runtime`，命名空间保持 `CardInteraction`。本模块适配场景牌区与 Canvas 界面；最简战斗 2D 验证可以使用自己的输入适配，无须引用本地牌桌宿主。
+
+| Runtime 子目录 | 职责 |
+| --- | --- |
+| `Commands` | 不可变选牌请求、玩法命令/计分查询接口，以及独立牌桌使用的出牌/弃牌批次准备；正式玩法的规则推进仍由外部引擎负责 |
+| `Input` | 鼠标/指针控制、射线命中、交互数据源与悬停数据源接口 |
+| `Binding` | CardMatchHost、CardZonePlayHost 及其 partial 文件、本地逐牌状态；负责场景绑定与观察者镜像 |
+| `Presenters` | 手牌按钮、悬停提示、抽牌堆和牌库总览的界面桥接 |
+
+`Runtime` 根目录的 asmdef 与 `link.xml` 保持原位。带 `.Editor.cs` 的宿主 partial 文件与运行时主体放在同一 Binding 目录，仍通过 `UNITY_EDITOR` 隔离编辑器代码。场景接入工具和相关测试继续位于 CardPresentation 的 Editor/Tests 程序集；不另建重复工具入口。脚本与原 `.meta` 一起移动，类名、序列化字段、资源路径及运行时依赖方向保持不变。
+
+## 命令与宿主边界
+
+`ICardMatchCommands` 统一接收不可变的 `CardSelectionRequest`：`MatchId`、`ZoneId`、`ControllerId` 和有序卡牌 ID。请求复制输入，不持有 Host、View、Transform 或飞行路径；出牌和弃牌执行请求里的卡牌，不重新读取当时的 UI 选中集合。玩法接收方检查对局、玩家、源牌区、卡牌归属与现有规则，拒绝跨对局/跨玩家/已移走卡牌的请求。`animate` 只控制既有演出方式，不参与规则结果。
+
+- `CardMatchHost` 管理整桌观察者状态、逐牌美术/可见性/交互、投影和原子提交。`CaptureSelection(zone)` 从当前镜像按本地牌序捕获输入；`Project(zone)` 生成只读展示快照。绑定外部 `Commands` 时，表状态是镜像，权威规则状态由玩法宿主持有；未绑定时保留独立牌桌的本地 Prepare/Commit 路径。
+- `CardZonePlayHost` 管理单个 View 的绑定、输入生命周期与局部表现。`CaptureSelection()` 委托 Match，`PlaySelected/DiscardSelected` 转发数据请求。它不再把自己或目标 View 作为游戏命令参数。
+- SingleBattle 和 DrawBattle 使用同一命令接口。SingleBattle 在自身绑定的手牌上播放 `ICardActionView`；DrawBattle 使用自身绑定的 `CardZoneTransferPresenter`，保留飞行、落位、计分和补牌顺序。显式 `PlaySelected(destination, route)` 参数仅用于独立牌桌，外部玩法统一使用自己的已绑定表现。
+
+`Changed`/`Notify` 只传递 `CardTableChange` 与已应用的 `CardZoneViewData`，不传场景宿主。牌区仅在自己的 `View.Data` 正是已应用快照时跳过重复刷新；另一个观察同一 ZoneId 的 View 仍会更新。这样既保留正在播放的动画，也不把同牌区的其他观察者一并跳过。
 
 ## 状态归属与数据流
 
@@ -42,7 +68,7 @@ Play 中的鼠标 → CardZonePointerController → ICardInteractionSource
 
 `CardZonePlayHost` 通过基类引用消费具体 ZoneView；只有 `HandZoneView`（包括进一步派生的子类）会自动创建/绑定鼠标组件。通用牌区和 PlayedZoneView 不自动绑定输入；`DiscardSelected` 要求手牌表现，否则在修改数据前拒绝。命中与控制器仍依赖 CardZoneView 基类，正式宿主可自行绑定其他牌区。
 
-项目当前使用旧 Input Manager。添加 `CardZoneMouseInput` 后由宿主绑定数据：
+手牌与 UI 优先使用 Unity Input System。添加 `CardZoneMouseInput` 后由宿主绑定数据：
 
 ```csharp
 // cards 实现 ICardInteractionSource，并把 Interaction 写回自己的每张本地卡牌。
@@ -59,7 +85,7 @@ void RefreshZone()
 var pending = mouseInput.Controller.GetSelectedViewIds();
 ```
 
-未指定相机时使用 Camera.main。组件仅读取鼠标左键；Unity 编辑器中只接受 Play 的 Game 视图输入，Scene 和其他窗口不响应；鼠标不在相机视口、应用失焦或 EventSystem 检测到 UI 时阻止牌区输入。宿主也可直接调用 `CardZonePointerController.ProcessPointer` 注入射线和左键边沿；`CancelPointer` 清理未完成手势。解绑时用 `Unbind`，并按宿主生命周期移除事件订阅。
+未指定相机时使用 Camera.main。组件读取 Input System 的 Mouse 和 Touchscreen；手机按住显示悬停，松开才选中/取消，滑动、取消、失焦和 UI 遮挡会取消未完成手势。一次手势只跟踪第一根手指，触摸期间不再读取鼠标，避免重复点击；Unity 编辑器中只接受 Play 的 Game 视图输入，Scene 和其他窗口不响应；鼠标不在相机视口、应用失焦或 EventSystem 检测到 UI 时阻止牌区输入。宿主也可直接调用 `CardZonePointerController.ProcessPointer` 注入射线和左键边沿；`CancelPointer` 清理未完成手势。解绑时用 `Unbind`，并按宿主生命周期移除事件订阅。
 
 ## Game 中的手牌操作按钮
 
@@ -83,11 +109,11 @@ UGUI Button → HandActionPanelView 请求 → HandActionPresenter
 
 验证窗口只观察外部玩法权威绑定的实战 Match，不提交卡牌数据；Edit 仅调表现参数。Capture、ReplaceCardsAndDeck、ConfigureInitial、PrepareDebugEdit、预览出牌和迁移 API 仍通过 #if UNITY_EDITOR 留给旧资源迁移与隔离测试；窗口不调用这些 API，也不持有卡牌编辑缓冲。工具程序集仍限定 Editor 平台。
 
-旧场景可执行 `Tools > Cards > Migrate Scene To Card Match`：验证全局身份后迁移所有牌区，合并弃牌堆，单个旧抽牌堆作为共享堆；若原来有多个非空堆则保留各自归属。迁移支持 Undo、清空旧 Host 列表，只标记场景 dirty。运行时 Match/Core 脚本使用既有 Runtime 程序集与 link.xml 进入首包；需保存场景以持久化 Match 引用。
+旧场景可执行 `工具 > 卡牌表现 > 场景接入 > 迁移牌桌状态`：验证全局身份后迁移所有牌区，合并弃牌堆，单个旧抽牌堆作为共享堆；若原来有多个非空堆则保留各自归属。迁移支持 Undo、清空旧 Host 列表，只标记场景 dirty。运行时 Match/Core 脚本使用既有 Runtime 程序集与 link.xml 进入首包；需保存场景以持久化 Match 引用。
 
-抽牌由玩法流程调用 `DrawCards`，不由玩家按钮触发。`Runtime/DrawPilePresenter.cs` 保存本地宿主与 `CardPresentation.DrawPileView` 引用，每帧将当前 DeckCards 数量投影为牌背叠层；Edit 显式刷新读取 InitialDeckCards，Play 不读取编辑器窗口。图标不拥有牌堆、不发抽牌命令；悬停显示紧凑牌组统计表，点击打开并保持完整卡牌总览，返回关闭，全部属于本地展示状态。空堆保留一张暗色牌背；右下角数字显示剩余牌数（含 0），复用 Fusion Pixel 字体，不接收射线。`Editor/DrawPileSetup.cs` 将独立 `DrawPileIcon.prefab` 放在右下角并绑定同一 UI Camera；采用 GraphicRaycaster 和稳定的 Icon 射线区域；Deck 子节点的 CardUIGraphic 仅负责图集渲染与惯性缩放，不接收射线。
+抽牌由玩法流程调用 `DrawCards`，不由玩家按钮触发。`Runtime/Presenters/DrawPilePresenter.cs` 保存本地宿主与 `CardPresentation.DrawPileView` 引用，每帧将当前 DeckCards 数量投影为牌背叠层；Edit 显式刷新读取 InitialDeckCards，Play 不读取编辑器窗口。图标不拥有牌堆、不发抽牌命令；悬停显示紧凑牌组统计表，点击打开并保持完整卡牌总览，返回关闭，全部属于本地展示状态。空堆保留一张暗色牌背；右下角数字显示剩余牌数（含 0），复用 Fusion Pixel 字体，不接收射线。`Editor/DrawPileSetup.cs` 将独立 `DrawPileIcon.prefab` 放在右下角并绑定同一 UI Camera；采用 GraphicRaycaster 和稳定的 Icon 射线区域；Deck 子节点的 CardUIGraphic 仅负责图集渲染与惯性缩放，不接收射线。
 
-固化手牌时自动创建按钮和抽牌堆图标并绑定；`Tools > Cards > Configure Hand Action Buttons` 可手动接入。出牌路径从该手牌上的 CardZoneTransferPresenter 匹配；没有路径时仅禁用出牌按钮，配置路径后重新接入。`Update Player Hand UI` 可升级旧 Prefab：原 Draw 字段通过 FormerlySerializedAs 保留按钮/文字引用，改为 Play 并移除 Status 节点，保留 GUID/配色。缺少 EventSystem 时创建旧 Input Manager 对应的 StandaloneInputModule，已有活动 EventSystem 则复用。四个按钮 Graphic 与牌堆 Icon 固定区域拦截射线，背景/文字及图集牌堆叠层不拦截；CardZoneMouseInput 沿用 UI 遮挡检查。准备工具支持 Undo、保留已有 Prefab 样式，仅标记场景 dirty；需保存场景以保留引用。Prefab、运行脚本、字体与 .meta 沿现有程序集和 link.xml 进入首包，不依赖打开验证窗口。
+固化手牌时自动创建按钮和抽牌堆图标并绑定；`工具 > 卡牌表现 > 场景接入 > 配置手牌操作按钮` 可手动接入。出牌路径从该手牌上的 CardZoneTransferPresenter 匹配；没有路径时仅禁用出牌按钮，配置路径后重新接入。`Update Player Hand UI` 可升级旧 Prefab：原 Draw 字段通过 FormerlySerializedAs 保留按钮/文字引用，改为 Play 并移除 Status 节点，保留 GUID/配色。缺少 EventSystem 时创建 InputSystemUIInputModule；运行时复用已有 EventSystem，仅使用 InputSystemUIInputModule；旧场景中残留的 StandaloneInputModule 会停用。项目 Active Input Handling 固定为 Input System Package (New)，修改该设置后必须重启 Unity，脚本重编译不能启动原生设备后端。鼠标、触摸与键盘不再读取旧输入 API。四个按钮 Graphic 与牌堆 Icon 固定区域拦截射线，背景/文字及图集牌堆叠层不拦截；CardZoneMouseInput 沿用 UI 遮挡检查。准备工具支持 Undo、保留已有 Prefab 样式，仅标记场景 dirty；需保存场景以保留引用。Prefab、运行脚本、字体与 .meta 沿现有程序集和 link.xml 进入首包，不依赖打开验证窗口。
 
 ## 抽牌落位后排序
 
@@ -113,7 +139,7 @@ ICardHoverSource → CardHoverTarget（视觉锚点、花色、点数、筹码�
 
 `ICardHoverSource.TryGetHoveredCard` 由客户端玩法适配器实现：先确认观察者权限，再解析允许展示的数据，返回当前视觉实例作为锚点。Presenter 不持有权威卡牌，不解析 ArtId，也不计算最终得分；普通来源按 Sources 顺序取第一个有效目标；实现 ICardHoverScope 的活动页面可通过 CapturesHover 独占提示来源，避免读到背后手牌的悬停。输入仲裁仍由宿主处理。
 
-CardHoverTarget 支持场景 CardInstanceView 和原生 Canvas CardUIItemView 两种视觉锚点。DeckOverviewPresenter 复用该接口，从只读 DeckOverviewData 的规则花色/点数及 CardScoreRules.GetBasePoints 提供基础筹码；已抽出、禁用、失效牌仍能查看，隐藏/未知定义不提供信息。总览打开时独占提示层，鼠标移出卡牌即隐藏，关闭后恢复手牌提示。
+CardHoverTarget 支持场景 CardInstanceView 和原生 Canvas CardUIItemView 两种视觉锚点。DeckOverviewPresenter 复用该接口，从只读 DeckOverviewData 的规则花色/点数及 CardScoreRules.GetBasePoints 提供基础筹码；已抽出、禁用、失效牌仍能查看，隐藏/未知定义不提供信息。总览打开时独占提示层；鼠标移出卡牌即隐藏；触摸按住卡牌显示信息，松开或移出即隐藏。关闭后恢复手牌提示。
 
 当前验证宿主 `CardZonePlayHost` 已实现该接口：读取运行副本的逐牌悬停状态，按 CardInstance.DefinitionId 查询标准 52 张牌定义及 `CardScoreRules.GetBasePoints`（2–10、J/Q/K=10、A=11）。禁用/失效牌仍可查看印刷基础点数；未知定义或纯美术牌不提供提示。正式玩法应实现自己的来源，通过能力解析后的有效牌面、`ScoringCard.PointsPerTrigger` 等提供所需数值，并在适配器中处理权限；基础/名义筹码不等于最终结算。
 
@@ -130,7 +156,7 @@ presenter.RegisterSource(otherZoneSource); // 去重追加
 presenter.RemoveSource(otherZoneSource);
 ```
 
-真实手牌场景可执行 `Tools > Cards > Configure Card Hover Tooltip` 配置悬停 UI；验证窗口不再自动固化或注册卡牌。工具保留已设置的尺寸和偏移，支持 Undo，只标记场景 dirty，不自动保存。保存场景后，其 Prefab → 背景/字体/材质引用随场景进入首包。
+真实手牌场景可执行 `工具 > 卡牌表现 > 场景接入 > 配置悬停提示` 配置悬停 UI；验证窗口不再自动固化或注册卡牌。工具保留已设置的尺寸和偏移，支持 Undo，只标记场景 dirty，不自动保存。保存场景后，其 Prefab → 背景/字体/材质引用随场景进入首包。
 
 新增 6 项提示回归覆盖：鼠标控制器到逐牌状态再到 UI 的完整链路、基础点数与红黑整行颜色恢复、复用和排序身份、隐藏牌/弃牌/飞入过滤、定义与美术解耦、禁用失效牌数值保留、相机跟随/屏幕边界、多个来源及停用/重启清理。
 
@@ -146,7 +172,7 @@ Runtime Managed 场景每场由玩法生成或恢复状态，验证窗口不读�
 
 正式实战接入使用 `match.StartExternalMatch(authority, state, observerCards)`、`host.Bind(...)` 和 `BeginSession()`，`StopSession()` 仅解绑。验证工具只读取 `Cards` 与相关牌区，不调用 Capture / ReplaceCards；这些 Editor API 留给迁移和隔离测试。新增身份仍驱动入列动画及音效。当前选择来自 `card.Interaction` 或控制器的 `GetSelectedViewIds()`。
 
-测试归入 `CardPresentation.Tests.Editor`，使用轻量入口 `Tools > 测试面板 > 编辑模式测试 > 更多模块 / 全量回归 > 卡牌表现全模块`。9 项鼠标测试覆盖数据写回、Z 偏移、稳定悬停、重叠优先级、禁用/失效、取消手势、排序/移除、变换/牌背、入列屏蔽及运行时解绑，并验证点击选中的上浮惯性、回稳与鼠标离开不中断；另有 8 项上浮/固化测试覆盖 Tween 连续性与清理、场景快照序列化、运行时副本、重启恢复及编辑器重新载入。
+测试归入 `CardPresentation.Tests.Editor`，使用轻量入口 `工具 > 测试面板 > 编辑模式测试 > 更多模块 / 全量回归 > 卡牌表现全模块`。9 项鼠标测试覆盖数据写回、Z 偏移、稳定悬停、重叠优先级、禁用/失效、取消手势、排序/移除、变换/牌背、入列屏蔽及运行时解绑，并验证点击选中的上浮惯性、回稳与鼠标离开不中断；另有 8 项上浮/固化测试覆盖 Tween 连续性与清理、场景快照序列化、运行时副本、重启恢复及编辑器重新载入。
 
 ## 弃牌命令
 

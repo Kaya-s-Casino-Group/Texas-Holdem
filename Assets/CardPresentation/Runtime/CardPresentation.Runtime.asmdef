@@ -6,7 +6,8 @@
     "CardArt.Runtime",
     "Unity.ugui",
     "Unity.TextMeshPro",
-    "Unity.InputSystem"
+    "Unity.InputSystem",
+    "UIFoundation.Runtime"
   ],
   "overrideReferences": true,
   "precompiledReferences": [

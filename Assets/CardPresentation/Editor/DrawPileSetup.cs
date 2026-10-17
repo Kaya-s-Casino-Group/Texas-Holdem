@@ -16,7 +16,7 @@ namespace CardPresentation.Editor
     {
         public const string PrefabPath = "Assets/CardPresentation/Prefabs/DrawPileIcon.prefab";
 
-        [MenuItem("Tools/Cards/Prepare Draw Pile Icon Prefab")]
+        [MenuItem("工具/卡牌表现/界面预制体/准备抽牌堆图标")]
         public static void Prepare()
         {
             var existing = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);
@@ -82,7 +82,7 @@ namespace CardPresentation.Editor
             view.BindRemainingCount(label);
         }
 
-        [MenuItem("Tools/Cards/Configure Deck Icon And Overview")]
+        [MenuItem("工具/卡牌表现/场景接入/配置牌堆图标与总览")]
         public static void ConfigureInScene()
         {
             if (Application.isPlaying) throw new InvalidOperationException("请在 Edit 模式配置牌堆与牌组总览。");

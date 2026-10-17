@@ -12,7 +12,8 @@
     "Unity.RenderPipelines.Core.Runtime",
     "Unity.RenderPipelines.Universal.Runtime",
     "RetroRendering.Runtime",
-    "CardArt.Editor"
+    "CardArt.Editor",
+    "Unity.InputSystem"
   ],
   "includePlatforms": [
     "Editor"

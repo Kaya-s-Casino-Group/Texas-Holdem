@@ -10,7 +10,7 @@ namespace Poker.DrawBattle.Editor
 {
     public static class DrawBattleSetup
     {
-        [MenuItem("Tools/Cards/Connect Draw Battle In Current Scene")]
+        [MenuItem("工具/分数挑战/接入当前场景")]
         public static void Connect()
         {
             if (EditorApplication.isPlayingOrWillChangePlaymode) throw new InvalidOperationException("Exit Play before configuring Draw.");

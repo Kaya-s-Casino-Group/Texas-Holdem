@@ -1,0 +1,12 @@
+{
+  "name": "Poker.BattleConfiguration.Editor",
+  "rootNamespace": "Poker.SingleBattle.Editor",
+  "references": [
+    "Poker.BattleConfiguration.Runtime",
+    "PokerEngine.Combat",
+    "PokerEngine.Composition"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ]
+}
