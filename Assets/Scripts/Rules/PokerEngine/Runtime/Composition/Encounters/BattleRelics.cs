@@ -13,8 +13,9 @@ namespace PokerEngine
     {
         public RelicDefinition Definition { get; }
         public RunRelic Instance { get; }
+        public BattleRelicRules BattleRules { get; }
 
-        public BattleRelicSetup(RelicDefinition definition, RunRelic instance)
+        public BattleRelicSetup(RelicDefinition definition, RunRelic instance, BattleRelicRules battleRules = null)
         {
             BattleRelicValidation.Definition(definition);
             if (instance == null) throw new ArgumentNullException(nameof(instance));
@@ -24,11 +25,11 @@ namespace PokerEngine
                 throw new ArgumentException("Persistent relic does not match its definition.", nameof(instance));
             BattleRelicValidation.Charges(definition, instance.Charges);
             BattleRelicValidation.Memory(instance.Memory, true);
-            Definition = definition; Instance = instance;
+            Definition = definition; Instance = instance; BattleRules = battleRules ?? BattleRelicRules.Empty;
         }
     }
 
-    /// <summary>Battle-owned relic identity and runtime memory. Restoring data does not activate its effects.</summary>
+    /// <summary>Battle-owned relic identity and runtime memory. Restoring data does not install definitions or execute effects.</summary>
     [DataContract]
     public sealed class BattleRelicState
     {
@@ -60,11 +61,12 @@ namespace PokerEngine
 
     /// <summary>
     /// Ordered immutable battle binding. Runtime replacement may update only existing instances' runtime fields.
-    /// Definitions and the fingerprint describe the static binding; no scoring or ability behavior is installed here.
+    /// Definitions and the fingerprint describe the static binding, including passive numeric configuration.
     /// </summary>
     public sealed class BattleRelicLoadout
     {
         private readonly Dictionary<string, RelicDefinition> definitions;
+        private readonly Dictionary<string, BattleRelicRules> battleRules;
         public ParticipantId OwnerId { get; }
         public IReadOnlyList<BattleRelicState> Relics { get; }
         public string Fingerprint { get; }
@@ -75,18 +77,21 @@ namespace PokerEngine
             var setup = Guard.Copy(relics ?? Array.Empty<BattleRelicSetup>(), nameof(relics));
             if (setup.Length > 32) throw new ArgumentException("A battle supports at most 32 relic instances per owner.", nameof(relics));
             // Repeat setup validation so objects restored without constructors cannot bypass the binding contract.
-            foreach (var item in setup) new BattleRelicSetup(item.Definition, item.Instance);
+            foreach (var item in setup) new BattleRelicSetup(item.Definition, item.Instance, item.BattleRules);
             if (setup.Select(item => item.Instance.Id).Distinct(StringComparer.Ordinal).Count() != setup.Length)
                 throw new ArgumentException("Battle relic instance identities must be unique.", nameof(relics));
             foreach (var group in setup.GroupBy(item => item.Definition.Id, StringComparer.Ordinal))
             {
                 var definition = group.First().Definition;
+                var rules = group.First().BattleRules;
                 if (group.Count() > definition.MaxCopies || group.Any(item =>
-                    !BattleRelicValidation.DefinitionBytes(definition).SequenceEqual(BattleRelicValidation.DefinitionBytes(item.Definition))))
+                    !BattleRelicValidation.DefinitionBytes(definition).SequenceEqual(BattleRelicValidation.DefinitionBytes(item.Definition)) ||
+                    !rules.Bytes().SequenceEqual(item.BattleRules.Bytes())))
                     throw new ArgumentException("Copies must share one definition and respect its copy limit.", nameof(relics));
             }
             OwnerId = ownerId;
             definitions = setup.ToDictionary(item => item.Instance.Id, item => item.Definition, StringComparer.Ordinal);
+            battleRules = setup.ToDictionary(item => item.Instance.Id, item => item.BattleRules, StringComparer.Ordinal);
             Relics = Guard.View(setup.Select((item, order) => new BattleRelicState(item.Instance.Id, item.Definition.Id,
                 ownerId, order, item.Instance.Level, item.Instance.Growth, item.Instance.Charges, 0,
                 item.Instance.CooldownRounds, item.Instance.Memory)).ToArray());
@@ -97,6 +102,7 @@ namespace PokerEngine
         {
             OwnerId = binding.OwnerId;
             definitions = new Dictionary<string, RelicDefinition>(binding.definitions, StringComparer.Ordinal);
+            battleRules = new Dictionary<string, BattleRelicRules>(binding.battleRules, StringComparer.Ordinal);
             Relics = Guard.View(states); Fingerprint = binding.Fingerprint;
         }
 
@@ -106,6 +112,14 @@ namespace PokerEngine
             RelicDefinition definition;
             if (!definitions.TryGetValue(instanceId, out definition)) throw new ArgumentException("Unknown battle relic instance.", nameof(instanceId));
             return definition;
+        }
+
+        public BattleRelicRules RulesFor(string instanceId)
+        {
+            Guard.Text(instanceId, nameof(instanceId));
+            BattleRelicRules rules;
+            if (!battleRules.TryGetValue(instanceId, out rules)) throw new ArgumentException("Unknown battle relic instance.", nameof(instanceId));
+            return rules;
         }
 
         public BattleRelicLoadout WithRuntime(IEnumerable<BattleRelicState> relics)
@@ -143,6 +157,12 @@ namespace PokerEngine
                         writer.Write(state.InstanceId); writer.Write(state.DefinitionId); writer.Write(state.Order);
                         writer.Write(state.Level); writer.Write(state.Growth);
                         BattleRelicValidation.WriteDefinition(writer, Definition(state.InstanceId));
+                    }
+                    // Preserve the exact pre-modifier fingerprint for bindings with no numeric behavior.
+                    if (Relics.Any(state => RulesFor(state.InstanceId).Modifiers.Count != 0))
+                    {
+                        writer.Write("battle-relic.numeric.1");
+                        foreach (var state in Relics) RulesFor(state.InstanceId).Write(writer);
                     }
                 }
                 using (var hash = SHA256.Create())

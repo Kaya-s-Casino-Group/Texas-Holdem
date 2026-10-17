@@ -331,6 +331,7 @@ namespace PokerEngine
             try
             {
                 var combat = state.Combat; var players = state.Players.ToArray(); var scores = state.Scores.ToArray();
+                var amountModifier = new RelicCombatAmountModifier(state, hand == null ? (ParticipantId?)null : actor, hand);
                 IReadOnlyList<CombatRuleEvent> events = Array.Empty<CombatRuleEvent>(); DamagePlan damagePlan = null; DiscardRewardResolution discardReward = null; BattleEffectPlan effectPlan = null;
                 if (skipPlayer || enemy && blocked)
                 {
@@ -427,7 +428,7 @@ namespace PokerEngine
                 if (effectPlan != null)
                 {
                     var resolved = BattleEffectResolver.Resolve(combat, effectPlan,
-                        new ActorIncomingDamageModifier(state), Definition.StatusCatalog, Definition.ReactionProvider, Definition.ReactionLimits);
+                        new ActorIncomingDamageModifier(state), Definition.StatusCatalog, Definition.ReactionProvider, Definition.ReactionLimits, amountModifier);
                     if (!resolved.Accepted) return new TeamBattleTransition(state, EffectFailure(resolved.Error, action == ScoredDuelActionKind.Discard));
                     combat = resolved.State; events = resolved.RuleEvents;
                 }
@@ -446,7 +447,7 @@ namespace PokerEngine
                 {
                     var periodic = CombatEngine.ResolveTiming(combat, combat.Revision,
                         BattleStatusTiming.ActionCompleted(state, actor, action), new ActorIncomingDamageModifier(state),
-                        Definition.StatusCatalog, Definition.ReactionLimits);
+                        Definition.StatusCatalog, Definition.ReactionLimits, amountModifier);
                     if (!periodic.Accepted) return new TeamBattleTransition(state, EffectFailure(periodic.Error));
                     combat = periodic.State; events = events.Concat(periodic.RuleEvents).ToArray();
                     finished = IsFinished(combat, players, state.Enemies);
@@ -462,7 +463,7 @@ namespace PokerEngine
                     {
                         var periodic = CombatEngine.ResolveTiming(combat, combat.Revision,
                             BattleStatusTiming.PhaseEnding(state, participants, enemyPhaseEnded), new ActorIncomingDamageModifier(state),
-                            Definition.StatusCatalog, Definition.ReactionLimits);
+                            Definition.StatusCatalog, Definition.ReactionLimits, amountModifier);
                         if (!periodic.Accepted) return new TeamBattleTransition(state, EffectFailure(periodic.Error));
                         combat = periodic.State; events = events.Concat(periodic.RuleEvents).ToArray();
                         // Periodic targets may include other participants. Rebuild scheduling from actual survivors.
@@ -542,6 +543,7 @@ namespace PokerEngine
 
         private static CardDuelError EffectFailure(CombatError error, bool discard = false) =>
             error == CombatError.Overflow ? CardDuelError.Overflow :
+            error == CombatError.InvalidAmountModifier ? CardDuelError.InvalidAmountModifier :
             error == CombatError.InvalidReaction ? CardDuelError.InvalidReaction :
             error == CombatError.ReactionLimitExceeded ? CardDuelError.ReactionLimitExceeded :
             error == CombatError.InvalidDamageModifier ? CardDuelError.InvalidDamageModifier :

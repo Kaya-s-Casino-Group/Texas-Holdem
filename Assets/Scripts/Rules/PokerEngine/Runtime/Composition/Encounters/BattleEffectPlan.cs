@@ -5,8 +5,8 @@ using System.Linq;
 namespace PokerEngine
 {
     /// <summary>
-    /// One ordered, authority-resolved action batch. Targets and outgoing damage are already resolved;
-    /// source rules still own their validation. Empty plans produce no combat mutation or synthetic event.
+    /// One ordered, authority-resolved action batch. Targets and legacy actor outgoing damage are resolved;
+    /// passive amount stages run in Combat. Source rules still own validation. Empty plans produce no combat mutation or synthetic event.
     /// This plan does not select targets, repeat effects, schedule status lifecycles or spend resources.
     /// </summary>
     public sealed class BattleEffectPlan
@@ -48,11 +48,12 @@ namespace PokerEngine
     internal static class BattleEffectResolver
     {
         internal static BattleEffectResolution Resolve(CombatState state, BattleEffectPlan plan, IIncomingDamageModifier incomingDamage = null,
-            CombatStatusCatalog statusCatalog = null, ICombatReactionProvider reactionProvider = null, CombatReactionLimits reactionLimits = null)
+            CombatStatusCatalog statusCatalog = null, ICombatReactionProvider reactionProvider = null, CombatReactionLimits reactionLimits = null,
+            ICombatAmountModifier amountModifier = null)
         {
             if (state == null || plan == null) throw new ArgumentNullException();
             if (plan.Effects.Count == 0) return new BattleEffectResolution(state);
-            var result = CombatEngine.Resolve(state, state.Revision, plan.Effects, incomingDamage, statusCatalog, reactionProvider, reactionLimits);
+            var result = CombatEngine.Resolve(state, state.Revision, plan.Effects, incomingDamage, statusCatalog, reactionProvider, reactionLimits, amountModifier);
             return new BattleEffectResolution(result.State, result.Error, result.RuleEvents);
         }
     }

@@ -5,7 +5,7 @@ using System.Linq;
 namespace PokerEngine
 {
     public enum CombatEffectKind { Damage = 1, Heal = 2, GainBlock = 3, ClearBlock = 4, ApplyStatus = 5, Eliminate = 6 }
-    public enum CombatError { None, InvalidState, StaleRevision, InvalidEffect, Overflow, InvalidDamageModifier, InvalidReaction, ReactionLimitExceeded }
+    public enum CombatError { None, InvalidState, StaleRevision, InvalidEffect, Overflow, InvalidDamageModifier, InvalidReaction, ReactionLimitExceeded, InvalidAmountModifier }
 
     /// <summary>Authority-resolved effect, not a player command. The mode validates action costs, targets and amounts first.</summary>
     public sealed class CombatEffect
@@ -55,20 +55,27 @@ namespace PokerEngine
         public int DamageToHealth => Effect.Kind == CombatEffectKind.Damage ? HealthLost : 0;
         public int HealthRestored { get; }
         /// <summary>Accepted healing that exceeded missing health. Skipped heals produce no fact or overheal.</summary>
-        public long Overheal => Effect.Kind == CombatEffectKind.Heal ? Effect.Amount - HealthRestored : 0;
+        public long Overheal => Effect.Kind == CombatEffectKind.Heal ? SettledAmount - HealthRestored : 0;
         public long Overkill { get; }
         public DamageModification IncomingModification { get; }
-        public long SettledDamage => IncomingModification?.OutputAmount ?? (Effect.Kind == CombatEffectKind.Damage ? Effect.Amount : 0);
+        public CombatAmountModification OutgoingAmountModification { get; }
+        public CombatAmountModification IncomingAmountModification { get; }
+        /// <summary>Effective amount before block/health caps. Effect retains the original authority request.</summary>
+        public long SettledAmount => IncomingAmountModification?.OutputAmount ?? IncomingModification?.OutputAmount ??
+            OutgoingAmountModification?.OutputAmount ?? Effect.Amount;
+        public long SettledDamage => Effect.Kind == CombatEffectKind.Damage ? SettledAmount : 0;
         public CombatantState Before { get; }
         public CombatantState After { get; }
         public bool Died => Before.IsAlive && !After.IsAlive;
         public CombatDeathCause DeathCause => !Died ? CombatDeathCause.None :
             Effect.Kind == CombatEffectKind.Eliminate ? CombatDeathCause.Eliminate : CombatDeathCause.Damage;
         internal CombatEvent(long revision, int index, CombatEffect effect, CombatantState before, CombatantState after, int absorbed, long overkill,
-            DamageModification incomingModification = null, int sequenceIndex = -1, CombatEffectProvenance provenance = null)
+            DamageModification incomingModification = null, int sequenceIndex = -1, CombatEffectProvenance provenance = null,
+            CombatAmountModification outgoingAmountModification = null, CombatAmountModification incomingAmountModification = null)
             : base(revision, index, effect, sequenceIndex, provenance)
         {
             IncomingModification = incomingModification; Before = before; After = after; BlockAbsorbed = absorbed; Overkill = overkill;
+            OutgoingAmountModification = outgoingAmountModification; IncomingAmountModification = incomingAmountModification;
             HealthLost = Math.Max(0, before.Health - after.Health); HealthRestored = Math.Max(0, after.Health - before.Health);
         }
     }
@@ -93,23 +100,25 @@ namespace PokerEngine
     {
         public const string RulesVersion = "combat.8";
         public static CombatTransition Resolve(CombatState state, long expectedRevision, IEnumerable<CombatEffect> effects, IIncomingDamageModifier incomingDamage = null,
-            CombatStatusCatalog statusCatalog = null, ICombatReactionProvider reactionProvider = null, CombatReactionLimits reactionLimits = null)
+            CombatStatusCatalog statusCatalog = null, ICombatReactionProvider reactionProvider = null, CombatReactionLimits reactionLimits = null,
+            ICombatAmountModifier amountModifier = null)
         {
             if (state == null || effects == null) throw new ArgumentNullException();
-            return ResolveCore(state, expectedRevision, effects, null, incomingDamage, statusCatalog, reactionProvider, reactionLimits);
+            return ResolveCore(state, expectedRevision, effects, null, incomingDamage, statusCatalog, reactionProvider, reactionLimits, amountModifier);
         }
 
         /// <summary>Resolve one authority-owned boundary atomically. Periodic damage is a leaf and never re-enters reaction rules.</summary>
         public static CombatTransition ResolveTiming(CombatState state, long expectedRevision, CombatTimingSignal signal,
-            IIncomingDamageModifier incomingDamage = null, CombatStatusCatalog statusCatalog = null, CombatReactionLimits reactionLimits = null)
+            IIncomingDamageModifier incomingDamage = null, CombatStatusCatalog statusCatalog = null, CombatReactionLimits reactionLimits = null,
+            ICombatAmountModifier amountModifier = null)
         {
             if (state == null || signal == null) throw new ArgumentNullException();
-            return ResolveCore(state, expectedRevision, Array.Empty<CombatEffect>(), signal, incomingDamage, statusCatalog, null, reactionLimits);
+            return ResolveCore(state, expectedRevision, Array.Empty<CombatEffect>(), signal, incomingDamage, statusCatalog, null, reactionLimits, amountModifier);
         }
 
         private static CombatTransition ResolveCore(CombatState state, long expectedRevision, IEnumerable<CombatEffect> effects,
             CombatTimingSignal signal, IIncomingDamageModifier incomingDamage, CombatStatusCatalog statusCatalog,
-            ICombatReactionProvider reactionProvider, CombatReactionLimits reactionLimits)
+            ICombatReactionProvider reactionProvider, CombatReactionLimits reactionLimits, ICombatAmountModifier amountModifier)
         {
             try { Validate(state); CombatStatusRules.ValidateCatalog(state, statusCatalog); }
             catch (ArgumentException) { return new CombatTransition(state, CombatError.InvalidState); }
@@ -198,25 +207,46 @@ namespace PokerEngine
                     int firstEvent = events.Count;
                     var before = units[effect.Target]; int health = before.Health, block = before.Block, absorbed = 0; long overkill = 0;
                     DamageModification incoming = null;
+                    CombatAmountModification outgoingAmount = null, incomingAmount = null;
+                    long settledAmount = effect.Amount;
                     try
                     {
+                        if (effect.Kind == CombatEffectKind.Damage || effect.Kind == CombatEffectKind.Heal || effect.Kind == CombatEffectKind.GainBlock)
+                        {
+                            var current = new CombatState(state.Id, state.Revision, state.Combatants.Select(unit => units[unit.Id]), statuses);
+                            try
+                            {
+                                outgoingAmount = ModifyAmount(amountModifier,
+                                    provenance.Origin == CombatEffectOrigin.Primary ? state : current, effect, provenance, CombatAmountStage.Outgoing, settledAmount);
+                                settledAmount = outgoingAmount?.OutputAmount ?? settledAmount;
+                            }
+                            catch (ArgumentException) { return new CombatTransition(state, CombatError.InvalidAmountModifier); }
+                            if (effect.Kind == CombatEffectKind.Damage)
+                            {
+                                try
+                                {
+                                    incoming = DamageModification.Validate(incomingDamage.Modify(new DamageModifierContext(current,
+                                        effect.Source, effect.Target, settledAmount, effect.Attack,
+                                        provenance.SourcePolicy == CombatReactionSourcePolicy.AllowDefeated)), settledAmount, effect.Attack);
+                                    settledAmount = incoming.OutputAmount;
+                                }
+                                catch (ArgumentException) { return new CombatTransition(state, CombatError.InvalidDamageModifier); }
+                            }
+                            try
+                            {
+                                incomingAmount = ModifyAmount(amountModifier, current, effect, provenance, CombatAmountStage.Incoming, settledAmount);
+                                settledAmount = incomingAmount?.OutputAmount ?? settledAmount;
+                            }
+                            catch (ArgumentException) { return new CombatTransition(state, CombatError.InvalidAmountModifier); }
+                        }
                         switch (effect.Kind)
                         {
                             case CombatEffectKind.Damage:
-                                try
-                                {
-                                    // Earlier primary and derived effects are visible to target-side modifiers.
-                                    var current = new CombatState(state.Id, state.Revision, state.Combatants.Select(unit => units[unit.Id]), statuses);
-                                    incoming = DamageModification.Validate(incomingDamage.Modify(new DamageModifierContext(current,
-                                        effect.Source, effect.Target, effect.Amount, effect.Attack,
-                                        provenance.SourcePolicy == CombatReactionSourcePolicy.AllowDefeated)), effect.Amount, effect.Attack);
-                                }
-                                catch (ArgumentException) { return new CombatTransition(state, CombatError.InvalidDamageModifier); }
-                                absorbed = (int)Math.Min(incoming.OutputAmount, block); block -= absorbed;
-                                long remaining = incoming.OutputAmount - absorbed; int lost = (int)Math.Min(remaining, health);
+                                absorbed = (int)Math.Min(settledAmount, block); block -= absorbed;
+                                long remaining = settledAmount - absorbed; int lost = (int)Math.Min(remaining, health);
                                 health -= lost; overkill = remaining - lost; break;
-                            case CombatEffectKind.Heal: health += (int)Math.Min(effect.Amount, before.MaxHealth - health); break;
-                            case CombatEffectKind.GainBlock: block = checked(block + checked((int)effect.Amount)); break;
+                            case CombatEffectKind.Heal: health += (int)Math.Min(settledAmount, before.MaxHealth - health); break;
+                            case CombatEffectKind.GainBlock: block = checked(block + checked((int)settledAmount)); break;
                             case CombatEffectKind.ClearBlock: block = 0; break;
                             case CombatEffectKind.ApplyStatus:
                                 ValidateStatus(effect.Status, state, unitIds);
@@ -228,7 +258,8 @@ namespace PokerEngine
                         if (effect.Kind != CombatEffectKind.ApplyStatus)
                         {
                             var after = before.WithVitals(health, block); units[after.Id] = after;
-                            events.Add(new CombatEvent(revision, effectIndex, effect, before, after, absorbed, overkill, incoming, events.Count, provenance));
+                            events.Add(new CombatEvent(revision, effectIndex, effect, before, after, absorbed, overkill, incoming, events.Count, provenance,
+                                outgoingAmount, incomingAmount));
                         }
                     }
                     catch (ArgumentException)
@@ -287,6 +318,14 @@ namespace PokerEngine
             catch (ArgumentException) { return new CombatTransition(state, CombatError.InvalidEffect); }
             catch (OverflowException) { return new CombatTransition(state, CombatError.Overflow); }
         }
+        private static CombatAmountModification ModifyAmount(ICombatAmountModifier modifier, CombatState state, CombatEffect effect,
+            CombatEffectProvenance provenance, CombatAmountStage stage, long amount)
+        {
+            if (modifier == null) return null;
+            var result = CombatAmountModification.Validate(modifier.Modify(new CombatAmountContext(state, effect, provenance, stage, amount)), amount);
+            return result.IsIdentity ? null : result;
+        }
+
         private static IEnumerable<CombatReaction> Reactions(CombatReactionContext context,
             ICombatReactionProvider statusReactions, ICombatReactionProvider externalReactions)
         {

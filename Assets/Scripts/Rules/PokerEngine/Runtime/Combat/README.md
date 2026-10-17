@@ -12,7 +12,7 @@
 | CombatEngine | 基础效果、即时触发队列、原子批量结算和事件 | 选目标、费用、分数换算、具体遗物行为 |
 | ScoredDuelEngine（Composition） | 最小单玩家/单怪物流程、牌型分数换伤害、玩家能量/结束回合、固定攻击、胜负投影 | 卡牌合法性、洗牌/抽牌、完整 Run、Unity 表现 |
 
-主线遗物的绑定与运行状态由 Composition 的 `BattlePlayerTurn.Relics` 持有，复用不可变 `AbilityMemory` 保存计数；不放入 CombatState，也不另建 AbilityWorld。当前只提供绑定、权威运行状态更新和遗物组件快照，尚不自动触发遗物效果。详见 [主线遗物绑定与运行状态](../../README.md#主线遗物绑定与运行状态)。
+主线遗物的绑定与运行状态由 Composition 的 `BattlePlayerTurn.Relics` 持有，复用不可变 `AbilityMemory` 保存计数；不放入 CombatState，也不另建 AbilityWorld。支持绑定、权威运行状态更新、组件快照以及显式配置的被动数值修正，尚不自动执行遗物触发能力。详见 [主线遗物绑定与运行状态](../../README.md#主线遗物绑定与运行状态)。
 
 生命值直接存于 `CombatantState.Health`，类型为必填 `int`，范围 0..MaxHealth；`IsAlive` 从生命值派生。单位不再持有 ResourceState，也不携带筹码或能量。不要同时持有另一份可变 AbilityWorld 作为生命真相；未来接能力执行器时，需要由模式投影并原子回写同一权威状态。
 
@@ -46,6 +46,16 @@ ScoredDuelState 组合持有独立的 PlayerTurnState（MaxEnergy / Energy），
 
 `CombatEvent.HealthLost` 保留实际生命差；伤害触发应使用 `DamageToHealth` 或检查 Damage 类型。Eliminate 的 DamageToHealth、SettledDamage、BlockAbsorbed 和 Overkill 均为 0，死亡原因是 `CombatDeathCause.Eliminate`；伤害致死为 Damage，未死亡为 None。默认牌型／弃牌规则尚不产出新操作；Composition 可通过可选的 IScoredHandEffectRule 声明五种基础操作及逐效果目标。正式启用消灭时，表现中把 HealthLost 直接当伤害的投影需要相应适配。
 - 公共层不判胜负，支持多个阵营/单位；一对一限制只在 ScoredDuel 示例中。
+
+## 双方数值修正
+
+`Resolve` 与 `ResolveTiming` 末尾可选的 `amountModifier` 接收纯 `ICombatAmountModifier`，只处理 Damage / Heal / GainBlock，分别调用 Outgoing / Incoming 两个阶段。死亡跳过在调用之前完成；ApplyStatus、Eliminate 和 ClearBlock 不调用。来源被允许死亡的周期/反应仍可修正，不增加新的存活限制。
+
+主动效果 Outgoing 的 Combat 上下文为批次开始快照，派生效果 Outgoing 与所有 Incoming 使用该条效果结算前的最新状态。现有 IIncomingDamageModifier 在两个新阶段之间执行；既有角色攻方修正仍由 Composition 预先执行。修正器返回 CombatAmountModification，不能修改来源、目标或状态；输入量不匹配或返回 null 报 InvalidAmountModifier，溢出仍报 Overflow，均原子拒绝。
+
+CombatAmountContribution 只保存来源实例/规则条目身份、固定值和百分比，不引用 Relic / Runs。CombatAmountModification 汇总同阶段贡献，计算 `floor(max(0, input × max(0, 1 + sum(rates)) + sum(flats)))`；最多 1024 个唯一来源实例/条目组合，按序数身份归约而不依赖传入顺序。
+
+CombatEvent 保留原 Effect，新增 OutgoingAmountModification / IncomingAmountModification 和 SettledAmount；无贡献时对应记录为 null。伤害的最终承伤读取 SettledDamage；治疗的 HealthRestored 和 Overheal 由 SettledAmount 计算，格挡累加使用 SettledAmount。反应必须读取这些实际事实，不能把请求 Effect.Amount 当成最终结果。修正流程不改变反应次数消耗、派生资格或状态到期策略。Composition 的遗物配置和示例见 [被动数值修正](../../README.md#遗物的被动数值修正)。
 
 ## 即时触发队列
 

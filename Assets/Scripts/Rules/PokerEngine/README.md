@@ -69,7 +69,7 @@ graph TD
 
 多人战局的出牌转换由各自 `BattlePlayerRules.DamagePolicy` 持有，TeamBattle 按出牌者读取，纯 C# 默认 EqualScoreDamageRule。公共 BattleRules 不再接受出牌伤害参数；旧 ScoredDuelDefinition 适配入口将转换规则转入默认玩家规则。转换协议位于 Composition：`IScoredHandDamageRule.Resolve(ScoredHandDamageContext)` 接收得分、来源和目标策略选出的目标，返回不可变 `DamagePlan`。默认 `EqualScoreDamageRule` 将得分等额作为每个目标的基础伤害。引擎验证来源、目标及规则版本后，调用 `IAttackDamageModifier`，再交给 `CombatEngine` 进行 `IIncomingDamageModifier`、格挡与生命结算；两个修正接口默认原值通过。`DamageModification` 与 CombatEvent 保留各阶段真实输入、输出、版本和说明。攻击修正读取攻击开始时的状态，目标承伤读取该原子批次的当前状态；怪物直接产生基础伤害请求并共用两个修正接口。`CardDuelEngine.PreviewPlay` 复用正式 `Execute`，调用方只读取返回结果而不提交新状态；所有注入策略须遵守纯函数约定。Unity 独立配置与中文只读验算面板见 `Assets/Scripts/Gameplay/SingleBattle/README.md`。
 
-个人牌型等级：`BattlePlayerRules.HandLevels` 持有不可变 `BattleHandLevels`，构造时复制每个 HandCategory 对应的正整数等级；未知/重复类别及非正等级拒绝，缺省类别补 1 级。Unity 在 PlayerBattleProfile 中逐牌型配置并于开战时生成快照，纯 C# 可用 `handLevels:` 注入。CardDuelEngine.PreviewHand 判型后从动作玩家读取对应等级，候选 UI、PreviewPlay 与正式 Play 共用；回合状态继续保留同一玩家 Rules。ScoreProfile 仅保存共享基础筹码、倍率、每级增长及单牌规则，不含个人等级。遗物实例绑定及运行状态已接入，计分/触发效果与战斗内等级升级尚未启用，旧 Draw/Run 的等级模型不变。
+个人牌型等级：`BattlePlayerRules.HandLevels` 持有不可变 `BattleHandLevels`，构造时复制每个 HandCategory 对应的正整数等级；未知/重复类别及非正等级拒绝，缺省类别补 1 级。Unity 在 PlayerBattleProfile 中逐牌型配置并于开战时生成快照，纯 C# 可用 `handLevels:` 注入。CardDuelEngine.PreviewHand 判型后从动作玩家读取对应等级，候选 UI、PreviewPlay 与正式 Play 共用；回合状态继续保留同一玩家 Rules。ScoreProfile 仅保存共享基础筹码、倍率、每级增长及单牌规则，不含个人等级。遗物实例绑定、运行状态及被动数值修正已接入，旧计分/主动触发能力与战斗内等级升级尚未启用，旧 Draw/Run 的等级模型不变。
 
 角色伤害规则由 `BattleActorDamageRules` 表达，随各自 `BattlePlayerSetup` / `BattleEnemySetup` 输入，并保留在玩家回合状态与怪物阵容中。TeamBattleEngine 按攻击 Source 选攻击修正、按实际 Target 分派承伤修正，CombatEngine 仍提供该原子批次的最新只读上下文；不把这些规则放入序列化生命状态。`BattleRules` 不再持有攻击/承伤修正，双方 Setup 未指定角色修正规则时构建 Identity 快照。基础 ScaledAttackDamageModifier / ScaledIncomingDamageModifier 位于 Combat，支持倍率及固定增减，默认 1 倍、0 增减。Unity 作者配置位于角色 Profile，公共 BattleRulesProfile 不新增修正槽位。
 
@@ -310,7 +310,7 @@ Draw 使用相同 AbilityExecutor、选择状态、费用、修正与生命周�
 
 ## 主线遗物绑定与运行状态
 
-`BattlePlayerSetup(..., relics: ...)` 接收 `BattleRelicSetup`（`RelicDefinition` + 持久 `RunRelic`）；`CardDuelEngine.Create` 的单人入口也可传 `relics:`。创建后通过 `state.Duel.Player(playerId).Relics` 取得该玩家的不可变 `BattleRelicLoadout`。同定义可有不同实例，每位玩家保持自身装配顺序；实例 ID 在全场唯一，每位玩家最多 32 个，并校验定义的副本上限。
+`BattlePlayerSetup(..., relics: ...)` 接收 `BattleRelicSetup`（`RelicDefinition` + 持久 `RunRelic` + 可选 `BattleRelicRules`）；`CardDuelEngine.Create` 的单人入口也可传 `relics:`。创建后通过 `state.Duel.Player(playerId).Relics` 取得该玩家的不可变 `BattleRelicLoadout`。同定义可有不同实例，每位玩家保持自身装配顺序；实例 ID 在全场唯一，每位玩家最多 32 个，并校验定义的副本上限。
 
 `BattleRelicState` 保存实例/定义/持有者/顺序、入场等级/成长，以及 RemainingCharges、UsesThisRound、CooldownRounds 和 AbilityMemory。定义通过绑定持有，不混入运行状态 JSON。初始导入保留 Run 的次数、冷却和 Encounter 计数；无 AbilityId 的遗物同样保留。运行时 Memory 支持 Round / Encounter 非负计数，暂不支持实体 Marks。所有集合只读，运行状态更新和反序列化重新验证、复制记忆。
 
@@ -328,7 +328,33 @@ var persistentRelics = restored.ExportRunRelics();
 
 `CardDuelEngine.UpdateRelicRuntime`（以及 TeamBattleEngine 同名入口）供权威规则侧提交完整运行状态，要求当前 Revision，禁止改实例、持有者、定义、顺序及入场等级/成长。成功返回新状态并推进对应 Revision，失败保留原引用；不扣能量、不推进回合、不记录出牌/弃牌动作、不产生战斗事件。它不是玩家命令，BattleSession 仍只接收原有操作。运行状态只由当前 BattlePlayerTurn 持有，出牌、收牌、弃牌、结束、控制跳过、敌方行动和胜负转换均保留它。
 
-本步不自动激活 ScoreEffects / AbilityId，不计算遗物成长、不消耗次数或冷却、不清理 Round 计数；这些生命周期由后续具体遗物行为接入。现有牌型效果、目标选择、弃牌收益/费用/次数、补牌和随机流程保持原样。`ExportRunRelics()` 创建新的持久实例，仅导出 Encounter 计数并丢弃 Round 计数/UsesThisRound，不自动写回 Run。旧 Draw/Holdem 的能力安装、成长和存档契约不变。
+本步不自动激活 ScoreEffects / AbilityId，不计算遗物成长、不消耗次数或冷却、不清理 Round 计数；这些生命周期由后续具体遗物行为接入。未配置数值修正时，现有牌型效果、目标选择、弃牌收益/费用/次数、补牌和随机流程保持原样。`ExportRunRelics()` 创建新的持久实例，仅导出 Encounter 计数并丢弃 Round 计数/UsesThisRound，不自动写回 Run。旧 Draw/Holdem 的能力安装、成长和存档契约不变。
+
+## 遗物的被动数值修正
+
+`BattleRelicRules` 属于 Composition，作为 `BattleRelicSetup(..., battleRules: ...)` 的可选静态配置；Runs 的 RelicDefinition 不反向引用战斗组装层。每件遗物最多 32 条唯一 Id 的 `RelicNumericModifierSpec`。六种 `BattleNumericStat` 是 DamageDealt / DamageReceived、HealingDone / HealingReceived、BlockGranted / BlockReceived；固定整数增减用 AddFlat，百分比增减用 AddRate（0.2 表示 +20%）。不开放预算、费用、目标变化、重复执行或状态参数。
+
+```csharp
+var numeric = new BattleRelicRules("relic.edge.1", new[] {
+    new RelicNumericModifierSpec("damage-rate", BattleNumericStat.DamageDealt,
+        RelicNumericOperation.AddRate, 0.2m, new[] { CombatEffectOrigin.Primary }),
+    new RelicNumericModifierSpec("shield-flat", BattleNumericStat.BlockReceived,
+        RelicNumericOperation.AddFlat, 3, new[] { CombatEffectOrigin.Primary })
+});
+var setup = new BattleRelicSetup(relicDefinition, runRelic, battleRules: numeric);
+```
+
+Origins 必填且不能重复，按 Primary / Triggered / Periodic / Reflection / Lifesteal / Overheal 显式选择。可选 HandCategory 条件只允许 Primary，读取权威 HandAttackInfo，同时适用于本次出牌的伤害和治疗；弃牌没有牌型事实，派生效果不继承触发它的牌型。首版不提供任意委托条件、等级成长公式或状态条件。
+
+`IBattleNumericResolver.Resolve(BattleNumericQuery)` 返回 `CombatAmountModification`，读取绑定内不可变配置；每阶段采用 `floor(max(0, 基础量 × max(0, 1 + Σ比例增减) + Σ固定增减))`，仅在汇总后取整。贡献按实例 Id / 条目 Id 的序数顺序归约，装配或配置条目换序不改变结果。100 基础量、+20%、+30%、+10 得到 160；固定加值不乘百分比。每个存活目标、每段效果独立计算；自疗/自身护盾也依次走来源和接受两阶段。同定义合法副本各自贡献，不因定义 Id 相同去重。
+
+伤害顺序为：现有角色攻方修正 → 来源遗物 → 现有角色承伤修正 → 目标遗物 → 格挡/扣血。治疗和护盾为：来源遗物 → 目标遗物 → 生命上限/护盾累加。Composition 的 RelicCombatAmountModifier 适配 Combat 的通用 ICombatAmountModifier，主动作、弃牌收益和即时/周期派生效果统一走公共队列。ApplyStatus、Eliminate、ClearBlock、空弃牌收益以及已死亡而跳过的效果都不参与数值修正。未绑定遗物的单位返回恒等结果。
+
+`CombatEvent.Effect` 和 `EffectPlan` 保留原始待结算请求（主动伤害已包含既有角色攻方修正）；OutgoingAmountModification / IncomingAmountModification 保存双方贡献与输入输出，空贡献时为 null。`SettledAmount` 是护盾吸收/生命上限截断前的最终量，`SettledDamage` 仅对伤害返回该值。HealthRestored / Overheal 使用最终治疗量，吸血仍按实际 DamageToHealth 产生，反伤仍按 BlockAbsorbed 产生；新修正不改变原有触发资格和深度限制。不能用原始 Effect.Amount 代替修正后的治疗量或最终承伤。
+
+查询和预览不写状态、不隐式消耗 Charges / UsesThisRound / CooldownRounds / Memory；被动修正也不自动受这些字段限制。消耗次数的“下一次强化”应由后续触发提交机制负责。任何溢出或非法修正输出拒绝整个事务，包括已执行的前序效果、牌区、资源和随机状态。无修正时既有数值/事件语义与状态转换保持不变。
+
+非空数值配置（含版本、条目及条件）扩展绑定指纹；全部配置为空时沿用原有字节布局与指纹。配置本身不写进运行状态 JSON，读档时仍由外部绑定注入；不同配置拒绝读取同一快照。旧 Run / Draw / Holdem 契约不变，Combat 的可选参数默认关闭，状态存档格式和 RulesVersion 不变。
 
 ## 计分模块
 
