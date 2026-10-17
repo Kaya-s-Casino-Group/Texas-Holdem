@@ -96,6 +96,8 @@ namespace PokerEngine
         public string SourceInstanceId { get; }
         /// <summary>Actual status activation identity; null for primary and external-provider effects.</summary>
         public StatusInstanceId? TriggerStatusId { get; }
+        /// <summary>Shared by every effect in one transaction-runtime activation.</summary>
+        public string ActivationId { get; }
         public bool CanTriggerReactions { get; }
         public CombatReactionSourcePolicy SourcePolicy { get; }
 
@@ -104,7 +106,7 @@ namespace PokerEngine
             Origin = CombatEffectOrigin.Primary; RootEffectIndex = rootEffectIndex;
             CanTriggerReactions = true; SourcePolicy = CombatReactionSourcePolicy.RequireLiving;
         }
-        internal CombatEffectProvenance(CombatReaction reaction, CombatRuleEvent parent)
+        internal CombatEffectProvenance(CombatReaction reaction, CombatRuleEvent parent, string activationId = null)
         {
             if (parent.Provenance == null && !(parent is CombatTimingEvent))
                 throw new ArgumentException("Derived effects require an effect fact or a clock boundary.");
@@ -112,6 +114,7 @@ namespace PokerEngine
             ParentRevision = parent.Revision; ParentSequenceIndex = parent.SequenceIndex;
             RuleId = reaction.RuleId; Owner = reaction.Owner; SourceInstanceId = reaction.SourceInstanceId;
             TriggerStatusId = reaction.TriggerStatusId;
+            ActivationId = activationId;
             CanTriggerReactions = reaction.CanTriggerReactions; SourcePolicy = reaction.SourcePolicy;
         }
     }

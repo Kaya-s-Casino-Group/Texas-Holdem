@@ -34,10 +34,13 @@ namespace PokerEngine
         public bool Accepted => Error == CombatError.None;
         public IReadOnlyList<CombatRuleEvent> RuleEvents { get; }
         public IReadOnlyList<CombatEvent> Events { get; }
+        public ICombatReactionRuntime ReactionRuntime { get; }
 
-        internal BattleEffectResolution(CombatState state, CombatError error = CombatError.None, IEnumerable<CombatRuleEvent> events = null)
+        internal BattleEffectResolution(CombatState state, CombatError error = CombatError.None, IEnumerable<CombatRuleEvent> events = null,
+            ICombatReactionRuntime reactionRuntime = null)
         {
             State = state; Error = error;
+            ReactionRuntime = reactionRuntime;
             RuleEvents = Guard.View(Guard.Copy(events ?? Array.Empty<CombatRuleEvent>(), nameof(events)));
             Events = Guard.View(RuleEvents.OfType<CombatEvent>().ToArray());
         }
@@ -51,12 +54,12 @@ namespace PokerEngine
     {
         internal static BattleEffectResolution Resolve(CombatState state, BattleEffectPlan plan, IIncomingDamageModifier incomingDamage = null,
             CombatStatusCatalog statusCatalog = null, ICombatReactionProvider reactionProvider = null, CombatReactionLimits reactionLimits = null,
-            ICombatAmountModifier amountModifier = null)
+            ICombatAmountModifier amountModifier = null, ICombatReactionRuntime reactionRuntime = null)
         {
             if (state == null || plan == null) throw new ArgumentNullException();
-            if (plan.Effects.Count == 0) return new BattleEffectResolution(state);
-            var result = CombatEngine.Resolve(state, state.Revision, plan.Effects, incomingDamage, statusCatalog, reactionProvider, reactionLimits, amountModifier);
-            return new BattleEffectResolution(result.State, result.Error, result.RuleEvents);
+            if (plan.Effects.Count == 0) return new BattleEffectResolution(state, reactionRuntime: reactionRuntime);
+            var result = CombatEngine.Resolve(state, state.Revision, plan.Effects, incomingDamage, statusCatalog, reactionProvider, reactionLimits, amountModifier, reactionRuntime);
+            return new BattleEffectResolution(result.State, result.Error, result.RuleEvents, result.ReactionRuntime);
         }
     }
 }

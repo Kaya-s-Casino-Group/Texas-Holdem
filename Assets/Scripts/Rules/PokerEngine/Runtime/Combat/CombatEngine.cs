@@ -87,9 +87,13 @@ namespace PokerEngine
         public IReadOnlyList<CombatRuleEvent> RuleEvents { get; }
         /// <summary>Compatibility projection of vitals events; Index still identifies the original effect position.</summary>
         public IReadOnlyList<CombatEvent> Events { get; }
-        internal CombatTransition(CombatState state, CombatError error = CombatError.None, IEnumerable<CombatRuleEvent> events = null)
+        /// <summary>Accepted provisional runtime; null on failure or when no runtime was supplied.</summary>
+        public ICombatReactionRuntime ReactionRuntime { get; }
+        internal CombatTransition(CombatState state, CombatError error = CombatError.None, IEnumerable<CombatRuleEvent> events = null,
+            ICombatReactionRuntime reactionRuntime = null)
         {
             State = state; Error = error;
+            ReactionRuntime = reactionRuntime;
             RuleEvents = Guard.View(Guard.Copy(events ?? Array.Empty<CombatRuleEvent>(), nameof(events)));
             Events = Guard.View(RuleEvents.OfType<CombatEvent>().ToArray());
         }
@@ -101,24 +105,25 @@ namespace PokerEngine
         public const string RulesVersion = "combat.8";
         public static CombatTransition Resolve(CombatState state, long expectedRevision, IEnumerable<CombatEffect> effects, IIncomingDamageModifier incomingDamage = null,
             CombatStatusCatalog statusCatalog = null, ICombatReactionProvider reactionProvider = null, CombatReactionLimits reactionLimits = null,
-            ICombatAmountModifier amountModifier = null)
+            ICombatAmountModifier amountModifier = null, ICombatReactionRuntime reactionRuntime = null)
         {
             if (state == null || effects == null) throw new ArgumentNullException();
-            return ResolveCore(state, expectedRevision, effects, null, incomingDamage, statusCatalog, reactionProvider, reactionLimits, amountModifier);
+            return ResolveCore(state, expectedRevision, effects, null, incomingDamage, statusCatalog, reactionProvider, reactionLimits, amountModifier, reactionRuntime);
         }
 
         /// <summary>Resolve one authority-owned boundary atomically. Periodic damage is a leaf and never re-enters reaction rules.</summary>
         public static CombatTransition ResolveTiming(CombatState state, long expectedRevision, CombatTimingSignal signal,
             IIncomingDamageModifier incomingDamage = null, CombatStatusCatalog statusCatalog = null, CombatReactionLimits reactionLimits = null,
-            ICombatAmountModifier amountModifier = null)
+            ICombatAmountModifier amountModifier = null, ICombatReactionRuntime reactionRuntime = null)
         {
             if (state == null || signal == null) throw new ArgumentNullException();
-            return ResolveCore(state, expectedRevision, Array.Empty<CombatEffect>(), signal, incomingDamage, statusCatalog, null, reactionLimits, amountModifier);
+            return ResolveCore(state, expectedRevision, Array.Empty<CombatEffect>(), signal, incomingDamage, statusCatalog, null, reactionLimits, amountModifier, reactionRuntime);
         }
 
         private static CombatTransition ResolveCore(CombatState state, long expectedRevision, IEnumerable<CombatEffect> effects,
             CombatTimingSignal signal, IIncomingDamageModifier incomingDamage, CombatStatusCatalog statusCatalog,
-            ICombatReactionProvider reactionProvider, CombatReactionLimits reactionLimits, ICombatAmountModifier amountModifier)
+            ICombatReactionProvider reactionProvider, CombatReactionLimits reactionLimits, ICombatAmountModifier amountModifier,
+            ICombatReactionRuntime reactionRuntime)
         {
             try { Validate(state); CombatStatusRules.ValidateCatalog(state, statusCatalog); }
             catch (ArgumentException) { return new CombatTransition(state, CombatError.InvalidState); }
@@ -162,6 +167,7 @@ namespace PokerEngine
                 for (int index = batch.Length - 1; index >= 0; index--)
                     queue.Push(new QueuedEffect(batch[index], new CombatEffectProvenance(index)));
                 int reactionCount = 0;
+                var activationIds = new HashSet<string>(StringComparer.Ordinal);
                 while (queue.Count > 0)
                 {
                     var queued = queue.Pop();
@@ -265,7 +271,7 @@ namespace PokerEngine
                     catch (ArgumentException)
                     { return new CombatTransition(state, provenance.Depth == 0 ? CombatError.InvalidEffect : CombatError.InvalidReaction); }
 
-                    if ((statusReactions == null && reactionProvider == null) || !provenance.CanTriggerReactions) continue;
+                    if ((statusReactions == null && reactionProvider == null && reactionRuntime == null) || !provenance.CanTriggerReactions) continue;
                     // Complete all writes/facts for this effect before taking one reaction snapshot. For example,
                     // an immunity Blocked fact and its Consumed fact both see the already-consumed charge.
                     var settled = new CombatState(state.Id, state.Revision, state.Combatants.Select(unit => units[unit.Id]), statuses);
@@ -290,6 +296,24 @@ namespace PokerEngine
                                     return new CombatTransition(state, CombatError.InvalidReaction);
                                 derived.Add(new QueuedEffect(reaction.Effect, new CombatEffectProvenance(reaction, parent)));
                             }
+                            if (reactionRuntime != null)
+                            {
+                                var evaluation = reactionRuntime.React(new CombatReactionContext(settled, parent));
+                                if (evaluation == null) return new CombatTransition(state, CombatError.InvalidReaction);
+                                foreach (var activation in evaluation.Batches)
+                                {
+                                    if (!activationIds.Add(activation.ActivationId)) return new CombatTransition(state, CombatError.InvalidReaction);
+                                    foreach (var reaction in activation.Reactions)
+                                    {
+                                        if (++reactionCount > reactionLimits.MaxEffects || provenance.Depth >= reactionLimits.MaxDepth)
+                                            return new CombatTransition(state, CombatError.ReactionLimitExceeded);
+                                        if (!unitIds.Contains(reaction.Owner) || !unitIds.Contains(reaction.Effect.Source) || !unitIds.Contains(reaction.Effect.Target))
+                                            return new CombatTransition(state, CombatError.InvalidReaction);
+                                        derived.Add(new QueuedEffect(reaction.Effect, new CombatEffectProvenance(reaction, parent, activation.ActivationId)));
+                                    }
+                                }
+                                reactionRuntime = evaluation.NextRuntime;
+                            }
                         }
                         // One activation spends one charge, independent of target count. Once a positive,
                         // target-bound response is earned, later death skips do not refund that charge.
@@ -313,7 +337,8 @@ namespace PokerEngine
                     // Reverse insertion preserves the rule's stable sibling order without recursive calls.
                     for (int index = derived.Count - 1; index >= 0; index--) queue.Push(derived[index]);
                 }
-                return new CombatTransition(new CombatState(state.Id, revision, state.Combatants.Select(unit => units[unit.Id]), statuses), events: events);
+                return new CombatTransition(new CombatState(state.Id, revision, state.Combatants.Select(unit => units[unit.Id]), statuses), events: events,
+                    reactionRuntime: reactionRuntime);
             }
             catch (ArgumentException) { return new CombatTransition(state, CombatError.InvalidEffect); }
             catch (OverflowException) { return new CombatTransition(state, CombatError.Overflow); }

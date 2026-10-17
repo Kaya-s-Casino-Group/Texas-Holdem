@@ -328,11 +328,11 @@ var persistentRelics = restored.ExportRunRelics();
 
 `CardDuelEngine.UpdateRelicRuntime`（以及 TeamBattleEngine 同名入口）供权威规则侧提交完整运行状态，要求当前 Revision，禁止改实例、持有者、定义、顺序及入场等级/成长。成功返回新状态并推进对应 Revision，失败保留原引用；不扣能量、不推进回合、不记录出牌/弃牌动作、不产生战斗事件。它不是玩家命令，BattleSession 仍只接收原有操作。运行状态只由当前 BattlePlayerTurn 持有，出牌、收牌、弃牌、结束、控制跳过、敌方行动和胜负转换均保留它。
 
-本步不自动激活 ScoreEffects / AbilityId，不计算遗物成长、不消耗次数或冷却、不清理 Round 计数；这些生命周期由后续具体遗物行为接入。未配置遗物修正时，现有牌型效果、目标选择、弃牌收益/费用/次数、补牌和随机流程保持原样。`ExportRunRelics()` 创建新的持久实例，仅导出 Encounter 计数并丢弃 Round 计数/UsesThisRound，不自动写回 Run。旧 Draw/Holdem 的能力安装、成长和存档契约不变。
+绑定本身不自动激活 ScoreEffects / AbilityId，也不计算遗物成长；只有显式配置下述事实触发时，主线才管理其次数、冷却和 Round 计数。未配置遗物修正时，现有牌型效果、目标选择、弃牌收益/费用/次数、补牌和随机流程保持原样。`ExportRunRelics()` 创建新的持久实例，仅导出 Encounter 计数并丢弃 Round 计数/UsesThisRound，不自动写回 Run。旧 Draw/Holdem 的能力安装、成长和存档契约不变。
 
 ## 遗物的被动数值修正
 
-`BattleRelicRules` 属于 Composition，作为 `BattleRelicSetup(..., battleRules: ...)` 的可选静态配置；Runs 的 RelicDefinition 不反向引用战斗组装层。每件遗物的数值、效果结构、规则数值与补牌修正合计最多 32 条，Id 跨四类不可重复；数值条目使用 `RelicNumericModifierSpec`。六种 `BattleNumericStat` 是 DamageDealt / DamageReceived、HealingDone / HealingReceived、BlockGranted / BlockReceived；固定整数增减用 AddFlat，百分比增减用 AddRate（0.2 表示 +20%）。此入口只改变战斗效果数值；效果结构和行动规则分别通过下述专用入口配置。
+`BattleRelicRules` 属于 Composition，作为 `BattleRelicSetup(..., battleRules: ...)` 的可选静态配置；Runs 的 RelicDefinition 不反向引用战斗组装层。每件遗物的数值、效果结构、规则数值、补牌修正与触发条目合计最多 32 条，Id 跨类不可重复；数值条目使用 `RelicNumericModifierSpec`。六种 `BattleNumericStat` 是 DamageDealt / DamageReceived、HealingDone / HealingReceived、BlockGranted / BlockReceived；固定整数增减用 AddFlat，百分比增减用 AddRate（0.2 表示 +20%）。此入口只改变战斗效果数值；效果结构和行动规则分别通过下述专用入口配置。
 
 ```csharp
 var numeric = new BattleRelicRules("relic.edge.1", new[] {
@@ -358,7 +358,7 @@ Origins 必填且不能重复，按 Primary / Triggered / Periodic / Reflection 
 
 ## 遗物对牌型效果的结构修正
 
-在 `BattleRelicRules(..., handEffects: ...)` 配置 `RelicHandEffectModifierSpec`。仅对动作玩家的 `IScoredHandEffectRule` 输出执行一次：基础 BattleEffectSequence → IHandEffectModifier / RelicHandEffectModifier → 目标绑定 → 既有角色与双方数值修正 → Combat 队列。敌人、弃牌、即时反应和周期效果不进入结构修正。需要次数或冷却的触发遗物仍需后续运行状态提交机制；本入口为被动配置，预览/查询不修改或消费运行状态。
+在 `BattleRelicRules(..., handEffects: ...)` 配置 `RelicHandEffectModifierSpec`。仅对动作玩家的 `IScoredHandEffectRule` 输出执行一次：基础 BattleEffectSequence → IHandEffectModifier / RelicHandEffectModifier → 目标绑定 → 既有角色与双方数值修正 → Combat 队列。敌人、弃牌、即时反应和周期效果不进入结构修正。本入口为被动配置，预览/查询不修改或消费运行状态；下述事实触发的次数和冷却不自动限制这些被动结构修正。
 
 `BattleEffectStep(id, effect, target)` 的 Id 在序列内唯一且不依赖数组下标。PokerHandEffectSteps 提供 DamageHit(1) / DamageHit(2)…（`damage/1`…）、Heal、Stun、ControlImmunity、Eliminate；同花治疗、葫芦的两种状态均可分别定位。原两参数构造保留，未命名步骤正常结算，但不能作为具名修改的目标。改变牌型基础规则时应保留同一语义步骤的 Id。
 
@@ -420,6 +420,49 @@ var setup = new BattleRelicSetup(relicDefinition, runRelic, rules);
 `CardDuelTransition.Draws` 按执行顺序保存 BattleDrawRecord（计划 Plan 与实际 DrawnCount）；计划包含基础张数、模式、所选张数、总增减、上限、缺额和各遗物贡献。牌源不足可少抽，AfterPlay 时 Played 仍不可洗回，只有现有 Discard 牌堆参与洗牌；CollectPlayed 本身不触发补牌。预览复用完整流水线，不修改输入和 RNG。任意后续失败保留原状态且不发布费用/抽牌报告；Session 自动步骤失败也撤销整次用户命令。
 
 新增配置非空时才追加 `battle-relic.rules.1` 指纹段，旧空配置、纯数值和结构配置的指纹保持兼容。schema v1 仍仅存遗物运行状态，读取新配置快照必须提供相同外部绑定。规则查询不消费 Charges / UsesThisRound / CooldownRounds / Memory；首回合优惠、限定次数免单和动态条件留给后续触发提交机制。没有新修正时保留既有牌型效果、弃牌收益/次数及洗牌流程。
+
+## 遗物事实触发与事务提交
+
+`BattleRelicRules(..., triggers: ..., triggerBudget: ...)` 配置事实触发；默认空集合，不隐式安装任何能力或改变牌型、弃牌收益。每个 `RelicTriggerSpec` 有稳定 Id、Timing、Relation、Conditions、Occurrence、Origins、Priority、SourcePolicy 和独立目标的 Effects。配置 Id 与同一遗物的数值、结构、规则修正 Id 共用唯一命名空间，总数不超过 32。
+
+| Timing | 可匹配的实际结算事实 |
+| --- | --- |
+| DamageSettled | Damage 结算；完全吸收或结算为 0 也属于伤害事实，要求实际扣血需配置阈值 |
+| HealingSettled | Heal 结算，区分实际恢复 HealthRestored 与溢出 Overheal |
+| BlockGained | GainBlock 实际增加护盾；ClearBlock 不匹配 |
+| UnitDied | 本条效果导致死亡，含 Damage 与 Eliminate；不把消灭当成伤害 |
+| StatusApplied | 状态成功新增或刷新 |
+| StatusBlocked | 状态施加被免疫拦截；到期与消费不匹配 |
+
+Relation 以遗物持有者为基准，支持自身/友方/敌方是来源或目标，以及 Any；友方包含自身。条件全部按 AND 组合，支持实际扣血/吸收/治疗/溢出/护盾阈值、持有者结算后生命比例/已有状态、事件状态定义、牌型、提交牌数、弃牌数。牌型和牌数只来自对应出牌/弃牌命令的权威主效果，派生效果不继承它们；缺失事实不满足条件。本步不包含随机条件或通用脚本表达式。
+
+`RelicTriggeredEffectSpec` 复用五种 BattleEffectSpec，并单独绑定 CombatTargetSpec：自身、事件来源/目标、友方/敌方及首个/最低血/最高血/全部存活目标。每个目标获得完整数值，支持多效果与 AOE，一次激活最多展开 64 条效果。状态复用目录、免疫与生命周期；相对期限在触发时按当前战局绑定，不接受外部固定回合/阶段 scope。来源是遗物持有者，默认要求存活；死亡反应需显式 AllowDefeated，仍不能复活死目标。
+
+同一遗物实例的所有触发共用一个 `RelicTriggerBudgetSpec`：RemainingCharges 按 ChargeCost 扣减，UsesThisRound 按激活次数增加，MaxUsesPerAction / MaxUsesPerRound 可选，CooldownRounds 为共享冷却。没有有限 Charges 则不限制总次数，ChargeCost=0 不消耗有限次数。PerEvent 默认逐事实判断；PerAction 让该触发条目在一次 TeamBattle 命令中最多激活一次，共享行动上限则限制该遗物所有条目总数。玩家与敌人行动各有独立的行动预算；同一整轮的玩家/敌人阶段共用 UsesThisRound。
+
+顺序固定为 Priority 升序 → 遗物实例 Id 序数 → 触发 Id 序数，与装备传入顺序无关。每条合格触发先绑定存活目标，再预占预算，后续候选立即读取新预算。同一激活里的多效果、AOE 不重复扣费；无目标或所有数值效果为 0 时不消费。进入队列后，目标后来死亡、满血治疗、状态被免疫或数值修正为 0 都不退款；真正结算错误则回滚整次事务。
+
+冷却 N 表示跳过后续 N 个完整回合。触发时 N>0 写入 N+1，阻止当前回合再触发；每次进入下一玩家回合递减 1、清零 UsesThisRound，并清理 Round 记忆。比如 N=1：本回合写 2，下回合为 1 不触发，再下一回合为 0 可触发。免费行动、预览、CollectPlayed 和开局 Start 不推进冷却；导入冷却不在创建时额外递减。仅配置了触发的遗物参与维护，无触发遗物的既有运行字段保持不变，有限次数不自动补满。
+
+```csharp
+// 示例数值：实际受伤后治疗自己 10 点，整轮最多一次，冷却跳过下一整轮。
+var trigger = new RelicTriggerSpec("recover", RelicTriggerTiming.DamageSettled,
+    RelicEventRelation.OwnerIsTarget,
+    new[] { new RelicTriggeredEffectSpec(BattleEffectSpec.Heal(10), CombatTargetSpec.Self()) },
+    new[] { RelicTriggerConditionSpec.FactAtLeast(RelicFactAmount.DamageToHealth, 1) });
+var battleRules = new BattleRelicRules("recovery.1", triggers: new[] { trigger },
+    triggerBudget: new RelicTriggerBudgetSpec(maxUsesPerRound: 1, cooldownRounds: 1));
+var setup = new BattleRelicSetup(new RelicDefinition("recovery", Array.Empty<ScoreEffect>(), charges: 3),
+    new RunRelic("recovery-instance", "recovery", charges: 3), battleRules);
+```
+
+Composition 的 `BattleRelicTriggerResolver` 只生成激活草案；不可变的 RelicReactionRuntime 通过 Combat 的 `ICombatReactionRuntime` 在现有队列内逐事实累计状态。每个父事实仍先收集状态反应、再收集外部 provider，最后收集遗物反应；维持原有深度优先队列、死亡跳过及总条数/深度上限。默认只监听 Primary，派生效果归类 Triggered 且为叶子；要继续触发，发送方须允许 CanTriggerReactions，接收方须显式允许相应 Origins。原有反伤、周期伤害等叶子限制保持不变。派生数值修正使用 Triggered 来源，不重复套用主牌型/主攻击增益。
+
+`TeamBattleTransition.RelicActivations` 与 `CardDuelTransition.RelicActivations` 提供激活 Id、父事实 Revision/SequenceIndex、持有者/实例/条目、预算前后快照及目标已绑定的批次；对应事实的 Provenance.ActivationId 可关联同次激活。原 EffectPlan 仍仅表示主动计划。次数与冷却随完整行动提交；后续数值溢出、补牌失败、触发链超限，以及 Session 后续自动步骤失败，都会撤销生命、护盾、状态、遗物、资源、牌区和 RNG，失败不发布激活报告。预览返回同样的临时结果，不修改原状态。
+
+本步不提供开战、出牌/弃牌完成、阶段起止、状态到期的遗物触发；默认无收益的弃牌没有虚构事实。周期叶子和清盾等阶段维护不进入此遗物入口。回合入口的次数/冷却维护也不产生边界触发，限次的被动数值/结构/费用修正仍未接入。
+
+只有非空触发配置才追加 `battle-relic.triggers.1` 指纹段，保留旧空/数值/结构/规则配置指纹。schema v1 继续只存运行状态，反序列化要求同一外部配置绑定，冷却、次数和记忆原样恢复。RelicDefinition 的有限 Charges 不再要求旧 AbilityId，以支持独立的主线触发；旧主动能力与旧计分效果不会因此自动安装。
 
 ## 计分模块
 

@@ -177,6 +177,11 @@ namespace PokerEngine
                         writer.Write("battle-relic.rules.1");
                         foreach (var state in Relics) RulesFor(state.InstanceId).WriteRules(writer);
                     }
+                    if (Relics.Any(state => RulesFor(state.InstanceId).Triggers.Count != 0))
+                    {
+                        writer.Write("battle-relic.triggers.1");
+                        foreach (var state in Relics) RulesFor(state.InstanceId).WriteTriggers(writer);
+                    }
                 }
                 using (var hash = SHA256.Create())
                     return BitConverter.ToString(hash.ComputeHash(stream.ToArray())).Replace("-", "").ToLowerInvariant();
@@ -193,8 +198,7 @@ namespace PokerEngine
             if (definition.Slots < 1 || definition.Slots > 32 || definition.MaxCopies < 1 || definition.MaxLevel < 1 ||
                 definition.MaxLevel > 100 || definition.SellPrice < 0 || definition.UpgradeCost < 0 ||
                 definition.GrowthPerScoredRound < 0 || definition.Charges < 0 ||
-                definition.AbilityId.HasValue && !definition.AbilityId.Value.IsValid ||
-                !definition.AbilityId.HasValue && definition.Charges.HasValue)
+                definition.AbilityId.HasValue && !definition.AbilityId.Value.IsValid)
                 throw new ArgumentException("Invalid battle relic definition.", nameof(definition));
             var effects = Guard.Copy(definition.ScoreEffects, nameof(definition));
             foreach (var effect in effects)

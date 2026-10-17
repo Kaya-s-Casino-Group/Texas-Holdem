@@ -71,6 +71,16 @@ CombatEvent 保留原 Effect，新增 OutgoingAmountModification / IncomingAmoun
 
 每条效果事实的 `Provenance` 记录 Origin、RootEffectIndex、Depth、父 Revision／SequenceIndex、规则及实例 ID、Owner 和继续触发／死亡来源策略。内置状态反应还有强类型 TriggerStatusId；外部 provider 的 SourceInstanceId 只作归因，不会凭字符串自动消费状态。主效果深度为 0、无父事实；派生的 Index 仍指根主效果位置，SequenceIndex 才是本次提交的唯一事实序号。同一 ApplyStatus 生成的多条事实共享效果来源；无因果关联的生命周期事实 Provenance 为 null；周期伤害及其次数消费关联时钟事实，RootEffectIndex 为 -1。被跳过的主／派生效果均不产生伪事实，也不触发新反应。原 EffectPlan 保留原始声明，实际派生结果通过 RuleEvents／Events 查看。
 
+### 事务内的可累计触发状态
+
+`Resolve` / `ResolveTiming` 末尾可选的 `reactionRuntime` 接受 `ICombatReactionRuntime`。它必须是不可变、无外部副作用的权威规则对象，`React(context)` 返回 `CombatReactionEvaluation`（NextRuntime + Batches）。公共层不认识遗物定义、Charges 或冷却；这些字段由 Composition 的运行状态桥管理。旧 ICombatReactionProvider 的签名和行为保留。
+
+每个父事实依次收集内置状态、外部 provider、runtime 的反应。一个 `CombatReactionBatch` 表示一次激活，可包含 1–64 条同 Owner / RuleId / SourceInstanceId 的反应，所有条目共用非空 ActivationId。批次不得索取内置状态的 TriggerStatusId 消费权限；同一次 Combat 提交内激活 Id 不得重复。候选先全部验证、纳入原有总量/深度限制，再接纳 NextRuntime，让后续事实读取已预占的次数。兄弟与子效果仍按原深度优先队列执行，不因激活分组建立第二条队列。
+
+成功时 `CombatTransition.ReactionRuntime` 返回最后的不可变草案，失败时为 null、状态仍为输入、事件为空。调用方必须与其外层事务共同提交，不能在 React 内写外部状态；预览也因此不消费真实预算。`Provenance.ActivationId` 将同组效果关联到激活报告，外部 provider 填写 SourceInstanceId 不具有写入运行状态的权限。目标后来死亡仍跳过，不撤销已经入队的激活；真正错误则撤销整批。
+
+只分派可继续触发的实际效果事实，不向 runtime 分派开战、生命周期或周期时钟。ResolveTiming 原有周期伤害保持叶子，本步仅传递运行状态。详细配置、共享预算和回合维护见 [遗物事实触发](../../README.md#遗物事实触发与事务提交)。
+
 ### 盾反、吸血与溢出治疗转伤害
 
 三种强类型行为都把倍率和目标选择分开配置，最终派生量为 `floor(实际量 × Ratio × Stacks)`，最后取整一次。倍率必须非负，可大于 1；溢出 long／decimal 时整次行动回滚。默认不自动赋予任何角色这些状态，不改变既有牌型表或弃牌奖励。

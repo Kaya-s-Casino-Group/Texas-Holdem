@@ -25,7 +25,7 @@ namespace PokerEngine
         {
             Id = Guard.Text(id, nameof(id)); ScoreEffects = Guard.View(Guard.Copy(effects, nameof(effects)));
             if (sellPrice < 0 || upgradeCost < 0 || slots < 1 || slots > 32 || maxCopies < 1 || maxLevel < 1 || maxLevel > 100 || growthPerScoredRound < 0 || charges < 0 ||
-                abilityId.HasValue && !abilityId.Value.IsValid || !abilityId.HasValue && charges.HasValue) throw new ArgumentException("Invalid relic definition.");
+                abilityId.HasValue && !abilityId.Value.IsValid) throw new ArgumentException("Invalid relic definition.");
             SellPrice = sellPrice; UpgradeCost = upgradeCost; Slots = slots; MaxCopies = maxCopies; MaxLevel = maxLevel;
             GrowthPerScoredRound = growthPerScoredRound; AbilityId = abilityId; Charges = charges;
         }
