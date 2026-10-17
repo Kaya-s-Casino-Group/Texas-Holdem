@@ -10,7 +10,7 @@ public static class PokerBuild
     private const string PendingIOSScene = "PokerBuild.PendingIOSScene";
     private const string IOSOutput = "Builds/iOS-CurrentScene";
 
-    [MenuItem("Tools/Poker/Build Current Scene for iPhone")]
+    [MenuItem("工具/构建发布/iPhone/构建当前场景")]
     public static void BuildCurrentSceneForIPhone()
     {
         if (EditorApplication.isPlayingOrWillChangePlaymode)
@@ -33,10 +33,10 @@ public static class PokerBuild
             SessionState.EraseString(PendingIOSScene);
             throw new System.InvalidOperationException("Could not switch to iOS.");
         }
-        EditorApplication.delayCall += ContinueIOSBuild;
+        QueueIOSBuild();
     }
 
-    [MenuItem("Tools/Poker/Configure iPhone Build")]
+    [MenuItem("工具/构建发布/iPhone/配置构建")]
     public static void ConfigureIPhone()
     {
         PokerAppIcon.Apply();
@@ -45,6 +45,10 @@ public static class PokerBuild
         PlayerSettings.SetArchitecture(BuildTargetGroup.iOS, 1); // ARM64
         PlayerSettings.iOS.sdkVersion = iOSSdkVersion.DeviceSDK;
         PlayerSettings.iOS.targetOSVersionString = "15.0";
+        // Unity 2022.3 exposes ProMotion only as a serialized PlayerSettings field.
+        var settings = new SerializedObject(AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/ProjectSettings.asset")[0]);
+        settings.FindProperty("appleEnableProMotion").boolValue = false;
+        settings.ApplyModifiedPropertiesWithoutUndo();
         PlayerSettings.defaultInterfaceOrientation = UIOrientation.AutoRotation;
         PlayerSettings.allowedAutorotateToPortrait = false;
         PlayerSettings.allowedAutorotateToPortraitUpsideDown = false;
@@ -59,18 +63,26 @@ public static class PokerBuild
     private static void ResumeIOSBuild()
     {
         if (!string.IsNullOrEmpty(SessionState.GetString(PendingIOSScene, "")))
-            EditorApplication.delayCall += ContinueIOSBuild;
+            QueueIOSBuild();
+    }
+
+    private static void QueueIOSBuild()
+    {
+        EditorApplication.update -= ContinueIOSBuild;
+        EditorApplication.update += ContinueIOSBuild;
     }
 
     private static void ContinueIOSBuild()
     {
         var scene = SessionState.GetString(PendingIOSScene, "");
-        if (string.IsNullOrEmpty(scene)) return;
-        if (EditorApplication.isCompiling || EditorApplication.isUpdating)
+        if (string.IsNullOrEmpty(scene))
         {
-            EditorApplication.delayCall += ContinueIOSBuild;
+            EditorApplication.update -= ContinueIOSBuild;
             return;
         }
+        if (EditorApplication.isCompiling || EditorApplication.isUpdating)
+            return;
+        EditorApplication.update -= ContinueIOSBuild;
         SessionState.EraseString(PendingIOSScene);
         try
         {
@@ -96,7 +108,7 @@ public static class PokerBuild
         }
     }
 
-    [MenuItem("Tools/Poker/Build macOS Game")]
+    [MenuItem("工具/构建发布/macOS/构建游戏")]
     public static void BuildMac()
     {
         PlayerSettings.productName = "Pocket Poker";

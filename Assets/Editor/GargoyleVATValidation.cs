@@ -21,7 +21,7 @@ public static class GargoyleVATValidation
         return Quaternion.Normalize(q);
     }
 
-    [MenuItem("Tools/Art Assets/Dragon Gargoyle VAT/Validate GPU Decode")]
+    [MenuItem("工具/场景美术/石像鬼/顶点动画/验证 GPU 解码")]
     public static void Validate() => Validate(GargoyleVATImport.Stem+"_vat.json","Library/GargoyleVATValidation",BindReference);
 
     public static void Validate(string manifestPath,string reportFolder=null,string referencePath=null)
@@ -171,10 +171,10 @@ public static class GargoyleVATValidation
         Debug.Log("Gargoyle VAT GPU validation passed: " + report);
     }
 
-    [MenuItem("Tools/Art Assets/Statue VAT/Validate Selected GPU Decode")]
+    [MenuItem("工具/场景美术/雕像顶点动画/验证所选资源 GPU 解码")]
     static void ValidateSelected() => Validate(AssetDatabase.GetAssetPath(Selection.activeObject));
 
-    [MenuItem("Tools/Art Assets/Statue VAT/Validate Selected GPU Decode",true)]
+    [MenuItem("工具/场景美术/雕像顶点动画/验证所选资源 GPU 解码",true)]
     static bool CanValidateSelected() => AssetDatabase.GetAssetPath(Selection.activeObject).EndsWith("_vat.json");
 
     static void ValidateReference(Mesh mesh, JObject report,string referencePath,JObject data)

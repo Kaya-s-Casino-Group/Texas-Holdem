@@ -12,7 +12,7 @@ namespace Poker.Scoring.Editor
         private static readonly string[] HandNames = { "高牌", "一对", "两对", "三条", "顺子", "同花", "葫芦", "四条", "同花顺（含皇家同花顺）", "五条（已有扩展）" };
         private static readonly string[] RankNames = { "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A" };
         private static readonly string[] SuitNames = { "梅花", "方块", "红桃", "黑桃" };
-        [MenuItem("Tools/Poker/牌型计分/打开默认配置")]
+        [MenuItem("工具/共享规则/牌型计分配置")]
         public static void OpenDefault()
         {
             var profile = AssetDatabase.LoadAssetAtPath<PokerScoreProfile>(DefaultPath);

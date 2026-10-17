@@ -61,9 +61,9 @@ Main Camera 使用项目默认 Renderer 0，直接输出到 Game View。Renderer
 
 菜单：
 
-- `Tools/Card Art/Create Rendering Validation Scene`：重建验证场景、共享材质与 Prefab。会提示保存其他场景的未保存修改；重建会覆盖此生成场景。
-- `Tools/Card Art/Capture Rendering Validation`：保存 960×540、Point 放大到 1920×1080、倾斜侧边与圆角特写。使用 URP Render Request 实际渲染。
-- `Tools/Card Art/Capture Game Output`：Play 模式下保存最终 Game View 输出，包含实时后处理与 Point 放大。
+- `工具/卡牌美术/渲染验证/创建验证场景`：重建验证场景、共享材质与 Prefab。会提示保存其他场景的未保存修改；重建会覆盖此生成场景。
+- `工具/卡牌美术/渲染验证/捕获验证画面`：保存 960×540、Point 放大到 1920×1080、倾斜侧边与圆角特写。使用 URP Render Request 实际渲染。
+- `工具/卡牌美术/渲染验证/捕获游戏输出`：Play 模式下保存最终 Game View 输出，包含实时后处理与 Point 放大。
 
 截图和报告放在 `ArtSource/Cards/RenderingValidation/`，不导入为游戏纹理。`validation.json` 检查实际 renderer 模式、Shader 错误、资源共享、网格尺寸和采样设置；这不是 GPU Draw Call 数量报告。
 
@@ -71,7 +71,7 @@ EditMode 测试类 `CardArt.Tests.CardRenderingTests` 检查物理尺寸、160 �
 
 ## Prefab 导出页签
 
-打开 `Tools/Cards/Atlas Builder` 后选择 **Prefab 导出**，或直接使用 `Tools/Cards/Prefab Exporter`。同一个窗口保留卡牌列表和实时线框图集预览页签，窄窗口中的图集配置通过“配置 / 替换”切换，Prefab 页签独立滚动。
+打开 `工具/卡牌美术/图集构建` 后选择 **Prefab 导出**，或直接使用 `工具/卡牌美术/预制体导出`。同一个窗口保留卡牌列表和实时线框图集预览页签，窄窗口中的图集配置通过“配置 / 替换”切换，Prefab 页签独立滚动。
 
 选择 CardAtlasData、Shader、Mesh，设置默认正面 ID、是否添加 BoxCollider、Assets 内目录和文件名。默认牌面与卡背可以直接预览，校验未通过时禁用导出。
 
@@ -84,8 +84,9 @@ EditMode 测试类 `CardArt.Tests.CardRenderingTests` 检查物理尺寸、160 �
 支持符合约定的自定义 Shader，不按 Shader 名称限制。当前接受 ShaderLab `.shader` 文件及递归引用的 HLSL/CGInclude（支持项目资源、内嵌包及 PackageCache）。要求：
 
 - `_BaseMap` 为 Texture2D；`_FrontUVRect`、`_BackUVRect` 为 Vector；`_BaseColor`、`_ColorTint`、`_EdgeColor` 为 Color。
-- `RenderPipeline=UniversalPipeline`、`UniversalMaterialType=Lit` 或 `SimpleLit`，使用不透明或 AlphaTest 队列。
-- 存在 `UniversalGBuffer`、`UniversalForward`、`ShadowCaster`、`DepthOnly`、`DepthNormals` LightMode Pass，并在这些 Pass 声明 `multi_compile_instancing`。
+- `RenderPipeline=UniversalPipeline`，使用不透明或 AlphaTest 队列。
+- 受光 Shader 声明 `UniversalMaterialType=Lit` 或 `SimpleLit`，必须有 `UniversalGBuffer`、`UniversalForward`、`ShadowCaster`、`DepthOnly`、`DepthNormals` LightMode Pass；原有校验保持不变。
+- 无光照 Shader 显式声明 `UniversalMaterialType=Unlit`，必须有 `UniversalForwardOnly` 和 `DepthOnly` Pass；如需用于 URP 2D Renderer，另提供 `Universal2D` Pass。每个必需 Pass 以及提供的 `Universal2D` Pass 都须声明 `multi_compile_instancing`。
 - `_FrontUVRect` 与 `_ColorTint` 均包含对应的 `UNITY_DEFINE_INSTANCED_PROP(float4, ...)` 与 `UNITY_ACCESS_INSTANCED_PROP(..., ...)`。自定义 Shader 也需要接入单牌 Tint。
 - 用 SubShader Tags 声明坐标/表面语义：`"CardUVRectContract"="OffsetXYScaleZW"` 和 `"CardSurfaceContract"="UV1BackXEdgeY"`。已随内置卡牌 Shader 加入。
 - Shader 支持当前设备，并且没有已报告的编译错误。
@@ -93,6 +94,14 @@ EditMode 测试类 `CardArt.Tests.CardRenderingTests` 检查物理尺寸、160 �
 这些校验检查属性、接口声明和导入 Pass；自定义 Shader 的具体采样逻辑按上述 Tags 所声明的语义实现。Shader Graph 和宏生成的 ShaderLab Pass 不在本版源码声明校验范围内。
 
 图集检查空/重复 ID、完整 `card_back`、默认正面、有效且位于图集内的 UV Rect。允许选择含卡背的部分牌面图集；被裁切的其他区域会提示并排除在默认牌面列表外。Mesh 检查单一三角形子网格、有效法线、二维 UV0/UV1、正反面与侧边标识、每个三角形表面标识一致，以及 Mesh 宽高与图集逻辑单牌比例（1% 容差）。通过 Editor MeshUtility 读取数据，未开启 Read/Write 的导入模型同样可以校验，无需修改其导入设置。
+
+### 2D 验证用无光照 Shader
+
+`Assets/CardArt/Shaders/CardValidationUnlit.shader`（`CardArt/Validation Unlit`）用于正交相机下的平面卡牌验证。它复用 `CardView`、共享 Mesh、图集与每实例 `_FrontUVRect` / `_ColorTint`。当前验证相机使用固定在 `Assets/Settings/Battle2DRenderer.asset` 的 `Simple2DRenderer`，优先绘制 `UniversalForwardOnly` Pass；该 Pass 也支持常规 URP 和 CardArt 编辑器预览。保留的 `Universal2D` Pass 可供官方 URP 2D Renderer 使用。HUD 独立使用 Canvas；卡牌 Shader 的入口是 MeshRenderer，不是 UGUI Graphic。
+
+基础属性和两项坐标契约与现有卡牌一致。正反面按 UV1.x 选择图集区域，UV1.y 标记纸边，圆角沿用 `Card_Rounded` 网格，图集 Alpha 和 `_Cutoff` 决定裁切。颜色直接输出「图集或纸边 × `_BaseColor` × `_ColorTint`」，不受灯光影响；没有 GBuffer、阴影、镭射、火漆或红叉扩展。`DepthOnly` 使用相同的 Alpha 裁切。
+
+在美术配置中为它建立独立的参数组合，只使用 `_ColorTint` 等实际支持的实例属性，例如白色基础组合、暖黄色选中组合和灰色禁用组合；复用现有 `CardAtlasData` 即可。`StandardCardArt` 的基础组合含镭射和火漆参数，不能直接套给此 Shader，导出校验仍会拒绝不支持的组合。无需修改已有 3D 卡牌 Prefab、材质和 Shader。
 
 
 ## 动态镭射牌
@@ -112,7 +121,7 @@ Shader 实例入口为 `_FoilEnabled`、`_FoilColor`、`_FoilStrength`，共享�
 
 默认纹理 `Assets/CardArt/Textures/FoilPattern.png` 是 64×64 的菱形切面与斜向刻纹，Linear、Point、Repeat、无 mipmap。可在共享材质中替换；纹理固定在局部 UV 上，时间驱动彩虹亮带扫过切面，同时叠加视角变化。动画使用 Unity Shader 时间。只影响正面，保护深色油墨，背面、纸边、深度和阴影轮廓不变。GBuffer 中写入调整后的颜色、高光、光滑度及附加亮度；Forward 使用相同表面计算。不会新增 Pass、GBuffer 附件或逐牌材质。
 
-`Tools/Card Art/Preview Foil Cards` 打开独立的 `Assets/Scenes/CardFoilValidation.unity`：左侧普通牌、中间彩虹镭射、右侧粉色镭射。以附加方式打开，保留原场景的未保存修改。`Validate Foil Rendering` 检查颜色、强度、零强度、关闭恢复、纹理及动态相位；`Capture Foil Animation` 固定相机捕获 12 帧，验证时间动画。`Validate Card API Without Scene Reload` 执行四组同步测试断言，无需关闭当前场景。结果在 `ArtSource/Cards/RenderingValidation/Foil/`。
+`工具/卡牌美术/渲染验证/预览闪卡` 打开独立的 `Assets/Scenes/CardFoilValidation.unity`：左侧普通牌、中间彩虹镭射、右侧粉色镭射。以附加方式打开，保留原场景的未保存修改。`Validate Foil Rendering` 检查颜色、强度、零强度、关闭恢复、纹理及动态相位；`Capture Foil Animation` 固定相机捕获 12 帧，验证时间动画。`Validate Card API Without Scene Reload` 执行四组同步测试断言，无需关闭当前场景。结果在 `ArtSource/Cards/RenderingValidation/Foil/`。
 
 
 ## 火漆印章与法线
@@ -134,7 +143,7 @@ view.SetSealEmissionStrength(0.3f); // 0–1，默认 0，拒绝 NaN/Infinity
 
 Prefab 导出页新增「火漆印章（可选）」：颜色贴图、法线贴图、内置素材按钮、默认开启、颜色、自发光强度、法线强度、中心、尺寸和旋转，以及「恢复默认火漆布局」按钮。选择的纹理及法线强度写入导出的共享材质；开关、颜色和自发光强度写入 Prefab 的 CardView。法线必须以 Normal Map 导入；颜色图必须保留 Alpha，两张图的比例必须一致。工具校验扩展属性类型和实例属性声明，不会自行修改所选纹理的导入设置。
 
-`Tools/Card Art/Prepare Wax Seal Materials` 为现有内置卡牌材质配置缺失的火漆纹理，并保留其他特效默认纹理。`Tools/Card Art/Validate Wax Seal Export And Rendering` 验证导出/覆盖更新、法线导入错误拦截、实例隔离、实际法线光照和卡背排除。临时渲染场景在验证结束时关闭，原场景及未保存修改保留；截图与报告位于 `ArtSource/Cards/RenderingValidation/Seal/`。
+`工具/卡牌美术/素材准备/蜡封材质` 为现有内置卡牌材质配置缺失的火漆纹理，并保留其他特效默认纹理。`工具/卡牌美术/渲染验证/验证蜡封导出与渲染` 验证导出/覆盖更新、法线导入错误拦截、实例隔离、实际法线光照和卡背排除。临时渲染场景在验证结束时关闭，原场景及未保存修改保留；截图与报告位于 `ArtSource/Cards/RenderingValidation/Seal/`。
 
 ## 手绘红叉
 
@@ -151,8 +160,8 @@ bool supported = card.SupportsRedCross;
 
 红叉使用局部 UV0 覆盖整个正面，透明区域显示原牌面；叠加顺序为牌面 → 镭射 → 火漆 → 红叉。红色油漆覆盖下层颜色、高光和 Emission，保留底层法线受光；不修改背面、侧边、卡牌 Alpha、深度或投影轮廓。Forward 与 Deferred 使用相同表面函数。
 
-内置 `Assets/CardArt/Textures/RedCross.png` 为 **128×192 RGBA**，从 `ArtSource/Cards/RedCross/RedCross_Portrait.png` 用最近邻缩小，保留原始 Alpha。导入使用 Point、Clamp、无 mipmap、无压缩、sRGB，NPOT Scale=None 保持 2:3。`Tools/Card Art/Prepare Red Cross Texture And Materials` 可配置内置贴图与现有卡牌材质，保留已有自定义红叉贴图和每张牌的开关。
+内置 `Assets/CardArt/Textures/RedCross.png` 为 **128×192 RGBA**，从 `ArtSource/Cards/RedCross/RedCross_Portrait.png` 用最近邻缩小，保留原始 Alpha。导入使用 Point、Clamp、无 mipmap、无压缩、sRGB，NPOT Scale=None 保持 2:3。`工具/卡牌美术/素材准备/红叉贴图与材质` 可配置内置贴图与现有卡牌材质，保留已有自定义红叉贴图和每张牌的开关。
 
 Prefab 导出页的「手绘红叉（可选）」支持贴图选择、内置素材按钮和默认开关。校验 Shader 属性/实例声明、颜色图与 Alpha、Point/Clamp/无 mipmap、与逻辑单牌一致的宽高比。导出贴图至共享材质，开关保存至 CardView；未选贴图时保持空引用。
 
-`Tools/Card Art/Validate Wax Seal Export And Rendering` 同时验证红叉导出、实例隔离、切牌/重绑、关闭恢复、无贴图保护、与其他特效共存及背面排除。结果位于 `ArtSource/Cards/RenderingValidation/Seal/`，红叉预览为 `red_cross.png`。验证结束自动关闭临时场景，保留原场景的未保存状态。
+`工具/卡牌美术/渲染验证/验证蜡封导出与渲染` 同时验证红叉导出、实例隔离、切牌/重绑、关闭恢复、无贴图保护、与其他特效共存及背面排除。结果位于 `ArtSource/Cards/RenderingValidation/Seal/`，红叉预览为 `red_cross.png`。验证结束自动关闭临时场景，保留原场景的未保存状态。

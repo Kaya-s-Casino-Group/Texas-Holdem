@@ -41,7 +41,7 @@ namespace CardArt.Editor
             importer.SaveAndReimport();
         }
 
-        [MenuItem("Tools/Card Art/Create Rendering Validation Scene")]
+        [MenuItem("工具/卡牌美术/渲染验证/创建验证场景")]
         public static void CreateScene()
         {
             if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
@@ -195,7 +195,7 @@ namespace CardArt.Editor
             return Quaternion.Inverse(Quaternion.LookRotation(up, normal));
         }
 
-        [MenuItem("Tools/Card Art/Capture Rendering Validation")]
+        [MenuItem("工具/卡牌美术/渲染验证/捕获验证画面")]
         public static void Capture()
         {
             if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().path != ScenePath)
@@ -238,7 +238,7 @@ namespace CardArt.Editor
             Debug.Log("Card rendering validation captured in " + OutputPath);
         }
 
-        [MenuItem("Tools/Card Art/Validate Foil Rendering")]
+        [MenuItem("工具/卡牌美术/渲染验证/验证闪卡渲染")]
         public static void ValidateFoilRendering()
         {
             if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().path != CardFoilSetup.ScenePath)
@@ -311,7 +311,7 @@ namespace CardArt.Editor
             }
         }
 
-        [MenuItem("Tools/Card Art/Validate Card API Without Scene Reload")]
+        [MenuItem("工具/卡牌美术/渲染验证/验证卡牌接口（不重载场景）")]
         public static void ValidateCardAPI()
         {
             // Run these synchronous assertions without Test Runner closing unsaved user scenes.
@@ -327,7 +327,7 @@ namespace CardArt.Editor
             Debug.Log("Card API assertions passed: mesh, binding, per-card foil lifecycle and shader passes.");
         }
 
-        [MenuItem("Tools/Card Art/Capture Foil Animation")]
+        [MenuItem("工具/卡牌美术/渲染验证/捕获闪卡动画")]
         public static void CaptureFoilAnimation()
         {
             if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().path != CardFoilSetup.ScenePath)
@@ -365,7 +365,7 @@ namespace CardArt.Editor
             EditorApplication.update += capture;
         }
 
-        [MenuItem("Tools/Card Art/Capture Game Output")]
+        [MenuItem("工具/卡牌美术/渲染验证/捕获游戏输出")]
         public static void CaptureGameOutput()
         {
             if (!Application.isPlaying) throw new InvalidOperationException("Enter Play mode to capture the final screen output.");

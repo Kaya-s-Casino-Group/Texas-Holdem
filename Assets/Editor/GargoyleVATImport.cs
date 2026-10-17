@@ -23,7 +23,7 @@ public static class GargoyleVATImport
     public static Vector3 Vector(JToken a) => new Vector3((float)a[0], (float)a[1], (float)a[2]);
     public static Vector3 ToUnity(Vector3 v) => new Vector3(v.x, v.z, v.y);
 
-    [MenuItem("Tools/Art Assets/Dragon Gargoyle VAT/Configure Assets")]
+    [MenuItem("工具/场景美术/石像鬼/顶点动画/配置资源")]
     public static void Configure()
     {
         if (AssetDatabase.LoadAssetAtPath<Material>(SurfacePath)==null && AssetDatabase.LoadAssetAtPath<Material>(LegacyExteriorPath)!=null)
@@ -46,7 +46,7 @@ public static class GargoyleVATImport
     public static void Bind(Material mat,JObject data) => RigidVATAssetImport.Bind(mat,data,Stem);
     public static void ValidateChannels(Mesh mesh,JObject data) => RigidVATAssetImport.ValidateChannels(mesh,data);
 
-    [MenuItem("Tools/Art Assets/Dragon Gargoyle VAT/Apply To Current Scene")]
+    [MenuItem("工具/场景美术/石像鬼/顶点动画/应用到当前场景")]
     public static void ApplyToScene()
     {
         if (EditorApplication.isPlayingOrWillChangePlaymode) throw new InvalidOperationException("Apply in edit mode.");
@@ -88,11 +88,11 @@ public static class GargoyleVATImport
         Debug.Log("DragonGargoyle scene mesh replaced and saved; existing transform/components retained.");
     }
 
-    [MenuItem("Tools/Art Assets/Dragon Gargoyle VAT/Preview/Rest")]
+    [MenuItem("工具/场景美术/石像鬼/顶点动画/预览静止")]
     static void Rest() => Preview(0);
-    [MenuItem("Tools/Art Assets/Dragon Gargoyle VAT/Preview/Mid Collapse")]
+    [MenuItem("工具/场景美术/石像鬼/顶点动画/预览崩塌中段")]
     static void Middle() => Preview(50.25f/109);
-    [MenuItem("Tools/Art Assets/Dragon Gargoyle VAT/Preview/Collapsed")]
+    [MenuItem("工具/场景美术/石像鬼/顶点动画/预览崩塌结束")]
     static void End() => Preview(1);
     public static void Preview(float progress)
     {

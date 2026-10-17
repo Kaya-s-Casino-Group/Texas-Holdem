@@ -40,7 +40,7 @@ namespace ForestRuins.Editor
         }
         public static Manifest ReadManifest() => JsonUtility.FromJson<Manifest>(File.ReadAllText(Folder + "/ForestRuins_Manifest.json"));
 
-        [MenuItem("Tools/Art Assets/Forest Ruins/Configure Materials and Prefabs")]
+        [MenuItem("工具/场景美术/森林遗迹/配置材质与预制体")]
         public static void Configure()
         {
             var before = SceneManager.GetActiveScene();
@@ -174,7 +174,7 @@ namespace ForestRuins.Editor
             }
             finally { EditorSceneManager.ClosePreviewScene(preview); }
         }
-        [MenuItem("Tools/Art Assets/Forest Ruins/Validate Import")]
+        [MenuItem("工具/场景美术/森林遗迹/验证导入")]
         public static void Validate()
         {
             var manifest = ReadManifest(); var report = new StringBuilder();

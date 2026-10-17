@@ -7,7 +7,7 @@ using UnityEngine;
 
 public static class PokerIOSSceneLifecycle
 {
-    [MenuItem("Tools/Poker/Apply iOS Scene Lifecycle To Export")]
+    [MenuItem("工具/构建发布/iPhone/应用导出工程生命周期配置")]
     public static void ApplyToCurrentExport() => Apply(BuildTarget.iOS, "Builds/iOS-CurrentScene");
 
     [PostProcessBuild(100)]

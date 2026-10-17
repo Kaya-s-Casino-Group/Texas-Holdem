@@ -10,7 +10,7 @@ using UnityEngine.Rendering.Universal;
 
 public static class GargoyleCrackValidation
 {
-    [MenuItem("Tools/Art Assets/Dragon Gargoyle Cracks/Validate Rendering")]
+    [MenuItem("工具/场景美术/石像鬼/验证裂纹渲染")]
     public static void Validate()
     {
         var filter=UnityEngine.Object.FindObjectsOfType<MeshFilter>(true).Single(x=>x.name=="DragonGargoyle" && x.gameObject.scene.IsValid());

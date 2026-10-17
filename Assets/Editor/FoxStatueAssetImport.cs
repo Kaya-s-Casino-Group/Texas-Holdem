@@ -12,7 +12,7 @@ public static class FoxStatueAssetImport
     public const string ManifestPath=Folder+"/VAT/FoxStatue_Collapse_vat.json";
     public const string Stem=Folder+"/VAT/FoxStatue_Collapse";
 
-    [MenuItem("Tools/Art Assets/Fox Statue/Configure Source")]
+    [MenuItem("工具/场景美术/狐狸雕像/配置源模型")]
     public static void ConfigureSource()
     {
         var scene=SceneManager.GetActiveScene();bool dirty=scene.isDirty;
@@ -63,9 +63,9 @@ public static class FoxStatueAssetImport
     static string TexturePath(string suffix)=>Folder+"/Textures/FoxStatue_"+suffix;
     static Texture2D Load(string suffix)=>AssetDatabase.LoadAssetAtPath<Texture2D>(TexturePath(suffix));
 
-    [MenuItem("Tools/Art Assets/Fox Statue/Configure VAT")]
+    [MenuItem("工具/场景美术/狐狸雕像/配置顶点动画")]
     public static void ConfigureVAT()=>RigidVATAssetImport.Configure(ManifestPath,MaterialPath);
 
-    [MenuItem("Tools/Art Assets/Fox Statue/Validate GPU Decode")]
+    [MenuItem("工具/场景美术/狐狸雕像/验证 GPU 解码")]
     public static void ValidateGPU()=>GargoyleVATValidation.Validate(ManifestPath,"Library/FoxStatueValidation/GPU");
 }

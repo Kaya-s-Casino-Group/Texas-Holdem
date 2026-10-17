@@ -14,7 +14,7 @@ namespace CardArt.Editor
         public const string ScenePath = "Assets/Scenes/CardFoilValidation.unity";
         public const string TexturePath = "Assets/CardArt/Textures/FoilPattern.png";
 
-        [MenuItem("Tools/Card Art/Prepare Foil Texture")]
+        [MenuItem("工具/卡牌美术/素材准备/闪卡贴图")]
         public static void PrepareTexture()
         {
             if (!File.Exists(TexturePath))
@@ -62,7 +62,7 @@ namespace CardArt.Editor
             Debug.Log("Foil texture prepared: " + TexturePath);
         }
 
-        [MenuItem("Tools/Card Art/Preview Foil Cards")]
+        [MenuItem("工具/卡牌美术/渲染验证/预览闪卡")]
         public static void PreviewCards()
         {
             // Keep the user's current scene loaded, including unsaved changes.

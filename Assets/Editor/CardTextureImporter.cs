@@ -25,7 +25,7 @@ public sealed class CardTextureImporter : AssetPostprocessor
         importer.sRGBTexture = true;
     }
 
-    [MenuItem("Tools/Cards/Reimport Final Textures")]
+    [MenuItem("工具/卡牌美术/重新导入成品贴图")]
     private static void ReimportFinalTextures()
     {
         var folders = new[] { SkinFolder.TrimEnd('/') };

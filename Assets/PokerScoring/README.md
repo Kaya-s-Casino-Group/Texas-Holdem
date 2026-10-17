@@ -1,6 +1,6 @@
 # 牌型筹码与倍率
 
-入口：`Tools/Poker/牌型计分/打开默认配置`。默认资产为 `Assets/PokerScoring/Profiles/DefaultPokerScore.asset`，也可通过 `Assets/Create/玩法/牌型计分配置` 新建独立资产。
+入口：`工具/共享规则/牌型计分配置`。默认资产为 `Assets/PokerScoring/Profiles/DefaultPokerScore.asset`，也可通过 `Assets/Create/玩法/牌型计分配置` 新建独立资产。
 
 中文 Inspector 提供三组配置：各牌型基础筹码/倍率及每级成长、13 种点数的单牌筹码、指定花色+点数的覆盖值。例如 K 默认 10 筹码，但可单独让黑桃 K 为 20。负数、缺失点数或重复覆盖会报错，不会静默选择某一条。
 
@@ -38,11 +38,11 @@
 - `PokerEngine.Scoring` 的 ScoreProfile / CardPointProfile 是不可变纯 C# 配置；ScoreEngine 读取配置并输出带步骤的 ScoreResult。
 - `Poker.Scoring.Runtime` 的 PokerScoreProfile 是 Unity 编辑资产。`Build()` 创建独立快照，无场景/角色状态依赖。
 - `BattleRulesProfile` 引用该资产；SingleBattleHost 创建 CardDuelEngine 时注入快照，双方 Demo 共用 DemoBattleRules。Host 不存牌型数值。修改配置只影响下一场战局。
-- Run 可将同一资产的 `Build()` 结果传给现有 `RunFlowAsset.BuildDefinition(scoreProfile)` / RunDefinition；Run 继续持有自己的 HandLevels。此次不扩展 Run 编辑器或新战局的成长接线。
-- 新战局目前仍使用牌型等级 1 和空 Joker 列表；每级成长已经配置并由通用 ScoreEngine 支持，旧 Draw/Run 链路继续消费它。
+- Run 可将同一资产的 `Build()` 结果传给现有 `RunFlowAsset.BuildDefinition(scoreProfile)` / RunDefinition；Run 继续持有自己的 HandLevels。Run 编辑器与等级自动带入单局的适配尚未扩展。
+- 单局通过 PlayerBattleProfile 配置每个牌型等级，开战后由该玩家的 BattlePlayerRules.HandLevels 持有快照；候选预览与正式计分读取同一玩家等级。此公共资产仅保存基础值与每级增长公式。Joker 列表仍为空，旧 Draw/Run 链路保持各自等级模型。
 - ICardScoreSource 提供只读基础筹码查询，PlayerBattleActor 读取战局快照。手牌和牌库提示优先消费该来源，不在 CardZone 或美术里维护计分配置。不支持该协议的旧宿主沿用默认查询。
 - ScoringCard.BasePoints / PointsPerTrigger 是默认表的便捷查询；使用自定义配置时必须调用 GetBasePoints(profile.CardPoints) / GetPointsPerTrigger(profile.CardPoints)。正式结算已使用后者。
 
 默认计分版本改为 `score.balatro.1`，不应当作旧 `score.example.1` 存档的同版本替换。发布自定义数值更新时更换资产规则版本。配置资产不保存玩家等级，也不在战局中被直接修改。
 
-验证入口：`Tools/测试面板` →「牌型筹码与倍率」；资产接入、悬停及快照隔离在「角色与表现协议」中验证。测试只存在于 Editor。
+验证入口：`工具/测试面板` →「牌型筹码与倍率」；资产接入、悬停及快照隔离在「角色与表现协议」中验证。测试只存在于 Editor。

@@ -16,7 +16,7 @@ namespace CardArt.Editor
         const string NormalPath = "Assets/CardArt/Textures/WaxSeal_Paw_Normal.png";
         const string Output = "ArtSource/Cards/RenderingValidation/Seal";
 
-        [MenuItem("Tools/Card Art/Prepare Wax Seal Materials")]
+        [MenuItem("工具/卡牌美术/素材准备/蜡封材质")]
         public static void PrepareMaterials()
         {
             var shader = Shader.Find(CardShaderProperties.ShaderName);
@@ -38,7 +38,7 @@ namespace CardArt.Editor
             AssetDatabase.SaveAssets();
         }
 
-        [MenuItem("Tools/Card Art/Validate Wax Seal Export And Rendering")]
+        [MenuItem("工具/卡牌美术/渲染验证/验证蜡封导出与渲染")]
         public static void Validate()
         {
             Directory.CreateDirectory(Output);

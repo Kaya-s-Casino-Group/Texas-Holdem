@@ -10,7 +10,7 @@ using UnityEngine.Rendering.Universal;
 
 public static class GargoyleVATSceneValidation
 {
-    [MenuItem("Tools/Art Assets/Dragon Gargoyle VAT/Validate Scene And Capture")]
+    [MenuItem("工具/场景美术/石像鬼/顶点动画/验证场景并截图")]
     public static void Capture()
     {
         var filter = UnityEngine.Object.FindObjectsOfType<MeshFilter>(true).Single(x=>x.name=="DragonGargoyle" && x.gameObject.scene.IsValid());

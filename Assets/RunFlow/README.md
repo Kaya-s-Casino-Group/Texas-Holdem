@@ -1,10 +1,15 @@
-# Run 关卡流程编辑器
+# 关卡流程（RunFlow）
+
+本模块负责外层地图和楼层配置，不实现单场战斗。项目主线玩法为 [卡牌战斗（SingleBattle）](../SingleBattle/README.md)，[分数挑战（DrawBattle）](../DrawBattle/README.md) 单独保留。下文的纯 C# Run 接入示例使用 `DrawRunAdapter`，对应分数挑战；不能据此认为主线卡牌战斗场景已经接入完整 Run。Unity 运行时地图、选路与战斗节点串联仍需后续接入。
+
+菜单统一位于 **工具 > 关卡流程**，提供“流程编辑器”和“创建四层示例”；窗口名为“关卡流程编辑器”。类名与资产格式保持不变。
+
 
 策划在 Unity 编辑节点地图，保存为 `RunFlowAsset`（ScriptableObject `.asset`）。每份资产描述一次完整 Run：有序楼层列表，每层独立入口、节点和连接，整局构筑/金币/默认内容池。节点位置与显示名称也保存，便于继续编辑。
 
 ## 编辑
 
-菜单 `Tools > Poker > Run Flow Editor` 打开窗口；双击流程资产也可打开。已有示例为 `Configs/RunFlow_ThreeFloorsAndBoss.asset`，包含三棵普通分支树和一棵独立 Boss 树。窗口“三层 + Boss 示例”会创建新资产，不覆盖原资产。
+菜单 `工具 > 关卡流程 > 流程编辑器` 打开窗口；双击流程资产也可打开。已有示例为 `Configs/RunFlow_ThreeFloorsAndBoss.asset`，包含三棵普通分支树和一棵独立 Boss 树。窗口“三层 + Boss 示例”会创建新资产，不覆盖原资产。
 
 - 左侧添加、删除、调整楼层顺序；“整局规则”配置开局金币、小丑、奖励池和商店池。
 - 中间通过“+ 节点”添加普通战斗、精英、Boss、奖励、商店。拖动节点改变排布；右侧圆点连接到目标左侧圆点或节点框，支持分支及汇合。
@@ -56,4 +61,4 @@ state = started.State;
 
 `Poker.RunFlow.Runtime` 引用 UnityEngine，负责资产到纯 C# 定义的桥接，并有 link.xml；GameCore 的十个程序集继续无 Unity 依赖。`Poker.RunFlow.Editor` 和测试程序集仅进入 Editor。本轮提供固定地图编辑；随机地图生成、玩家地图/选路界面及场景 Run 宿主接入另行实现。跨 Run 成长由独立 PlayerProgressionState 持有，见 [Progression README](../PokerEngine/Runtime/Progression/README.md)。
 
-测试入口 `Tools > 测试面板 > 编辑模式测试 > 更多模块 / 全量回归 > 关卡流程编辑器`：8 项同步测试，覆盖资产保存重导入、不可变转换、四层实际 Draw Run 与每步快照恢复、撤销/重做、图及内容 ID 校验、楼层排序、排布和 Player 程序集边界；结果位于 `Library/RunFlowEditorTests`。不保存或替换当前场景。
+测试入口 `工具 > 测试面板 > 编辑模式测试 > 更多模块 / 全量回归 > 关卡流程编辑器`：8 项同步测试，覆盖资产保存重导入、不可变转换、四层实际 Draw Run 与每步快照恢复、撤销/重做、图及内容 ID 校验、楼层排序、排布和 Player 程序集边界；结果位于 `Library/RunFlowEditorTests`。不保存或替换当前场景。

@@ -10,7 +10,7 @@ using UnityEngine;
 // updates resident mesh buffers, and leaves the scene/player settings alone.
 public sealed class GargoyleVATPostprocessor : AssetPostprocessor
 {
-    const string ToggleMenu = "Tools/Art Assets/Dragon Gargoyle VAT/Auto Import Blender Exports";
+    const string ToggleMenu = "工具/场景美术/石像鬼/顶点动画/自动导入 Blender 导出";
     const string Preference = "GargoyleVAT.AutoImportBlenderExports";
     static bool pending, importing;
     static readonly HashSet<string> manifests = new HashSet<string>();
@@ -60,13 +60,13 @@ public sealed class GargoyleVATPostprocessor : AssetPostprocessor
         return true;
     }
 
-    [MenuItem("Tools/Art Assets/Statue VAT/Auto Import Blender Exports")]
+    [MenuItem("工具/场景美术/雕像顶点动画/自动导入 Blender 导出")]
     static void ToggleGeneric() => Toggle();
 
-    [MenuItem("Tools/Art Assets/Statue VAT/Auto Import Blender Exports",true)]
+    [MenuItem("工具/场景美术/雕像顶点动画/自动导入 Blender 导出",true)]
     static bool ShowGenericToggle()
     {
-        Menu.SetChecked("Tools/Art Assets/Statue VAT/Auto Import Blender Exports",EditorPrefs.GetBool(Preference,true));
+        Menu.SetChecked("工具/场景美术/雕像顶点动画/自动导入 Blender 导出",EditorPrefs.GetBool(Preference,true));
         return true;
     }
 }

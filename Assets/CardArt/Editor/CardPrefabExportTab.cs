@@ -14,7 +14,7 @@ namespace CardArt.Editor
         string prefabError, prefabStatus;
         GameObject lastExportedPrefab;
 
-        [MenuItem("Tools/Cards/Prefab Exporter")]
+        [MenuItem("工具/卡牌美术/预制体导出")]
         public static void OpenPrefabExporter()
         {
             var window = GetWindow<CardAtlasWindow>("卡牌工具");

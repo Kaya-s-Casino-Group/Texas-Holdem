@@ -10,7 +10,7 @@ namespace CardArt.Editor
         public const string TexturePath = "Assets/CardArt/Textures/RedCross.png";
         const string SourcePath = "ArtSource/Cards/RedCross/RedCross_Portrait.png";
 
-        [MenuItem("Tools/Card Art/Prepare Red Cross Texture And Materials")]
+        [MenuItem("工具/卡牌美术/素材准备/红叉贴图与材质")]
         public static void Prepare()
         {
             // Build the runtime texture once; preserve the full-resolution source outside Assets.

@@ -16,7 +16,7 @@ public static class DragonGargoyleAssetImport
     const string ShaderName = "Rendering/Gargoyle Cracks Deferred";
     const string Output = "Blender/DragonGargoyle";
 
-    [MenuItem("Tools/Art Assets/Configure Dragon Gargoyle")]
+    [MenuItem("工具/场景美术/石像鬼/配置模型资源")]
     public static void Configure()
     {
         var scene = SceneManager.GetActiveScene();
@@ -102,7 +102,7 @@ public static class DragonGargoyleAssetImport
         importer.SaveAndReimport();
     }
 
-    [MenuItem("Tools/Art Assets/Validate Dragon Gargoyle")]
+    [MenuItem("工具/场景美术/石像鬼/验证模型资源")]
     public static void Validate()
     {
         var model = AssetDatabase.LoadAssetAtPath<GameObject>(ModelPath);
@@ -169,13 +169,13 @@ public static class DragonGargoyleAssetImport
         Debug.Log(report.ToString());
     }
 
-    [MenuItem("Tools/Art Assets/Dragon Gargoyle Cracks/Intact")]
+    [MenuItem("工具/场景美术/石像鬼/裂纹预览/完整")]
     static void PreviewIntact() => PreviewCracks(0);
 
-    [MenuItem("Tools/Art Assets/Dragon Gargoyle Cracks/Partial")]
+    [MenuItem("工具/场景美术/石像鬼/裂纹预览/局部破损")]
     static void PreviewPartial() => PreviewCracks(0.55f);
 
-    [MenuItem("Tools/Art Assets/Dragon Gargoyle Cracks/Full")]
+    [MenuItem("工具/场景美术/石像鬼/裂纹预览/完全破损")]
     static void PreviewFull() => PreviewCracks(1);
 
     static void PreviewCracks(float progress)

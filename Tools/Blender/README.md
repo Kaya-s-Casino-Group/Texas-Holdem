@@ -37,9 +37,9 @@ Unity 自动按 `statue-rigid-vat-v1` manifest 识别，不再绑定某个雕像
 Unity 检测最后发布的 `_vat.json` 后自动执行资源配置，校验三个输入文件的 SHA256，
 更新 `_Unity.asset`、`_Surface.mat` 并生成带 `RigidVATPlayer` 的 `_VAT.prefab`，保持 GUID 和已有材质参数。
 同内容重复导出不会改写文件。更新不调用场景替换菜单，不保存场景或重置播放进度。
-自动导入可在 `Tools → Art Assets → Statue VAT → Auto Import Blender Exports`
+自动导入可在 `工具 → 场景美术 → 雕像顶点动画 → 自动导入 Blender 导出`
 开关；关闭 Unity 或 Auto Refresh 时，在打开项目 / Refresh 后导入。
-手动补导入可选中 `_vat.json`，使用 `Tools → Art Assets → Statue VAT → Configure Selected Manifest`；
+手动补导入可选中 `_vat.json`，使用 `工具 → 场景美术 → 雕像顶点动画 → 配置所选导出清单`；
 同处的 **Validate Selected GPU Decode** 验证纹理、所有顶点通道、四个 pass 和 GPU 读回。
 **Unity 源材质** 可填写 Assets 内原表面 `.mat` 路径；留空时会在 VAT 相邻的资产目录按
 Blender 原材质名称查找，必须唯一。表面纹理及参数从该材质继承。
@@ -241,8 +241,8 @@ mirrored or nonuniform reference scale, deformation modifiers and shape keys.
 It supports the current static fractured topology. Deforming or changing-topology
 VAT is outside this tool's scope. Source render meshes and physics caches are
 preserved during export. Unity integration and GPU validation are available under
-`Tools → Art Assets → Dragon Gargoyle VAT`. Crack rendering validation is under
-`Tools → Art Assets → Dragon Gargoyle Cracks → Validate Rendering`.
+`工具 → 场景美术 → 石像鬼 → 顶点动画`. Crack rendering validation is under
+`工具 → 场景美术 → 石像鬼 → 验证裂纹渲染`.
 
 ## FoxStatue 闭环验证（v1.5）
 
@@ -262,7 +262,7 @@ preserved during export. Unity integration and GPU validation are available unde
 UV 和角法线插值误差为 0，36 块 / 110 帧 / 30 fps，两张 64×128 EXR16。
 Blender 量化后最大位置误差约 0.463 mm，Unity GPU / CPU 解码差约 1.24e-7 m。
 
-Unity 菜单 `Tools → Art Assets → Fox Statue` 提供源资产配置、VAT 导入、GPU 和渲染验证。
+Unity 菜单 `工具 → 场景美术 → 狐狸雕像` 提供源资产配置、VAT 导入、GPU 和渲染验证。
 验证在独立临时预览场景运行，不需要把测试对象放入游戏场景。
 `Reexport Probe → Begin` 保持一个已加载 mesh 的实例，并临时将材质裂痕设为 .37、实例进度设为 .35；
 随后在 Blender 返回模拟场景导出，再用 `Finish` 验证 GUID、实例进度、材质调节值和实际 GPU 顶点流。

@@ -178,7 +178,7 @@ public static class RigidVATAssetImport
         t.SaveAndReimport();
     }
 
-    [MenuItem("Tools/Art Assets/Statue VAT/Verify Uncompressed Platform Textures")]
+    [MenuItem("工具/场景美术/雕像顶点动画/验证平台贴图无压缩")]
     public static void ConfigureAndValidateDataTextures()
     {
         int count = 0;
@@ -299,10 +299,10 @@ public static class RigidVATAssetImport
         }
     }
 
-    [MenuItem("Tools/Art Assets/Statue VAT/Configure Selected Manifest")]
+    [MenuItem("工具/场景美术/雕像顶点动画/配置所选导出清单")]
     static void ConfigureSelected() => Configure(AssetDatabase.GetAssetPath(Selection.activeObject));
 
-    [MenuItem("Tools/Art Assets/Statue VAT/Configure Selected Manifest",true)]
+    [MenuItem("工具/场景美术/雕像顶点动画/配置所选导出清单",true)]
     static bool CanConfigureSelected() => AssetDatabase.GetAssetPath(Selection.activeObject).EndsWith("_vat.json");
 
 }

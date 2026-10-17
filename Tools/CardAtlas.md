@@ -1,6 +1,6 @@
 # 卡牌图集工具
 
-Unity 菜单：**Tools → Cards → Atlas Builder**。
+Unity 菜单：**工具 → 卡牌美术 → 图集构建**。
 
 窗口可调整大小，最小 360×320。宽窗口使用左右布局，宽度小于 720 时切换为「卡牌 / 图集预览 / 配置与替换」分页，缩略图列数按可用宽度重新排列。统计、配置和卡牌列表可滚动。图集预览默认「适应窗口」，随窗口尺寸自动缩放；支持 1%–400% 手动缩放、100% 按钮，以及 Ctrl / Cmd + 滚轮围绕鼠标位置缩放。预览缩放不改变导出尺寸。
 
@@ -74,4 +74,4 @@ Point 是纹理采样，Nearest 是生成时的重采样算法，两者独立。
 
 ## 卡牌 Prefab 导出
 
-窗口新增 **Prefab 导出** 页签，选择图集 Data / Shader / Mesh 即可导出通用 Card Prefab 和共享材质；可通过 `Tools/Cards/Prefab Exporter` 直接打开。默认牌面、卡背、Shader 接口和 Mesh 兼容性会在导出前校验，详细约定见 `Tools/CardRendering.md`。
+窗口新增 **Prefab 导出** 页签，选择图集 Data / Shader / Mesh 即可导出通用 Card Prefab 和共享材质；可通过 `工具/卡牌美术/预制体导出` 直接打开。默认牌面、卡背、Shader 接口和 Mesh 兼容性会在导出前校验，详细约定见 `Tools/CardRendering.md`。

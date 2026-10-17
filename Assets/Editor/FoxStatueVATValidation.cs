@@ -17,7 +17,7 @@ public static class FoxStatueVATValidation
     const string Output="Library/FoxStatueValidation";
     const int Layer=31;
 
-    [MenuItem("Tools/Art Assets/Fox Statue/Reexport Probe/Begin")]
+    [MenuItem("工具/场景美术/狐狸雕像/重导出检查/开始")]
     public static void BeginReexportProbe()
     {
         if(EditorApplication.isPlayingOrWillChangePlaymode)throw new InvalidOperationException("Begin the reexport probe in edit mode.");
@@ -39,7 +39,7 @@ public static class FoxStatueVATValidation
         Debug.Log("Fox reexport probe ready: existing mesh resident on GPU, progress .35, crack tuning .37.");
     }
 
-    [MenuItem("Tools/Art Assets/Fox Statue/Reexport Probe/Finish")]
+    [MenuItem("工具/场景美术/狐狸雕像/重导出检查/完成")]
     public static void FinishReexportProbe()
     {
         var before=JObject.Parse(File.ReadAllText(Output+"/reexport-baseline.json"));
@@ -69,7 +69,7 @@ public static class FoxStatueVATValidation
         }
     }
 
-    [MenuItem("Tools/Art Assets/Fox Statue/Validate Rendering And Capture")]
+    [MenuItem("工具/场景美术/狐狸雕像/验证渲染并截图")]
     public static void Validate()
     {
         var active=SceneManager.GetActiveScene();bool dirty=active.isDirty;

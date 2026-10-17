@@ -31,7 +31,7 @@ namespace CardArt.Editor
         private readonly Dictionary<string, Texture2D> thumbnails = new Dictionary<string, Texture2D>();
         private readonly List<Texture2D> ownedThumbnails = new List<Texture2D>();
 
-        [MenuItem("Tools/Cards/Atlas Builder")]
+        [MenuItem("工具/卡牌美术/图集构建")]
         public static void Open()
         {
             var window = GetWindow<CardAtlasWindow>("卡牌工具");

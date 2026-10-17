@@ -28,7 +28,7 @@ Unity 2022.3.62f3 / 内嵌 URP 14.0.12 / Deferred。复古效果是根据《邪�
 
 ### 复古后处理：独立 Renderer Feature
 
-实现为 `Assets/Rendering/Runtime/RetroPostProcessFeature.cs`，Shader 为 `Assets/Rendering/Shaders/RetroPost.shader`。Feature 只负责后处理，不设置分辨率、相机 AA 或最终放大采样；可独立开关、移除，也可在 Renderer 降分能力关闭时使用。原有 Shader 和 Feature 的资产 GUID 与美术参数已保留。
+实现为 `Assets/Rendering/Runtime/Features/RetroPostProcessFeature.cs`，Shader 为 `Assets/Rendering/Shaders/RetroPost.shader`。Feature 只负责后处理，不设置分辨率、相机 AA 或最终放大采样；可独立开关、移除，也可在 Renderer 降分能力关闭时使用。原有 Shader 和 Feature 的资产 GUID 与美术参数已保留。
 
 中文 Inspector 的「执行时机 → 执行事件」可选透明物体渲染后、内置后处理前/后、场景渲染结束时、升采样前（默认推荐）。事件在每次加入渲染队列时读取，修改后下一次渲染即生效。
 
@@ -54,10 +54,10 @@ Inspector 使用中文分组、标签和悬停说明，支持撤销和多对象�
 
 `Assets/Scenes/CardRenderingValidation.unity` 使用直接相机输出，保留原来的镜头与卡牌布局；固定 RenderTexture / 输出相机 / RawImage 已从该场景移除。
 
-- `Tools/Rendering/Install Retro 540p and Migrate Card Scene`：安装独立后处理并开启 Renderer 降分能力，保留已配置高度。
-- `Tools/Rendering/Capture Retro 540p Validation`：四种输出尺寸实际渲染，验证 Deferred 颜色、深度、GBuffer 及 Shader 编译；整数倍率逐像素检查 Point 放大。
-- `Tools/Rendering/Validate Before Upscaling Event`：验证五个 Inspector 事件，并覆盖 Point、URP 后处理、最终后处理/FXAA 三条输出路径；记录实际后处理输入尺寸与最终输出/UI 的事件顺序。
-- `Tools/Rendering/Validate Renderer and Post Independence`：验证关闭/移除 Feature、360/720 高度、关闭降分后独立使用后处理六种组合；关闭与移除 Feature 的截图必须完全一致。验证结束自动恢复配置。
-- `Tools/Rendering/Capture Retro Game Output`：Play 模式捕获实际屏幕。
+- `工具/渲染/复古低分辨率/安装 540p 效果并迁移卡牌场景`：安装独立后处理并开启 Renderer 降分能力，保留已配置高度。
+- `工具/渲染/复古低分辨率/捕获 540p 验证画面`：四种输出尺寸实际渲染，验证 Deferred 颜色、深度、GBuffer 及 Shader 编译；整数倍率逐像素检查 Point 放大。
+- `工具/渲染/复古低分辨率/验证放大前渲染时机`：验证五个 Inspector 事件，并覆盖 Point、URP 后处理、最终后处理/FXAA 三条输出路径；记录实际后处理输入尺寸与最终输出/UI 的事件顺序。
+- `工具/渲染/复古低分辨率/验证渲染器与后处理独立性`：验证关闭/移除 Feature、360/720 高度、关闭降分后独立使用后处理六种组合；关闭与移除 Feature 的截图必须完全一致。验证结束自动恢复配置。
+- `工具/渲染/复古低分辨率/捕获游戏输出`：Play 模式捕获实际屏幕。
 
 结果位于 `ArtSource/Cards/Retro540Validation/`，其中 `independence.json` 记录独立开关验证。`RetroRendering.Tests.Retro540Tests` 的 9 个 EditMode 用例验证可配置高度、比例、窗口上限和相机配置。也可用 `python3 Tools/validate_retro_point.py`（Pillow）复查默认 540p 下的 2×2 像素块。

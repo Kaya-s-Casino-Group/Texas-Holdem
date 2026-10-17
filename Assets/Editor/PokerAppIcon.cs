@@ -5,7 +5,7 @@ public static class PokerAppIcon
 {
     public const string AssetPath = "Assets/Art/AppIcon/PokerPixelIcon.png";
 
-    [MenuItem("Tools/Poker/Apply Pixel App Icon")]
+    [MenuItem("工具/构建发布/应用像素图标")]
     public static void Apply()
     {
         AssetDatabase.ImportAsset(AssetPath, ImportAssetOptions.ForceSynchronousImport);

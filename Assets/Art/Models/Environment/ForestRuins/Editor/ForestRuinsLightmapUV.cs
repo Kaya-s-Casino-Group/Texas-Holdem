@@ -37,7 +37,7 @@ namespace ForestRuins.Editor
             public List<string> maps = new List<string>();
             public List<Allocation> renderers = new List<Allocation>();
         }
-        [MenuItem("Tools/Art Assets/Forest Ruins/Optimize Lightmap Allocation and Bake")]
+        [MenuItem("工具/场景美术/森林遗迹/优化光照贴图分配并烘焙")]
         public static void OptimizeAllocation()
         {
             if (Lightmapping.isRunning) throw new InvalidOperationException("A lighting bake is already running.");
@@ -86,7 +86,7 @@ namespace ForestRuins.Editor
             if(!Lightmapping.BakeAsync()) throw new InvalidOperationException("Unity could not start the lighting bake.");
             Debug.Log("Forest lightmap bake started: 512 atlas, resolution 44, hidden soil .15, courtyard 1.25, arch and roots 1.5, small rocks 2. Lighting samples unchanged.");
         }
-        [MenuItem("Tools/Art Assets/Forest Ruins/Audit Lightmap Allocation")]
+        [MenuItem("工具/场景美术/森林遗迹/检查光照贴图分配")]
         public static void AuditAllocation()
         {
             var scene = SceneManager.GetActiveScene();
@@ -119,7 +119,7 @@ namespace ForestRuins.Editor
             File.WriteAllText("Library/ForestRuinsLightmapUV/allocation.json",JsonUtility.ToJson(report,true));
             Debug.Log("Forest Ruins lightmap allocation audit saved.");
         }
-        [MenuItem("Tools/Art Assets/Forest Ruins/Generate Lightmap UV1")]
+        [MenuItem("工具/场景美术/森林遗迹/生成光照贴图 UV1")]
         public static void Generate()
         {
             var scene = SceneManager.GetActiveScene();
@@ -146,7 +146,7 @@ namespace ForestRuins.Editor
                 throw new InvalidOperationException("Unexpected scene change during UV import.");
             Debug.Log("Forest Ruins: refreshed lightmap UV1 for 27 environment models and the layout; packed UV caches are retained when present. Standalone background imports and VAT assets were left untouched. No lighting bake was started.");
         }
-        [MenuItem("Tools/Art Assets/Forest Ruins/Audit Lightmap UV1")]
+        [MenuItem("工具/场景美术/森林遗迹/检查光照贴图 UV1")]
         public static void Audit()
         {
             var manifest = ForestRuinsAssetImport.ReadManifest();

@@ -26,7 +26,7 @@ public static class TabletopCombatBlockout
     static float originalFov;
     static int[] originalRootIds;
 
-    [MenuItem("Tools/Tabletop Blockout/Build In Current Scene")]
+    [MenuItem("工具/场景美术/桌面白模/在当前场景搭建")]
     public static void Build()
     {
         var scene = SceneManager.GetActiveScene();
@@ -195,7 +195,7 @@ public static class TabletopCombatBlockout
     static string CameraWithoutFov(Camera camera) => Regex.Replace(EditorJsonUtility.ToJson(camera),
         "\\\"field of view\\\":\\s*[-+0-9.eE]+", "\"field of view\":0");
 
-    [MenuItem("Tools/Tabletop Blockout/Validate Preservation")]
+    [MenuItem("工具/场景美术/桌面白模/验证原场景保留")]
     public static void Validate()
     {
         if(originalCamera==null) throw new InvalidOperationException("No build snapshot in this editor session.");
@@ -222,7 +222,7 @@ public static class TabletopCombatBlockout
         Debug.Log("Tabletop preservation check passed: "+OriginalObjects.Count+" existing objects/components unchanged.");
     }
 
-    [MenuItem("Tools/Tabletop Blockout/Capture Current Camera")]
+    [MenuItem("工具/场景美术/桌面白模/捕获当前相机")]
     public static void Capture()
     {
         var camera=Camera.main;

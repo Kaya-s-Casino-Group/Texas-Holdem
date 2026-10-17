@@ -41,18 +41,18 @@ namespace PokerEngine.Tests
             Suite("EditorIsolationTests", "编辑器隔离与打包边界", "测试程序集限定 Editor、Player 不引用测试、资源元数据。", "PokerEngine.Tests.Editor", "PackagingTests")
         };
         private static readonly Entry[] LiveChecks = {
-            Live("team-battle-ui", "多人战局 2v3", "切换玩家、独立手牌、全员结束、怪物依次演出与整轮恢复。", "Poker.SingleBattle.Tests.Editor", "Poker.SingleBattle.Tests.TeamBattlePlayValidation", "Run", "Library/SingleBattleTests/team-play.json", "Poker.SingleBattle.SingleBattleHost"),
-            Live("dealing", "单战局发牌专项", "真实按钮与动画：动作后立刻补满、下回合补满。", "Poker.SingleBattle.Tests.Editor", "Poker.SingleBattle.Tests.SingleBattlePlayValidation", "RunDealing", "Library/SingleBattleTests/dealing.json", "Poker.SingleBattle.SingleBattleHost"),
-            Live("battle-ui", "单战局完整流程", "能量、连续出牌、怪物回合、胜负与重开。", "Poker.SingleBattle.Tests.Editor", "Poker.SingleBattle.Tests.SingleBattlePlayValidation", "Run", "Library/SingleBattleTests/play.json", "Poker.SingleBattle.SingleBattleHost"),
+            Live("team-battle-ui", "卡牌战斗多人阵容（2对3）", "切换玩家、独立手牌、全员结束、怪物依次演出与整轮恢复。", "Poker.SingleBattle.Tests.Editor", "Poker.SingleBattle.Tests.TeamBattlePlayValidation", "Run", "Library/SingleBattleTests/team-play.json", "Poker.SingleBattle.SingleBattleHost"),
+            Live("dealing", "卡牌战斗发牌专项", "真实按钮与动画：动作后立刻补满、下回合补满。", "Poker.SingleBattle.Tests.Editor", "Poker.SingleBattle.Tests.SingleBattlePlayValidation", "RunDealing", "Library/SingleBattleTests/dealing.json", "Poker.SingleBattle.SingleBattleHost"),
+            Live("battle-ui", "卡牌战斗完整流程", "能量、连续出牌、怪物回合、胜负与重开。", "Poker.SingleBattle.Tests.Editor", "Poker.SingleBattle.Tests.SingleBattlePlayValidation", "Run", "Library/SingleBattleTests/play.json", "Poker.SingleBattle.SingleBattleHost"),
             Live("live-window", "实战牌区窗口", "读取当前牌局、调整表现参数、切换与关闭。", "CardPresentation.Tests.Editor", "CardPresentation.Tests.CardMatchHostTests", "ValidateLiveWindow", "Library/CardPresentationTests/live-validator.json", "Poker.SingleBattle.SingleBattleHost"),
             Live("deck-motion", "牌堆与总览动画", "牌堆图标、面板与提示的显示动画，保持牌局状态。", "CardPresentation.Tests.Editor", "CardPresentation.Tests.DeckOverviewPlayValidation", "ValidateMotion", "Library/DeckOverviewValidation/motion.json", "CardInteraction.DrawPilePresenter"),
-            Live("draw-battle", "分数目标战局", "旧 Draw 玩法的按钮、计分、补牌和流程恢复。", "Poker.DrawBattle.Tests.Editor", "Poker.DrawBattle.Tests.DrawBattlePlayValidation", "Run", "Library/DrawBattleTests/play.json", "Poker.DrawBattle.DrawBattleHost")
+            Live("draw-battle", "分数挑战完整流程", "独立分数挑战的按钮、计分、补牌和流程恢复。", "Poker.DrawBattle.Tests.Editor", "Poker.DrawBattle.Tests.DrawBattlePlayValidation", "Run", "Library/DrawBattleTests/play.json", "Poker.DrawBattle.DrawBattleHost")
         };
         private static readonly Entry[] Modules = {
-            Suite("PokerEngineTests", "GameCore 全模块", "运行全部引擎规则；仅在需要广泛回归时使用。", "PokerEngine.Tests.Editor"),
+            Suite("PokerEngineTests", "规则引擎全模块", "运行全部引擎规则；仅在需要广泛回归时使用。", "PokerEngine.Tests.Editor"),
             Suite("CardPresentationTests", "卡牌表现全模块", "布局、动画、输入、牌库与相关资源。", "CardPresentation.Tests.Editor"),
             Suite("RunFlowEditorTests", "关卡流程编辑器", "Run 配置、层与节点树资产。", "Poker.RunFlow.Tests.Editor"),
-            Suite("DrawBattleTests", "分数目标战局逻辑", "Draw 玩法的场景接入与状态投影。", "Poker.DrawBattle.Tests.Editor"),
+            Suite("DrawBattleTests", "分数挑战逻辑", "独立分数挑战的场景接入与状态投影。", "Poker.DrawBattle.Tests.Editor"),
             Suite("CardArtTests", "卡牌美术", "卡面、图集与外观资源。", "CardArt.Tests.Editor"),
             Suite("RenderingTests", "渲染模块", "渲染配置与边界。", "RetroRendering.Tests.Editor"),
             Suite("EditorToolsTests", "编辑器通用工具", "窗口与通用编辑器组件。", "EditorTools.Tests.Editor")
@@ -75,7 +75,7 @@ namespace PokerEngine.Tests
         [SerializeField] private bool showModules, showLegacy;
         public static bool IsBusy => active != null || PokerEngineTestMenu.IsRunning;
 
-        [MenuItem("Tools/测试面板", false, 100)]
+        [MenuItem("工具/测试面板", false, 100)]
         public static void Open()
         {
             var window = GetWindow<PokerTestWindow>("测试面板"); window.minSize = new Vector2(520, 460); window.Show();
@@ -103,7 +103,7 @@ namespace PokerEngine.Tests
         private void OnGUI()
         {
             EditorGUILayout.Space(); EditorGUILayout.LabelField("项目测试", EditorStyles.boldLabel);
-            EditorGUILayout.HelpBox("仅在 Unity 编辑器中使用。默认运行选中的专项测试；测试代码与辅助组件不进入游戏构建。", MessageType.Info);
+            EditorGUILayout.HelpBox("仅在 Unity 编辑器中使用。卡牌战斗为主线，分数挑战为独立模式。默认运行选中的专项测试；测试代码与辅助组件不进入游戏构建。", MessageType.Info);
             EditorGUILayout.LabelField("当前模式", Application.isPlaying ? "实战运行（Play）" : "编辑模式");
             EditorGUILayout.LabelField("当前场景", SceneManager.GetActiveScene().name);
             DrawProgress();
@@ -128,7 +128,7 @@ namespace PokerEngine.Tests
             }
             using (new EditorGUILayout.HorizontalScope())
             {
-                if (GUILayout.Button("打开 Unity Test Runner")) EditorApplication.ExecuteMenuItem("Window/General/Test Runner");
+                if (GUILayout.Button("打开 Unity 测试运行器")) EditorApplication.ExecuteMenuItem("Window/General/Test Runner");
                 if (GUILayout.Button("刷新测试数量")) counts.Clear();
             }
         }

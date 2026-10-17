@@ -25,9 +25,8 @@ namespace CardArt.Editor
         private string artworkError;
         public const string DefaultProfilePath = "Assets/CardArt/Profiles/StandardCardArt.asset";
 
-        [MenuItem("Tools/卡牌美术/Shader 参数组合")]
         public static void OpenCombinations() => OpenArtwork();
-        [MenuItem("Tools/卡牌美术/属性表现")]
+        [MenuItem("工具/卡牌美术/着色器参数组合")]
         public static void OpenArtwork()
         {
             var window = GetWindow<CardAtlasWindow>("卡牌美术工具"); window.ConfigureWindowSize(); window.tab = 3; window.Show();

@@ -1,12 +1,19 @@
 # iPhone development build
 
-Unity menu: **Tools → Poker → Build Current Scene for iPhone**.
+Unity menu: **工具 → 构建发布 → iPhone → 构建当前场景**.
 The menu saves the active scene if needed and exports only that scene to
 `Builds/iOS-CurrentScene`. It configures ARM64/IL2CPP, iOS 15 minimum,
 `com.linxi.texasholdem`, automatic signing with the existing personal team,
 and the pixel poker app icon. Orientation is restricted to landscape left/right;
 portrait and upside-down portrait are disabled. It does not replace the normal
 Build Settings scene list.
+
+Frame rate is configured by `PokerFrameRate` before any scene loads: desktop
+players have no application cap or VSync, while mobile players explicitly target
+60 FPS (Unity's mobile default of `-1` would cap at 30 FPS).
+The iPhone build disables ProMotion to match the 60 FPS mobile cap.
+Actual FPS still depends on rendering workload and system conditions.
+Development builds log the requested rate and a five-second startup FPS sample.
 
 Open `Builds/iOS-CurrentScene/Unity-iPhone.xcodeproj`, select `Unity-iPhone`
 and the connected iPhone, then build and run. The initial installation may
@@ -58,6 +65,11 @@ saved locally in `ArtSource/AppIcon/pixel-icon-prompt.txt`.
 
 - Unity 2022.3.62f3 exported `SingleBattleDemoNew` with zero build errors.
 - Xcode 27.0 compiled and signed the ARM64 development build successfully.
+- Earlier ProMotion build on iPhone 17 Pro requested 120 FPS / 120 Hz with VSync off and
+  render interval 1. A five-second startup sample measured 119.8 FPS in
+  `SingleBattleDemoNew` (not a sustained performance benchmark).
+- The subsequent 60 FPS mobile build exported, signed and installed successfully;
+  device startup logs confirmed `target=60` and a five-second sample of 60.0 FPS.
 - iPhone 17 Pro / iOS 27.0.1 installed and launched the application after trusting
   the personal developer certificate. The UIScene startup crash was resolved.
 - The game survived a switch to Settings and back with the same process ID;

@@ -26,11 +26,11 @@ namespace Poker.RunFlow.Editor
         private RunFlowFloorData Floor => asset != null && floorIndex >= 0 && floorIndex < asset.Floors.Count ? asset.Floors[floorIndex] : null;
         private RunFlowNodeData Selected => Floor == null ? null : Floor.Nodes.FirstOrDefault(n => n.Id == selectedNode);
 
-        [MenuItem("Tools/Poker/Run Flow Editor")]
+        [MenuItem("工具/关卡流程/流程编辑器")]
         public static void ShowWindow() => Open(Selection.activeObject as RunFlowAsset);
         public static RunFlowEditorWindow Open(RunFlowAsset target)
         {
-            var window = GetWindow<RunFlowEditorWindow>(); window.titleContent = new GUIContent("Run 流程编辑器");
+            var window = GetWindow<RunFlowEditorWindow>(); window.titleContent = new GUIContent("关卡流程编辑器");
             window.minSize = new Vector2(900, 500);
             if (target != null) window.SetAsset(target);
             window.Show(); window.Focus(); return window;
@@ -41,7 +41,7 @@ namespace Poker.RunFlow.Editor
             var target = EditorUtility.InstanceIDToObject(instanceId) as RunFlowAsset;
             if (target == null) return false; Open(target); return true;
         }
-        [MenuItem("Tools/Poker/Run Flow/Create Four Floor Example")]
+        [MenuItem("工具/关卡流程/创建四层示例")]
         public static void CreateExample()
         {
             var target = CreateInstance<RunFlowAsset>(); target.CopyFrom(ExampleRunContent.CreateFourFloors().Definition);
@@ -74,7 +74,7 @@ namespace Poker.RunFlow.Editor
             var body = new Rect(0, 25, position.width, position.height - 25 - ToolWindowChrome.FooterHeight - 25);
             if (asset == null)
             {
-                GUILayout.Space(40); GUILayout.Label("先选择或新建一份 Run 流程配置。", EditorStyles.boldLabel);
+                GUILayout.Space(40); GUILayout.Label("先选择或新建一份关卡流程配置。", EditorStyles.boldLabel);
                 GUILayout.Label("每层编辑一棵节点树；整局规则与各层流程一起保存为 .asset。", EditorStyles.wordWrappedLabel);
             }
             else

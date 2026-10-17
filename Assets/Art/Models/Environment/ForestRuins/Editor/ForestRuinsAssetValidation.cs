@@ -11,14 +11,14 @@ namespace ForestRuins.Editor
     public static class ForestRuinsAssetValidation
     {
         const string Output = "Blender/ForestRuins_UnityExport";
-        [MenuItem("Tools/Art Assets/Forest Ruins/Export Unity Package")]
+        [MenuItem("工具/场景美术/森林遗迹/导出 Unity 资源包")]
         public static void ExportPackage()
         {
             AssetDatabase.SaveAssets();
             AssetDatabase.ExportPackage(ForestRuinsAssetImport.Folder, Output + "/ForestRuins_UnityReady.unitypackage", ExportPackageOptions.Recurse);
             Debug.Log("Forest Ruins standalone asset folder exported as a Unity package.");
         }
-        [MenuItem("Tools/Art Assets/Forest Ruins/Capture Import Preview")]
+        [MenuItem("工具/场景美术/森林遗迹/捕获导入预览")]
         public static void CapturePreview()
         {
             var active = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
@@ -59,7 +59,7 @@ namespace ForestRuins.Editor
                 throw new InvalidOperationException("Preview changed the user's scene.");
         }
 
-        [MenuItem("Tools/Art Assets/Forest Ruins/Validate Meta Pass Pixels")]
+        [MenuItem("工具/场景美术/森林遗迹/验证元数据通道像素")]
         public static void ValidateMetaPixels()
         {
             var shader = Shader.Find(ForestRuinsAssetImport.ShaderName);

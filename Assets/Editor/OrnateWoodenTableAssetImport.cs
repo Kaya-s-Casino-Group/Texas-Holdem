@@ -16,7 +16,7 @@ public static class OrnateWoodenTableAssetImport
     const string ShaderName = "Rendering/Table Deferred";
     const string Output = "Blender/OrnateWoodenTable";
 
-    [MenuItem("Tools/Art Assets/Configure Ornate Wooden Table")]
+    [MenuItem("工具/场景美术/雕花木桌/配置资源")]
     public static void Configure()
     {
         var scene = SceneManager.GetActiveScene();
@@ -101,7 +101,7 @@ public static class OrnateWoodenTableAssetImport
         importer.SaveAndReimport();
     }
 
-    [MenuItem("Tools/Art Assets/Validate Ornate Wooden Table")]
+    [MenuItem("工具/场景美术/雕花木桌/验证资源")]
     public static void Validate()
     {
         var model = AssetDatabase.LoadAssetAtPath<GameObject>(ModelPath);
@@ -162,7 +162,7 @@ public static class OrnateWoodenTableAssetImport
         Debug.Log(report.ToString());
     }
 
-    [MenuItem("Tools/Art Assets/Capture Ornate Wooden Table Preview")]
+    [MenuItem("工具/场景美术/雕花木桌/捕获预览")]
     public static void CapturePreview()
     {
         var model = AssetDatabase.LoadAssetAtPath<GameObject>(ModelPath);
