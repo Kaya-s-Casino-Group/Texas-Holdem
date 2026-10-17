@@ -328,7 +328,7 @@ var persistentRelics = restored.ExportRunRelics();
 
 `CardDuelEngine.UpdateRelicRuntime`（以及 TeamBattleEngine 同名入口）供权威规则侧提交完整运行状态，要求当前 Revision，禁止改实例、持有者、定义、顺序及入场等级/成长。成功返回新状态并推进对应 Revision，失败保留原引用；不扣能量、不推进回合、不记录出牌/弃牌动作、不产生战斗事件。它不是玩家命令，BattleSession 仍只接收原有操作。运行状态只由当前 BattlePlayerTurn 持有，出牌、收牌、弃牌、结束、控制跳过、敌方行动和胜负转换均保留它。
 
-绑定本身不自动激活 ScoreEffects / AbilityId，也不计算遗物成长；只有显式配置下述事实触发时，主线才管理其次数、冷却和 Round 计数。未配置遗物修正时，现有牌型效果、目标选择、弃牌收益/费用/次数、补牌和随机流程保持原样。`ExportRunRelics()` 创建新的持久实例，仅导出 Encounter 计数并丢弃 Round 计数/UsesThisRound，不自动写回 Run。旧 Draw/Holdem 的能力安装、成长和存档契约不变。
+绑定本身不自动激活 ScoreEffects / AbilityId，也不计算遗物成长；只有显式配置下述事实或边界触发时，主线才管理其次数、冷却和 Round 计数。未配置遗物修正时，现有牌型效果、目标选择、弃牌收益/费用/次数、补牌和随机流程保持原样。`ExportRunRelics()` 创建新的持久实例，仅导出 Encounter 计数并丢弃 Round 计数/UsesThisRound，不自动写回 Run。旧 Draw/Holdem 的能力安装、成长和存档契约不变。
 
 ## 遗物的被动数值修正
 
@@ -460,9 +460,47 @@ Composition 的 `BattleRelicTriggerResolver` 只生成激活草案；不可变�
 
 `TeamBattleTransition.RelicActivations` 与 `CardDuelTransition.RelicActivations` 提供激活 Id、父事实 Revision/SequenceIndex、持有者/实例/条目、预算前后快照及目标已绑定的批次；对应事实的 Provenance.ActivationId 可关联同次激活。原 EffectPlan 仍仅表示主动计划。次数与冷却随完整行动提交；后续数值溢出、补牌失败、触发链超限，以及 Session 后续自动步骤失败，都会撤销生命、护盾、状态、遗物、资源、牌区和 RNG，失败不发布激活报告。预览返回同样的临时结果，不修改原状态。
 
-本步不提供开战、出牌/弃牌完成、阶段起止、状态到期的遗物触发；默认无收益的弃牌没有虚构事实。周期叶子和清盾等阶段维护不进入此遗物入口。回合入口的次数/冷却维护也不产生边界触发，限次的被动数值/结构/费用修正仍未接入。
+出牌/弃牌完成、状态到期尚未提供遗物订阅；默认无收益的弃牌没有虚构效果事实。周期伤害保持叶子，清盾等阶段维护不进入此事实入口。开战和阶段起止使用下述独立边界入口；限次的被动数值/结构/费用修正仍未接入。
 
 只有非空触发配置才追加 `battle-relic.triggers.1` 指纹段，保留旧空/数值/结构/规则配置指纹。schema v1 继续只存运行状态，反序列化要求同一外部配置绑定，冷却、次数和记忆原样恢复。RelicDefinition 的有限 Charges 不再要求旧 AbilityId，以支持独立的主线触发；旧主动能力与旧计分效果不会因此自动安装。
+
+## 遗物开战与阶段边界触发
+
+`BattleRelicRules(..., boundaryTriggers: ...)` 接受 `RelicBoundaryTriggerSpec`，复用 `RelicTriggeredEffectSpec`、五种基础效果、`CombatTargetSpec` 和同一份 `TriggerBudget`。边界与事实条目共用配置 Id 命名空间；不配置边界时，旧牌型、弃牌、开局发牌和事件行为不变。
+
+| Timing | 规则层发出位置 | Phase 过滤 |
+| --- | --- | --- |
+| BattleStarted | CardDuel.Start 中、首次玩家阶段与开局发牌之前；成功开战只发出一次，Create 不触发 | 必须为空 |
+| PhaseStarted | 进入一方完整阶段后、任何单位行动或控制跳过之前 | OwnerTeam / OpponentTeam / Any |
+| PhaseEnding | 一方全部行动/跳过结束，周期伤害结算后，清盾及状态到期之前 | OwnerTeam / OpponentTeam / Any |
+
+边界只接受持有者生命比例、持有者已有状态条件，条件按 AND 组合；不伪造效果来源、目标、牌型或弃牌数量，直接边界效果禁止 EventSource / EventTarget。派生出的真实效果仍可被事实触发监听。眩晕不禁止被动触发，持有者默认必须存活；AllowDefeated 显式开放死亡来源，但不复活死亡目标，也不在整场战斗已结束后再开启边界。
+
+结算顺序：
+
+1. 开战：绑定与初始能量 → BattleStarted 完整队列 → 首次玩家 PhaseStarted 完整队列 → 开局发牌 → 控制检查/玩家决策。两窗口之间不重置轮次数或冷却，也不把 InitialEnergy 补成 MaxEnergy。
+2. 阶段结束：最后行动与即时反应 → ActionCompleted 周期伤害 → PhaseEnding 周期伤害与次数消费 → 遗物 PhaseEnding → 既有清盾 → EndPhase 到期 → 必要时 EndRound 到期 → 终局/轮数上限检查。
+3. 敌方阶段开始：切换阶段 → PhaseStarted → 按实际存活者刷新敌人行动队列。下一玩家阶段开始：进入新轮 → 清 UsesThisRound、递减冷却、清 Round 记忆、恢复能量 → PhaseStarted → 收牌/发牌 → 控制检查。
+
+同一个 PhaseEnding 的周期伤害与遗物反应复用一条队列和总条数/深度限制。遗物条件读取周期伤害后的状态；此时新施加的中毒不会在同一边界补触发一次。终局发生后，已经入队的效果按原死亡跳过规则结算完，不开启后续边界或发牌；AfterEnemyPhase 清盾也会清掉该敌方结束边界刚获得的护盾。旧的非边界弃牌结算路径保持兼容。
+
+每次开战、阶段开始、阶段结束都创建独立临时窗口，分别有稳定 `BoundaryId`，不继承最后一次行动的计数。`MaxUsesPerAction` / `PerAction` 只管行动窗口；新增可选 `MaxUsesPerBoundary` 管该遗物在一个边界内直接激活与派生事实激活的总数，事实条目的 `PerBoundary` 则让该条目每个边界最多激活一次、在普通行动中不匹配。`PerEvent` 可在两类窗口内逐事实匹配。每个直接边界条目在该边界只检查一次，多个候选按 Priority、实例 Id、条目 Id 排序并先预占共享预算，再依既有队列结算。
+
+有限次数、UsesThisRound、MaxUsesPerRound、CooldownRounds 在事实和边界间共享；下一轮维护后才检查玩家开始触发。冷却 N 仍表示跳过后续 N 个完整回合，开战与首个玩家开始之间不递减。只有配置了任一触发的遗物参与轮维护。窗口计数不写存档，schema v1 不变；仅有边界配置、新边界上限或 PerBoundary 时追加 `battle-relic.boundaries.1` 指纹段，旧事实配置指纹不变。
+
+状态相对期限使用当前边界的阶段和新轮 scope 绑定：在阶段开始施加的 `ThroughNextPhase(当前阶段)` 于本阶段末到期；在阶段结束施加的同名期限延续到下一次该阶段结束；BattleStarted 施加的 player/enemy 期限都指向首轮对应阶段。`ThroughCurrentRound` 在新玩家阶段中指新轮，边界的事实派生状态沿用该窗口的期限上下文；原行动施加状态语义保持不变。
+
+```csharp
+var opening = new RelicBoundaryTriggerSpec("opening-shield", RelicBoundaryTiming.BattleStarted,
+    new[] { new RelicTriggeredEffectSpec(BattleEffectSpec.GainBlock(8), CombatTargetSpec.Self()) });
+var phase = new RelicBoundaryTriggerSpec("player-start-heal", RelicBoundaryTiming.PhaseStarted,
+    new[] { new RelicTriggeredEffectSpec(BattleEffectSpec.Heal(3), CombatTargetSpec.Self()) },
+    phase: RelicPhaseRelation.OwnerTeam);
+var rules = new BattleRelicRules("boundary-example.1", boundaryTriggers: new[] { opening, phase },
+    triggerBudget: new RelicTriggerBudgetSpec(maxUsesPerBoundary: 1));
+```
+
+`RelicTriggerActivation.Timing` 现在可空，直接边界激活使用 `BoundaryTiming`；边界及其事实派生报告携带同一个 BoundaryId，父 Revision/SequenceIndex 和效果 Provenance 仍可追溯。CardDuel.Start 的开战效果与发牌共同提交，TeamBattle 内的行动、阶段结束、阶段开始共同提交；溢出、队列超限、后续补牌或 Session 自动步骤失败时整体回滚。没有新增供客户端任意调用的边界命令，规则层内部依阶段推进发出信号。
 
 ## 计分模块
 

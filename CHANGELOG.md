@@ -4,6 +4,15 @@
 
 ## [Unreleased]
 
+### 2026-10-18 — 遗物开战与阶段边界触发
+
+- 新增 RelicBoundaryTriggerSpec，支持 BattleStarted、PhaseStarted、PhaseEnding 及自身队伍/敌方/任意阶段筛选；复用基础效果、独立目标选择、状态目录和事实触发的共享次数、轮上限及冷却。
+- 开战与各阶段边界使用独立临时窗口，新增 MaxUsesPerBoundary 和事实条目 PerBoundary；原 MaxUsesPerAction / PerAction 只作用于行动。下一玩家阶段先维护每轮预算、冷却与记忆，再触发阶段开始；首轮保留 InitialEnergy，不重复维护。
+- Combat 新增可选 ICombatBoundaryReactionRuntime，PhaseEnding 周期伤害后才读取边界条件，使用同一触发队列和数量/深度限制。边界与事实激活共享目标绑定和预算预占，报告补充 BoundaryTiming / BoundaryId；旧事实钩子不接收空效果时钟。
+- 状态期限按当前边界/新轮绑定：阶段开始的同名期限在本阶段结束，阶段结束的同名期限延至下次；开战期限指向首轮。保留周期叶子、清盾和状态到期顺序，终局停止后续边界及发牌，队列中的死亡目标继续按原规则跳过。
+- 开战与发牌、行动与阶段推进均为整体事务，预览不消费状态；超限、溢出、补牌失败及 Session 后续失败全部回滚。边界配置单独扩展绑定指纹，保留旧配置指纹与 schema v1；未配置边界时原牌型及弃牌行为不变，仅修改规则层、测试与文档。
+- 验证：新增 71 项测试全部通过；离线全量 1008 通过、1 项既有计分断言失败（预期 72、实际 52）。规则程序集按警告视为错误编译通过，git diff --check 通过。
+
 ### 2026-10-18 — 遗物事实触发、共享预算与事务提交
 
 - Composition 新增 RelicTriggerSpec、RelicTriggeredEffectSpec、RelicTriggerBudgetSpec 和纯触发解析，覆盖伤害、治疗、护盾、死亡及状态施加/拦截事实；复用五种基础效果、自动目标和状态生命周期，支持权威事实条件、逐事件/逐行动判定及稳定优先顺序。

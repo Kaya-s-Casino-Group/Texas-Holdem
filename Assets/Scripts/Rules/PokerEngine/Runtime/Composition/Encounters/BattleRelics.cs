@@ -182,6 +182,11 @@ namespace PokerEngine
                         writer.Write("battle-relic.triggers.1");
                         foreach (var state in Relics) RulesFor(state.InstanceId).WriteTriggers(writer);
                     }
+                    if (Relics.Any(state => RulesFor(state.InstanceId).HasBoundaryConfiguration))
+                    {
+                        writer.Write("battle-relic.boundaries.1");
+                        foreach (var state in Relics) RulesFor(state.InstanceId).WriteBoundaries(writer);
+                    }
                 }
                 using (var hash = SHA256.Create())
                     return BitConverter.ToString(hash.ComputeHash(stream.ToArray())).Replace("-", "").ToLowerInvariant();

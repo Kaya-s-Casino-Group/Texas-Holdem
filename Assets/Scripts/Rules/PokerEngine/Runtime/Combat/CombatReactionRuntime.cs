@@ -11,6 +11,19 @@ namespace PokerEngine
         CombatReactionEvaluation React(CombatReactionContext context);
     }
 
+    /// <summary>Optional clock hook. Fact-only runtimes never receive an event without effect endpoints.</summary>
+    public interface ICombatBoundaryReactionRuntime : ICombatReactionRuntime
+    {
+        CombatReactionEvaluation ReactBoundary(CombatBoundaryReactionContext context);
+    }
+
+    public sealed class CombatBoundaryReactionContext
+    {
+        public CombatState State { get; }
+        public CombatTimingEvent Event { get; }
+        internal CombatBoundaryReactionContext(CombatState state, CombatTimingEvent clock) { State = state; Event = clock; }
+    }
+
     /// <summary>One activation, potentially containing several effects/targets. Attribution never authorizes runtime writes.</summary>
     public sealed class CombatReactionBatch
     {

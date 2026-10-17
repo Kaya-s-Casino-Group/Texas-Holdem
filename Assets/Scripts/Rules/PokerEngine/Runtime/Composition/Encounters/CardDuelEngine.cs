@@ -262,7 +262,10 @@ namespace PokerEngine
                 var discards = state.Duel.Players.ToDictionary(x => x.Id, x => state.DiscardsFor(x.Id)); ScoreResult score = null; PokerHandClassification pattern = null; DamagePlan damage = null; DiscardRewardResolution discardReward = null; BattleEffectPlan effectPlan = null; IReadOnlyList<CombatRuleEvent> events = Array.Empty<CombatRuleEvent>();
                 if (action == CardDuelAction.Start)
                 {
-                    foreach (var player in duel.Players)
+                    var opening = Duel.ResolveOpening(duel);
+                    if (!opening.Accepted) return new CardDuelTransition(state, opening.Error);
+                    duel = opening.State; events = opening.RuleEvents; relicActivations = opening.RelicActivations;
+                    foreach (var player in duel.Players.Where(player => !duel.IsFinished && duel.Combat.Get(player.Id).IsAlive))
                     {
                         var error = Deal(state.Table, zones, player, CardDuelDealTrigger.OpeningTurn, ref random, draws);
                         if (error != CardDuelError.None) return new CardDuelTransition(state, error);
@@ -300,8 +303,12 @@ namespace PokerEngine
                     duel = spent.State; events = spent.RuleEvents; discardReward = spent.DiscardReward; effectPlan = spent.EffectPlan;
                     Move(zones, actor, CardZoneKinds.Hand, CardZoneKinds.Discard, state.Zone(CardZoneKinds.Hand, actor).Cards.Where(ids.Contains));
                     if (!duel.Player(actor).Rules.UnlimitedDiscards) discards[actor]--;
-                    var error = Deal(state.Table, zones, duel.Player(actor), CardDuelDealTrigger.AfterDiscard, ref random, draws);
-                    if (error != CardDuelError.None) return new CardDuelTransition(state, error);
+                    // A newly terminal boundary stops subsequent dealing; retain legacy discard settlement otherwise.
+                    if (!duel.IsFinished || !relicActivations.Any(activation => activation.BoundaryTiming.HasValue))
+                    {
+                        var error = Deal(state.Table, zones, duel.Player(actor), CardDuelDealTrigger.AfterDiscard, ref random, draws);
+                        if (error != CardDuelError.None) return new CardDuelTransition(state, error);
+                    }
                 }
                 else if (action == CardDuelAction.EndTurn)
                 {

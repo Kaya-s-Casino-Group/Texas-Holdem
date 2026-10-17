@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace PokerEngine
 {
@@ -33,7 +34,15 @@ namespace PokerEngine
             return CombatTimingSignal.PhaseEnding(RoundScope(state) + "/phase/" + phase, participants, phase);
         }
 
-        public static StatusDuration Bind(TeamBattleState state, StatusLifetimeSpec lifetime)
+        internal static CombatTimingSignal PhaseStarted(TeamBattleState state)
+        {
+            bool enemy = state.Phase == ScoredDuelPhase.AwaitingEnemyAction;
+            string phase = enemy ? EnemyPhase : PlayerPhase;
+            return CombatTimingSignal.PhaseStarted(RoundScope(state) + "/phase/" + phase + "/start",
+                enemy ? state.Enemies.Select(unit => unit.Id) : state.Players.Select(unit => unit.Id), phase);
+        }
+
+        public static StatusDuration Bind(TeamBattleState state, StatusLifetimeSpec lifetime, CombatTimingSignal boundary = null)
         {
             if (state == null || lifetime == null) throw new ArgumentNullException();
             switch (lifetime.Kind)
@@ -46,6 +55,9 @@ namespace PokerEngine
                         throw new ArgumentException("This battle supports player and enemy phase lifetimes only.");
                     // The upcoming complete phase: player -> enemy is this round; all other combinations start next round.
                     int ahead = state.Phase == ScoredDuelPhase.AwaitingPlayerHand && lifetime.PhaseKey == EnemyPhase ? 0 : 1;
+                    // At entry the current phase is still a complete upcoming phase. Opening precedes the first player phase.
+                    if (boundary?.Kind == CombatTimingKind.BattleStarted || boundary?.Kind == CombatTimingKind.PhaseStarted &&
+                        lifetime.PhaseKey == boundary.PhaseKey) ahead = 0;
                     return StatusDuration.UntilPhaseEnd(RoundScope(state, ahead), lifetime.PhaseKey);
                 default: throw new ArgumentException("Unknown status lifetime.");
             }

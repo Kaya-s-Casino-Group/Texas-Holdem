@@ -79,7 +79,11 @@ CombatEvent 保留原 Effect，新增 OutgoingAmountModification / IncomingAmoun
 
 成功时 `CombatTransition.ReactionRuntime` 返回最后的不可变草案，失败时为 null、状态仍为输入、事件为空。调用方必须与其外层事务共同提交，不能在 React 内写外部状态；预览也因此不消费真实预算。`Provenance.ActivationId` 将同组效果关联到激活报告，外部 provider 填写 SourceInstanceId 不具有写入运行状态的权限。目标后来死亡仍跳过，不撤销已经入队的激活；真正错误则撤销整批。
 
-只分派可继续触发的实际效果事实，不向 runtime 分派开战、生命周期或周期时钟。ResolveTiming 原有周期伤害保持叶子，本步仅传递运行状态。详细配置、共享预算和回合维护见 [遗物事实触发](../../README.md#遗物事实触发与事务提交)。
+`ICombatReactionRuntime.React` 仍只接收可继续触发的实际效果事实。可选扩展 `ICombatBoundaryReactionRuntime.ReactBoundary(CombatBoundaryReactionContext)` 接收 BattleStarted、PhaseStarted、PhaseEnding 时钟；旧 fact-only runtime 与 provider 不会收到 Effect 为空的时钟，ActionCompleted 也不进入边界钩子。开战和阶段是否成立由 Composition 决定，Combat 不负责轮维护或胜负判定。
+
+`ResolveTiming` 先发出时钟事实，处理已有周期伤害及其次数消费，再以最新临时 CombatState 调用一次边界 runtime。边界批次与周期条目共用原队列、总效果数与深度限制，父事实是该时钟、RootEffectIndex=-1、首层 Depth=1。边界后新施加的周期状态不会在同一时钟补触发。周期伤害仍为叶子；边界效果能否产生后继事实反应由 CanTriggerReactions 控制，随后复用原状态 → provider → runtime 顺序。ResolveTiming 新增可选 reactionProvider，仅用于真正的可触发效果事实。
+
+无效返回、未知目标、重复激活 Id、队列超限都会回滚周期与边界的整个批次及 NextRuntime。新增时钟枚举不自动扩展 PeriodicDamageSpec 的有效时机，它仍只接受 ActionCompleted / PhaseEnding。配置、共享预算与期限详见 [遗物边界触发](../../README.md#遗物开战与阶段边界触发)。
 
 ### 盾反、吸血与溢出治疗转伤害
 

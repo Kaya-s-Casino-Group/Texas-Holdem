@@ -7,7 +7,7 @@ namespace PokerEngine
 {
     public enum RelicTriggerTiming { DamageSettled = 1, HealingSettled, BlockGained, UnitDied, StatusApplied, StatusBlocked }
     public enum RelicEventRelation { OwnerIsSource = 1, OwnerIsTarget, AllyIsSource, AllyIsTarget, OpponentIsSource, OpponentIsTarget, Any }
-    public enum RelicTriggerOccurrence { PerEvent = 1, PerAction }
+    public enum RelicTriggerOccurrence { PerEvent = 1, PerAction, PerBoundary }
     public enum RelicFactAmount { DamageToHealth = 1, BlockAbsorbed, HealthRestored, Overheal, BlockGained }
     public enum RelicTriggerConditionKind { FactAtLeast = 1, OwnerHealthAtMost, OwnerHasStatus, EventStatus, HandCategory, SubmittedCardsAtLeast, DiscardedCardsAtLeast }
 
@@ -68,11 +68,14 @@ namespace PokerEngine
         public int? MaxUsesPerRound { get; }
         public int ChargeCost { get; }
         public int CooldownRounds { get; }
-        public RelicTriggerBudgetSpec(int? maxUsesPerAction = null, int? maxUsesPerRound = null, int chargeCost = 1, int cooldownRounds = 0)
+        public int? MaxUsesPerBoundary { get; }
+        public RelicTriggerBudgetSpec(int? maxUsesPerAction = null, int? maxUsesPerRound = null, int chargeCost = 1, int cooldownRounds = 0,
+            int? maxUsesPerBoundary = null)
         {
-            if (maxUsesPerAction < 1 || maxUsesPerRound < 1 || chargeCost < 0 || cooldownRounds < 0 || cooldownRounds == int.MaxValue)
+            if (maxUsesPerAction < 1 || maxUsesPerRound < 1 || maxUsesPerBoundary < 1 || chargeCost < 0 || cooldownRounds < 0 || cooldownRounds == int.MaxValue)
                 throw new ArgumentException("Invalid shared relic trigger budget.");
             MaxUsesPerAction = maxUsesPerAction; MaxUsesPerRound = maxUsesPerRound; ChargeCost = chargeCost; CooldownRounds = cooldownRounds;
+            MaxUsesPerBoundary = maxUsesPerBoundary;
         }
         internal void Write(BinaryWriter writer)
         {

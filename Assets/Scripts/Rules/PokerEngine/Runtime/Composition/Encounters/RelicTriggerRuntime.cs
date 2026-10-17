@@ -17,15 +17,19 @@ namespace PokerEngine
         public int? DiscardedCardCount { get; }
         public int UsesThisAction { get; }
         public bool TriggerUsedThisAction { get; }
+        public CombatTimingSignal Boundary { get; }
+        public int UsesThisWindow { get; }
+        public bool TriggerUsedThisWindow { get; }
         internal BattleRelicTriggerContext(TeamBattleState actionStart, CombatReactionContext fact, BattleRelicLoadout loadout,
             BattleRelicState relic, RelicTriggerSpec trigger, ParticipantId actor, ScoredDuelActionKind action,
-            HandAttackInfo hand, int? discardedCardCount, int uses, bool used)
+            HandAttackInfo hand, int? discardedCardCount, int uses, bool used, CombatTimingSignal boundary = null)
         {
             ActionStart = actionStart; Fact = fact; Loadout = loadout; Relic = relic; Trigger = trigger;
-            bool primaryAction = fact.Event.Provenance?.Origin == CombatEffectOrigin.Primary && fact.Event.Effect?.Source == actor;
+            Boundary = boundary; UsesThisWindow = uses; TriggerUsedThisWindow = used;
+            bool primaryAction = boundary == null && fact.Event.Provenance?.Origin == CombatEffectOrigin.Primary && fact.Event.Effect?.Source == actor;
             Hand = primaryAction && action == ScoredDuelActionKind.ScoredHand ? hand : null;
             DiscardedCardCount = primaryAction && action == ScoredDuelActionKind.Discard ? discardedCardCount : null;
-            UsesThisAction = uses; TriggerUsedThisAction = used;
+            UsesThisAction = boundary == null ? uses : 0; TriggerUsedThisAction = boundary == null && used;
         }
     }
 
@@ -35,7 +39,10 @@ namespace PokerEngine
         public ParticipantId Owner => Before.OwnerId;
         public string SourceInstanceId => Before.InstanceId;
         public string TriggerId { get; }
-        public RelicTriggerTiming Timing { get; }
+        public RelicTriggerTiming? Timing { get; }
+        public RelicBoundaryTiming? BoundaryTiming { get; }
+        /// <summary>The enclosing boundary window, also present on its descendant fact activations.</summary>
+        public string BoundaryId { get; }
         public long ParentRevision { get; }
         public int ParentSequenceIndex { get; }
         public BattleRelicState Before { get; }
@@ -45,6 +52,13 @@ namespace PokerEngine
         {
             TriggerId = context.Trigger.Id; Timing = context.Trigger.Timing; ParentRevision = context.Fact.Event.Revision;
             ParentSequenceIndex = context.Fact.Event.SequenceIndex; Before = context.Relic; After = after; Batch = batch;
+            BoundaryId = context.Boundary?.BoundaryId;
+        }
+        internal RelicTriggerActivation(RelicBoundaryTriggerSpec spec, CombatTimingEvent clock, BattleRelicState before,
+            BattleRelicState after, CombatReactionBatch batch)
+        {
+            TriggerId = spec.Id; BoundaryTiming = spec.Timing; BoundaryId = clock.Signal.BoundaryId;
+            ParentRevision = clock.Revision; ParentSequenceIndex = clock.SequenceIndex; Before = before; After = after; Batch = batch;
         }
     }
 
@@ -64,44 +78,22 @@ namespace PokerEngine
             if (fact.Provenance == null || !fact.Provenance.CanTriggerReactions || !spec.Origins.Contains(fact.Provenance.Origin) ||
                 !MatchesTiming(spec.Timing, fact) || !MatchesRelation(spec.Relation, combat, relic.OwnerId, fact) ||
                 !combat.Get(relic.OwnerId).IsAlive && spec.SourcePolicy == CombatReactionSourcePolicy.RequireLiving ||
-                relic.CooldownRounds > 0 || relic.RemainingCharges < budget.ChargeCost ||
-                budget.MaxUsesPerRound.HasValue && relic.UsesThisRound >= budget.MaxUsesPerRound.Value ||
-                budget.MaxUsesPerAction.HasValue && context.UsesThisAction >= budget.MaxUsesPerAction.Value ||
-                spec.Occurrence == RelicTriggerOccurrence.PerAction && context.TriggerUsedThisAction ||
+                !RelicTriggerSettlement.CanPay(relic, budget, context.UsesThisWindow, context.Boundary != null) ||
+                spec.Occurrence == RelicTriggerOccurrence.PerAction && (context.Boundary != null || context.TriggerUsedThisWindow) ||
+                spec.Occurrence == RelicTriggerOccurrence.PerBoundary && (context.Boundary == null || context.TriggerUsedThisWindow) ||
                 spec.Conditions.Any(condition => !MatchesCondition(condition, context))) return null;
 
-            string activationId = "relic-activation/" + Part(combat.Id) + fact.Revision.ToString(CultureInfo.InvariantCulture) + "/" +
-                fact.SequenceIndex.ToString(CultureInfo.InvariantCulture) + "/" + Part(relic.InstanceId) + Part(spec.Id);
-            var effects = new List<CombatReaction>();
-            for (int index = 0; index < spec.Effects.Count; index++)
-            {
-                var step = spec.Effects[index]; var effect = step.Effect;
-                if ((effect.Kind == CombatEffectKind.Damage || effect.Kind == CombatEffectKind.Heal || effect.Kind == CombatEffectKind.GainBlock) && effect.Amount == 0) continue;
-                var targets = CombatTargetResolver.Resolve(combat, relic.OwnerId, step.Target, fact);
-                if (effects.Count + targets.Count > 64) throw new ArgumentException("Relic activation exceeds 64 bound effects.");
-                for (int targetIndex = 0; targetIndex < targets.Count; targetIndex++)
-                {
-                    var target = targets[targetIndex]; CombatEffect bound;
-                    if (effect.Kind == CombatEffectKind.ApplyStatus)
-                    {
-                        var status = effect.Status;
-                        var definition = context.ActionStart.Rules.StatusCatalog.Get(status.DefinitionId);
-                        var duration = status.Duration ?? BattleStatusTiming.Bind(context.ActionStart, status.Lifetime ?? definition.DefaultLifetime);
-                        var id = new StatusInstanceId(activationId + "/" + index.ToString(CultureInfo.InvariantCulture) + "/" + targetIndex.ToString(CultureInfo.InvariantCulture));
-                        bound = CombatEffect.ApplyStatus(new StatusInstance(id, status.DefinitionId, EntityRef.Participant(relic.OwnerId),
-                            EntityRef.Participant(target), status.Stacks, duration));
-                    }
-                    else bound = new CombatEffect(effect.Kind, relic.OwnerId, target, effect.Amount);
-                    effects.Add(new CombatReaction(bound, context.Loadout.RulesFor(relic.InstanceId).Version + "/" + spec.Id, relic.OwnerId,
-                        CombatEffectOrigin.Triggered, spec.CanTriggerReactions, spec.SourcePolicy, relic.InstanceId));
-                }
-            }
-            if (effects.Count == 0) return null;
-            var after = relic.WithRuntime(relic.RemainingCharges.HasValue ? (int?)(relic.RemainingCharges.Value - budget.ChargeCost) : null,
-                checked(relic.UsesThisRound + 1), budget.CooldownRounds == 0 ? 0 : checked(budget.CooldownRounds + 1), relic.Memory);
-            return new RelicTriggerActivation(context, after, new CombatReactionBatch(activationId, effects));
+            var batch = RelicTriggerSettlement.Bind(context.ActionStart, combat, fact, context.Loadout, relic, spec.Id,
+                spec.Effects, spec.CanTriggerReactions, spec.SourcePolicy, context.Boundary);
+            return batch == null ? null : new RelicTriggerActivation(context, RelicTriggerSettlement.Pay(relic, budget), batch);
         }
-        private static string Part(string value) => value.Length.ToString(CultureInfo.InvariantCulture) + ":" + value + "/";
+        internal static bool OwnerCondition(RelicTriggerConditionSpec condition, CombatState combat, ParticipantId owner)
+        {
+            if (condition.Kind == RelicTriggerConditionKind.OwnerHealthAtMost)
+                return combat.Get(owner).Health <= combat.Get(owner).MaxHealth * condition.HealthRatio;
+            return condition.Kind == RelicTriggerConditionKind.OwnerHasStatus && combat.Statuses.Any(status =>
+                status.DefinitionId == condition.StatusId.Value && status.Target.Kind == EntityKind.Participant && status.Target.Id == owner.Value);
+        }
         private static bool MatchesTiming(RelicTriggerTiming timing, CombatRuleEvent fact)
         {
             var vitals = fact as CombatEvent;
@@ -134,15 +126,14 @@ namespace PokerEngine
         }
         private static bool MatchesCondition(RelicTriggerConditionSpec condition, BattleRelicTriggerContext context)
         {
-            var fact = context.Fact.Event; var unit = context.Fact.State.Get(context.Relic.OwnerId);
+            var fact = context.Fact.Event;
             switch (condition.Kind)
             {
                 case RelicTriggerConditionKind.FactAtLeast:
                     var amount = FactAmount(fact as CombatEvent, condition.Fact.Value);
                     return amount.HasValue && amount.Value >= condition.Threshold;
-                case RelicTriggerConditionKind.OwnerHealthAtMost: return unit.Health <= unit.MaxHealth * condition.HealthRatio;
-                case RelicTriggerConditionKind.OwnerHasStatus: return context.Fact.State.Statuses.Any(status => status.DefinitionId == condition.StatusId.Value &&
-                    status.Target.Kind == EntityKind.Participant && status.Target.Id == unit.Id.Value);
+                case RelicTriggerConditionKind.OwnerHealthAtMost:
+                case RelicTriggerConditionKind.OwnerHasStatus: return OwnerCondition(condition, context.Fact.State, context.Relic.OwnerId);
                 case RelicTriggerConditionKind.EventStatus: return fact.Effect?.Status?.DefinitionId == condition.StatusId;
                 case RelicTriggerConditionKind.HandCategory: return context.Hand?.Pattern.Category == condition.Category;
                 case RelicTriggerConditionKind.SubmittedCardsAtLeast: return context.Hand != null && context.Hand.SubmittedCards.Count >= condition.Threshold;
@@ -165,14 +156,64 @@ namespace PokerEngine
         }
     }
 
-    /// <summary>One immutable runtime per TeamBattle action, threaded through all its Combat batches.</summary>
-    internal sealed class RelicReactionRuntime : ICombatReactionRuntime
+    internal static class RelicTriggerSettlement
+    {
+        internal static bool CanPay(BattleRelicState relic, RelicTriggerBudgetSpec budget, int uses, bool boundary)
+        {
+            int? windowLimit = boundary ? budget.MaxUsesPerBoundary : budget.MaxUsesPerAction;
+            return relic.CooldownRounds == 0 && !(relic.RemainingCharges < budget.ChargeCost) &&
+                !(budget.MaxUsesPerRound.HasValue && relic.UsesThisRound >= budget.MaxUsesPerRound.Value) &&
+                !(windowLimit.HasValue && uses >= windowLimit.Value);
+        }
+        internal static BattleRelicState Pay(BattleRelicState relic, RelicTriggerBudgetSpec budget) =>
+            relic.WithRuntime(relic.RemainingCharges.HasValue ? (int?)(relic.RemainingCharges.Value - budget.ChargeCost) : null,
+                checked(relic.UsesThisRound + 1), budget.CooldownRounds == 0 ? 0 : checked(budget.CooldownRounds + 1), relic.Memory);
+
+        internal static CombatReactionBatch Bind(TeamBattleState windowStart, CombatState combat, CombatRuleEvent fact,
+            BattleRelicLoadout loadout, BattleRelicState relic, string triggerId, IReadOnlyList<RelicTriggeredEffectSpec> steps,
+            bool canTriggerReactions, CombatReactionSourcePolicy sourcePolicy, CombatTimingSignal boundary)
+        {
+            string activationId = "relic-activation/" + Part(combat.Id) + fact.Revision.ToString(CultureInfo.InvariantCulture) + "/" +
+                fact.SequenceIndex.ToString(CultureInfo.InvariantCulture) + "/" + Part(relic.InstanceId) + Part(triggerId);
+            var effects = new List<CombatReaction>();
+            for (int index = 0; index < steps.Count; index++)
+            {
+                var step = steps[index]; var effect = step.Effect;
+                if ((effect.Kind == CombatEffectKind.Damage || effect.Kind == CombatEffectKind.Heal || effect.Kind == CombatEffectKind.GainBlock) && effect.Amount == 0) continue;
+                var targets = CombatTargetResolver.Resolve(combat, relic.OwnerId, step.Target, fact);
+                if (effects.Count + targets.Count > 64) throw new ArgumentException("Relic activation exceeds 64 bound effects.");
+                for (int targetIndex = 0; targetIndex < targets.Count; targetIndex++)
+                {
+                    var target = targets[targetIndex]; CombatEffect bound;
+                    if (effect.Kind == CombatEffectKind.ApplyStatus)
+                    {
+                        var status = effect.Status;
+                        var definition = windowStart.Rules.StatusCatalog.Get(status.DefinitionId);
+                        var duration = status.Duration ?? BattleStatusTiming.Bind(windowStart, status.Lifetime ?? definition.DefaultLifetime, boundary);
+                        var id = new StatusInstanceId(activationId + "/" + index.ToString(CultureInfo.InvariantCulture) + "/" + targetIndex.ToString(CultureInfo.InvariantCulture));
+                        bound = CombatEffect.ApplyStatus(new StatusInstance(id, status.DefinitionId, EntityRef.Participant(relic.OwnerId),
+                            EntityRef.Participant(target), status.Stacks, duration));
+                    }
+                    else bound = new CombatEffect(effect.Kind, relic.OwnerId, target, effect.Amount);
+                    effects.Add(new CombatReaction(bound, loadout.RulesFor(relic.InstanceId).Version + "/" + triggerId, relic.OwnerId,
+                        CombatEffectOrigin.Triggered, canTriggerReactions, sourcePolicy, relic.InstanceId));
+                }
+            }
+            return effects.Count == 0 ? null : new CombatReactionBatch(activationId, effects);
+        }
+        private static string Part(string value) => value.Length.ToString(CultureInfo.InvariantCulture) + ":" + value + "/";
+    }
+
+    /// <summary>One immutable runtime per action or boundary window. Persistent budgets survive window changes.</summary>
+    internal sealed class RelicReactionRuntime : ICombatBoundaryReactionRuntime
     {
         private readonly TeamBattleState actionStart;
         private readonly ParticipantId actor;
         private readonly ScoredDuelActionKind action;
         private readonly HandAttackInfo hand;
         private readonly int? discardedCount;
+        private readonly CombatTimingSignal boundary;
+        private readonly bool boundaryDispatched;
         private readonly Dictionary<ParticipantId, BattleRelicLoadout> loadouts;
         private readonly Dictionary<string, int> uses;
         private readonly HashSet<Tuple<string, string>> used;
@@ -180,16 +221,58 @@ namespace PokerEngine
         internal BattleRelicLoadout Loadout(ParticipantId owner) => loadouts[owner];
         private RelicReactionRuntime(TeamBattleState state, ParticipantId actor, ScoredDuelActionKind action, HandAttackInfo hand, int? discardedCount,
             Dictionary<ParticipantId, BattleRelicLoadout> loadouts, Dictionary<string, int> uses, HashSet<Tuple<string, string>> used,
-            IEnumerable<RelicTriggerActivation> activations)
+            IEnumerable<RelicTriggerActivation> activations, CombatTimingSignal boundary = null, bool boundaryDispatched = false)
         {
             actionStart = state; this.actor = actor; this.action = action; this.hand = hand; this.discardedCount = discardedCount;
             this.loadouts = loadouts; this.uses = uses; this.used = used; Activations = Guard.View(activations.ToArray());
+            this.boundary = boundary; this.boundaryDispatched = boundaryDispatched;
         }
         internal static RelicReactionRuntime Create(TeamBattleState state, ParticipantId actor, ScoredDuelActionKind action, HandAttackInfo hand, int? discardedCount)
         {
-            if (!state.Players.Any(player => player.Relics.Relics.Any(relic => player.Relics.RulesFor(relic.InstanceId).Triggers.Count > 0))) return null;
+            if (!state.Players.Any(player => player.Relics.Relics.Any(relic => player.Relics.RulesFor(relic.InstanceId).HasTriggers))) return null;
             return new RelicReactionRuntime(state, actor, action, hand, discardedCount, state.Players.ToDictionary(player => player.Id, player => player.Relics),
                 new Dictionary<string, int>(StringComparer.Ordinal), new HashSet<Tuple<string, string>>(), Array.Empty<RelicTriggerActivation>());
+        }
+        internal static RelicReactionRuntime CreateBoundary(TeamBattleState state, CombatTimingSignal signal) =>
+            new RelicReactionRuntime(state, default(ParticipantId), ScoredDuelActionKind.EndPlayerTurn, null, null,
+                state.Players.ToDictionary(player => player.Id, player => player.Relics), new Dictionary<string, int>(StringComparer.Ordinal),
+                new HashSet<Tuple<string, string>>(), Array.Empty<RelicTriggerActivation>(), signal);
+
+        internal static bool Handles(TeamBattleState state, CombatTimingSignal signal) => state.Players.Any(player =>
+            player.Relics.Relics.Any(relic => player.Relics.RulesFor(relic.InstanceId).BoundaryTriggers.Any(spec => spec.Matches(state.Combat, player.Id, signal))));
+
+        public CombatReactionEvaluation ReactBoundary(CombatBoundaryReactionContext context)
+        {
+            // An action runtime can pass through periodic-only clocks without acquiring a boundary window.
+            if (boundary == null) return new CombatReactionEvaluation(this);
+            if (context == null || context.Event.Signal.BoundaryId != boundary.BoundaryId || context.Event.Signal.Kind != boundary.Kind)
+                throw new ArgumentException("Boundary runtime must match its authority-owned window.");
+            if (boundaryDispatched) return new CombatReactionEvaluation(this);
+            var nextLoadouts = new Dictionary<ParticipantId, BattleRelicLoadout>(loadouts);
+            var nextUses = new Dictionary<string, int>(uses, StringComparer.Ordinal); var nextUsed = new HashSet<Tuple<string, string>>(used);
+            var reports = Activations.ToList(); var batches = new List<CombatReactionBatch>();
+            bool finished = actionStart.Players.All(player => !context.State.Get(player.Id).IsAlive) || actionStart.Enemies.All(enemy => !context.State.Get(enemy.Id).IsAlive);
+            var entries = loadouts.Values.SelectMany(loadout => loadout.Relics.SelectMany(relic => loadout.RulesFor(relic.InstanceId).BoundaryTriggers
+                .Select(spec => new { Owner = loadout.OwnerId, Source = relic.InstanceId, Spec = spec })))
+                .OrderBy(entry => entry.Spec.Priority).ThenBy(entry => entry.Source, StringComparer.Ordinal).ThenBy(entry => entry.Spec.Id, StringComparer.Ordinal);
+            if (!finished) foreach (var entry in entries)
+            {
+                var loadout = nextLoadouts[entry.Owner]; var relic = loadout.Relics.Single(item => item.InstanceId == entry.Source);
+                var spec = entry.Spec; var budget = loadout.RulesFor(entry.Source).TriggerBudget;
+                int count; nextUses.TryGetValue(entry.Source, out count);
+                if (!spec.Matches(context.State, entry.Owner, boundary) ||
+                    !context.State.Get(entry.Owner).IsAlive && spec.SourcePolicy == CombatReactionSourcePolicy.RequireLiving ||
+                    !RelicTriggerSettlement.CanPay(relic, budget, count, true) ||
+                    spec.Conditions.Any(condition => !BattleRelicTriggerResolver.OwnerCondition(condition, context.State, entry.Owner))) continue;
+                var batch = RelicTriggerSettlement.Bind(actionStart, context.State, context.Event, loadout, relic, spec.Id,
+                    spec.Effects, spec.CanTriggerReactions, spec.SourcePolicy, boundary);
+                if (batch == null) continue;
+                var activation = new RelicTriggerActivation(spec, context.Event, relic, RelicTriggerSettlement.Pay(relic, budget), batch);
+                nextLoadouts[entry.Owner] = loadout.WithRuntime(loadout.Relics.Select(item => item.InstanceId == entry.Source ? activation.After : item));
+                nextUses[entry.Source] = checked(count + 1); nextUsed.Add(Tuple.Create(entry.Source, spec.Id)); reports.Add(activation); batches.Add(batch);
+            }
+            return new CombatReactionEvaluation(new RelicReactionRuntime(actionStart, actor, action, hand, discardedCount,
+                nextLoadouts, nextUses, nextUsed, reports, boundary, true), batches);
         }
         public CombatReactionEvaluation React(CombatReactionContext context)
         {
@@ -205,13 +288,13 @@ namespace PokerEngine
                 var loadout = nextLoadouts[entry.Owner]; var relic = loadout.Relics.Single(item => item.InstanceId == entry.Source);
                 int count; nextUses.TryGetValue(entry.Source, out count); var key = Tuple.Create(entry.Source, entry.Trigger.Id);
                 var activation = resolver.Resolve(new BattleRelicTriggerContext(actionStart, context, loadout, relic, entry.Trigger,
-                    actor, action, hand, discardedCount, count, nextUsed.Contains(key)));
+                    actor, action, hand, discardedCount, count, nextUsed.Contains(key), boundary));
                 if (activation == null) continue;
                 nextLoadouts[entry.Owner] = loadout.WithRuntime(loadout.Relics.Select(item => item.InstanceId == entry.Source ? activation.After : item));
                 nextUses[entry.Source] = checked(count + 1); nextUsed.Add(key); reports.Add(activation); batches.Add(activation.Batch);
             }
             return new CombatReactionEvaluation(batches.Count == 0 ? this : new RelicReactionRuntime(actionStart, actor, action, hand, discardedCount,
-                nextLoadouts, nextUses, nextUsed, reports), batches);
+                nextLoadouts, nextUses, nextUsed, reports, boundary, boundaryDispatched), batches);
         }
     }
 
@@ -219,11 +302,13 @@ namespace PokerEngine
     {
         internal static void Catalog(BattleRelicLoadout loadout, CombatStatusCatalog catalog)
         {
-            foreach (var trigger in loadout.Relics.SelectMany(relic => loadout.RulesFor(relic.InstanceId).Triggers))
+            foreach (var rules in loadout.Relics.Select(relic => loadout.RulesFor(relic.InstanceId)))
             {
-                foreach (var condition in trigger.Conditions.Where(item => item.StatusId.HasValue))
+                foreach (var condition in rules.Triggers.SelectMany(item => item.Conditions).Concat(rules.BoundaryTriggers.SelectMany(item => item.Conditions))
+                    .Where(item => item.StatusId.HasValue))
                     if (catalog?.Get(condition.StatusId.Value) == null) throw new ArgumentException("Relic status conditions require a catalog.");
-                foreach (var status in trigger.Effects.Where(step => step.Effect.Status != null).Select(step => step.Effect.Status))
+                foreach (var status in rules.Triggers.SelectMany(item => item.Effects).Concat(rules.BoundaryTriggers.SelectMany(item => item.Effects))
+                    .Where(step => step.Effect.Status != null).Select(step => step.Effect.Status))
                 {
                     var definition = catalog?.Get(status.DefinitionId) ?? throw new ArgumentException("Relic status effects require a catalog.");
                     bool counted = status.Duration != null ? status.Duration.Kind == DurationKind.TriggerCount :
@@ -234,8 +319,8 @@ namespace PokerEngine
         }
         internal static BattleRelicLoadout BeginRound(BattleRelicLoadout loadout)
         {
-            if (!loadout.Relics.Any(relic => loadout.RulesFor(relic.InstanceId).Triggers.Count > 0)) return loadout;
-            return loadout.WithRuntime(loadout.Relics.Select(relic => loadout.RulesFor(relic.InstanceId).Triggers.Count == 0 ? relic :
+            if (!loadout.Relics.Any(relic => loadout.RulesFor(relic.InstanceId).HasTriggers)) return loadout;
+            return loadout.WithRuntime(loadout.Relics.Select(relic => !loadout.RulesFor(relic.InstanceId).HasTriggers ? relic :
                 relic.WithRuntime(relic.RemainingCharges, 0, Math.Max(0, relic.CooldownRounds - 1), relic.Memory.ResetRound())));
         }
     }

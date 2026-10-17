@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace PokerEngine
 {
-    public enum CombatTimingKind { ActionCompleted = 1, PhaseEnding = 2 }
+    public enum CombatTimingKind { ActionCompleted = 1, PhaseEnding = 2, BattleStarted = 3, PhaseStarted = 4 }
 
     /// <summary>Mode-neutral clock declaration. Composition owns which actions and phase rosters qualify.</summary>
     public sealed class CombatTimingSignal
@@ -29,6 +29,10 @@ namespace PokerEngine
         public static CombatTimingSignal PhaseEnding(string boundaryId, IEnumerable<ParticipantId> participants, string phaseKey) =>
             new CombatTimingSignal(CombatTimingKind.PhaseEnding, boundaryId, participants,
                 phaseKey: Guard.Text(phaseKey, nameof(phaseKey)));
+        public static CombatTimingSignal BattleStarted(string boundaryId, IEnumerable<ParticipantId> participants) =>
+            new CombatTimingSignal(CombatTimingKind.BattleStarted, boundaryId, participants);
+        public static CombatTimingSignal PhaseStarted(string boundaryId, IEnumerable<ParticipantId> participants, string phaseKey) =>
+            new CombatTimingSignal(CombatTimingKind.PhaseStarted, boundaryId, participants, phaseKey: Guard.Text(phaseKey, nameof(phaseKey)));
     }
 
     /// <summary>Fixed per-stack damage; target selection is relative to the holder, attribution to the applier.</summary>
@@ -39,7 +43,7 @@ namespace PokerEngine
         public CombatTargetSpec Target { get; }
         public PeriodicDamageSpec(CombatTimingKind timing, long damagePerStack, CombatTargetSpec target = null)
         {
-            if (!Enum.IsDefined(typeof(CombatTimingKind), timing) || damagePerStack < 0)
+            if ((timing != CombatTimingKind.ActionCompleted && timing != CombatTimingKind.PhaseEnding) || damagePerStack < 0)
                 throw new ArgumentException("Periodic damage requires a supported clock and nonnegative strength.");
             Target = target ?? CombatTargetSpec.Self();
             if (Target.Group == CombatTargetGroup.EventSource || Target.Group == CombatTargetGroup.EventTarget)

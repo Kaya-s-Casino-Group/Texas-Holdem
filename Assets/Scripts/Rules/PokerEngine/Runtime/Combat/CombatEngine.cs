@@ -114,10 +114,10 @@ namespace PokerEngine
         /// <summary>Resolve one authority-owned boundary atomically. Periodic damage is a leaf and never re-enters reaction rules.</summary>
         public static CombatTransition ResolveTiming(CombatState state, long expectedRevision, CombatTimingSignal signal,
             IIncomingDamageModifier incomingDamage = null, CombatStatusCatalog statusCatalog = null, CombatReactionLimits reactionLimits = null,
-            ICombatAmountModifier amountModifier = null, ICombatReactionRuntime reactionRuntime = null)
+            ICombatAmountModifier amountModifier = null, ICombatReactionRuntime reactionRuntime = null, ICombatReactionProvider reactionProvider = null)
         {
             if (state == null || signal == null) throw new ArgumentNullException();
-            return ResolveCore(state, expectedRevision, Array.Empty<CombatEffect>(), signal, incomingDamage, statusCatalog, null, reactionLimits, amountModifier, reactionRuntime);
+            return ResolveCore(state, expectedRevision, Array.Empty<CombatEffect>(), signal, incomingDamage, statusCatalog, reactionProvider, reactionLimits, amountModifier, reactionRuntime);
         }
 
         private static CombatTransition ResolveCore(CombatState state, long expectedRevision, IEnumerable<CombatEffect> effects,
@@ -154,6 +154,9 @@ namespace PokerEngine
                 if (signal != null)
                 {
                     clock = new CombatTimingEvent(revision, events.Count, signal); events.Add(clock);
+                    // A marker under the periodic entries dispatches once, using the post-tick snapshot.
+                    if (signal.Kind != CombatTimingKind.ActionCompleted && reactionRuntime is ICombatBoundaryReactionRuntime)
+                        queue.Push(new QueuedEffect(clock));
                     // Eligibility/targets are evaluated when each status reaches the head, so an earlier
                     // tick can kill a later holder. Snapshot only identities, in stable stored order.
                     if (statusCatalog != null)
@@ -171,6 +174,22 @@ namespace PokerEngine
                 while (queue.Count > 0)
                 {
                     var queued = queue.Pop();
+                    if (queued.Boundary != null)
+                    {
+                        try
+                        {
+                            var current = new CombatState(state.Id, state.Revision, state.Combatants.Select(unit => units[unit.Id]), statuses);
+                            var evaluation = ((ICombatBoundaryReactionRuntime)reactionRuntime).ReactBoundary(new CombatBoundaryReactionContext(current, queued.Boundary));
+                            var responses = new List<QueuedEffect>();
+                            var error = AddRuntimeReactions(evaluation, queued.Boundary, unitIds, activationIds, reactionLimits, ref reactionCount, responses);
+                            if (error != CombatError.None) return new CombatTransition(state, error);
+                            reactionRuntime = evaluation.NextRuntime;
+                            for (int index = responses.Count - 1; index >= 0; index--) queue.Push(responses[index]);
+                        }
+                        catch (ArgumentException) { return new CombatTransition(state, CombatError.InvalidReaction); }
+                        catch (InvalidOperationException) { return new CombatTransition(state, CombatError.InvalidReaction); }
+                        continue;
+                    }
                     if (queued.PeriodicStatusId.HasValue)
                     {
                         var status = statuses.FirstOrDefault(item => item.Id == queued.PeriodicStatusId.Value);
@@ -299,19 +318,8 @@ namespace PokerEngine
                             if (reactionRuntime != null)
                             {
                                 var evaluation = reactionRuntime.React(new CombatReactionContext(settled, parent));
-                                if (evaluation == null) return new CombatTransition(state, CombatError.InvalidReaction);
-                                foreach (var activation in evaluation.Batches)
-                                {
-                                    if (!activationIds.Add(activation.ActivationId)) return new CombatTransition(state, CombatError.InvalidReaction);
-                                    foreach (var reaction in activation.Reactions)
-                                    {
-                                        if (++reactionCount > reactionLimits.MaxEffects || provenance.Depth >= reactionLimits.MaxDepth)
-                                            return new CombatTransition(state, CombatError.ReactionLimitExceeded);
-                                        if (!unitIds.Contains(reaction.Owner) || !unitIds.Contains(reaction.Effect.Source) || !unitIds.Contains(reaction.Effect.Target))
-                                            return new CombatTransition(state, CombatError.InvalidReaction);
-                                        derived.Add(new QueuedEffect(reaction.Effect, new CombatEffectProvenance(reaction, parent, activation.ActivationId)));
-                                    }
-                                }
+                                var error = AddRuntimeReactions(evaluation, parent, unitIds, activationIds, reactionLimits, ref reactionCount, derived);
+                                if (error != CombatError.None) return new CombatTransition(state, error);
                                 reactionRuntime = evaluation.NextRuntime;
                             }
                         }
@@ -343,6 +351,23 @@ namespace PokerEngine
             catch (ArgumentException) { return new CombatTransition(state, CombatError.InvalidEffect); }
             catch (OverflowException) { return new CombatTransition(state, CombatError.Overflow); }
         }
+        private static CombatError AddRuntimeReactions(CombatReactionEvaluation evaluation, CombatRuleEvent parent,
+            HashSet<ParticipantId> unitIds, HashSet<string> activationIds, CombatReactionLimits limits, ref int count, List<QueuedEffect> output)
+        {
+            if (evaluation == null) return CombatError.InvalidReaction;
+            foreach (var activation in evaluation.Batches)
+            {
+                if (!activationIds.Add(activation.ActivationId)) return CombatError.InvalidReaction;
+                foreach (var reaction in activation.Reactions)
+                {
+                    if (++count > limits.MaxEffects || (parent.Provenance?.Depth ?? 0) >= limits.MaxDepth) return CombatError.ReactionLimitExceeded;
+                    if (!unitIds.Contains(reaction.Owner) || !unitIds.Contains(reaction.Effect.Source) || !unitIds.Contains(reaction.Effect.Target)) return CombatError.InvalidReaction;
+                    output.Add(new QueuedEffect(reaction.Effect, new CombatEffectProvenance(reaction, parent, activation.ActivationId)));
+                }
+            }
+            return CombatError.None;
+        }
+
         private static CombatAmountModification ModifyAmount(ICombatAmountModifier modifier, CombatState state, CombatEffect effect,
             CombatEffectProvenance provenance, CombatAmountStage stage, long amount)
         {
@@ -367,6 +392,8 @@ namespace PokerEngine
             internal CombatEffectProvenance Provenance { get; }
             internal StatusInstanceId? PeriodicStatusId { get; }
             internal bool ConsumePeriodic { get; }
+            internal CombatTimingEvent Boundary { get; }
+            internal QueuedEffect(CombatTimingEvent boundary) { Boundary = boundary; }
             internal QueuedEffect(CombatEffect effect, CombatEffectProvenance provenance)
             { Effect = effect; Provenance = provenance; }
             internal QueuedEffect(StatusInstanceId statusId, bool consume = false, CombatEffectProvenance provenance = null)
