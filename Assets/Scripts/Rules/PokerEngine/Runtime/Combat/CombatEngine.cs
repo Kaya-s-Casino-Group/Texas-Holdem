@@ -62,8 +62,8 @@ namespace PokerEngine
         public bool Died => Before.IsAlive && !After.IsAlive;
         public CombatDeathCause DeathCause => !Died ? CombatDeathCause.None :
             Effect.Kind == CombatEffectKind.Eliminate ? CombatDeathCause.Eliminate : CombatDeathCause.Damage;
-        internal CombatEvent(long revision, int index, CombatEffect effect, CombatantState before, CombatantState after, int absorbed, long overkill, DamageModification incomingModification = null)
-            : base(revision, index, effect)
+        internal CombatEvent(long revision, int index, CombatEffect effect, CombatantState before, CombatantState after, int absorbed, long overkill, DamageModification incomingModification = null, int sequenceIndex = -1)
+            : base(revision, index, effect, sequenceIndex)
         {
             IncomingModification = incomingModification; Before = before; After = after; BlockAbsorbed = absorbed; Overkill = overkill;
             HealthLost = Math.Max(0, before.Health - after.Health); HealthRestored = Math.Max(0, after.Health - before.Health);
@@ -88,11 +88,13 @@ namespace PokerEngine
     /// <summary>Shared deterministic authority resolver. No turn, AI, card score, faction targeting or reward policy.</summary>
     public static class CombatEngine
     {
-        public const string RulesVersion = "combat.4";
-        public static CombatTransition Resolve(CombatState state, long expectedRevision, IEnumerable<CombatEffect> effects, IIncomingDamageModifier incomingDamage = null)
+        public const string RulesVersion = "combat.5";
+        public static CombatTransition Resolve(CombatState state, long expectedRevision, IEnumerable<CombatEffect> effects, IIncomingDamageModifier incomingDamage = null,
+            CombatStatusCatalog statusCatalog = null)
         {
             if (state == null || effects == null) throw new ArgumentNullException();
-            try { Validate(state); } catch (ArgumentException) { return new CombatTransition(state, CombatError.InvalidState); }
+            try { Validate(state); CombatStatusRules.ValidateCatalog(state, statusCatalog); }
+            catch (ArgumentException) { return new CombatTransition(state, CombatError.InvalidState); }
             if (state.Revision != expectedRevision) return new CombatTransition(state, CombatError.StaleRevision);
             incomingDamage = incomingDamage ?? new IdentityIncomingDamageModifier();
             try
@@ -100,7 +102,7 @@ namespace PokerEngine
                 var batch = Guard.Copy(effects, nameof(effects));
                 if (batch.Length < 1 || batch.Length > 64) throw new ArgumentException("Resolve between 1 and 64 effects atomically.");
                 var units = state.Combatants.ToDictionary(unit => unit.Id); var events = new List<CombatRuleEvent>();
-                var statuses = state.Statuses.ToList(); var statusIds = new HashSet<StatusInstanceId>(statuses.Select(status => status.Id));
+                var statuses = state.Statuses.ToList();
                 var unitIds = new HashSet<ParticipantId>(units.Keys);
                 long revision = checked(state.Revision + 1);
                 for (int effectIndex = 0; effectIndex < batch.Length; effectIndex++)
@@ -132,16 +134,13 @@ namespace PokerEngine
                         case CombatEffectKind.ClearBlock: block = 0; break;
                         case CombatEffectKind.ApplyStatus:
                             ValidateStatus(effect.Status, state, unitIds);
-                            if (statuses.Count >= 256 || !statusIds.Add(effect.Status.Id))
-                                throw new ArgumentException("Status capacity exceeded or instance already present.");
-                            statuses.Add(effect.Status);
-                            events.Add(new CombatStatusEvent(revision, effectIndex, effect));
+                            CombatStatusRules.Apply(state, statuses, effect, statusCatalog, revision, effectIndex, events);
                             continue;
                         case CombatEffectKind.Eliminate: health = 0; break;
                         default: throw new ArgumentException("Unknown combat effect.");
                     }
                     var after = before.WithVitals(health, block); units[after.Id] = after;
-                    events.Add(new CombatEvent(revision, effectIndex, effect, before, after, absorbed, overkill, incoming));
+                    events.Add(new CombatEvent(revision, effectIndex, effect, before, after, absorbed, overkill, incoming, events.Count));
                 }
                 return new CombatTransition(new CombatState(state.Id, revision, state.Combatants.Select(unit => units[unit.Id]), statuses), events: events);
             }

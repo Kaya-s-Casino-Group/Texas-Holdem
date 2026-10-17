@@ -17,7 +17,7 @@ namespace PokerEngine
     internal static class BattleEffectBinder
     {
         internal static BattleEffectBinding Bind(TeamBattleState state, ParticipantId source, BattleEffectSequence sequence,
-            IEnumerable<ParticipantId> requestedTargets, BattleTargetBindings bindings, HandAttackInfo hand)
+            IEnumerable<ParticipantId> requestedTargets, BattleTargetBindings bindings, HandAttackInfo hand, AttackOrigin? origin = null)
         {
             try
             {
@@ -36,6 +36,17 @@ namespace PokerEngine
                 for (int stepIndex = 0; stepIndex < sequence.Steps.Count; stepIndex++)
                 {
                     var step = sequence.Steps[stepIndex]; IReadOnlyList<ParticipantId> selected = null;
+                    StatusDuration duration = null;
+                    if (step.Effect.Kind == CombatEffectKind.ApplyStatus)
+                    {
+                        try
+                        {
+                            var definition = state.Rules.StatusCatalog?.Get(step.Effect.Status.DefinitionId);
+                            duration = step.Effect.Status.Duration ?? BattleStatusTiming.Bind(state,
+                                step.Effect.Status.Lifetime ?? definition?.DefaultLifetime);
+                        }
+                        catch (ArgumentException) { return new BattleEffectBinding(CardDuelError.InvalidEffectPlan); }
+                    }
                     if (step.Target.RequestSlot != null && bindings != null)
                         bindings.Slots.TryGetValue(step.Target.RequestSlot, out selected);
                     var targets = BattleTargetResolver.Resolve(state, source, step.Target, selected);
@@ -51,13 +62,13 @@ namespace PokerEngine
                             // Capacity and instance uniqueness are checked only when Combat actually applies the status.
                             // An earlier effect may defeat this target, in which case this status will be skipped.
                             var status = new StatusInstance(id, spec.Status.DefinitionId, EntityRef.Participant(source), EntityRef.Participant(target),
-                                spec.Status.Stacks, spec.Status.Duration);
+                                spec.Status.Stacks, duration);
                             effects.Add(CombatEffect.ApplyStatus(status));
                         }
                         else
                         {
                             var attack = spec.Kind == CombatEffectKind.Damage ?
-                                new AttackContext(source, hand == null ? AttackOrigin.Other : AttackOrigin.ScoredHand, spec.Amount, hand) : null;
+                                new AttackContext(source, origin ?? (hand == null ? AttackOrigin.Other : AttackOrigin.ScoredHand), spec.Amount, hand) : null;
                             effects.Add(new CombatEffect(spec.Kind, source, target, spec.Amount, attack: attack));
                         }
                     }

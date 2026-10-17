@@ -10,11 +10,22 @@ namespace PokerEngine
         public StatusDefinitionId DefinitionId { get; }
         public int Stacks { get; }
         public StatusDuration Duration { get; }
-        public StatusApplicationSpec(StatusDefinitionId definitionId, int stacks, StatusDuration duration)
+        /// <summary>Null Duration/Lifetime uses the registered definition's default lifetime.</summary>
+        public StatusLifetimeSpec Lifetime { get; }
+        public StatusApplicationSpec(StatusDefinitionId definitionId, int stacks = 1)
         {
             if (!definitionId.IsValid || stacks <= 0) throw new ArgumentException("Invalid status application specification.");
-            DefinitionId = definitionId; Stacks = stacks; Duration = duration ?? throw new ArgumentNullException(nameof(duration));
+            DefinitionId = definitionId; Stacks = stacks;
         }
+        public StatusApplicationSpec(StatusDefinitionId definitionId, int stacks, StatusDuration duration)
+            : this(definitionId, stacks)
+        {
+            Duration = duration ?? throw new ArgumentNullException(nameof(duration));
+        }
+        private StatusApplicationSpec(StatusDefinitionId definitionId, StatusLifetimeSpec lifetime, int stacks) : this(definitionId, stacks)
+        { Lifetime = lifetime ?? throw new ArgumentNullException(nameof(lifetime)); }
+        public static StatusApplicationSpec WithLifetime(StatusDefinitionId definitionId, StatusLifetimeSpec lifetime, int stacks = 1) =>
+            new StatusApplicationSpec(definitionId, lifetime, stacks);
     }
 
     /// <summary>What an effect does, independent of source, target count, targeting and attack reports.</summary>

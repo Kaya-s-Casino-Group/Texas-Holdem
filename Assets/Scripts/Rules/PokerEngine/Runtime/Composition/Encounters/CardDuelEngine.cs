@@ -4,8 +4,8 @@ using System.Linq;
 
 namespace PokerEngine
 {
-    public enum CardDuelAction { Play = 1, Discard, EnemyAction, EndTurn, CollectPlayed, Start }
-    public enum CardDuelError { None, StaleRevision, InvalidPhase, InvalidSelection, NoDiscards, InsufficientEnergy, Overflow, InvalidTarget, InvalidState, InvalidDamagePlan, InvalidDamageModifier, InvalidDiscardReward, InvalidEffectPlan }
+    public enum CardDuelAction { Play = 1, Discard, EnemyAction, EndTurn, CollectPlayed, Start, SkipPlayerTurn }
+    public enum CardDuelError { None, StaleRevision, InvalidPhase, InvalidSelection, NoDiscards, InsufficientEnergy, Overflow, InvalidTarget, InvalidState, InvalidDamagePlan, InvalidDamageModifier, InvalidDiscardReward, InvalidEffectPlan, ActionBlocked }
     public enum CardDuelRefillTiming { NextPlayerTurn = 0, AfterAction = 1 }
     public enum CardDuelDealTrigger { OpeningTurn, AfterPlay, AfterDiscard, PlayerTurnStart }
 
@@ -200,13 +200,19 @@ namespace PokerEngine
             if (!ReferenceEquals(state.Duel.Rules, Duel.Definition)) return new CardDuelTransition(state, CardDuelError.InvalidState);
             bool enemy = action == CardDuelAction.EnemyAction;
             bool knownPlayer = state.Duel.Players.Any(x => x.Id == actor);
+            bool playerDecision = action == CardDuelAction.Play || action == CardDuelAction.Discard || action == CardDuelAction.EndTurn;
+            bool activePlayer = knownPlayer && state.Duel.Phase == ScoredDuelPhase.AwaitingPlayerHand &&
+                !state.Duel.Player(actor).HasEnded && state.Duel.Combat.Get(actor).IsAlive;
+            if (playerDecision && activePlayer && !state.Duel.CanAct(actor))
+                return new CardDuelTransition(state, CardDuelError.ActionBlocked);
             if (state.Duel.IsFinished || !Enum.IsDefined(typeof(CardDuelAction), action) ||
                 (enemy ? state.Duel.Phase != ScoredDuelPhase.AwaitingEnemyAction || actor != state.Duel.NextEnemy : !knownPlayer ||
-                    (action != CardDuelAction.Start && action != CardDuelAction.CollectPlayed && !state.Duel.CanAct(actor))))
+                    (action == CardDuelAction.SkipPlayerTurn ? !activePlayer :
+                        action != CardDuelAction.Start && action != CardDuelAction.CollectPlayed && !state.Duel.CanAct(actor))))
                 return new CardDuelTransition(state, CardDuelError.InvalidPhase);
             // Played is a per-player presentation checkpoint, including players who just exhausted energy.
             bool hasPlayed = !enemy && state.Zone(CardZoneKinds.Played, actor).Cards.Count > 0;
-            if (action == CardDuelAction.CollectPlayed ? !hasPlayed : !enemy && hasPlayed)
+            if (action == CardDuelAction.CollectPlayed ? !hasPlayed : !enemy && action != CardDuelAction.SkipPlayerTurn && hasPlayed)
                 return new CardDuelTransition(state, CardDuelError.InvalidPhase);
             var ids = (selected ?? new CardInstanceId[0]).ToArray();
             if (action != CardDuelAction.Play && action != CardDuelAction.Discard ? ids.Length != 0 : ids.Length < 1 ||
@@ -254,8 +260,14 @@ namespace PokerEngine
                 else if (action == CardDuelAction.EndTurn)
                 {
                     var ended = Duel.Execute(duel, duel.Revision, actor, ScoredDuelActionKind.EndPlayerTurn);
-                    if (!ended.Accepted) return new CardDuelTransition(state, CardDuelError.InvalidPhase);
+                    if (!ended.Accepted) return new CardDuelTransition(state, ended.Error);
                     duel = ended.State; events = ended.RuleEvents;
+                }
+                else if (action == CardDuelAction.SkipPlayerTurn)
+                {
+                    var skipped = Duel.Execute(duel, duel.Revision, actor, ScoredDuelActionKind.SkipPlayerTurn);
+                    if (!skipped.Accepted) return new CardDuelTransition(state, skipped.Error);
+                    duel = skipped.State; events = skipped.RuleEvents;
                 }
                 else if (action == CardDuelAction.CollectPlayed)
                 {

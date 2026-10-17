@@ -102,7 +102,32 @@ return new BattleEffectSequence(Version, "伤害指定敌人并治疗指定队�
 
 所有步骤先按同一个行动开始快照解析存活目标，按“步骤顺序、目标顺序”展开，最多 64 个效果（包含结算时跳过的效果）；数值对每个目标完整应用，不自动分摊。攻击侧修正仍读取行动开始状态，承伤侧修正逐条读取批次内更新状态。结算时已死亡的目标直接跳过，不重新选目标、不产生事件、不调用承伤修正；后续其他目标和效果继续执行。例如伤害致死后施加状态，只跳过该目标的状态，不撤销致死伤害。事件 Index 保留原展开效果的位置，可有缺口。一次出牌只付一次费用；未知单位、死亡来源、溢出等真正错误仍回滚整次行动。
 
-ApplyStatus 使用 `StatusApplicationSpec` 声明定义、层数和期限，由引擎为每个目标生成独立 StatusInstance；实例 ID 由战斗 ID、行动 Revision、步骤及目标序号确定，预览与正式执行一致，不同有效行动分离。实例 ID 与状态容量在实际施加时校验，被跳过的状态不占位。来源和伤害的 Hand 快照由引擎附加，规则不能替换。状态写入同一个 CombatState.Statuses，当前不执行免疫、叠层刷新或期限消费。Eliminate 直接归零生命并独立报告死因，不计算伤害；ClearBlock 仍只作为内部维护操作。实际结算事实通过 `RuleEvents` 贯穿结算与 Team/Card 结果，旧 `Events` 保留生命／格挡事件投影。具体控制行为和正式牌型效果配置留待后续，契约与 combat.4 版本影响见 [Combat README](Runtime/Combat/README.md)。
+ApplyStatus 使用 `StatusApplicationSpec` 声明定义、层数和期限，由引擎为每个目标生成 StatusInstance；新实例 ID 由战斗 ID、行动 Revision、步骤及目标序号确定，预览与正式执行一致。实例 ID 与状态容量在实际施加时校验，被跳过或免疫拦截的状态不占位。来源和伤害的 Hand 快照由引擎附加，规则不能替换。状态只存放在 CombatState.Statuses。Eliminate 直接归零生命并独立报告死因，不计算伤害；ClearBlock 仍只作为内部维护操作。实际结算事实通过 `RuleEvents` 贯穿结算与 Team/Card 结果，旧 `Events` 保留生命／格挡事件投影。契约与 combat.5 版本影响见 [Combat README](Runtime/Combat/README.md)。
+
+状态定义通过 `BattleRules(statusCatalog: ...)` 注入不可变 `CombatStatusCatalog`，包含标签、强类型行为、默认期限与重复施加策略；状态 ID 本身没有行为含义。`BlockActionWindowSpec` 阻止一次个人行动窗口（玩家本阶段剩余操作／敌人队列中的一次行动）；`PreventStatusApplicationSpec(StatusTags.Control)` 按标签拦截控制施加。免疫读批次内最新状态，拦截是正常结果，不撤销伤害或后续效果，也不清除已有控制。默认 KeepLonger 对同目标同定义保留一个实例，期限、层数取较大值而非相加，实例 ID 保留、Source 更新；也可显式选择 IndependentInstances。显式目录拒绝未知定义，省略目录则保留旧的无行为状态存储方式。
+
+```csharp
+var stun = new StatusDefinitionId("stun");
+var immunity = new StatusDefinitionId("control-immunity");
+var statuses = new CombatStatusCatalog("battle-statuses.1", new[] {
+    new CombatStatusDefinition(stun, StatusTags.Control,
+        new StatusBehaviorSpec[] { new BlockActionWindowSpec() }, StatusLifetimeSpec.ForTriggers(1)),
+    new CombatStatusDefinition(immunity, StatusTags.None,
+        new StatusBehaviorSpec[] { new PreventStatusApplicationSpec(StatusTags.Control) },
+        StatusLifetimeSpec.ThroughNextPhase(BattleStatusTiming.EnemyPhase))
+});
+var rules = new BattleRules("battle.1", 20, statusCatalog: statuses);
+// 在出牌或敌人规则中使用定义默认期限，目标仍独立配置。
+var protection = new BattleEffectStep(BattleEffectSpec.ApplyStatus(new StatusApplicationSpec(immunity)), EffectTargetSpec.Self());
+```
+
+`StatusApplicationSpec(id, stacks)` 使用定义默认期限；旧的显式 StatusDuration 构造保留，`WithLifetime` 可覆盖相对期限。`BattleStatusTiming` 将 ThroughNextPhase / ThroughCurrentRound 绑定到本场的 `battleId/round/0000000001` 与 player / enemy 阶段键。玩家阶段施加 ThroughNextPhase("enemy") 覆盖本轮全部敌人；敌方阶段中施加则覆盖下一轮敌方阶段。重复施加比较同种期限，不兼容的期限种类拒绝。ForTriggers 仅在该状态实际阻止行动或成功拦截状态时消费；默认计次期限含多种消费行为的配置拒绝，防止一次事件含糊地扣多次。
+
+`TeamBattleState.CanAct` 只查询，不消耗状态；`NextBlockedPlayer` 标识待自动跳过的玩家。TeamBattle 的内部 SkipPlayerTurn 消费眩晕并清零本阶段能量、标记 HasEnded，不扣牌或弃牌次数；敌人 EnemyAction 被阻止时同样正常出队。BattleSession 自动驱动这些步骤，直到有玩家可决策或终局，全员被晕也不会卡住。每个新玩家阶段先执行既有能量恢复与补牌，再自动跳过被控玩家；不能把这些边界折叠成一次最终 Phase 判断。主动 Play / Discard / EndTurn 被控时拒绝，不靠点击消费眩晕。敌方意图预览复用跳过逻辑，EnemyActionPreview 的 RuleEvents / IsSkipped 保留原因，Hits 仍只含伤害。
+
+阶段末与轮次末分别调用 CombatStatusLifecycle.EndPhase / EndRound，精确匹配到期边界；最后敌人被晕也执行收尾。维护不要求状态来源或目标存活，无状态变化不增加 Combat.Revision；不会借用另一份 AbilityWorld。新增刷新、拦截、消费、到期及行动跳过事实，生命周期事件 Effect 为 null、Index 为 -1；效果事件 Index 仍指原计划位置，SequenceIndex 与 Revision 共同标识实际事实，兼容一次效果产生多个状态事实。
+
+敌人可通过 `BattleEnemySetup(effectRule: ...)` 注入纯 `IEnemyBattleEffectRule`，返回同一 BattleEffectSequence，伤害仍标记 EnemyAttack 并复用双方修正。未配置时保持固定伤害。所有默认牌型与弃牌配置、表现端和场景保持原样；本层提供可配置行为与规则事件。
 
 ## 通用基础层
 

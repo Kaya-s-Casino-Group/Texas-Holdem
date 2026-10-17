@@ -11,11 +11,14 @@ namespace PokerEngine
         public long ExpectedRevision { get; }
         public CardDuelError Error { get; }
         public bool Accepted => Error == CardDuelError.None;
+        public IReadOnlyList<CombatRuleEvent> RuleEvents { get; }
+        public bool IsSkipped => RuleEvents.OfType<CombatActionWindowSkippedEvent>().Any(item => item.Actor == Source);
         public IReadOnlyList<CombatEvent> Hits { get; }
 
         internal EnemyActionPreview(ParticipantId source, long revision, TeamBattleTransition transition)
         {
             Source = source; ExpectedRevision = revision; Error = transition.Error;
+            RuleEvents = Guard.View(transition.RuleEvents.ToArray());
             Hits = Guard.View(transition.Events.Where(item => item.Effect.Kind == CombatEffectKind.Damage).ToArray());
         }
     }

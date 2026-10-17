@@ -60,7 +60,7 @@ namespace PokerEngine
             MaxEnergy = maxEnergy; Energy = energy;
         }
     }
-    public enum ScoredDuelActionKind { ScoredHand = 1, EndPlayerTurn, EnemyAction, Discard }
+    public enum ScoredDuelActionKind { ScoredHand = 1, EndPlayerTurn, EnemyAction, Discard, SkipPlayerTurn }
     [DataContract]
     public sealed class ScoredDuelActionRecord
     {
@@ -68,7 +68,8 @@ namespace PokerEngine
         [DataMember(Order = 2, IsRequired = true)] public int? ScoreIndex { get; private set; }
         public ScoredDuelActionRecord(ScoredDuelActionKind kind, int? scoreIndex = null)
         {
-            if (!Enum.IsDefined(typeof(ScoredDuelActionKind), kind) || (kind == ScoredDuelActionKind.ScoredHand) != scoreIndex.HasValue || scoreIndex < 0)
+            if (!Enum.IsDefined(typeof(ScoredDuelActionKind), kind) || kind == ScoredDuelActionKind.SkipPlayerTurn ||
+                (kind == ScoredDuelActionKind.ScoredHand) != scoreIndex.HasValue || scoreIndex < 0)
                 throw new ArgumentException("Invalid duel action record.");
             Kind = kind; ScoreIndex = scoreIndex;
         }

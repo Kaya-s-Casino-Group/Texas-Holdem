@@ -12,14 +12,20 @@ namespace PokerEngine
         public string Version { get; }
         public int RoundLimit { get; }
         public PlayerBlockExpiry PlayerBlockExpiry { get; }
+        public CombatStatusCatalog StatusCatalog { get; }
         public BattleRules(string version, int roundLimit,
-            PlayerBlockExpiry playerBlockExpiry = PlayerBlockExpiry.Retain)
+            PlayerBlockExpiry playerBlockExpiry = PlayerBlockExpiry.Retain, CombatStatusCatalog statusCatalog = null)
         {
             Version = Guard.Text(version, nameof(version));
             if (roundLimit < 1 || roundLimit > 1000) throw new ArgumentOutOfRangeException(nameof(roundLimit));
             if (!Enum.IsDefined(typeof(PlayerBlockExpiry), playerBlockExpiry)) throw new ArgumentOutOfRangeException(nameof(playerBlockExpiry));
+            if (statusCatalog != null && statusCatalog.Definitions.Values.Any(definition =>
+                definition.DefaultLifetime.Kind == StatusLifetimeKind.ThroughNextPhase &&
+                definition.DefaultLifetime.PhaseKey != BattleStatusTiming.PlayerPhase && definition.DefaultLifetime.PhaseKey != BattleStatusTiming.EnemyPhase))
+                throw new ArgumentException("Status definitions must use this battle's player or enemy phase.", nameof(statusCatalog));
             RoundLimit = roundLimit;
             PlayerBlockExpiry = playerBlockExpiry;
+            StatusCatalog = statusCatalog;
         }
     }
     /// <summary>Immutable player-specific card rules, action budget and discard reward, captured when entering the encounter.</summary>
@@ -89,10 +95,13 @@ namespace PokerEngine
         public long Damage { get; }
         public BattleActorDamageRules DamageRules { get; }
         public BattleActorTargetRules TargetRules { get; }
-        public BattleEnemySetup(ParticipantId id, CombatantDefinition definition, long damage, BattleActorDamageRules damageRules = null, BattleActorTargetRules targetRules = null)
+        public IEnemyBattleEffectRule EffectRule { get; }
+        public BattleEnemySetup(ParticipantId id, CombatantDefinition definition, long damage, BattleActorDamageRules damageRules = null, BattleActorTargetRules targetRules = null,
+            IEnemyBattleEffectRule effectRule = null)
         {
             if (!id.IsValid || definition == null || damage < 0) throw new ArgumentException("Invalid enemy setup.");
             Id = id; Definition = definition; Damage = damage; DamageRules = damageRules ?? new BattleActorDamageRules(); TargetRules = targetRules ?? new BattleActorTargetRules();
+            EffectRule = effectRule;
         }
     }
     public sealed class BattlePlayerTurn
@@ -145,8 +154,12 @@ namespace PokerEngine
             var player = Players.FirstOrDefault(unit => unit.Id == id);
             return player != null ? player.TargetRules : Enemies.Single(unit => unit.Id == id).TargetRules;
         }
-        public bool CanAct(ParticipantId id) => Phase == ScoredDuelPhase.AwaitingPlayerHand &&
+        public bool HasPlayerWindow(ParticipantId id) => Phase == ScoredDuelPhase.AwaitingPlayerHand &&
             Players.Any(player => player.Id == id && !player.HasEnded && Combat.Get(id).IsAlive);
+        public bool IsActionBlocked(ParticipantId id) => CombatStatusLifecycle.Blockers(Combat, id, Rules.StatusCatalog).Count > 0;
+        public bool CanAct(ParticipantId id) => HasPlayerWindow(id) && !IsActionBlocked(id);
+        public ParticipantId NextBlockedPlayer => Players.Where(player => HasPlayerWindow(player.Id) && IsActionBlocked(player.Id))
+            .Select(player => player.Id).FirstOrDefault();
         internal TeamBattleState(BattleRules rules, CombatState combat, IEnumerable<BattlePlayerTurn> players,
             IEnumerable<BattleEnemySetup> enemies, ScoredDuelPhase phase, IEnumerable<ParticipantId> pending,
             long revision = 0, int rounds = 0, IEnumerable<ScoreResult> scores = null, IEnumerable<BattleActionRecord> actions = null)
@@ -231,8 +244,9 @@ namespace PokerEngine
             var forecast = state;
             foreach (var player in state.Players)
             {
-                if (!forecast.CanAct(player.Id)) continue;
-                var ended = Execute(forecast, forecast.Revision, player.Id, ScoredDuelActionKind.EndPlayerTurn);
+                if (!forecast.HasPlayerWindow(player.Id)) continue;
+                var ended = Execute(forecast, forecast.Revision, player.Id, forecast.IsActionBlocked(player.Id)
+                    ? ScoredDuelActionKind.SkipPlayerTurn : ScoredDuelActionKind.EndPlayerTurn);
                 if (!ended.Accepted) return new EnemyActionPreview(actor, state.Revision, ended);
                 forecast = ended.State;
             }
@@ -258,9 +272,13 @@ namespace PokerEngine
             if (hand != null && (action != ScoredDuelActionKind.ScoredHand || score == null || hand.Pattern.Category != score.Category))
                 return new TeamBattleTransition(state, CardDuelError.InvalidDamagePlan);
             bool enemy = action == ScoredDuelActionKind.EnemyAction;
+            bool skipPlayer = action == ScoredDuelActionKind.SkipPlayerTurn;
             if (state.IsFinished || !Enum.IsDefined(typeof(ScoredDuelActionKind), action) || (enemy
-                ? state.Phase != ScoredDuelPhase.AwaitingEnemyAction || actor != state.NextEnemy : !state.CanAct(actor)))
+                ? state.Phase != ScoredDuelPhase.AwaitingEnemyAction || actor != state.NextEnemy : !state.HasPlayerWindow(actor)))
                 return new TeamBattleTransition(state, CardDuelError.InvalidPhase);
+            bool blocked = state.IsActionBlocked(actor);
+            if (!enemy && blocked && !skipPlayer) return new TeamBattleTransition(state, CardDuelError.ActionBlocked);
+            if (skipPlayer && !blocked) return new TeamBattleTransition(state, CardDuelError.InvalidPhase);
             if (targetBindings != null && targetBindings.Slots.Count > 0 &&
                 (action != ScoredDuelActionKind.ScoredHand || state.Player(actor).Rules.EffectRule == null))
                 return new TeamBattleTransition(state, CardDuelError.InvalidTarget);
@@ -270,7 +288,14 @@ namespace PokerEngine
             {
                 var combat = state.Combat; var players = state.Players.ToArray(); var scores = state.Scores.ToArray();
                 IReadOnlyList<CombatRuleEvent> events = Array.Empty<CombatRuleEvent>(); DamagePlan damagePlan = null; DiscardRewardResolution discardReward = null; BattleEffectPlan effectPlan = null;
-                if (action == ScoredDuelActionKind.ScoredHand || enemy)
+                if (skipPlayer || enemy && blocked)
+                {
+                    var skipped = CombatStatusLifecycle.SkipActionWindow(combat, combat.Revision, actor, Definition.StatusCatalog);
+                    if (!skipped.Accepted) return new TeamBattleTransition(state,
+                        skipped.Error == CombatError.Overflow ? CardDuelError.Overflow : CardDuelError.InvalidState);
+                    combat = skipped.State; events = skipped.RuleEvents;
+                }
+                if (action == ScoredDuelActionKind.ScoredHand || enemy && !blocked)
                 {
                     if (!enemy)
                     {
@@ -281,17 +306,20 @@ namespace PokerEngine
                     }
                     IEnumerable<CombatEffect> baseEffects; string ruleVersion, explanation;
                     var effectRule = enemy ? null : state.Player(actor).Rules.EffectRule;
-                    if (effectRule != null)
+                    var enemyEffectRule = enemy ? state.Enemies.Single(unit => unit.Id == actor).EffectRule : null;
+                    if (effectRule != null || enemyEffectRule != null)
                     {
                         BattleEffectSequence sequence;
                         try
                         {
-                            sequence = effectRule.Resolve(new ScoredHandEffectContext(combat, actor, score, hand));
-                            if (sequence == null || sequence.RuleVersion != effectRule.Version)
+                            sequence = enemy ? enemyEffectRule.Resolve(new EnemyBattleEffectContext(combat, actor))
+                                : effectRule.Resolve(new ScoredHandEffectContext(combat, actor, score, hand));
+                            if (sequence == null || sequence.RuleVersion != (enemy ? enemyEffectRule.Version : effectRule.Version))
                                 return new TeamBattleTransition(state, CardDuelError.InvalidEffectPlan);
                         }
                         catch (ArgumentException) { return new TeamBattleTransition(state, CardDuelError.InvalidEffectPlan); }
-                        var bound = BattleEffectBinder.Bind(state, actor, sequence, requestedTargets, targetBindings, hand);
+                        var bound = BattleEffectBinder.Bind(state, actor, sequence, requestedTargets, targetBindings, hand,
+                            enemy ? AttackOrigin.EnemyAttack : hand == null ? AttackOrigin.Other : AttackOrigin.ScoredHand);
                         if (bound.Error != CardDuelError.None) return new TeamBattleTransition(state, bound.Error);
                         baseEffects = bound.Effects; ruleVersion = sequence.RuleVersion; explanation = sequence.Explanation;
                     }
@@ -355,7 +383,7 @@ namespace PokerEngine
                 if (effectPlan != null)
                 {
                     var resolved = BattleEffectResolver.Resolve(combat, effectPlan,
-                        action == ScoredDuelActionKind.Discard ? null : new ActorIncomingDamageModifier(state));
+                        action == ScoredDuelActionKind.Discard ? null : new ActorIncomingDamageModifier(state), Definition.StatusCatalog);
                     if (!resolved.Accepted) return new TeamBattleTransition(state,
                         resolved.Error == CombatError.Overflow ? CardDuelError.Overflow :
                         action == ScoredDuelActionKind.Discard ? CardDuelError.InvalidDiscardReward :
@@ -365,7 +393,7 @@ namespace PokerEngine
                 if (!enemy)
                 {
                     int index = Array.FindIndex(players, x => x.Id == actor);
-                    int energy = action == ScoredDuelActionKind.EndPlayerTurn ? 0 : players[index].Energy.Energy - cost;
+                    int energy = action == ScoredDuelActionKind.EndPlayerTurn || skipPlayer ? 0 : players[index].Energy.Energy - cost;
                     players[index] = new BattlePlayerTurn(actor, new PlayerTurnState(players[index].Energy.MaxEnergy, energy), energy == 0,
                         players[index].Rules, players[index].DamageRules, players[index].TargetRules);
                 }
@@ -377,9 +405,29 @@ namespace PokerEngine
                         .Select(x => new CombatEffect(CombatEffectKind.ClearBlock, x.Id, x.Id)).ToArray();
                     if (clear.Length > 0)
                     {
-                        var expired = CombatEngine.Resolve(combat, combat.Revision, clear);
+                        var expired = CombatEngine.Resolve(combat, combat.Revision, clear, statusCatalog: Definition.StatusCatalog);
                         if (!expired.Accepted) return new TeamBattleTransition(state,
                             expired.Error == CombatError.Overflow ? CardDuelError.Overflow : CardDuelError.InvalidTarget);
+                        combat = expired.State; events = events.Concat(expired.RuleEvents).ToArray();
+                    }
+                }
+                // Close exact lifecycle boundaries after effects, including a phase whose final actor was skipped.
+                bool finished = state.Enemies.All(x => !combat.Get(x.Id).IsAlive) || players.All(x => !combat.Get(x.Id).IsAlive);
+                bool playerPhaseEnded = !enemy && (finished || players.All(x => x.HasEnded || !combat.Get(x.Id).IsAlive));
+                bool enemyPhaseEnded = enemy && (pending.Length == 0 || finished);
+                if (playerPhaseEnded || enemyPhaseEnded)
+                {
+                    string scope = BattleStatusTiming.RoundScope(state);
+                    var expired = CombatStatusLifecycle.EndPhase(combat, combat.Revision, scope,
+                        enemyPhaseEnded ? BattleStatusTiming.EnemyPhase : BattleStatusTiming.PlayerPhase);
+                    if (!expired.Accepted) return new TeamBattleTransition(state,
+                        expired.Error == CombatError.Overflow ? CardDuelError.Overflow : CardDuelError.InvalidState);
+                    combat = expired.State; events = events.Concat(expired.RuleEvents).ToArray();
+                    if (enemyPhaseEnded || finished)
+                    {
+                        expired = CombatStatusLifecycle.EndRound(combat, combat.Revision, scope);
+                        if (!expired.Accepted) return new TeamBattleTransition(state,
+                            expired.Error == CombatError.Overflow ? CardDuelError.Overflow : CardDuelError.InvalidState);
                         combat = expired.State; events = events.Concat(expired.RuleEvents).ToArray();
                     }
                 }
@@ -418,6 +466,8 @@ namespace PokerEngine
         }
         public EncounterProgress ReadProgress(TeamBattleState state)
         {
+            if (!state.IsFinished && state.NextBlockedPlayer.IsValid)
+                return new EncounterProgress(EncounterPhase.Resolving, state.Revision, state.CompletedRounds, state.NextBlockedPlayer);
             if (!state.IsFinished) return new EncounterProgress(EncounterPhase.AwaitingAction, state.Revision, state.CompletedRounds,
                 state.Phase == ScoredDuelPhase.AwaitingEnemyAction ? state.NextEnemy : state.Players.First(x => state.CanAct(x.Id)).Id);
             bool won = state.Phase == ScoredDuelPhase.Won;

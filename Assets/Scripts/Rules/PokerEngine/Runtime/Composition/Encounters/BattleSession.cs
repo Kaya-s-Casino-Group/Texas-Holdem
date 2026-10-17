@@ -69,12 +69,27 @@ namespace PokerEngine
             steps.Add(new BattleSessionStep(action, actor, before, result, cards));
             var next = result.State;
 
-            while (next.Duel.Phase == ScoredDuelPhase.AwaitingEnemyAction)
+            // Each engine step completes its own draw/collection boundary before another automatic turn.
+            // In particular, a newly started player phase draws before a blocked player is skipped.
+            while (!next.Duel.IsFinished)
             {
-                var enemy = next.Duel.NextEnemy;
-                result = Engine.Execute(next, next.Revision, enemy, CardDuelAction.EnemyAction);
+                ParticipantId automaticActor;
+                CardDuelAction automaticAction;
+                if (next.Duel.Phase == ScoredDuelPhase.AwaitingEnemyAction)
+                {
+                    automaticActor = next.Duel.NextEnemy;
+                    automaticAction = CardDuelAction.EnemyAction;
+                }
+                else if (next.Duel.Phase == ScoredDuelPhase.AwaitingPlayerHand && next.Duel.NextBlockedPlayer.IsValid)
+                {
+                    automaticActor = next.Duel.NextBlockedPlayer;
+                    automaticAction = CardDuelAction.SkipPlayerTurn;
+                }
+                else break;
+
+                result = Engine.Execute(next, next.Revision, automaticActor, automaticAction);
                 if (!result.Accepted) return Reject(before, result.Error);
-                steps.Add(new BattleSessionStep(CardDuelAction.EnemyAction, enemy, next, result));
+                steps.Add(new BattleSessionStep(automaticAction, automaticActor, next, result));
                 next = result.State;
             }
 
