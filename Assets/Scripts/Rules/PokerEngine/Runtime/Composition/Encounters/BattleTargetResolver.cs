@@ -18,12 +18,11 @@ namespace PokerEngine
                 (spec.Selection == EffectTargetSelection.Requested || spec.Selection == EffectTargetSelection.ActorPolicy);
             if (!usesRequest && request.Length != 0)
                 throw new ArgumentException("Automatic target selections do not accept requested targets.");
-            if (spec.Group == EffectTargetGroup.Self) return Guard.View(new[] { source });
+            if (spec.Group == EffectTargetGroup.Self) return CombatTargetResolver.Resolve(state.Combat, source, CombatTargetSpec.Self());
 
-            string team = state.Combat.Get(source).TeamId;
-            var candidates = state.Combat.Combatants.Where(unit => unit.IsAlive &&
-                (spec.Group == EffectTargetGroup.Opponents ? unit.TeamId != team : unit.TeamId == team))
-                .Select(unit => unit.Id).ToArray();
+            var group = spec.Group == EffectTargetGroup.Opponents
+                ? CombatTargetSpec.Opponents(CombatTargetSelection.AllLiving) : CombatTargetSpec.Allies(CombatTargetSelection.AllLiving);
+            var candidates = CombatTargetResolver.Resolve(state.Combat, source, group).ToArray();
             // Validate requests before invoking a policy; a policy cannot hide an illegal caller choice.
             if (request.Length > 64 || request.Distinct().Count() != request.Length ||
                 request.Any(target => !target.IsValid || !candidates.Contains(target)))
@@ -36,13 +35,10 @@ namespace PokerEngine
                     if (request.Length != 1) throw new ArgumentException("Requested selection requires exactly one target.");
                     targets = request; break;
                 case EffectTargetSelection.FirstLiving:
-                    targets = candidates.Take(1).ToArray(); break;
                 case EffectTargetSelection.LowestHealth:
-                    targets = candidates.OrderBy(id => state.Combat.Get(id).Health).Take(1).ToArray(); break;
                 case EffectTargetSelection.HighestHealth:
-                    targets = candidates.OrderByDescending(id => state.Combat.Get(id).Health).Take(1).ToArray(); break;
                 case EffectTargetSelection.AllLiving:
-                    targets = candidates; break;
+                    targets = CombatTargetResolver.Resolve(state.Combat, source, Automatic(spec)).ToArray(); break;
                 case EffectTargetSelection.ActorPolicy:
                     targets = spec.Group == EffectTargetGroup.Opponents
                         ? state.TargetRulesFor(source).Attack.SelectTargets(new BattleTargetContext(state, source, request))?.ToArray()
@@ -54,6 +50,20 @@ namespace PokerEngine
                 targets.Any(target => !target.IsValid || !candidates.Contains(target)))
                 throw new ArgumentException("Target selection must return distinct living members of the selected group.");
             return Guard.View(targets);
+        }
+
+        private static CombatTargetSpec Automatic(EffectTargetSpec spec)
+        {
+            CombatTargetSelection selection;
+            switch (spec.Selection)
+            {
+                case EffectTargetSelection.FirstLiving: selection = CombatTargetSelection.FirstLiving; break;
+                case EffectTargetSelection.LowestHealth: selection = CombatTargetSelection.LowestHealth; break;
+                case EffectTargetSelection.HighestHealth: selection = CombatTargetSelection.HighestHealth; break;
+                case EffectTargetSelection.AllLiving: selection = CombatTargetSelection.AllLiving; break;
+                default: throw new ArgumentException("This target selection requires battle request or actor policy handling.");
+            }
+            return spec.Group == EffectTargetGroup.Opponents ? CombatTargetSpec.Opponents(selection) : CombatTargetSpec.Allies(selection);
         }
     }
 }

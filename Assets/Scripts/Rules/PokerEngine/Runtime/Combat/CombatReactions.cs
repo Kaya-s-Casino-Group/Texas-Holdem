@@ -41,6 +41,9 @@ namespace PokerEngine
         public CombatReactionSourcePolicy SourcePolicy { get; }
         /// <summary>Optional stable status/relic instance identifier; RuleId identifies its behavior/configuration.</summary>
         public string SourceInstanceId { get; }
+        // Only the built-in status bridge may request charge consumption. Arbitrary attribution strings
+        // from external reaction rules are never interpreted as permission to modify a status instance.
+        internal StatusInstanceId? TriggerStatusId { get; }
 
         public CombatReaction(CombatEffect effect, string ruleId, ParticipantId owner,
             CombatEffectOrigin origin = CombatEffectOrigin.Triggered, bool canTriggerReactions = false,
@@ -53,6 +56,18 @@ namespace PokerEngine
             SourceInstanceId = sourceInstanceId == null ? null : Guard.Text(sourceInstanceId, nameof(sourceInstanceId));
             Owner = owner; Origin = origin; CanTriggerReactions = canTriggerReactions; SourcePolicy = sourcePolicy;
         }
+
+        private CombatReaction(CombatEffect effect, string ruleId, ParticipantId owner, StatusInstanceId statusId,
+            CombatEffectOrigin origin, bool canTriggerReactions, CombatReactionSourcePolicy sourcePolicy)
+            : this(effect, ruleId, owner, origin, canTriggerReactions, sourcePolicy, statusId.Value)
+        {
+            if (!statusId.IsValid) throw new ArgumentException("A status reaction requires a valid instance ID.");
+            TriggerStatusId = statusId;
+        }
+        internal static CombatReaction FromStatus(CombatEffect effect, string ruleId, ParticipantId owner, StatusInstanceId statusId,
+            CombatEffectOrigin origin, bool canTriggerReactions = false,
+            CombatReactionSourcePolicy sourcePolicy = CombatReactionSourcePolicy.RequireLiving) =>
+            new CombatReaction(effect, ruleId, owner, statusId, origin, canTriggerReactions, sourcePolicy);
     }
 
     /// <summary>Separate from the 1..64 primary-effect limit. Counts every emitted reaction, even if later skipped.</summary>
@@ -79,6 +94,8 @@ namespace PokerEngine
         public string RuleId { get; }
         public ParticipantId? Owner { get; }
         public string SourceInstanceId { get; }
+        /// <summary>Actual status activation identity; null for primary and external-provider effects.</summary>
+        public StatusInstanceId? TriggerStatusId { get; }
         public bool CanTriggerReactions { get; }
         public CombatReactionSourcePolicy SourcePolicy { get; }
 
@@ -92,6 +109,7 @@ namespace PokerEngine
             Origin = reaction.Origin; RootEffectIndex = parent.Provenance.RootEffectIndex; Depth = parent.Provenance.Depth + 1;
             ParentRevision = parent.Revision; ParentSequenceIndex = parent.SequenceIndex;
             RuleId = reaction.RuleId; Owner = reaction.Owner; SourceInstanceId = reaction.SourceInstanceId;
+            TriggerStatusId = reaction.TriggerStatusId;
             CanTriggerReactions = reaction.CanTriggerReactions; SourcePolicy = reaction.SourcePolicy;
         }
     }

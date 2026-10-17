@@ -55,7 +55,8 @@ namespace PokerEngine
             if (!id.IsValid || (tags & ~StatusTags.Control) != 0 || !Enum.IsDefined(typeof(StatusReapplyPolicy), reapplyPolicy))
                 throw new ArgumentException("Invalid status definition.");
             var copy = Guard.Copy(behaviors, nameof(behaviors));
-            if (copy.Any(item => item == null || !(item is BlockActionWindowSpec || item is PreventStatusApplicationSpec)) ||
+            if (copy.Any(item => item == null || !(item is BlockActionWindowSpec || item is PreventStatusApplicationSpec ||
+                item is ReflectBlockedDamageSpec || item is LifeStealSpec || item is OverhealDamageSpec)) ||
                 copy.Select(item => item.GetType()).Distinct().Count() != copy.Length)
                 throw new ArgumentException("Status behaviors must have distinct supported types.", nameof(behaviors));
             Id = id; Tags = tags; Behaviors = Guard.View(copy);

@@ -91,7 +91,7 @@ namespace PokerEngine
     /// <summary>Shared deterministic authority resolver. No turn, AI, card score, faction targeting or reward policy.</summary>
     public static class CombatEngine
     {
-        public const string RulesVersion = "combat.6";
+        public const string RulesVersion = "combat.7";
         public static CombatTransition Resolve(CombatState state, long expectedRevision, IEnumerable<CombatEffect> effects, IIncomingDamageModifier incomingDamage = null,
             CombatStatusCatalog statusCatalog = null, ICombatReactionProvider reactionProvider = null, CombatReactionLimits reactionLimits = null)
         {
@@ -101,6 +101,9 @@ namespace PokerEngine
             if (state.Revision != expectedRevision) return new CombatTransition(state, CombatError.StaleRevision);
             incomingDamage = incomingDamage ?? new IdentityIncomingDamageModifier();
             reactionLimits = reactionLimits ?? new CombatReactionLimits();
+            // Catalog behaviors are always active when a catalog is supplied. External rules extend them
+            // in a fixed order instead of requiring callers to remember a second configuration switch.
+            var statusReactions = statusCatalog == null ? null : new CombatStatusReactionProvider(statusCatalog);
             try
             {
                 var batch = Guard.Copy(effects, nameof(effects));
@@ -164,18 +167,18 @@ namespace PokerEngine
                     catch (ArgumentException)
                     { return new CombatTransition(state, provenance.Depth == 0 ? CombatError.InvalidEffect : CombatError.InvalidReaction); }
 
-                    if (reactionProvider == null || !provenance.CanTriggerReactions) continue;
+                    if ((statusReactions == null && reactionProvider == null) || !provenance.CanTriggerReactions) continue;
                     // Complete all writes/facts for this effect before taking one reaction snapshot. For example,
                     // an immunity Blocked fact and its Consumed fact both see the already-consumed charge.
                     var settled = new CombatState(state.Id, state.Revision, state.Combatants.Select(unit => units[unit.Id]), statuses);
                     var derived = new List<QueuedEffect>();
+                    int parentEventsEnd = events.Count;
                     try
                     {
-                        for (int eventIndex = firstEvent; eventIndex < events.Count; eventIndex++)
+                        for (int eventIndex = firstEvent; eventIndex < parentEventsEnd; eventIndex++)
                         {
                             var parent = events[eventIndex];
-                            var reactions = reactionProvider.React(new CombatReactionContext(settled, parent));
-                            if (reactions == null) return new CombatTransition(state, CombatError.InvalidReaction);
+                            var reactions = Reactions(new CombatReactionContext(settled, parent), statusReactions, reactionProvider);
                             // Bound enumeration before materializing. Even skipped reactions spend the budget.
                             foreach (var reaction in reactions)
                             {
@@ -184,8 +187,26 @@ namespace PokerEngine
                                 if (reaction == null || !unitIds.Contains(reaction.Owner) ||
                                     !unitIds.Contains(reaction.Effect.Source) || !unitIds.Contains(reaction.Effect.Target))
                                     return new CombatTransition(state, CombatError.InvalidReaction);
+                                if (reaction.TriggerStatusId.HasValue && !statuses.Any(status => status.Id == reaction.TriggerStatusId.Value &&
+                                    CombatStatusRules.Targets(status, reaction.Owner)))
+                                    return new CombatTransition(state, CombatError.InvalidReaction);
                                 derived.Add(new QueuedEffect(reaction.Effect, new CombatEffectProvenance(reaction, parent)));
                             }
+                        }
+                        // One activation spends one charge, independent of target count. Once a positive,
+                        // target-bound response is earned, later death skips do not refund that charge.
+                        // Freeze the original fact range above: these consumption facts are not new hooks.
+                        var consumed = new HashSet<Tuple<int, StatusInstanceId>>();
+                        foreach (var response in derived)
+                        {
+                            var cause = response.Provenance;
+                            if (!cause.TriggerStatusId.HasValue) continue;
+                            int parentIndex = cause.ParentSequenceIndex.Value;
+                            var key = Tuple.Create(parentIndex, cause.TriggerStatusId.Value);
+                            if (!consumed.Add(key)) continue;
+                            var status = statuses.FirstOrDefault(item => item.Id == cause.TriggerStatusId.Value);
+                            if (status == null) return new CombatTransition(state, CombatError.InvalidReaction);
+                            CombatStatusRules.Consume(statuses, status, revision, effectIndex, events[parentIndex].Effect, events, cause);
                         }
                     }
                     catch (ArgumentException) { return new CombatTransition(state, CombatError.InvalidReaction); }
@@ -198,6 +219,16 @@ namespace PokerEngine
             }
             catch (ArgumentException) { return new CombatTransition(state, CombatError.InvalidEffect); }
             catch (OverflowException) { return new CombatTransition(state, CombatError.Overflow); }
+        }
+        private static IEnumerable<CombatReaction> Reactions(CombatReactionContext context,
+            ICombatReactionProvider statusReactions, ICombatReactionProvider externalReactions)
+        {
+            if (statusReactions != null)
+                foreach (var reaction in statusReactions.React(context)) yield return reaction;
+            if (externalReactions == null) yield break;
+            var reactions = externalReactions.React(context);
+            if (reactions == null) throw new ArgumentException("Reaction rules must return a nonnull sequence.");
+            foreach (var reaction in reactions) yield return reaction;
         }
         private sealed class QueuedEffect
         {

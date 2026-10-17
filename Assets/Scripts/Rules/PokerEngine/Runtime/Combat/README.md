@@ -20,7 +20,7 @@ ScoredDuelState 组合持有独立的 PlayerTurnState（MaxEnergy / Energy），
 
 ## 可配置状态行为与生命周期
 
-`CombatStatusDefinition` 以任意 `StatusDefinitionId` 声明 Tags、Behaviors、DefaultLifetime 和 ReapplyPolicy，不依据某个 ID 硬编码眩晕或免疫。当前只支持两种强类型行为：`BlockActionWindowSpec` 阻止行动机会；`PreventStatusApplicationSpec(StatusTags.Control)` 阻止带控制标签的状态施加。非法标签、未知行为类型、重复行为、非法重施策略均在构造时拒绝。次数期限不能同时驱动两种消费行为，定义和实际载荷均校验此约束。
+`CombatStatusDefinition` 以任意 `StatusDefinitionId` 声明 Tags、Behaviors、DefaultLifetime 和 ReapplyPolicy，不依据某个 ID 硬编码行为。`BlockActionWindowSpec` 阻止行动机会；`PreventStatusApplicationSpec(StatusTags.Control)` 阻止带控制标签的状态施加；`ReflectBlockedDamageSpec`、`LifeStealSpec`、`OverhealDamageSpec` 声明下文的三种即时触发。非法标签、未知行为类型、重复行为、非法重施策略均在构造时拒绝。次数期限不能同时驱动两种消费行为，定义和实际载荷均校验此约束。
 
 施加状态时读取批次内最新状态；前一条施加的免疫可以拦截后一条控制。拦截是正常结算，不回滚同批伤害，也不移除已存在的控制。若多个免疫实例可用，按状态保存顺序选第一个实际拦截者；仅这个实例的次数型期限消耗一次，阶段型或永久免疫保持不变。已死亡目标仍在行为判定前跳过，不消耗免疫。
 
@@ -47,7 +47,7 @@ ScoredDuelState 组合持有独立的 PlayerTurnState（MaxEnergy / Energy），
 
 ## 即时触发队列
 
-`Resolve(..., reactionProvider: provider, reactionLimits: limits)` 接受可选的纯 `ICombatReactionProvider`，默认 null 保持现有行为。`React(CombatReactionContext)` 根据本条事实和当前 CombatState 返回有序的 `CombatReaction`；目标已经由规则绑定，Combat 不依赖 Composition 的目标选择器。上下文是整个父效果完成后的不可变临时状态，Revision 仍为输入版本，并非一次独立提交。例如免疫拦截的 Blocked、Consumed 两条事实都看到已经扣除免疫次数的状态。
+`Resolve(..., reactionProvider: provider, reactionLimits: limits)` 接受可选的纯 `ICombatReactionProvider`；传入 statusCatalog 时，目录中的已施加状态行为自动生效，不需要另行安装 provider。同一父事实先收集内置状态反应，再收集外部 provider 的反应；未配置触发状态和外部规则时保持原行为。`React(CombatReactionContext)` 根据本条事实和当前 CombatState 返回有序的 `CombatReaction`；目标已经由规则绑定，Combat 不依赖 Composition 的目标选择器。上下文是整个父效果完成后的不可变临时状态，Revision 仍为输入版本，并非一次独立提交。例如免疫拦截的 Blocked、Consumed 两条事实都看到已经扣除免疫次数的状态。
 
 顺序固定为：主效果 A → A 的派生及其子效果 → 下一个主效果。每次先按事实顺序收集该效果的全部反应，兄弟反应按规则返回顺序执行，子反应在下一个兄弟之前执行。规则负责按遗物获得顺序等明确规则输出，不能依赖无序集合；所有反应都在同一事务内结算，成功前不对外提交事实。无目标时规则返回空集合，不能返回 null。
 
@@ -57,9 +57,39 @@ ScoredDuelState 组合持有独立的 PlayerTurnState（MaxEnergy / Energy），
 
 派生默认 RequireLiving；规则可显式选择 AllowDefeated，让已经成立的被动反应保留原来源归因，即使来源已死亡也继续结算。未知来源始终拒绝、死亡目标始终跳过；外部主效果没有此开关，不能让死亡角色重新行动。目标承伤修正也能读取这个已死亡的真实来源。是否在致死打击后仍触发反伤留给具体规则，基础设施不替策划决定。
 
-每条效果事实的 `Provenance` 记录 Origin、RootEffectIndex、Depth、父 Revision／SequenceIndex、规则及实例 ID、Owner 和继续触发／死亡来源策略。主效果深度为 0、无父事实；派生的 Index 仍指根主效果位置，SequenceIndex 才是本次提交的唯一事实序号。同一 ApplyStatus 生成的多条事实共享效果来源；生命周期事实 Provenance 为 null。被跳过的主／派生效果均不产生伪事实，也不触发新反应。原 EffectPlan 保留原始声明，实际派生结果通过 RuleEvents／Events 查看。
+每条效果事实的 `Provenance` 记录 Origin、RootEffectIndex、Depth、父 Revision／SequenceIndex、规则及实例 ID、Owner 和继续触发／死亡来源策略。内置状态反应还有强类型 TriggerStatusId；外部 provider 的 SourceInstanceId 只作归因，不会凭字符串自动消费状态。主效果深度为 0、无父事实；派生的 Index 仍指根主效果位置，SequenceIndex 才是本次提交的唯一事实序号。同一 ApplyStatus 生成的多条事实共享效果来源；独立生命周期事实 Provenance 为 null。被跳过的主／派生效果均不产生伪事实，也不触发新反应。原 EffectPlan 保留原始声明，实际派生结果通过 RuleEvents／Events 查看。
 
-本轮只提供结算事实触发接口；流血、中毒、盾反、吸血、溢出转伤的正式规则，以及周期时钟和叠层策略尚未实现。SkipActionWindow、EndPhase、EndRound 的生命周期事实暂不进入此队列。
+### 盾反、吸血与溢出治疗转伤害
+
+三种强类型行为都把倍率和目标选择分开配置，最终派生量为 `floor(实际量 × Ratio × Stacks)`，最后取整一次。倍率必须非负，可大于 1；溢出 long／decimal 时整次行动回滚。默认不自动赋予任何角色这些状态，不改变既有牌型表或弃牌奖励。
+
+| 行为 | 触发条件与实际量 | 默认目标 |
+| --- | --- | --- |
+| ReflectBlockedDamageSpec | 持有者承受 Primary Damage，取实际 BlockAbsorbed | 原攻击者 EventSource |
+| LifeStealSpec | 持有者造成 Primary Damage，取实际 DamageToHealth，排除护盾和 Overkill | 持有者 Self |
+| OverhealDamageSpec | 持有者接受 Primary 或 Lifesteal Heal，取实际 Overheal | 首个存活敌人 |
+
+行为持有者是 StatusInstance.Target，派生 Source 也使用持有者；状态施加者 Source 仍保留在状态记录中，不把施加者误认为吸血／反伤归属者。消灭不计作伤害，不触发盾反或吸血；清盾也不算护盾吸收。满血时吸血仍产生 Heal，允许接溢出转伤。反射与溢出伤害是叶子，不继续触发这些行为；吸血治疗显式允许再触发，但内置规则只接受上表的来源，防止循环。
+
+同一伤害事实先生成防守方盾反，再生成攻击方吸血；同组按 Statuses 保存顺序、行为声明顺序、目标顺序执行。次数消耗及反应均在同一事务内；反伤中途击杀攻击者后，后续吸血不会复活它，其剩余主效果继续按死亡规则取消。盾反默认 RequireLiving，致死打击后不触发；配置 `sourcePolicy: CombatReactionSourcePolicy.AllowDefeated` 可保留致死时已经产生的护盾吸收反应，仍经过承伤与护盾。双亡胜负仍由原有 Composition 规则决定。
+
+`CombatTargetSpec` 支持 Self、EventSource、EventTarget、Opponents、Allies，后两者可选 FirstLiving／LowestHealth／HighestHealth／AllLiving；每个 AOE 目标获得完整派生量，不分摊。`CombatTargetResolver` 读取当前结算快照，按绝对生命选择低／高血量，平手保留阵容顺序，友方包含自身。事件端点死亡则为空，不悄悄换人；无存活候选也是正常空结果。允许已知死亡 owner 解析目标，是否能产生效果仍由行为的来源策略决定。Composition 的主计划自动选择复用此底层，但 Requested／ActorPolicy、活来源校验和主计划非空要求仍在原层，旧目标选择行为保持不变。
+
+ForTriggers 状态只在生成至少一条正数、有存活目标的派生时消费一次；AOE 以“状态实例＋父事实”计一次，不按目标数扣。取整为零、没有吸收／扣血／溢出或无目标均不扣次数；Stacks 不随次数下降。触发资格、数值和目标固定后消费，次数用尽移除状态，但不取消已入队的 AOE 兄弟效果；后续目标死亡导致跳过也不退还此次消费。消费事实使用 Consumed 原因，Effect 指触发它的父效果，Provenance 记录本次状态激活；它只记录事实，不另行进入触发入口。后续真正结算的子效果读取消费后的状态。
+
+```csharp
+// 示例数值，非平衡默认值。定义注入 BattleRules(statusCatalog: catalog)，然后通过 ApplyStatus 施加。
+var leech = new CombatStatusDefinition(new StatusDefinitionId("example.leech"), StatusTags.None,
+    new StatusBehaviorSpec[] { new LifeStealSpec(0.25m) }, StatusLifetimeSpec.ForTriggers(2));
+var overflow = new CombatStatusDefinition(new StatusDefinitionId("example.overflow"), StatusTags.None,
+    new StatusBehaviorSpec[] { new OverhealDamageSpec(1m, CombatTargetSpec.Opponents(CombatTargetSelection.AllLiving)) },
+    StatusLifetimeSpec.UntilRemoved());
+var reflect = new CombatStatusDefinition(new StatusDefinitionId("example.reflect"), StatusTags.None,
+    new StatusBehaviorSpec[] { new ReflectBlockedDamageSpec(0.5m) }, StatusLifetimeSpec.UntilRemoved());
+var catalog = new CombatStatusCatalog("example.reactions.1", new[] { leech, overflow, reflect });
+```
+
+流血、中毒的周期时钟与叠层／衰减策略尚未实现。SkipActionWindow、EndPhase、EndRound 的生命周期事实暂不进入此队列。
 
 ## 独立伤害修正规则
 
@@ -100,7 +130,7 @@ var progress = engine.ReadProgress(state);
 
 ## 存档与结果
 
-`ScoredDuelSnapshotCodec` schema v4 保存规则指纹、初始玩家生命、单位状态、玩家能量、完成回合数、阶段、计分与行动账本；反序列化按冻结配置重放行动账本，核对生命/格挡/能量/回合数/阶段/Revision，支持在等待怪物行动时恢复。v4 新增付费弃牌账本、独立最大/初始能量与两类消耗的规则指纹，允许合法的超过上限能量，但仍拒绝伪造能量；规则版本为 combat.6 / scored-duel.4，v1–v3 旧档明确拒绝。combat.3 新增状态施加、消灭和类型化规则事件；combat.4 将已死亡目标改为跳过；combat.5 新增可配置状态行为、重施、消费、精确到期和事件 SequenceIndex；combat.6 新增即时派生队列、因果字段、溢出治疗事实，并将结算中来源死亡改为取消其剩余主动效果。CombatState 存储形状未变；指纹包含 Combat 版本，因此旧 combat.2–combat.5 快照也明确拒绝。规则或数值变化拒绝旧档；暂不提供迁移或磁盘 I/O。该快照仍不包含 CardDuel 的四牌区和随机状态。
+`ScoredDuelSnapshotCodec` schema v4 保存规则指纹、初始玩家生命、单位状态、玩家能量、完成回合数、阶段、计分与行动账本；反序列化按冻结配置重放行动账本，核对生命/格挡/能量/回合数/阶段/Revision，支持在等待怪物行动时恢复。v4 新增付费弃牌账本、独立最大/初始能量与两类消耗的规则指纹，允许合法的超过上限能量，但仍拒绝伪造能量；规则版本为 combat.7 / scored-duel.4，v1–v3 旧档明确拒绝。combat.3 新增状态施加、消灭和类型化规则事件；combat.4 将已死亡目标改为跳过；combat.5 新增可配置状态行为、重施、消费、精确到期和事件 SequenceIndex；combat.6 新增即时派生队列、因果字段、溢出治疗事实，并将结算中来源死亡改为取消其剩余主动效果；combat.7 接入正式状态触发行为、当前快照目标选择与激活次数消费。CombatState 存储形状未变；指纹包含 Combat 版本，因此旧 combat.2–combat.6 快照也明确拒绝。规则或数值变化拒绝旧档；暂不提供迁移或磁盘 I/O。该快照仍不包含 CardDuel 的四牌区和随机状态。
 
 `EncounterContext`、`EncounterProgress`、`EncounterResult` 由状态即时投影，不重复存储。生命战的通用参与者描述只包含槽位/阵营，InitialResources 为 null；生命模板与初始生命由 ScoredDuelDefinition / ScoredDuelState 持有。结果包含双方胜负、原因、回合数和最终 Revision；奖励与幂等写回由 Run/宿主管理。
 
