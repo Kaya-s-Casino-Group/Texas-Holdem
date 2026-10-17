@@ -44,5 +44,40 @@ namespace PokerEngine.Tests
             Assert.That(runAssembly.GetTypes().SelectMany(t => t.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
                 .Any(f => f.FieldType == typeof(MatchState) || f.FieldType == typeof(DrawState)), Is.False);
         }
+        [Test] public void SharedBattleSessionAndPresentationContractRemainInPureComposition()
+        {
+            var contracts = new[] { typeof(BattleSession), typeof(BattleSessionResult), typeof(BattleSessionStep),
+                typeof(IBattleSessionPresentation), typeof(BattleSessionPlayback), typeof(BattleHost) };
+            var composition = typeof(HoldemRunAdapter).Assembly;
+            foreach (var contract in contracts)
+            {
+                Assert.That(contract.Assembly, Is.SameAs(composition), contract.FullName);
+                var methods = contract.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly);
+                var exposed = methods.Select(method => method.ReturnType)
+                    .Concat(methods.SelectMany(method => method.GetParameters()).Select(parameter => parameter.ParameterType))
+                    .Concat(contract.GetConstructors().SelectMany(constructor => constructor.GetParameters()).Select(parameter => parameter.ParameterType));
+                foreach (var type in exposed.SelectMany(ContractTypes).Distinct())
+                {
+                    string assembly = type.Assembly.GetName().Name;
+                    Assert.That(IsPureEngineDependency(assembly), Is.True,
+                        contract.FullName + " exposes a frontend type: " + type.FullName + " (" + assembly + ")");
+                }
+            }
+            Assert.That(composition.GetReferencedAssemblies().Select(reference => reference.Name)
+                .Where(name => !IsPureEngineDependency(name)), Is.Empty);
+        }
+
+        private static bool IsPureEngineDependency(string name) => name.StartsWith("PokerEngine.") ||
+            name == typeof(object).Assembly.GetName().Name || name == "netstandard" ||
+            name == "System" || name.StartsWith("System.");
+
+        private static IEnumerable<Type> ContractTypes(Type type)
+        {
+            yield return type;
+            if (type.HasElementType)
+                foreach (var element in ContractTypes(type.GetElementType())) yield return element;
+            if (type.IsGenericType)
+                foreach (var argument in type.GetGenericArguments().SelectMany(ContractTypes)) yield return argument;
+        }
     }
 }

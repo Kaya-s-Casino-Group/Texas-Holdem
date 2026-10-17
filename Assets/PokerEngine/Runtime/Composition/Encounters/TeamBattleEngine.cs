@@ -39,10 +39,11 @@ namespace PokerEngine
         public ICardDuelDealPolicy DealPolicy { get; }
         public IDiscardRewardRule DiscardReward { get; }
         public IScoredHandDamageRule DamagePolicy { get; }
+        public BattleHandLevels HandLevels { get; }
         public BattlePlayerRules(int maxEnergy = 3, int initialEnergy = 3, int playEnergyCost = 1, int discardEnergyCost = 1,
             int handSize = 8, int discards = 3, ICardDuelDealPolicy dealPolicy = null,
             bool unlimitedDiscards = false, int maxPlayCards = 5, int maxDiscardCards = 5, IDiscardRewardRule discardReward = null,
-            IScoredHandDamageRule damagePolicy = null)
+            IScoredHandDamageRule damagePolicy = null, BattleHandLevels handLevels = null)
         {
             if (maxEnergy < 1 || initialEnergy < 0 || playEnergyCost < 1 || discardEnergyCost < 1 || handSize < 1 || handSize > 52 || discards < 0 || discards > 1000)
                 throw new ArgumentException("Invalid player card/action budget.");
@@ -53,6 +54,7 @@ namespace PokerEngine
             HandSize = handSize; Discards = discards; DealPolicy = dealPolicy ?? new CardDuelDealPolicy();
             DiscardReward = discardReward ?? new NoDiscardRewardRule();
             DamagePolicy = damagePolicy ?? new EqualScoreDamageRule();
+            HandLevels = handLevels ?? new BattleHandLevels();
             UnlimitedDiscards = unlimitedDiscards;
             MaxPlayCards = Math.Min(maxPlayCards, handSize); MaxDiscardCards = Math.Min(maxDiscardCards, handSize);
         }

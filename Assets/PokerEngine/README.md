@@ -1,8 +1,8 @@
 # PokerEngine
 
-共享 C# 卡牌基础层，以及相互独立的德州、出牌计分和 Run 构筑模块。Unity 只负责宿主与表现；这些 Runtime 程序集均不引用 UnityEngine，不访问文件、网络或时钟。
+共享 C# 卡牌基础层，以及主线卡牌战斗、独立分数挑战、德州和 Run 构筑规则模块。Unity 只负责宿主与表现；这些 Runtime 程序集均不引用 UnityEngine，不访问文件、网络或时钟。
 
-生命战单位直接持有 Health/MaxHealth/Block，不依赖 ResourceState；玩家行动能量属于玩家玩法状态，筹码留在使用筹码的玩法中。公共战斗单位及最小牌型生命战见 [Combat README](Runtime/Combat/README.md)。当前 Draw/Run 仍按原分数目标推进；独立生命战已通过 Composition.CardDuelEngine 接入 [SingleBattle Demo](../SingleBattle/README.md)，完整 Run 结果账本尚未接入。
+生命战单位直接持有 Health/MaxHealth/Block，不依赖 ResourceState；玩家行动能量属于玩家玩法状态，筹码留在使用筹码的玩法中。公共战斗单位及最小牌型生命战见 [Combat README](Runtime/Combat/README.md)。主线 [卡牌战斗（SingleBattle）](../SingleBattle/README.md) 通过 Composition.BattleSession 驱动 CardDuelEngine 组合卡牌计分与阵营战斗；[分数挑战（DrawBattle）](../DrawBattle/README.md) 使用 DrawEngine，现有 Draw/Run 仍按原分数目标推进。完整主线 Run 场景及结果账本尚未接入。
 
 ## 模块与依赖
 
@@ -61,7 +61,15 @@ graph TD
 | Progression | 跨 Run 解锁、货币、升级等级、幂等结算、统计和存档 | 解锁条件、奖励公式、升级效果、开局内容过滤 |
 | 表现/网络 | 类型化命令和确定性结果 | 宿主认证、玩家视图、动画、I/O、请求收据 |
 
+主线战斗的 `BattleSession` 持有权威 CardDuelState，一次数据命令自动推进敌人队列及收牌到下一玩家决策点或终局，并返回有序、不可变的 `BattleSessionResult/Step`。补牌与洗牌顺序沿用 CardDuelEngine；所有步骤成功才提交。外部只提交 Start / Play / Discard / EndTurn，EnemyAction / CollectPlayed 是内部步骤。Session 不认识动画、场景对象或 Unity 时钟。
+
+`BattleHost` 是普通 C# 的通用会话生命周期入口：通过工厂委托创建或重开，接入已有会话，并统一同步表现；不引用 Unity、配置资产或场景类型。
+
+`IBattleSessionPresentation` 是 2D / 3D 共用表现端口：Initialize / Present / IsPresenting / Synchronize。纯 `BattleSessionPlayback` 把命令交给 Session，再把批次派发给端口；本地播放门禁只在此层，不进入 Session。当前 SingleBattleHost 实现 3D 端口，规则状态与展示快照分开；同步和动画完成不触发规则。使用方式和职责见 [SingleBattle 模块说明](../SingleBattle/README.md)。
+
 多人战局的出牌转换由各自 `BattlePlayerRules.DamagePolicy` 持有，TeamBattle 按出牌者读取，纯 C# 默认 EqualScoreDamageRule。公共 BattleRules 不再接受出牌伤害参数；旧 ScoredDuelDefinition 适配入口将转换规则转入默认玩家规则。转换协议位于 Composition：`IScoredHandDamageRule.Resolve(ScoredHandDamageContext)` 接收得分、来源和目标策略选出的目标，返回不可变 `DamagePlan`。默认 `EqualScoreDamageRule` 将得分等额作为每个目标的基础伤害。引擎验证来源、目标及规则版本后，调用 `IAttackDamageModifier`，再交给 `CombatEngine` 进行 `IIncomingDamageModifier`、格挡与生命结算；两个修正接口默认原值通过。`DamageModification` 与 CombatEvent 保留各阶段真实输入、输出、版本和说明。攻击修正读取攻击开始时的状态，目标承伤读取该原子批次的当前状态；怪物直接产生基础伤害请求并共用两个修正接口。`CardDuelEngine.PreviewPlay` 复用正式 `Execute`，调用方只读取返回结果而不提交新状态；所有注入策略须遵守纯函数约定。Unity 独立配置与中文只读验算面板见 `Assets/SingleBattle/README.md`。
+
+个人牌型等级：`BattlePlayerRules.HandLevels` 持有不可变 `BattleHandLevels`，构造时复制每个 HandCategory 对应的正整数等级；未知/重复类别及非正等级拒绝，缺省类别补 1 级。Unity 在 PlayerBattleProfile 中逐牌型配置并于开战时生成快照，纯 C# 可用 `handLevels:` 注入。CardDuelEngine.PreviewHand 判型后从动作玩家读取对应等级，候选 UI、PreviewPlay 与正式 Play 共用；回合状态继续保留同一玩家 Rules。ScoreProfile 仅保存共享基础筹码、倍率、每级增长及单牌规则，不含个人等级。Joker 与战斗内等级升级尚未接入，旧 Draw/Run 的等级模型不变。
 
 角色伤害规则由 `BattleActorDamageRules` 表达，随各自 `BattlePlayerSetup` / `BattleEnemySetup` 输入，并保留在玩家回合状态与怪物阵容中。TeamBattleEngine 按攻击 Source 选攻击修正、按实际 Target 分派承伤修正，CombatEngine 仍提供该原子批次的最新只读上下文；不把这些规则放入序列化生命状态。`BattleRules` 不再持有攻击/承伤修正，双方 Setup 未指定角色修正规则时构建 Identity 快照。基础 ScaledAttackDamageModifier / ScaledIncomingDamageModifier 位于 Combat，支持倍率及固定增减，默认 1 倍、0 增减。Unity 作者配置位于角色 Profile，公共 BattleRulesProfile 不新增修正槽位。
 
@@ -255,7 +263,7 @@ Run 负责牌组、小丑槽位/副本数、等级/成长、牌型等级、金�
 
 ### 完整 Run 与多楼层
 
-Unity 策划工具位于独立 `Assets/RunFlow` 模块，菜单 `Tools > Poker > Run Flow Editor`。流程保存为 ScriptableObject `RunFlowAsset`，经 `BuildDefinition` / `BuildContent` 转换为本节纯 C# 模型后初始化一次 Run；GameCore 不引用 Unity 或编辑器，Run v4 进度快照与策划资产分开保存。编辑操作与初始化示例见 [RunFlow README](../RunFlow/README.md)。
+Unity 策划工具位于独立 `Assets/RunFlow` 模块，菜单 `工具 > 关卡流程 > 流程编辑器`。流程保存为 ScriptableObject `RunFlowAsset`，经 `BuildDefinition` / `BuildContent` 转换为本节纯 C# 模型后初始化一次 Run；GameCore 不引用 Unity 或编辑器，Run v4 进度快照与策划资产分开保存。编辑操作与初始化示例见 [RunFlow README](../RunFlow/README.md)。
 
 一次完整肉鸽由有序 `RunDefinition.Floors` 组成，每个 `RunFloorDefinition` 独立保存 Id、Kind（Normal/Boss）和自己的 NodeTree。例如“三层 + Boss 层”对应四棵独立节点树：
 
@@ -377,11 +385,11 @@ RunSnapshotCodec<TState> schema **v4** 将当前楼层、每层节点路线及�
 
 ## 验证与首包
 
-统一入口为 `Tools > 测试面板`，界面为中文。编辑模式专项显示实际用例数量，实战验证要求对应玩法场景处于 Play，截图独立分页；全量回归收进折叠区，不自动执行。面板显示进度、通过/失败数量并可打开报告，编辑模式测试可停止；进入 Play 或脚本编译时停止剩余用例并释放重载锁。
+统一入口为 `工具 > 测试面板`，界面为中文。编辑模式专项显示实际用例数量，实战验证要求对应玩法场景处于 Play，截图独立分页；全量回归收进折叠区，不自动执行。面板显示进度、通过/失败数量并可打开报告，编辑模式测试可停止；进入 Play 或脚本编译时停止剩余用例并释放重载锁。
 
 ModuleBoundaryTests 检查真实程序集引用，防止基础层反向依赖、德州/Draw互相引用或 Run 引入具体模式。保留原德州规则/随机守恒/恢复测试，新增独立能力、牌型子集、Draw 存档/续执行、模式无关 Run 和跨玩法集成测试。
 
-Unity Test Runner 可正常运行 EditMode；若当前场景有未保存修改，可用 `Tools > 测试面板 > 编辑模式测试 > 更多模块 / 全量回归 > GameCore 全模块` 在当前 Editor 场景逐项执行同步 NUnit 方法，结果写入 `Library/PokerEngineTests/status.json` 与 `results.xml`。该轻量运行器不保存或替换场景，不支持协程/参数化/setup/teardown；遇到这些测试会拒绝，需改用完整 Test Runner。
+Unity Test Runner 可正常运行 EditMode；若当前场景有未保存修改，可用 `工具 > 测试面板 > 编辑模式测试 > 更多模块 / 全量回归 > 规则引擎全模块` 在当前 Editor 场景逐项执行同步 NUnit 方法，结果写入 `Library/PokerEngineTests/status.json` 与 `results.xml`。该轻量运行器不保存或替换场景，不支持协程/参数化/setup/teardown；遇到这些测试会拒绝，需改用完整 Test Runner。
 
 PackagingTests 验证所有十个模块出现在 Player 编译列表、linker 保留和资源 GUID 唯一。具体本轮结果见根 CHANGELOG。本轮未进行完整 Player 或 IL2CPP 构建；目标平台仍须验证泛型 DataContract 序列化与 AOT 行为。
 
