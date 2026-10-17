@@ -123,6 +123,10 @@ InitTestScene*.unity*
 /ArtDirection/
 /ArtSource/
 
+# Local output and scratch files unrelated to game assets.
+/output/
+/tmp/
+
 # Local editor and agent configuration.
 /.codex/
 /.vscode/
@@ -153,3 +157,6 @@ Thumbs.db
 Thumbs.db.meta
 Desktop.ini
 Desktop.ini.meta
+
+# Local source audio references; imported game audio lives under Assets/Audio.
+/AudioReference/

@@ -19,8 +19,8 @@ Blender 尺寸 XYZ 约 0.442493 / 0.442493 / 0.996098 m，Unity 为 XZY，底部
 Blender 工程：`Blender/FoxStatue/Fracture/FoxStatue_Fracture_VAT.blend`。
 N → Destruction → 返回破碎模拟场景 → 导出刚体 VAT + 验证。
 工程保存了相对工作/Unity目录及 Unity 源材质路径，再次导出自动更新已有资源。
-Unity 菜单：Tools → Art Assets → Fox Statue；通用导入：选中 manifest，
-Tools → Art Assets → Statue VAT → Configure Selected Manifest。
+Unity 菜单：工具 → 场景美术 → 狐狸雕像；通用导入：选中 manifest，
+工具 → 场景美术 → 雕像顶点动画 → 配置所选导出清单。
 
 ## 验证结果
 

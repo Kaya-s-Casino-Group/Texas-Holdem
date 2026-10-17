@@ -43,7 +43,7 @@ Material:
     - _Smoothness: 0.08
     - _VertexTone: 1
     - _WindSpeed: 1
-    - _WindStrength: 0.015
+    - _WindStrength: 0.09
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []

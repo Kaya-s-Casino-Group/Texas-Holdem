@@ -39,7 +39,7 @@ Material:
     - _Cull: 0
     - _Cutoff: 0
     - _PaintFill: 1
-    - _Smoothness: 0.08
+    - _Smoothness: 0.123
     - _VertexTone: 0
     - _WindSpeed: 1
     - _WindStrength: 0
