@@ -5,7 +5,7 @@ using System.Linq;
 namespace PokerEngine
 {
     public enum CardDuelAction { Play = 1, Discard, EnemyAction, EndTurn, CollectPlayed, Start, SkipPlayerTurn }
-    public enum CardDuelError { None, StaleRevision, InvalidPhase, InvalidSelection, NoDiscards, InsufficientEnergy, Overflow, InvalidTarget, InvalidState, InvalidDamagePlan, InvalidDamageModifier, InvalidDiscardReward, InvalidEffectPlan, ActionBlocked, InvalidReaction, ReactionLimitExceeded }
+    public enum CardDuelError { None, StaleRevision, InvalidPhase, InvalidSelection, NoDiscards, InsufficientEnergy, Overflow, InvalidTarget, InvalidState, InvalidDamagePlan, InvalidDamageModifier, InvalidDiscardReward, InvalidEffectPlan, ActionBlocked, InvalidReaction, ReactionLimitExceeded, InvalidRelicState }
     public enum CardDuelRefillTiming { NextPlayerTurn = 0, AfterAction = 1 }
     public enum CardDuelDealTrigger { OpeningTurn, AfterPlay, AfterDiscard, PlayerTurnStart }
 
@@ -122,15 +122,17 @@ namespace PokerEngine
         public static ZoneId ZoneId(string encounterId, string kind) => new ZoneId(encounterId + "/" + kind);
 
         /// <summary>Create an undealt battle. Start enters the first player turn and deals the hand for free.</summary>
-        public CardDuelState Create(string id, RandomState random, IEnumerable<DeckEntry> deck = null, int? initialHealth = null)
+        public CardDuelState Create(string id, RandomState random, IEnumerable<DeckEntry> deck = null, int? initialHealth = null,
+            IEnumerable<BattleRelicSetup> relics = null)
         {
-            return Create(id, random, new[] { new BattlePlayerSetup(new ParticipantId("player"), defaultPlayer, deck, initialHealth, defaultPlayerRules) },
+            return Create(id, random, new[] { new BattlePlayerSetup(new ParticipantId("player"), defaultPlayer, deck, initialHealth, defaultPlayerRules, relics: relics) },
                 new[] { new BattleEnemySetup(new ParticipantId(id + "/enemy"), defaultEnemy, defaultEnemyDamage) });
         }
         public CardDuelState Create(string id, RandomState random, IEnumerable<BattlePlayerSetup> players, IEnumerable<BattleEnemySetup> enemies)
         {
             var roster = Guard.Copy(players, nameof(players)).Select(player => player == null ? null :
-                new BattlePlayerSetup(player.Id, player.Definition, player.Deck, player.InitialHealth, player.Rules ?? defaultPlayerRules, player.DamageRules, player.TargetRules)).ToArray();
+                new BattlePlayerSetup(player.Id, player.Definition, player.Deck, player.InitialHealth, player.Rules ?? defaultPlayerRules,
+                    player.DamageRules, player.TargetRules, player.Relics)).ToArray();
             var duel = Duel.Create(id, roster, enemies);
             var cards = new List<CardInstance>(); var zones = new List<CardZone>();
             for (int seat = 0; seat < roster.Length; seat++)
@@ -148,6 +150,23 @@ namespace PokerEngine
                         kind == CardZoneKinds.Deck ? shuffled.Cards : new CardInstanceId[0])));
             }
             return new CardDuelState(new CardTableState(new MatchId(id), cards, zones), duel, random, roster.ToDictionary(x => x.Id, x => x.Rules.Discards), false);
+        }
+        /// <summary>Authority-only component update. Preserves cards, resources, random state and action history;
+        /// advances revisions so stale decisions cannot commit against a previous relic runtime.</summary>
+        public CardDuelTransition UpdateRelicRuntime(CardDuelState state, long expectedRevision, ParticipantId owner,
+            IEnumerable<BattleRelicState> relics)
+        {
+            if (state == null) throw new ArgumentNullException(nameof(state));
+            if (expectedRevision != state.Revision) return new CardDuelTransition(state, CardDuelError.StaleRevision);
+            var result = Duel.UpdateRelicRuntime(state.Duel, state.Duel.Revision, owner, relics);
+            if (!result.Accepted) return new CardDuelTransition(state, result.Error);
+            try
+            {
+                var table = new CardTableState(state.Table.MatchId, state.Table.Cards, state.Table.Zones, checked(state.Revision + 1));
+                var discards = state.Duel.Players.ToDictionary(player => player.Id, player => state.DiscardsFor(player.Id));
+                return new CardDuelTransition(new CardDuelState(table, result.State, state.Random, discards, state.HasStarted));
+            }
+            catch (OverflowException) { return new CardDuelTransition(state, CardDuelError.Overflow); }
         }
         /// <summary>Runs the exact command pipeline against immutable input. The caller must not commit the returned state.
         /// Injected target, damage, attack/incoming modifiers and draw policies must be pure, just as for authoritative execution.</summary>

@@ -84,13 +84,16 @@ namespace PokerEngine
         public BattlePlayerRules Rules { get; }
         public BattleActorDamageRules DamageRules { get; }
         public BattleActorTargetRules TargetRules { get; }
+        public IReadOnlyList<BattleRelicSetup> Relics { get; }
         public BattlePlayerSetup(ParticipantId id, CombatantDefinition definition, IEnumerable<DeckEntry> deck = null, int? initialHealth = null,
-            BattlePlayerRules rules = null, BattleActorDamageRules damageRules = null, BattleActorTargetRules targetRules = null)
+            BattlePlayerRules rules = null, BattleActorDamageRules damageRules = null, BattleActorTargetRules targetRules = null,
+            IEnumerable<BattleRelicSetup> relics = null)
         {
             if (!id.IsValid || definition == null || initialHealth <= 0 || initialHealth > definition.MaxHealth)
                 throw new ArgumentException("Invalid player setup.");
             Id = id; Definition = definition; InitialHealth = initialHealth; Rules = rules; DamageRules = damageRules ?? new BattleActorDamageRules(); TargetRules = targetRules ?? new BattleActorTargetRules();
             Deck = deck == null ? null : Guard.View(Guard.Copy(deck, nameof(deck)));
+            Relics = Guard.View(Guard.Copy(relics ?? Array.Empty<BattleRelicSetup>(), nameof(relics)));
         }
     }
     public sealed class BattleEnemySetup
@@ -117,8 +120,14 @@ namespace PokerEngine
         public bool HasEnded { get; }
         public BattleActorDamageRules DamageRules { get; }
         public BattleActorTargetRules TargetRules { get; }
-        internal BattlePlayerTurn(ParticipantId id, PlayerTurnState energy, bool ended, BattlePlayerRules rules, BattleActorDamageRules damageRules, BattleActorTargetRules targetRules)
-        { Id = id; Energy = energy; HasEnded = ended; Rules = rules; DamageRules = damageRules ?? new BattleActorDamageRules(); TargetRules = targetRules ?? new BattleActorTargetRules(); }
+        public BattleRelicLoadout Relics { get; }
+        internal BattlePlayerTurn(ParticipantId id, PlayerTurnState energy, bool ended, BattlePlayerRules rules, BattleActorDamageRules damageRules,
+            BattleActorTargetRules targetRules, BattleRelicLoadout relics)
+        {
+            if (relics == null || relics.OwnerId != id) throw new ArgumentException("Relics must belong to this player.");
+            Id = id; Energy = energy; HasEnded = ended; Rules = rules;
+            DamageRules = damageRules ?? new BattleActorDamageRules(); TargetRules = targetRules ?? new BattleActorTargetRules(); Relics = relics;
+        }
     }
     public sealed class BattleActionRecord
     {
@@ -207,6 +216,9 @@ namespace PokerEngine
             if (p.Length == 0 || e.Length == 0 || p.Length + e.Length > 64 || p.Any(x => x == null) || e.Any(x => x == null) ||
                 p.Select(x => x.Id).Concat(e.Select(x => x.Id)).Distinct().Count() != p.Length + e.Length)
                 throw new ArgumentException("A battle needs distinct participants on both teams (at most 64 units).");
+            var relicIds = p.SelectMany(player => player.Relics).Select(relic => relic.Instance.Id).ToArray();
+            if (relicIds.Distinct(StringComparer.Ordinal).Count() != relicIds.Length)
+                throw new ArgumentException("Relic instance identities must be unique across the battle.");
             foreach (var player in p)
                 (player.Rules?.EffectRule as IBattleStatusCatalogValidator)?.ValidateStatusCatalog(Definition.StatusCatalog);
             foreach (var enemy in e)
@@ -215,11 +227,34 @@ namespace PokerEngine
                 p.Select(x => x.Definition.Create(x.Id, "player", x.InitialHealth)).Concat(e.Select(x => x.Definition.Create(x.Id, "enemy")))),
                 p.Select(x => {
                     var rules = x.Rules ?? new BattlePlayerRules();
-                    return new BattlePlayerTurn(x.Id, new PlayerTurnState(rules.MaxEnergy, rules.InitialEnergy), false, rules, x.DamageRules, x.TargetRules);
+                    return new BattlePlayerTurn(x.Id, new PlayerTurnState(rules.MaxEnergy, rules.InitialEnergy), false, rules, x.DamageRules, x.TargetRules,
+                        new BattleRelicLoadout(x.Id, x.Relics));
                 }),
                 e, ScoredDuelPhase.AwaitingPlayerHand, new ParticipantId[0]);
         }
         public string NextScoreId(TeamBattleState state) => state.Combat.Id + "/score/" + state.Scores.Count;
+        /// <summary>Authority-only runtime commit for the existing loadout. This is not a player action or a snapshot restore.
+        /// No combat effects, time advancement, cooldown consumption or growth are implied.</summary>
+        public TeamBattleTransition UpdateRelicRuntime(TeamBattleState state, long expectedRevision, ParticipantId owner,
+            IEnumerable<BattleRelicState> relics)
+        {
+            if (state == null) throw new ArgumentNullException(nameof(state));
+            if (!ReferenceEquals(state.Rules, Definition)) return new TeamBattleTransition(state, CardDuelError.InvalidState);
+            if (expectedRevision != state.Revision) return new TeamBattleTransition(state, CardDuelError.StaleRevision);
+            int index = state.Players.ToList().FindIndex(player => player.Id == owner);
+            if (index < 0) return new TeamBattleTransition(state, CardDuelError.InvalidRelicState);
+            try
+            {
+                var players = state.Players.ToArray(); var current = players[index];
+                var updated = current.Relics.WithRuntime(relics);
+                players[index] = new BattlePlayerTurn(current.Id, current.Energy, current.HasEnded, current.Rules,
+                    current.DamageRules, current.TargetRules, updated);
+                return new TeamBattleTransition(new TeamBattleState(Definition, state.Combat, players, state.Enemies, state.Phase,
+                    state.PendingEnemies, checked(state.Revision + 1), state.CompletedRounds, state.Scores, state.Actions));
+            }
+            catch (OverflowException) { return new TeamBattleTransition(state, CardDuelError.Overflow); }
+            catch (ArgumentException) { return new TeamBattleTransition(state, CardDuelError.InvalidRelicState); }
+        }
         public IReadOnlyList<ParticipantId> Targets(TeamBattleState state, ParticipantId source, IEnumerable<ParticipantId> requested = null)
         {
             ValidateTargetSource(state, source);
@@ -401,7 +436,7 @@ namespace PokerEngine
                     int index = Array.FindIndex(players, x => x.Id == actor);
                     int energy = action == ScoredDuelActionKind.EndPlayerTurn || skipPlayer ? 0 : players[index].Energy.Energy - cost;
                     players[index] = new BattlePlayerTurn(actor, new PlayerTurnState(players[index].Energy.MaxEnergy, energy), energy == 0,
-                        players[index].Rules, players[index].DamageRules, players[index].TargetRules);
+                        players[index].Rules, players[index].DamageRules, players[index].TargetRules, players[index].Relics);
                 }
                 // Action clocks run after the complete active batch and its reactions, once per successful action.
                 // Explicit end/skip commands are boundaries, not completed actions. A finished battle starts no new clock.
@@ -480,7 +515,7 @@ namespace PokerEngine
                     if (phase == ScoredDuelPhase.AwaitingPlayerHand)
                         players = players.Select(x => new BattlePlayerTurn(x.Id,
                             new PlayerTurnState(x.Energy.MaxEnergy, combat.Get(x.Id).IsAlive ? x.Energy.MaxEnergy : 0), !combat.Get(x.Id).IsAlive,
-                            x.Rules, x.DamageRules, x.TargetRules)).ToArray();
+                            x.Rules, x.DamageRules, x.TargetRules, x.Relics)).ToArray();
                 }
                 else if (!enemy && players.All(x => x.HasEnded || !combat.Get(x.Id).IsAlive))
                 {

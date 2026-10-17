@@ -69,7 +69,7 @@ graph TD
 
 多人战局的出牌转换由各自 `BattlePlayerRules.DamagePolicy` 持有，TeamBattle 按出牌者读取，纯 C# 默认 EqualScoreDamageRule。公共 BattleRules 不再接受出牌伤害参数；旧 ScoredDuelDefinition 适配入口将转换规则转入默认玩家规则。转换协议位于 Composition：`IScoredHandDamageRule.Resolve(ScoredHandDamageContext)` 接收得分、来源和目标策略选出的目标，返回不可变 `DamagePlan`。默认 `EqualScoreDamageRule` 将得分等额作为每个目标的基础伤害。引擎验证来源、目标及规则版本后，调用 `IAttackDamageModifier`，再交给 `CombatEngine` 进行 `IIncomingDamageModifier`、格挡与生命结算；两个修正接口默认原值通过。`DamageModification` 与 CombatEvent 保留各阶段真实输入、输出、版本和说明。攻击修正读取攻击开始时的状态，目标承伤读取该原子批次的当前状态；怪物直接产生基础伤害请求并共用两个修正接口。`CardDuelEngine.PreviewPlay` 复用正式 `Execute`，调用方只读取返回结果而不提交新状态；所有注入策略须遵守纯函数约定。Unity 独立配置与中文只读验算面板见 `Assets/Scripts/Gameplay/SingleBattle/README.md`。
 
-个人牌型等级：`BattlePlayerRules.HandLevels` 持有不可变 `BattleHandLevels`，构造时复制每个 HandCategory 对应的正整数等级；未知/重复类别及非正等级拒绝，缺省类别补 1 级。Unity 在 PlayerBattleProfile 中逐牌型配置并于开战时生成快照，纯 C# 可用 `handLevels:` 注入。CardDuelEngine.PreviewHand 判型后从动作玩家读取对应等级，候选 UI、PreviewPlay 与正式 Play 共用；回合状态继续保留同一玩家 Rules。ScoreProfile 仅保存共享基础筹码、倍率、每级增长及单牌规则，不含个人等级。遗物与战斗内等级升级尚未接入，旧 Draw/Run 的等级模型不变。
+个人牌型等级：`BattlePlayerRules.HandLevels` 持有不可变 `BattleHandLevels`，构造时复制每个 HandCategory 对应的正整数等级；未知/重复类别及非正等级拒绝，缺省类别补 1 级。Unity 在 PlayerBattleProfile 中逐牌型配置并于开战时生成快照，纯 C# 可用 `handLevels:` 注入。CardDuelEngine.PreviewHand 判型后从动作玩家读取对应等级，候选 UI、PreviewPlay 与正式 Play 共用；回合状态继续保留同一玩家 Rules。ScoreProfile 仅保存共享基础筹码、倍率、每级增长及单牌规则，不含个人等级。遗物实例绑定及运行状态已接入，计分/触发效果与战斗内等级升级尚未启用，旧 Draw/Run 的等级模型不变。
 
 角色伤害规则由 `BattleActorDamageRules` 表达，随各自 `BattlePlayerSetup` / `BattleEnemySetup` 输入，并保留在玩家回合状态与怪物阵容中。TeamBattleEngine 按攻击 Source 选攻击修正、按实际 Target 分派承伤修正，CombatEngine 仍提供该原子批次的最新只读上下文；不把这些规则放入序列化生命状态。`BattleRules` 不再持有攻击/承伤修正，双方 Setup 未指定角色修正规则时构建 Identity 快照。基础 ScaledAttackDamageModifier / ScaledIncomingDamageModifier 位于 Combat，支持倍率及固定增减，默认 1 倍、0 增减。Unity 作者配置位于角色 Profile，公共 BattleRulesProfile 不新增修正槽位。
 
@@ -307,6 +307,28 @@ Ready → Discard → AfterDiscard → 补牌 → Ready
 牌型识别结果区分 SubmittedCards 和 ScoringCards。默认对子/三条/四条只计组成牌，高牌只计最高一张，其余踢脚牌不贡献点数；德州适配器仍计完整最佳五张。Draw 不自动回收弃牌，手牌和牌库都耗尽则失败。这是独立出牌计分基础模式，不宣称复刻某个商业游戏的完整规则。
 
 Draw 使用相同 AbilityExecutor、选择状态、费用、修正与生命周期。计分前修改牌面，计分后触发效果；计分后选牌中途读档不会重复增加分数或再次扣除出牌次数。DrawSnapshotCodec schema **v2** 固定内容/玩法/计分版本，保存选择、随机、计分明细、阶段和卡牌 Effects / IsDisabled；旧 v1 明确拒绝。DrawCard.Card 与 AbilityWorld.Cards 中的卡牌属性必须一致。
+
+## 主线遗物绑定与运行状态
+
+`BattlePlayerSetup(..., relics: ...)` 接收 `BattleRelicSetup`（`RelicDefinition` + 持久 `RunRelic`）；`CardDuelEngine.Create` 的单人入口也可传 `relics:`。创建后通过 `state.Duel.Player(playerId).Relics` 取得该玩家的不可变 `BattleRelicLoadout`。同定义可有不同实例，每位玩家保持自身装配顺序；实例 ID 在全场唯一，每位玩家最多 32 个，并校验定义的副本上限。
+
+`BattleRelicState` 保存实例/定义/持有者/顺序、入场等级/成长，以及 RemainingCharges、UsesThisRound、CooldownRounds 和 AbilityMemory。定义通过绑定持有，不混入运行状态 JSON。初始导入保留 Run 的次数、冷却和 Encounter 计数；无 AbilityId 的遗物同样保留。运行时 Memory 支持 Round / Encounter 非负计数，暂不支持实体 Marks。所有集合只读，运行状态更新和反序列化重新验证、复制记忆。
+
+```csharp
+var equipment = new[] { new BattleRelicSetup(relicDefinition, runRelic) };
+var player = new BattlePlayerSetup(playerId, heroDefinition, relics: equipment);
+// 将 player 与敌人阵容传入 CardDuelEngine.Create。
+var loadout = state.Duel.Player(playerId).Relics;
+var json = BattleRelicSnapshotCodec.Serialize(loadout);
+var restored = BattleRelicSnapshotCodec.Deserialize(json, loadout);
+var persistentRelics = restored.ExportRunRelics();
+```
+
+`BattleRelicSnapshotCodec` schema v1 只保存遗物组件，读取时要求持有者、完整有序实例和绑定指纹相符。指纹包含实例身份、入场等级/成长和完整定义配置（含计分参数及 AbilityId），运行时次数/冷却/计数不参与指纹。缺失字段、非法记忆、未知 schema 或配置不符拒绝；沿用 16 MiB / 500,000 对象上限。它不恢复手牌、生命、随机或回合进度，也不证明某个战局 checkpoint：主线完整存档仍需后续将各组件一起保存和验证，不能把读出的遗物组件当作整场回档。
+
+`CardDuelEngine.UpdateRelicRuntime`（以及 TeamBattleEngine 同名入口）供权威规则侧提交完整运行状态，要求当前 Revision，禁止改实例、持有者、定义、顺序及入场等级/成长。成功返回新状态并推进对应 Revision，失败保留原引用；不扣能量、不推进回合、不记录出牌/弃牌动作、不产生战斗事件。它不是玩家命令，BattleSession 仍只接收原有操作。运行状态只由当前 BattlePlayerTurn 持有，出牌、收牌、弃牌、结束、控制跳过、敌方行动和胜负转换均保留它。
+
+本步不自动激活 ScoreEffects / AbilityId，不计算遗物成长、不消耗次数或冷却、不清理 Round 计数；这些生命周期由后续具体遗物行为接入。现有牌型效果、目标选择、弃牌收益/费用/次数、补牌和随机流程保持原样。`ExportRunRelics()` 创建新的持久实例，仅导出 Encounter 计数并丢弃 Round 计数/UsesThisRound，不自动写回 Run。旧 Draw/Holdem 的能力安装、成长和存档契约不变。
 
 ## 计分模块
 

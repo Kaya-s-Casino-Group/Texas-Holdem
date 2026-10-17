@@ -12,6 +12,8 @@
 | CombatEngine | 基础效果、即时触发队列、原子批量结算和事件 | 选目标、费用、分数换算、具体遗物行为 |
 | ScoredDuelEngine（Composition） | 最小单玩家/单怪物流程、牌型分数换伤害、玩家能量/结束回合、固定攻击、胜负投影 | 卡牌合法性、洗牌/抽牌、完整 Run、Unity 表现 |
 
+主线遗物的绑定与运行状态由 Composition 的 `BattlePlayerTurn.Relics` 持有，复用不可变 `AbilityMemory` 保存计数；不放入 CombatState，也不另建 AbilityWorld。当前只提供绑定、权威运行状态更新和遗物组件快照，尚不自动触发遗物效果。详见 [主线遗物绑定与运行状态](../../README.md#主线遗物绑定与运行状态)。
+
 生命值直接存于 `CombatantState.Health`，类型为必填 `int`，范围 0..MaxHealth；`IsAlive` 从生命值派生。单位不再持有 ResourceState，也不携带筹码或能量。不要同时持有另一份可变 AbilityWorld 作为生命真相；未来接能力执行器时，需要由模式投影并原子回写同一权威状态。
 
 ScoredDuelState 组合持有独立的 PlayerTurnState（MaxEnergy / Energy），定义配置每回合能量和出牌消耗，费用与恢复时机由玩法控制；怪物行动由其行为规则决定，无需创建能量字段。既有 ResourceState 保留给 Draw/Holdem 及其能力执行流程，后续按具体玩法需要独立迁移。

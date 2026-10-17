@@ -4,6 +4,14 @@
 
 ## [Unreleased]
 
+### 2026-10-17 — 主线对局绑定遗物并保存运行状态
+
+- 新增 BattleRelicSetup / BattleRelicState / BattleRelicLoadout，将持久遗物与定义绑定到玩家对局状态，保留实例身份、顺序、等级/成长、次数、冷却及独立计数；校验全场实例唯一、持有者、配置和副本限制。
+- CardDuel / TeamBattle 创建及状态转换携带不可变遗物数据；增加权威 UpdateRelicRuntime 入口，完整校验后原子替换并推进 Revision，失败保持原状态。
+- 新增遗物组件快照 schema v1，通过持有者、完整有序实例及定义指纹校验恢复；ExportRunRelics 导出持久状态并过滤 Round 计数。此组件不等同整场战斗存档，不改旧 Run / Draw / Holdem 快照契约。
+- 本步不激活计分/触发能力，不隐式消耗次数、冷却或增长；现有牌型、弃牌、补牌及表现行为保持不变。
+- 验证：离线规则相关回归 292/292 通过，其中新增遗物测试 45 项；覆盖实例隔离、状态转换、原子更新、快照恢复/非法输入及既有牌型和弃牌行为，规则程序集按警告视为错误编译通过。
+
 ### 2026-10-17 — 规则层遗物命名统一为 Relic
 
 - 将 JokerDefinition、RunJoker、RunJokerRuntime、ScoringJoker、DrawJoker 及关联属性、命令和解锁类型统一为 Relic；同步 Run、Draw、Holdem、计分、成长和流程资产接入引用。
