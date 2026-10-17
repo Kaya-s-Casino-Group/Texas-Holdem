@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace PokerEngine
 {
-    public enum CombatTargetGroup { Self = 1, EventSource, EventTarget, Opponents, Allies }
+    public enum CombatTargetGroup { Self = 1, EventSource, EventTarget, Opponents, Allies, EventActor }
     public enum CombatTargetSelection { FirstLiving = 1, LowestHealth, HighestHealth, AllLiving }
 
     /// <summary>Automatic targets relative to a reaction owner. Player requests and actor policies belong to Composition.</summary>
@@ -20,6 +20,7 @@ namespace PokerEngine
             Group = group; Selection = selection;
         }
 
+        public static CombatTargetSpec EventActor() => new CombatTargetSpec(CombatTargetGroup.EventActor, CombatTargetSelection.FirstLiving);
         public static CombatTargetSpec Self() => new CombatTargetSpec(CombatTargetGroup.Self, CombatTargetSelection.FirstLiving);
         public static CombatTargetSpec EventSource() => new CombatTargetSpec(CombatTargetGroup.EventSource, CombatTargetSelection.FirstLiving);
         public static CombatTargetSpec EventTarget() => new CombatTargetSpec(CombatTargetGroup.EventTarget, CombatTargetSelection.FirstLiving);
@@ -51,6 +52,13 @@ namespace PokerEngine
                 return LivingTarget(spec.Group == CombatTargetGroup.EventSource ? source : target);
             }
 
+            if (spec.Group == CombatTargetGroup.EventActor)
+            {
+                var clock = settledEvent as CombatTimingEvent;
+                if (clock?.Signal.Kind != CombatTimingKind.ActionCompleted || clock.Signal.Participants.Count != 1)
+                    throw new ArgumentException("An event actor requires an action-completion clock with one participant.");
+                return LivingTarget(state.Get(clock.Signal.Participants[0]));
+            }
             var candidates = state.Combatants.Where(unit => unit.IsAlive &&
                 (spec.Group == CombatTargetGroup.Opponents ? unit.TeamId != ownerState.TeamId : unit.TeamId == ownerState.TeamId));
             switch (spec.Selection)

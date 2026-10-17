@@ -28,7 +28,7 @@ namespace PokerEngine
             if (!Enum.IsDefined(typeof(RelicBoundaryTiming), timing) || !Enum.IsDefined(typeof(CombatReactionSourcePolicy), sourcePolicy) ||
                 (timing == RelicBoundaryTiming.BattleStarted ? phase.HasValue : !phase.HasValue) ||
                 phase.HasValue && !Enum.IsDefined(typeof(RelicPhaseRelation), phase.Value) || steps.Length < 1 || steps.Length > 64 || predicates.Length > 16 ||
-                steps.Any(step => step.Target.Group == CombatTargetGroup.EventSource || step.Target.Group == CombatTargetGroup.EventTarget) ||
+                steps.Any(step => step.Target.Group == CombatTargetGroup.EventSource || step.Target.Group == CombatTargetGroup.EventTarget || step.Target.Group == CombatTargetGroup.EventActor) ||
                 predicates.Any(item => item.Kind != RelicTriggerConditionKind.OwnerHealthAtMost && item.Kind != RelicTriggerConditionKind.OwnerHasStatus))
                 throw new ArgumentException("Invalid relic boundary trigger or unavailable boundary facts.");
             Timing = timing; Phase = phase; Effects = Guard.View(steps); Conditions = Guard.View(predicates);

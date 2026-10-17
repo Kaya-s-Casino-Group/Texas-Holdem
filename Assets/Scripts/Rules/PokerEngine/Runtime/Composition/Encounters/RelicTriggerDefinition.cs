@@ -125,6 +125,7 @@ namespace PokerEngine
             if (!Enum.IsDefined(typeof(RelicTriggerTiming), timing) || !Enum.IsDefined(typeof(RelicEventRelation), relation) ||
                 !Enum.IsDefined(typeof(RelicTriggerOccurrence), occurrence) || !Enum.IsDefined(typeof(CombatReactionSourcePolicy), sourcePolicy) ||
                 steps.Length < 1 || steps.Length > 64 || predicates.Length > 16 || allowed.Length == 0 ||
+                steps.Any(step => step.Target.Group == CombatTargetGroup.EventActor) ||
                 allowed.Distinct().Count() != allowed.Length || allowed.Any(origin => !Enum.IsDefined(typeof(CombatEffectOrigin), origin)))
                 throw new ArgumentException("Invalid relic fact trigger.");
             Timing = timing; Relation = relation; Occurrence = occurrence; Effects = Guard.View(steps); Conditions = Guard.View(predicates);

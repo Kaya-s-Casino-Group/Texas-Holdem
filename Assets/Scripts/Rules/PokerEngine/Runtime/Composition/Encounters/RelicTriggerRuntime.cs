@@ -18,14 +18,15 @@ namespace PokerEngine
         public int UsesThisAction { get; }
         public bool TriggerUsedThisAction { get; }
         public CombatTimingSignal Boundary { get; }
+        public string ActionId { get; }
         public int UsesThisWindow { get; }
         public bool TriggerUsedThisWindow { get; }
         internal BattleRelicTriggerContext(TeamBattleState actionStart, CombatReactionContext fact, BattleRelicLoadout loadout,
             BattleRelicState relic, RelicTriggerSpec trigger, ParticipantId actor, ScoredDuelActionKind action,
-            HandAttackInfo hand, int? discardedCardCount, int uses, bool used, CombatTimingSignal boundary = null)
+            HandAttackInfo hand, int? discardedCardCount, int uses, bool used, CombatTimingSignal boundary = null, string actionId = null)
         {
             ActionStart = actionStart; Fact = fact; Loadout = loadout; Relic = relic; Trigger = trigger;
-            Boundary = boundary; UsesThisWindow = uses; TriggerUsedThisWindow = used;
+            Boundary = boundary; ActionId = actionId; UsesThisWindow = uses; TriggerUsedThisWindow = used;
             bool primaryAction = boundary == null && fact.Event.Provenance?.Origin == CombatEffectOrigin.Primary && fact.Event.Effect?.Source == actor;
             Hand = primaryAction && action == ScoredDuelActionKind.ScoredHand ? hand : null;
             DiscardedCardCount = primaryAction && action == ScoredDuelActionKind.Discard ? discardedCardCount : null;
@@ -41,6 +42,9 @@ namespace PokerEngine
         public string TriggerId { get; }
         public RelicTriggerTiming? Timing { get; }
         public RelicBoundaryTiming? BoundaryTiming { get; }
+        public RelicActionTiming? ActionTiming { get; }
+        /// <summary>Completion window identity, also inherited by its descendant facts.</summary>
+        public string ActionId { get; }
         /// <summary>The enclosing boundary window, also present on its descendant fact activations.</summary>
         public string BoundaryId { get; }
         public long ParentRevision { get; }
@@ -52,7 +56,13 @@ namespace PokerEngine
         {
             TriggerId = context.Trigger.Id; Timing = context.Trigger.Timing; ParentRevision = context.Fact.Event.Revision;
             ParentSequenceIndex = context.Fact.Event.SequenceIndex; Before = context.Relic; After = after; Batch = batch;
-            BoundaryId = context.Boundary?.BoundaryId;
+            BoundaryId = context.Boundary?.BoundaryId; ActionId = context.ActionId;
+        }
+        internal RelicTriggerActivation(RelicActionTriggerSpec spec, CombatTimingEvent clock, BattleRelicState before,
+            BattleRelicState after, CombatReactionBatch batch)
+        {
+            TriggerId = spec.Id; ActionTiming = spec.Timing; ActionId = clock.Signal.BoundaryId;
+            ParentRevision = clock.Revision; ParentSequenceIndex = clock.SequenceIndex; Before = before; After = after; Batch = batch;
         }
         internal RelicTriggerActivation(RelicBoundaryTriggerSpec spec, CombatTimingEvent clock, BattleRelicState before,
             BattleRelicState after, CombatReactionBatch batch)
@@ -205,7 +215,7 @@ namespace PokerEngine
     }
 
     /// <summary>One immutable runtime per action or boundary window. Persistent budgets survive window changes.</summary>
-    internal sealed class RelicReactionRuntime : ICombatBoundaryReactionRuntime
+    internal sealed class RelicReactionRuntime : ICombatBoundaryReactionRuntime, ICombatActionCompletionReactionRuntime
     {
         private readonly TeamBattleState actionStart;
         private readonly ParticipantId actor;
@@ -214,6 +224,9 @@ namespace PokerEngine
         private readonly int? discardedCount;
         private readonly CombatTimingSignal boundary;
         private readonly bool boundaryDispatched;
+        private readonly BattleActionCompletionContext completionContext;
+        private readonly bool completionDispatched;
+        internal BattleActionCompletion Completion { get; }
         private readonly Dictionary<ParticipantId, BattleRelicLoadout> loadouts;
         private readonly Dictionary<string, int> uses;
         private readonly HashSet<Tuple<string, string>> used;
@@ -221,11 +234,13 @@ namespace PokerEngine
         internal BattleRelicLoadout Loadout(ParticipantId owner) => loadouts[owner];
         private RelicReactionRuntime(TeamBattleState state, ParticipantId actor, ScoredDuelActionKind action, HandAttackInfo hand, int? discardedCount,
             Dictionary<ParticipantId, BattleRelicLoadout> loadouts, Dictionary<string, int> uses, HashSet<Tuple<string, string>> used,
-            IEnumerable<RelicTriggerActivation> activations, CombatTimingSignal boundary = null, bool boundaryDispatched = false)
+            IEnumerable<RelicTriggerActivation> activations, CombatTimingSignal boundary = null, bool boundaryDispatched = false,
+            BattleActionCompletionContext completionContext = null, bool completionDispatched = false, BattleActionCompletion completion = null)
         {
             actionStart = state; this.actor = actor; this.action = action; this.hand = hand; this.discardedCount = discardedCount;
             this.loadouts = loadouts; this.uses = uses; this.used = used; Activations = Guard.View(activations.ToArray());
             this.boundary = boundary; this.boundaryDispatched = boundaryDispatched;
+            this.completionContext = completionContext; this.completionDispatched = completionDispatched; Completion = completion;
         }
         internal static RelicReactionRuntime Create(TeamBattleState state, ParticipantId actor, ScoredDuelActionKind action, HandAttackInfo hand, int? discardedCount)
         {
@@ -240,6 +255,53 @@ namespace PokerEngine
 
         internal static bool Handles(TeamBattleState state, CombatTimingSignal signal) => state.Players.Any(player =>
             player.Relics.Relics.Any(relic => player.Relics.RulesFor(relic.InstanceId).BoundaryTriggers.Any(spec => spec.Matches(state.Combat, player.Id, signal))));
+
+        internal static bool HandlesAction(TeamBattleState state, ParticipantId actor, ScoredDuelActionKind action) => state.Players.Any(player =>
+            player.Relics.Relics.Any(relic => player.Relics.RulesFor(relic.InstanceId).ActionTriggers.Any(spec => spec.Matches(state.Combat, player.Id, actor, action))));
+
+        internal RelicReactionRuntime WithCompletion(BattleActionCompletionContext context)
+        {
+            if (context == null || boundary != null || completionContext != null || context.Actor != actor ||
+                context.Signal.ActionKey != action.ToString()) throw new ArgumentException("Completion must belong to this action runtime.");
+            return new RelicReactionRuntime(actionStart, actor, action, hand, discardedCount, loadouts, uses, used, Activations,
+                completionContext: context);
+        }
+
+        public CombatReactionEvaluation ReactActionCompleted(CombatActionCompletionReactionContext context)
+        {
+            // Legacy periodic-only clocks must not manufacture completion subscriptions.
+            if (completionContext == null) return new CombatReactionEvaluation(this);
+            if (context == null || context.Event.Signal.Kind != CombatTimingKind.ActionCompleted ||
+                context.Event.Signal.BoundaryId != completionContext.ActionId || context.Event.Signal.Participants.Count != 1 ||
+                context.Event.Signal.Participants[0] != actor || context.Event.Signal.ActionKey != action.ToString())
+                throw new ArgumentException("Completion runtime must match its authority-owned action.");
+            if (completionDispatched) return new CombatReactionEvaluation(this);
+            var nextLoadouts = new Dictionary<ParticipantId, BattleRelicLoadout>(loadouts);
+            var nextUses = new Dictionary<string, int>(uses, StringComparer.Ordinal); var nextUsed = new HashSet<Tuple<string, string>>(used);
+            var reports = Activations.ToList(); var batches = new List<CombatReactionBatch>();
+            bool finished = actionStart.Players.All(player => !context.State.Get(player.Id).IsAlive) || actionStart.Enemies.All(enemy => !context.State.Get(enemy.Id).IsAlive);
+            var entries = loadouts.Values.SelectMany(loadout => loadout.Relics.SelectMany(relic => loadout.RulesFor(relic.InstanceId).ActionTriggers
+                .Select(spec => new { Owner = loadout.OwnerId, Source = relic.InstanceId, Spec = spec })))
+                .OrderBy(entry => entry.Spec.Priority).ThenBy(entry => entry.Source, StringComparer.Ordinal).ThenBy(entry => entry.Spec.Id, StringComparer.Ordinal);
+            if (!finished) foreach (var entry in entries)
+            {
+                var loadout = nextLoadouts[entry.Owner]; var relic = loadout.Relics.Single(item => item.InstanceId == entry.Source);
+                var spec = entry.Spec; var budget = loadout.RulesFor(entry.Source).TriggerBudget;
+                int count; nextUses.TryGetValue(entry.Source, out count);
+                if (!spec.Matches(context.State, entry.Owner, actor, action) ||
+                    !context.State.Get(entry.Owner).IsAlive && spec.SourcePolicy == CombatReactionSourcePolicy.RequireLiving ||
+                    !RelicTriggerSettlement.CanPay(relic, budget, count, false) || !spec.MatchesConditions(context.State, entry.Owner, completionContext)) continue;
+                var batch = RelicTriggerSettlement.Bind(actionStart, context.State, context.Event, loadout, relic, spec.Id,
+                    spec.Effects, spec.CanTriggerReactions, spec.SourcePolicy, null);
+                if (batch == null) continue;
+                var activation = new RelicTriggerActivation(spec, context.Event, relic, RelicTriggerSettlement.Pay(relic, budget), batch);
+                nextLoadouts[entry.Owner] = loadout.WithRuntime(loadout.Relics.Select(item => item.InstanceId == entry.Source ? activation.After : item));
+                nextUses[entry.Source] = checked(count + 1); nextUsed.Add(Tuple.Create(entry.Source, spec.Id)); reports.Add(activation); batches.Add(batch);
+            }
+            return new CombatReactionEvaluation(new RelicReactionRuntime(actionStart, actor, action, hand, discardedCount,
+                nextLoadouts, nextUses, nextUsed, reports, completionContext: completionContext, completionDispatched: true,
+                completion: finished ? null : new BattleActionCompletion(completionContext, context.Event)), batches);
+        }
 
         public CombatReactionEvaluation ReactBoundary(CombatBoundaryReactionContext context)
         {
@@ -288,13 +350,13 @@ namespace PokerEngine
                 var loadout = nextLoadouts[entry.Owner]; var relic = loadout.Relics.Single(item => item.InstanceId == entry.Source);
                 int count; nextUses.TryGetValue(entry.Source, out count); var key = Tuple.Create(entry.Source, entry.Trigger.Id);
                 var activation = resolver.Resolve(new BattleRelicTriggerContext(actionStart, context, loadout, relic, entry.Trigger,
-                    actor, action, hand, discardedCount, count, nextUsed.Contains(key), boundary));
+                    actor, action, hand, discardedCount, count, nextUsed.Contains(key), boundary, completionContext?.ActionId));
                 if (activation == null) continue;
                 nextLoadouts[entry.Owner] = loadout.WithRuntime(loadout.Relics.Select(item => item.InstanceId == entry.Source ? activation.After : item));
                 nextUses[entry.Source] = checked(count + 1); nextUsed.Add(key); reports.Add(activation); batches.Add(activation.Batch);
             }
             return new CombatReactionEvaluation(batches.Count == 0 ? this : new RelicReactionRuntime(actionStart, actor, action, hand, discardedCount,
-                nextLoadouts, nextUses, nextUsed, reports, boundary, boundaryDispatched), batches);
+                nextLoadouts, nextUses, nextUsed, reports, boundary, boundaryDispatched, completionContext, completionDispatched, Completion), batches);
         }
     }
 
@@ -304,10 +366,10 @@ namespace PokerEngine
         {
             foreach (var rules in loadout.Relics.Select(relic => loadout.RulesFor(relic.InstanceId)))
             {
-                foreach (var condition in rules.Triggers.SelectMany(item => item.Conditions).Concat(rules.BoundaryTriggers.SelectMany(item => item.Conditions))
+                foreach (var condition in rules.Triggers.SelectMany(item => item.Conditions).Concat(rules.BoundaryTriggers.SelectMany(item => item.Conditions)).Concat(rules.ActionTriggers.SelectMany(item => item.Conditions))
                     .Where(item => item.StatusId.HasValue))
                     if (catalog?.Get(condition.StatusId.Value) == null) throw new ArgumentException("Relic status conditions require a catalog.");
-                foreach (var status in rules.Triggers.SelectMany(item => item.Effects).Concat(rules.BoundaryTriggers.SelectMany(item => item.Effects))
+                foreach (var status in rules.Triggers.SelectMany(item => item.Effects).Concat(rules.BoundaryTriggers.SelectMany(item => item.Effects)).Concat(rules.ActionTriggers.SelectMany(item => item.Effects))
                     .Where(step => step.Effect.Status != null).Select(step => step.Effect.Status))
                 {
                     var definition = catalog?.Get(status.DefinitionId) ?? throw new ArgumentException("Relic status effects require a catalog.");

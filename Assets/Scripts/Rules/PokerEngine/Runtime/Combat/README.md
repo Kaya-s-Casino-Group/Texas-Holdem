@@ -79,9 +79,9 @@ CombatEvent 保留原 Effect，新增 OutgoingAmountModification / IncomingAmoun
 
 成功时 `CombatTransition.ReactionRuntime` 返回最后的不可变草案，失败时为 null、状态仍为输入、事件为空。调用方必须与其外层事务共同提交，不能在 React 内写外部状态；预览也因此不消费真实预算。`Provenance.ActivationId` 将同组效果关联到激活报告，外部 provider 填写 SourceInstanceId 不具有写入运行状态的权限。目标后来死亡仍跳过，不撤销已经入队的激活；真正错误则撤销整批。
 
-`ICombatReactionRuntime.React` 仍只接收可继续触发的实际效果事实。可选扩展 `ICombatBoundaryReactionRuntime.ReactBoundary(CombatBoundaryReactionContext)` 接收 BattleStarted、PhaseStarted、PhaseEnding 时钟；旧 fact-only runtime 与 provider 不会收到 Effect 为空的时钟，ActionCompleted 也不进入边界钩子。开战和阶段是否成立由 Composition 决定，Combat 不负责轮维护或胜负判定。
+`ICombatReactionRuntime.React` 仍只接收可继续触发的实际效果事实。可选扩展 `ICombatBoundaryReactionRuntime.ReactBoundary(CombatBoundaryReactionContext)` 接收 BattleStarted、PhaseStarted、PhaseEnding 时钟；旧 fact-only runtime 与 provider 不会收到 Effect 为空的时钟，ActionCompleted 也不进入边界钩子。独立可选扩展 `ICombatActionCompletionReactionRuntime.ReactActionCompleted(CombatActionCompletionReactionContext)` 只接收 ActionCompleted，复用周期消费后的队列位置和最新快照；旧边界实现不自动获得完成订阅。开战、阶段和实际操作是否成立由 Composition 决定，Combat 不负责轮维护或胜负判定。
 
-`ResolveTiming` 先发出时钟事实，处理已有周期伤害及其次数消费，再以最新临时 CombatState 调用一次边界 runtime。边界批次与周期条目共用原队列、总效果数与深度限制，父事实是该时钟、RootEffectIndex=-1、首层 Depth=1。边界后新施加的周期状态不会在同一时钟补触发。周期伤害仍为叶子；边界效果能否产生后继事实反应由 CanTriggerReactions 控制，随后复用原状态 → provider → runtime 顺序。ResolveTiming 新增可选 reactionProvider，仅用于真正的可触发效果事实。
+`ResolveTiming` 先发出时钟事实，处理已有周期伤害及其次数消费，再以最新临时 CombatState 调用一次对应的边界或完成 runtime。边界批次与周期条目共用原队列、总效果数与深度限制，父事实是该时钟、RootEffectIndex=-1、首层 Depth=1。边界后新施加的周期状态不会在同一时钟补触发。周期伤害仍为叶子；边界效果能否产生后继事实反应由 CanTriggerReactions 控制，随后复用原状态 → provider → runtime 顺序。ResolveTiming 新增可选 reactionProvider，仅用于真正的可触发效果事实。
 
 无效返回、未知目标、重复激活 Id、队列超限都会回滚周期与边界的整个批次及 NextRuntime。新增时钟枚举不自动扩展 PeriodicDamageSpec 的有效时机，它仍只接受 ActionCompleted / PhaseEnding。配置、共享预算与期限详见 [遗物边界触发](../../README.md#遗物开战与阶段边界触发)。
 
@@ -99,7 +99,7 @@ CombatEvent 保留原 Effect，新增 OutgoingAmountModification / IncomingAmoun
 
 同一伤害事实先生成防守方盾反，再生成攻击方吸血；同组按 Statuses 保存顺序、行为声明顺序、目标顺序执行。次数消耗及反应均在同一事务内；反伤中途击杀攻击者后，后续吸血不会复活它，其剩余主效果继续按死亡规则取消。盾反默认 RequireLiving，致死打击后不触发；配置 `sourcePolicy: CombatReactionSourcePolicy.AllowDefeated` 可保留致死时已经产生的护盾吸收反应，仍经过承伤与护盾。双亡胜负仍由原有 Composition 规则决定。
 
-`CombatTargetSpec` 支持 Self、EventSource、EventTarget、Opponents、Allies，后两者可选 FirstLiving／LowestHealth／HighestHealth／AllLiving；每个 AOE 目标获得完整派生量，不分摊。`CombatTargetResolver` 读取当前结算快照，按绝对生命选择低／高血量，平手保留阵容顺序，友方包含自身。事件端点死亡则为空，不悄悄换人；无存活候选也是正常空结果。允许已知死亡 owner 解析目标，是否能产生效果仍由行为的来源策略决定。Composition 的主计划自动选择复用此底层，但 Requested／ActorPolicy、活来源校验和主计划非空要求仍在原层，旧目标选择行为保持不变。
+`CombatTargetSpec` 支持 Self、EventSource、EventTarget、Opponents、Allies，后两者可选 FirstLiving／LowestHealth／HighestHealth／AllLiving；每个 AOE 目标获得完整派生量，不分摊。`CombatTargetResolver` 读取当前结算快照，按绝对生命选择低／高血量，平手保留阵容顺序，友方包含自身。事件端点死亡则为空，不悄悄换人；无存活候选也是正常空结果。允许已知死亡 owner 解析目标，是否能产生效果仍由行为的来源策略决定。新增 EventActor 只从 ActionCompleted 时钟的唯一参与者解析，不从效果 Source 推断；缺少该时钟时拒绝，死亡行动者返回空。仅完成订阅支持 EventActor，状态反应、周期状态、遗物事实/边界配置明确拒绝。Composition 的主计划自动选择复用此底层，但 Requested／ActorPolicy、活来源校验和主计划非空要求仍在原层，旧目标选择行为保持不变。
 
 ForTriggers 状态只在生成至少一条正数、有存活目标的派生时消费一次；AOE 以“状态实例＋父事实”计一次，不按目标数扣。取整为零、没有吸收／扣血／溢出或无目标均不扣次数；Stacks 不随次数下降。触发资格、数值和目标固定后消费，次数用尽移除状态，但不取消已入队的 AOE 兄弟效果；后续目标死亡导致跳过也不退还此次消费。消费事实使用 Consumed 原因，Effect 指触发它的父效果，Provenance 记录本次状态激活；它只记录事实，不另行进入触发入口。后续真正结算的子效果读取消费后的状态。
 
@@ -117,7 +117,7 @@ var catalog = new CombatStatusCatalog("example.reactions.1", new[] { leech, over
 
 ### 流血、中毒与时钟入口
 
-`PeriodicDamageSpec(timing, damagePerStack, target)` 配置固定每层伤害，默认目标 Self。流血配置 ActionCompleted，中毒配置 PhaseEnding；定义 ID 没有内置语义。数值为 `checked(DamagePerStack * Stacks)`，零伤害合法，不做叠层衰减。目标选择以状态持有者为参照，伤害 Source 保留原状态施加者，Provenance.Owner 记录持有者；来源必须是已知参与者，已死亡施加者仍有效。目标支持 Self / Allies / Opponents 及既有选择策略，时钟没有伤害端点，因此配置 EventSource / EventTarget 时拒绝。
+`PeriodicDamageSpec(timing, damagePerStack, target)` 配置固定每层伤害，默认目标 Self。流血配置 ActionCompleted，中毒配置 PhaseEnding；定义 ID 没有内置语义。数值为 `checked(DamagePerStack * Stacks)`，零伤害合法，不做叠层衰减。目标选择以状态持有者为参照，伤害 Source 保留原状态施加者，Provenance.Owner 记录持有者；来源必须是已知参与者，已死亡施加者仍有效。目标支持 Self / Allies / Opponents 及既有选择策略，时钟没有伤害端点，因此配置 EventSource / EventTarget / EventActor 时拒绝。
 
 `CombatEngine.ResolveTiming(state, expectedRevision, signal, incomingDamage, statusCatalog, reactionLimits)` 复用统一结算器；信号由 `CombatTimingSignal.ActionCompleted(boundaryId, actor, actionKey)` 或 `PhaseEnding(boundaryId, participants, phaseKey)` 声明。Combat 不认识出牌、弃牌或阵营阶段推进，由 Composition 提供真实行动与所属阵营名单。BoundaryId 用于审计／因果定位，不是独立去重账本；宿主按 expectedRevision 提交，模式负责每个真实边界只派发一次。直接调用即生成 CombatTimingEvent 并推进一次 Revision，即使没有可用状态或效果；未知参与者、重复名单、非法标识拒绝。
 
@@ -131,7 +131,7 @@ TeamBattle / CardDuel 的接入顺序：
 - 本阵营最后行动结束时，整队派发一次 PhaseEnding；玩家身上的中毒在玩家阶段末结算，敌人中毒在敌人阶段末结算，被眩晕仍会结算。当次行动／阶段内新施加的状态可以触发。
 - 阶段周期伤害先于既有清盾与 EndPhase / EndRound 到期清理；清盾与这两种到期清理的原相对顺序保留。最后一跳仍可读取尚未到期的状态和护盾。
 - 主行动或行动后流血已经终结战斗时，不再启动下一个时钟；已启动的周期批次不提前按胜负中断。结算后依据实际存活者重建敌人队列并决定胜负／推进回合。
-- 未施加匹配时机的存活周期状态时，不调用时钟入口，保持旧默认事件与 Revision 行为。不自动为角色或牌型附加流血／中毒，弃牌默认奖励不变。
+- 未施加匹配时机的存活周期状态、也没有匹配遗物边界/完成订阅时，不调用时钟入口，保持旧默认事件与 Revision 行为。不自动为角色或牌型附加流血／中毒，弃牌默认奖励不变。
 
 推荐持续方式为 ForTriggers：流血表示剩余行动机会，中毒表示剩余阶段结算机会。UntilRemoved、阶段末、轮次末期限也可复用；周期入口不自行清理这些期限，由原生命周期边界清理。KeepLonger 仍取层数和期限的较大值，IndependentInstances 仍独立结算；没有层数相加、逐跳减层或新免疫标签。SkipActionWindow、EndPhase、EndRound 本身不会作为即时反应钩子。
 

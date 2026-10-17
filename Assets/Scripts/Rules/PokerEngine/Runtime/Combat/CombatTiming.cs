@@ -46,7 +46,7 @@ namespace PokerEngine
             if ((timing != CombatTimingKind.ActionCompleted && timing != CombatTimingKind.PhaseEnding) || damagePerStack < 0)
                 throw new ArgumentException("Periodic damage requires a supported clock and nonnegative strength.");
             Target = target ?? CombatTargetSpec.Self();
-            if (Target.Group == CombatTargetGroup.EventSource || Target.Group == CombatTargetGroup.EventTarget)
+            if (Target.Group == CombatTargetGroup.EventSource || Target.Group == CombatTargetGroup.EventTarget || Target.Group == CombatTargetGroup.EventActor)
                 throw new ArgumentException("A clock has no settled effect endpoints; select relative to the status holder.");
             Timing = timing; DamagePerStack = damagePerStack;
         }

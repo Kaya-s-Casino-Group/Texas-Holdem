@@ -155,7 +155,8 @@ namespace PokerEngine
                 {
                     clock = new CombatTimingEvent(revision, events.Count, signal); events.Add(clock);
                     // A marker under the periodic entries dispatches once, using the post-tick snapshot.
-                    if (signal.Kind != CombatTimingKind.ActionCompleted && reactionRuntime is ICombatBoundaryReactionRuntime)
+                    if (signal.Kind == CombatTimingKind.ActionCompleted ? reactionRuntime is ICombatActionCompletionReactionRuntime :
+                        reactionRuntime is ICombatBoundaryReactionRuntime)
                         queue.Push(new QueuedEffect(clock));
                     // Eligibility/targets are evaluated when each status reaches the head, so an earlier
                     // tick can kill a later holder. Snapshot only identities, in stable stored order.
@@ -179,7 +180,9 @@ namespace PokerEngine
                         try
                         {
                             var current = new CombatState(state.Id, state.Revision, state.Combatants.Select(unit => units[unit.Id]), statuses);
-                            var evaluation = ((ICombatBoundaryReactionRuntime)reactionRuntime).ReactBoundary(new CombatBoundaryReactionContext(current, queued.Boundary));
+                            var evaluation = queued.Boundary.Signal.Kind == CombatTimingKind.ActionCompleted ?
+                                ((ICombatActionCompletionReactionRuntime)reactionRuntime).ReactActionCompleted(new CombatActionCompletionReactionContext(current, queued.Boundary)) :
+                                ((ICombatBoundaryReactionRuntime)reactionRuntime).ReactBoundary(new CombatBoundaryReactionContext(current, queued.Boundary));
                             var responses = new List<QueuedEffect>();
                             var error = AddRuntimeReactions(evaluation, queued.Boundary, unitIds, activationIds, reactionLimits, ref reactionCount, responses);
                             if (error != CombatError.None) return new CombatTransition(state, error);

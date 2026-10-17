@@ -78,15 +78,16 @@ namespace PokerEngine
         public BattleActionCostResolution ActionCost { get; }
         public IReadOnlyList<BattleDrawRecord> Draws { get; }
         public IReadOnlyList<RelicTriggerActivation> RelicActivations { get; }
+        public BattleActionCompletion ActionCompletion { get; }
         public IReadOnlyList<CombatRuleEvent> RuleEvents { get; }
         public IReadOnlyList<CombatEvent> Events { get; }
         internal CardDuelTransition(CardDuelState state, CardDuelError error = CardDuelError.None,
             ScoreResult score = null, IEnumerable<CombatRuleEvent> events = null, PokerHandClassification pattern = null, DamagePlan damage = null, DiscardRewardResolution discardReward = null, BattleEffectPlan effectPlan = null,
             BattleActionCostResolution actionCost = null, IEnumerable<BattleDrawRecord> draws = null,
-            IEnumerable<RelicTriggerActivation> relicActivations = null)
+            IEnumerable<RelicTriggerActivation> relicActivations = null, BattleActionCompletion actionCompletion = null)
         {
             State = state; Error = error; Score = score; Pattern = pattern; Damage = damage; DiscardReward = discardReward; EffectPlan = effectPlan;
-            ActionCost = actionCost; Draws = Guard.View(Guard.Copy(draws ?? Array.Empty<BattleDrawRecord>(), nameof(draws)));
+            ActionCost = actionCost; ActionCompletion = actionCompletion; Draws = Guard.View(Guard.Copy(draws ?? Array.Empty<BattleDrawRecord>(), nameof(draws)));
             RelicActivations = Guard.View(Guard.Copy(relicActivations ?? Array.Empty<RelicTriggerActivation>(), nameof(relicActivations)));
             RuleEvents = Guard.View(Guard.Copy(events ?? Array.Empty<CombatRuleEvent>(), nameof(events)));
             Events = Guard.View(RuleEvents.OfType<CombatEvent>().ToArray());
@@ -257,6 +258,7 @@ namespace PokerEngine
                     if (!actionCost.CanAfford) return new CardDuelTransition(state, CardDuelError.InsufficientEnergy);
                 }
                 var draws = new List<BattleDrawRecord>();
+                BattleActionCompletion actionCompletion = null;
                 IReadOnlyList<RelicTriggerActivation> relicActivations = Array.Empty<RelicTriggerActivation>();
                 var zones = state.Table.Zones.ToArray(); var random = state.Random; var duel = state.Duel;
                 var discards = state.Duel.Players.ToDictionary(x => x.Id, x => state.DiscardsFor(x.Id)); ScoreResult score = null; PokerHandClassification pattern = null; DamagePlan damage = null; DiscardRewardResolution discardReward = null; BattleEffectPlan effectPlan = null; IReadOnlyList<CombatRuleEvent> events = Array.Empty<CombatRuleEvent>();
@@ -284,7 +286,7 @@ namespace PokerEngine
                         targetBindings: targetBindings);
                     if (!hit.Accepted) return new CardDuelTransition(state, hit.Error);
                     actionCost = hit.ActionCost;
-                    relicActivations = hit.RelicActivations;
+                    relicActivations = hit.RelicActivations; actionCompletion = hit.ActionCompletion;
                     duel = hit.State; events = hit.RuleEvents; damage = hit.Damage; effectPlan = hit.EffectPlan; Move(zones, actor, CardZoneKinds.Hand, CardZoneKinds.Played, ordered.Select(card => card.Id));
                     if (!duel.IsFinished)
                     {
@@ -299,12 +301,12 @@ namespace PokerEngine
                     var spent = Duel.Execute(duel, duel.Revision, actor, ScoredDuelActionKind.Discard, requestedTargets: targets, discardedCards: cards);
                     if (!spent.Accepted) return new CardDuelTransition(state, spent.Error);
                     actionCost = spent.ActionCost;
-                    relicActivations = spent.RelicActivations;
+                    relicActivations = spent.RelicActivations; actionCompletion = spent.ActionCompletion;
                     duel = spent.State; events = spent.RuleEvents; discardReward = spent.DiscardReward; effectPlan = spent.EffectPlan;
                     Move(zones, actor, CardZoneKinds.Hand, CardZoneKinds.Discard, state.Zone(CardZoneKinds.Hand, actor).Cards.Where(ids.Contains));
                     if (!duel.Player(actor).Rules.UnlimitedDiscards) discards[actor]--;
-                    // A newly terminal boundary stops subsequent dealing; retain legacy discard settlement otherwise.
-                    if (!duel.IsFinished || !relicActivations.Any(activation => activation.BoundaryTiming.HasValue))
+                    // Completion/boundary victories stop dealing; preserve legacy discard settlement otherwise.
+                    if (!duel.IsFinished || !relicActivations.Any(activation => activation.BoundaryTiming.HasValue || activation.ActionTiming.HasValue))
                     {
                         var error = Deal(state.Table, zones, duel.Player(actor), CardDuelDealTrigger.AfterDiscard, ref random, draws);
                         if (error != CardDuelError.None) return new CardDuelTransition(state, error);
@@ -346,7 +348,7 @@ namespace PokerEngine
                 }
                 var table = new CardTableState(state.Table.MatchId, state.Table.Cards, zones, checked(state.Revision + 1));
                 return new CardDuelTransition(new CardDuelState(table, duel, random, discards, true), score: score, events: events, pattern: pattern, damage: damage, discardReward: discardReward, effectPlan: effectPlan, actionCost: actionCost, draws: draws,
-                    relicActivations: relicActivations);
+                    relicActivations: relicActivations, actionCompletion: actionCompletion);
             }
             catch (OverflowException) { return new CardDuelTransition(state, CardDuelError.Overflow); }
         }

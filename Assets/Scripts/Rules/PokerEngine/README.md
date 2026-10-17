@@ -460,7 +460,7 @@ Composition 的 `BattleRelicTriggerResolver` 只生成激活草案；不可变�
 
 `TeamBattleTransition.RelicActivations` 与 `CardDuelTransition.RelicActivations` 提供激活 Id、父事实 Revision/SequenceIndex、持有者/实例/条目、预算前后快照及目标已绑定的批次；对应事实的 Provenance.ActivationId 可关联同次激活。原 EffectPlan 仍仅表示主动计划。次数与冷却随完整行动提交；后续数值溢出、补牌失败、触发链超限，以及 Session 后续自动步骤失败，都会撤销生命、护盾、状态、遗物、资源、牌区和 RNG，失败不发布激活报告。预览返回同样的临时结果，不修改原状态。
 
-出牌/弃牌完成、状态到期尚未提供遗物订阅；默认无收益的弃牌没有虚构效果事实。周期伤害保持叶子，清盾等阶段维护不进入此事实入口。开战和阶段起止使用下述独立边界入口；限次的被动数值/结构/费用修正仍未接入。
+状态到期尚未提供遗物订阅；默认无收益的弃牌没有虚构效果事实，完成订阅使用下述独立行动入口。周期伤害保持叶子，清盾等阶段维护不进入此事实入口。开战和阶段起止使用下述独立边界入口；限次的被动数值/结构/费用修正仍未接入。
 
 只有非空触发配置才追加 `battle-relic.triggers.1` 指纹段，保留旧空/数值/结构/规则配置指纹。schema v1 继续只存运行状态，反序列化要求同一外部配置绑定，冷却、次数和记忆原样恢复。RelicDefinition 的有限 Charges 不再要求旧 AbilityId，以支持独立的主线触发；旧主动能力与旧计分效果不会因此自动安装。
 
@@ -474,12 +474,12 @@ Composition 的 `BattleRelicTriggerResolver` 只生成激活草案；不可变�
 | PhaseStarted | 进入一方完整阶段后、任何单位行动或控制跳过之前 | OwnerTeam / OpponentTeam / Any |
 | PhaseEnding | 一方全部行动/跳过结束，周期伤害结算后，清盾及状态到期之前 | OwnerTeam / OpponentTeam / Any |
 
-边界只接受持有者生命比例、持有者已有状态条件，条件按 AND 组合；不伪造效果来源、目标、牌型或弃牌数量，直接边界效果禁止 EventSource / EventTarget。派生出的真实效果仍可被事实触发监听。眩晕不禁止被动触发，持有者默认必须存活；AllowDefeated 显式开放死亡来源，但不复活死亡目标，也不在整场战斗已结束后再开启边界。
+边界只接受持有者生命比例、持有者已有状态条件，条件按 AND 组合；不伪造效果来源、目标、牌型或弃牌数量，直接边界效果禁止 EventSource / EventTarget / EventActor。派生出的真实效果仍可被事实触发监听。眩晕不禁止被动触发，持有者默认必须存活；AllowDefeated 显式开放死亡来源，但不复活死亡目标，也不在整场战斗已结束后再开启边界。
 
 结算顺序：
 
 1. 开战：绑定与初始能量 → BattleStarted 完整队列 → 首次玩家 PhaseStarted 完整队列 → 开局发牌 → 控制检查/玩家决策。两窗口之间不重置轮次数或冷却，也不把 InitialEnergy 补成 MaxEnergy。
-2. 阶段结束：最后行动与即时反应 → ActionCompleted 周期伤害 → PhaseEnding 周期伤害与次数消费 → 遗物 PhaseEnding → 既有清盾 → EndPhase 到期 → 必要时 EndRound 到期 → 终局/轮数上限检查。
+2. 阶段结束：最后行动与即时反应 → ActionCompleted 周期伤害与遗物完成触发 → PhaseEnding 周期伤害与次数消费 → 遗物 PhaseEnding → 既有清盾 → EndPhase 到期 → 必要时 EndRound 到期 → 终局/轮数上限检查。
 3. 敌方阶段开始：切换阶段 → PhaseStarted → 按实际存活者刷新敌人行动队列。下一玩家阶段开始：进入新轮 → 清 UsesThisRound、递减冷却、清 Round 记忆、恢复能量 → PhaseStarted → 收牌/发牌 → 控制检查。
 
 同一个 PhaseEnding 的周期伤害与遗物反应复用一条队列和总条数/深度限制。遗物条件读取周期伤害后的状态；此时新施加的中毒不会在同一边界补触发一次。终局发生后，已经入队的效果按原死亡跳过规则结算完，不开启后续边界或发牌；AfterEnemyPhase 清盾也会清掉该敌方结束边界刚获得的护盾。旧的非边界弃牌结算路径保持兼容。
@@ -501,6 +501,45 @@ var rules = new BattleRelicRules("boundary-example.1", boundaryTriggers: new[] {
 ```
 
 `RelicTriggerActivation.Timing` 现在可空，直接边界激活使用 `BoundaryTiming`；边界及其事实派生报告携带同一个 BoundaryId，父 Revision/SequenceIndex 和效果 Provenance 仍可追溯。CardDuel.Start 的开战效果与发牌共同提交，TeamBattle 内的行动、阶段结束、阶段开始共同提交；溢出、队列超限、后续补牌或 Session 自动步骤失败时整体回滚。没有新增供客户端任意调用的边界命令，规则层内部依阶段推进发出信号。
+
+## 遗物出牌与弃牌完成触发
+
+`BattleRelicRules(..., actionTriggers: ...)` 接受 `RelicActionTriggerSpec`。`PlayCompleted` / `DiscardCompleted` 表示一次合法操作的战斗效果结算完成：主效果与即时反应 → 原位置扣能量 → 行动后流血及其次数消费 → 完成触发与允许的事实派生 → 阶段结束/到期/推进 → 原牌区移动与自动补牌。此处尚未补牌，也不等待动画。空收益弃牌和零费用行动同样成立；多牌、多段、AOE 都只派发一次。非法输入、主动结束、眩晕跳过、CollectPlayed、敌人行动不触发这两个订阅。
+
+| 配置 | 可用值及语义 |
+| --- | --- |
+| Timing | PlayCompleted / DiscardCompleted |
+| Relation | OwnerIsActor / AllyIsActor（含自身）/ OpponentIsActor / Any；与遗物拥有者比较 |
+| Conditions | AND；共同支持 OwnerHealthAtMost、OwnerHasStatus；出牌支持 HandIs、SubmittedCardsAtLeast；弃牌支持 DiscardedCardsAtLeast |
+| Effects / Target | 复用五种基础效果；Self、Allies、Opponents、EventActor；每条效果独立选单体/AOE |
+| Priority | 数值升序，其次按遗物实例 Id、条目 Id 的 ordinal 顺序；不依赖装配顺序 |
+| SourcePolicy / CanTriggerReactions | 默认存活来源、叶子效果；显式开放死亡来源或后继事实触发 |
+
+`EventActor` 是完成该操作的行动者，`Self` 和效果 Source 仍是遗物拥有者。例如队友出牌后给队友加盾，应配 AllyIsActor + EventActor。死亡行动者返回空目标，不改选他人。完成入口没有效果端点，拒绝 EventSource / EventTarget 以及 FactAtLeast / EventStatus；事实、边界、周期状态及即时状态反应配置也拒绝没有上下文的 EventActor。卡牌条件使用权威快照；旧 TeamBattle 调用没有 Hand 时视为未知，不伪造牌型或张数。
+
+完成触发沿用本次行动的不可变 RelicReactionRuntime，主效果的事实触发、完成直接触发及其派生事实共用 MaxUsesPerAction / MaxUsesPerRound / Charges / CooldownRounds；不创建独立边界预算，不适用 MaxUsesPerBoundary / PerBoundary。主效果已经消费的次数不会被高优先级完成触发抢占；PerAction 事实条目先前已触发则不因完成派生再触发。每个直接条目每次操作只检查一次，候选按顺序预占共享预算；所有效果均为零或没有目标时不支付。免费操作不推进冷却，仍只在下一玩家轮维护次数、冷却和 Round 记忆。
+
+完成条件及目标读取流血和次数消费后的快照，新增流血不会在同一时钟再跳一次。完成效果及其派生状态沿用行动开始的相对期限：ThroughCurrentRound 指本轮，玩家行动中的 ThroughNextPhase(enemy) 指本轮敌方阶段末，ThroughNextPhase(player) 指下一轮玩家阶段末。主效果或流血已经终局时不再激活完成触发；完成队列中的死亡跳过保持不变，已入队效果结算完后不启动后续边界或补牌。
+
+```csharp
+var discardHeal = new RelicActionTriggerSpec("discard-heal", RelicActionTiming.DiscardCompleted,
+    new[] { new RelicTriggeredEffectSpec(BattleEffectSpec.Heal(3), CombatTargetSpec.EventActor()) },
+    conditions: new[] { RelicTriggerConditionSpec.DiscardedCardsAtLeast(2) });
+var pairShield = new RelicActionTriggerSpec("pair-shield", RelicActionTiming.PlayCompleted,
+    new[] { new RelicTriggeredEffectSpec(BattleEffectSpec.GainBlock(5), CombatTargetSpec.Self()) },
+    conditions: new[] { RelicTriggerConditionSpec.HandIs(HandCategory.OnePair) });
+var allyShield = new RelicActionTriggerSpec("ally-play-shield", RelicActionTiming.PlayCompleted,
+    new[] { new RelicTriggeredEffectSpec(BattleEffectSpec.GainBlock(2), CombatTargetSpec.EventActor()) },
+    relation: RelicActionRelation.AllyIsActor);
+var rules = new BattleRelicRules("completion-example.1", actionTriggers: new[] { discardHeal, pairShield, allyShield },
+    triggerBudget: new RelicTriggerBudgetSpec(maxUsesPerAction: 1, maxUsesPerRound: 2));
+```
+
+TeamBattleTransition / CardDuelTransition 的 `ActionCompletion` 返回 Composition 层的 Context 和通用时钟 Clock。Context 包含稳定 ActionId、Timing、Actor、RoundScope、Phase、Hand 或 DiscardedCards、推导的 SelectedCardCount、ActionCost、EnergyBefore / EnergyAfter；Clock 提供 Revision / SequenceIndex。只在匹配了完成订阅且通过终局检查时产生报告，未实际激活（条件或预算不满足）仍可有报告。无匹配配置或失败时为 null。时钟先写入事件，再完成周期结算与完成派发，所以 Clock 的位置是因果根，不代表完成效果已经生效。
+
+直接激活报告使用 `ActionTiming`，自身及派生事实携带同一个 ActionId；其他 Timing / BoundaryTiming 仍区分事实和边界。牌型/弃牌事实不会传播到派生事实条件。完成触发、费用、状态、牌区、随机和发牌共同提交；预览不消费真实状态，队列超限、溢出、后续补牌或 Session 自动步骤失败均整次回滚且不发布完成报告。
+
+仅非空 ActionTriggers 才追加 `battle-relic.actions.1` 指纹段，旧配置指纹和 schema v1 运行快照格式保持不变。无完成订阅时不新增时钟、事件或 Revision，既有牌型效果与默认弃牌行为不变。此处仍为规则层配置接口，没有新增表现层或配置编辑器，也没有向客户端开放任意派发完成事件的命令。
 
 ## 计分模块
 

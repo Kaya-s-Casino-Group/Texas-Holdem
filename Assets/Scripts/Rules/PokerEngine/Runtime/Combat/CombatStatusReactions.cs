@@ -11,7 +11,7 @@ namespace PokerEngine
         public CombatReactionSourcePolicy SourcePolicy { get; }
         protected StatusReactionBehaviorSpec(decimal ratio, CombatTargetSpec target, CombatReactionSourcePolicy sourcePolicy)
         {
-            if (ratio < 0 || !Enum.IsDefined(typeof(CombatReactionSourcePolicy), sourcePolicy))
+            if (target?.Group == CombatTargetGroup.EventActor || ratio < 0 || !Enum.IsDefined(typeof(CombatReactionSourcePolicy), sourcePolicy))
                 throw new ArgumentException("Status reactions require a nonnegative ratio and a supported source policy.");
             Ratio = ratio; Target = target ?? throw new ArgumentNullException(nameof(target)); SourcePolicy = sourcePolicy;
         }

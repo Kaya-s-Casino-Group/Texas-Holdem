@@ -43,15 +43,17 @@ namespace PokerEngine
         public IReadOnlyList<RelicRefillRuleSpec> RefillRules { get; }
         public IReadOnlyList<RelicTriggerSpec> Triggers { get; }
         public IReadOnlyList<RelicBoundaryTriggerSpec> BoundaryTriggers { get; }
+        public IReadOnlyList<RelicActionTriggerSpec> ActionTriggers { get; }
         public RelicTriggerBudgetSpec TriggerBudget { get; }
-        internal bool HasTriggers => Triggers.Count > 0 || BoundaryTriggers.Count > 0;
+        internal bool HasTriggers => Triggers.Count > 0 || BoundaryTriggers.Count > 0 || ActionTriggers.Count > 0;
         internal bool HasBoundaryConfiguration => BoundaryTriggers.Count > 0 || TriggerBudget?.MaxUsesPerBoundary != null ||
             Triggers.Any(trigger => trigger.Occurrence == RelicTriggerOccurrence.PerBoundary);
         public static BattleRelicRules Empty { get; } = new BattleRelicRules("battle-relic.empty.1");
         public BattleRelicRules(string version, IEnumerable<RelicNumericModifierSpec> modifiers = null,
             IEnumerable<RelicHandEffectModifierSpec> handEffects = null, IEnumerable<RelicRuleValueSpec> ruleValues = null,
             IEnumerable<RelicRefillRuleSpec> refillRules = null, IEnumerable<RelicTriggerSpec> triggers = null,
-            RelicTriggerBudgetSpec triggerBudget = null, IEnumerable<RelicBoundaryTriggerSpec> boundaryTriggers = null)
+            RelicTriggerBudgetSpec triggerBudget = null, IEnumerable<RelicBoundaryTriggerSpec> boundaryTriggers = null,
+            IEnumerable<RelicActionTriggerSpec> actionTriggers = null)
         {
             Version = Guard.Text(version, nameof(version));
             var items = Guard.Copy(modifiers ?? Array.Empty<RelicNumericModifierSpec>(), nameof(modifiers));
@@ -60,17 +62,18 @@ namespace PokerEngine
             var refills = Guard.Copy(refillRules ?? Array.Empty<RelicRefillRuleSpec>(), nameof(refillRules));
             var triggered = Guard.Copy(triggers ?? Array.Empty<RelicTriggerSpec>(), nameof(triggers));
             var boundaries = Guard.Copy(boundaryTriggers ?? Array.Empty<RelicBoundaryTriggerSpec>(), nameof(boundaryTriggers));
-            if (triggered.Length + boundaries.Length == 0 && triggerBudget != null) throw new ArgumentException("A trigger budget requires trigger entries.");
+            var actions = Guard.Copy(actionTriggers ?? Array.Empty<RelicActionTriggerSpec>(), nameof(actionTriggers));
+            if (triggered.Length + boundaries.Length + actions.Length == 0 && triggerBudget != null) throw new ArgumentException("A trigger budget requires trigger entries.");
             var ids = items.Select(item => item.Id).Concat(structural.Select(item => item.Id))
                 .Concat(values.Select(item => item.Id)).Concat(refills.Select(item => item.Id)).Concat(triggered.Select(item => item.Id))
-                .Concat(boundaries.Select(item => item.Id)).ToArray();
+                .Concat(boundaries.Select(item => item.Id)).Concat(actions.Select(item => item.Id)).ToArray();
             if (ids.Length > 32 || ids.Distinct(StringComparer.Ordinal).Count() != ids.Length)
                 throw new ArgumentException("A relic supports at most 32 distinctly named battle modifiers.");
             RelicHandEffectValidation.Combinations(structural);
             RelicRuleValidation.Refills(refills);
             Modifiers = Guard.View(items); HandEffects = Guard.View(structural);
             RuleValues = Guard.View(values); RefillRules = Guard.View(refills);
-            Triggers = Guard.View(triggered); BoundaryTriggers = Guard.View(boundaries);
+            Triggers = Guard.View(triggered); BoundaryTriggers = Guard.View(boundaries); ActionTriggers = Guard.View(actions);
             TriggerBudget = HasTriggers ? triggerBudget ?? new RelicTriggerBudgetSpec() : null;
         }
         internal void Write(BinaryWriter writer)
@@ -99,6 +102,7 @@ namespace PokerEngine
                     if (RuleValues.Count != 0 || RefillRules.Count != 0) { writer.Write("battle-relic.rules.1"); WriteRules(writer); }
                     if (Triggers.Count != 0) { writer.Write("battle-relic.triggers.1"); WriteTriggers(writer); }
                     if (HasBoundaryConfiguration) { writer.Write("battle-relic.boundaries.1"); WriteBoundaries(writer); }
+                    if (ActionTriggers.Count != 0) { writer.Write("battle-relic.actions.1"); WriteActions(writer); }
                 }
                 return stream.ToArray();
             }
@@ -116,6 +120,13 @@ namespace PokerEngine
             if (Triggers.Count == 0) return;
             TriggerBudget.Write(writer);
             foreach (var spec in Triggers) spec.Write(writer);
+        }
+        internal void WriteActions(BinaryWriter writer)
+        {
+            writer.Write(Version); writer.Write(ActionTriggers.Count);
+            if (ActionTriggers.Count == 0) return;
+            TriggerBudget.Write(writer);
+            foreach (var spec in ActionTriggers) spec.Write(writer);
         }
         internal void WriteBoundaries(BinaryWriter writer)
         {

@@ -17,6 +17,19 @@ namespace PokerEngine
         CombatReactionEvaluation ReactBoundary(CombatBoundaryReactionContext context);
     }
 
+    /// <summary>Optional post-periodic action hook; separate from lifecycle boundaries and effect facts.</summary>
+    public interface ICombatActionCompletionReactionRuntime : ICombatReactionRuntime
+    {
+        CombatReactionEvaluation ReactActionCompleted(CombatActionCompletionReactionContext context);
+    }
+
+    public sealed class CombatActionCompletionReactionContext
+    {
+        public CombatState State { get; }
+        public CombatTimingEvent Event { get; }
+        internal CombatActionCompletionReactionContext(CombatState state, CombatTimingEvent clock) { State = state; Event = clock; }
+    }
+
     public sealed class CombatBoundaryReactionContext
     {
         public CombatState State { get; }

@@ -182,6 +182,11 @@ namespace PokerEngine
                         writer.Write("battle-relic.triggers.1");
                         foreach (var state in Relics) RulesFor(state.InstanceId).WriteTriggers(writer);
                     }
+                    if (Relics.Any(state => RulesFor(state.InstanceId).ActionTriggers.Count != 0))
+                    {
+                        writer.Write("battle-relic.actions.1");
+                        foreach (var state in Relics) RulesFor(state.InstanceId).WriteActions(writer);
+                    }
                     if (Relics.Any(state => RulesFor(state.InstanceId).HasBoundaryConfiguration))
                     {
                         writer.Write("battle-relic.boundaries.1");

@@ -201,11 +201,12 @@ namespace PokerEngine
         public BattleEffectPlan EffectPlan { get; }
         public BattleActionCostResolution ActionCost { get; }
         public IReadOnlyList<RelicTriggerActivation> RelicActivations { get; }
+        public BattleActionCompletion ActionCompletion { get; }
         internal TeamBattleTransition(TeamBattleState state, CardDuelError error = CardDuelError.None, IEnumerable<CombatRuleEvent> events = null, DamagePlan damage = null, DiscardRewardResolution discardReward = null, BattleEffectPlan effectPlan = null,
-            BattleActionCostResolution actionCost = null, IEnumerable<RelicTriggerActivation> relicActivations = null)
+            BattleActionCostResolution actionCost = null, IEnumerable<RelicTriggerActivation> relicActivations = null, BattleActionCompletion actionCompletion = null)
         {
             State = state; Error = error; Damage = damage; DiscardReward = discardReward; EffectPlan = effectPlan;
-            ActionCost = actionCost;
+            ActionCost = actionCost; ActionCompletion = actionCompletion;
             RelicActivations = Guard.View(Guard.Copy(relicActivations ?? Array.Empty<RelicTriggerActivation>(), nameof(relicActivations)));
             RuleEvents = Guard.View(Guard.Copy(events ?? Array.Empty<CombatRuleEvent>(), nameof(events)));
             Events = Guard.View(RuleEvents.OfType<CombatEvent>().ToArray());
@@ -487,12 +488,16 @@ namespace PokerEngine
                 // Action clocks run after the complete active batch and its reactions, once per successful action.
                 // Explicit end/skip commands are boundaries, not completed actions. A finished battle starts no new clock.
                 bool finished = IsFinished(combat, players, state.Enemies);
+                bool hasCompletion = RelicReactionRuntime.HandlesAction(state, actor, action);
                 if (!finished && (action == ScoredDuelActionKind.ScoredHand || action == ScoredDuelActionKind.Discard || enemy && !blocked) &&
-                    HasPeriodic(combat, new[] { actor }, CombatTimingKind.ActionCompleted))
+                    (hasCompletion || HasPeriodic(combat, new[] { actor }, CombatTimingKind.ActionCompleted)))
                 {
+                    if (hasCompletion) triggerRuntime = triggerRuntime.WithCompletion(new BattleActionCompletionContext(state, actor, action,
+                        hand, discardReward?.Context.Cards, actionCost, players.Single(player => player.Id == actor).Energy.Energy));
                     var periodic = CombatEngine.ResolveTiming(combat, combat.Revision,
                         BattleStatusTiming.ActionCompleted(state, actor, action), new ActorIncomingDamageModifier(state),
-                        Definition.StatusCatalog, Definition.ReactionLimits, amountModifier, triggerRuntime);
+                        Definition.StatusCatalog, Definition.ReactionLimits, amountModifier, triggerRuntime,
+                        hasCompletion ? Definition.ReactionProvider : null);
                     if (!periodic.Accepted) return new TeamBattleTransition(state, EffectFailure(periodic.Error));
                     combat = periodic.State; events = events.Concat(periodic.RuleEvents).ToArray();
                     triggerRuntime = (RelicReactionRuntime)periodic.ReactionRuntime;
@@ -583,7 +588,7 @@ namespace PokerEngine
                 if (phase == ScoredDuelPhase.Won || phase == ScoredDuelPhase.Lost) pending = new ParticipantId[0];
                 return new TeamBattleTransition(new TeamBattleState(Definition, combat, players, state.Enemies, phase, pending,
                     checked(state.Revision + 1), rounds, scores, state.Actions.Concat(new[] { new BattleActionRecord(actor, action, action == ScoredDuelActionKind.ScoredHand ? (int?)state.Scores.Count : null) })), events: events, damage: damagePlan, discardReward: discardReward, effectPlan: effectPlan, actionCost: actionCost,
-                    relicActivations: activations);
+                    relicActivations: activations, actionCompletion: triggerRuntime?.Completion);
             }
             catch (OverflowException) { return new TeamBattleTransition(state, CardDuelError.Overflow); }
             catch (ArgumentException) { return new TeamBattleTransition(state, CardDuelError.InvalidTarget); }
