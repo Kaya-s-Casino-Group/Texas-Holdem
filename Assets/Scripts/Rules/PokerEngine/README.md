@@ -129,6 +129,52 @@ var protection = new BattleEffectStep(BattleEffectSpec.ApplyStatus(new StatusApp
 
 敌人可通过 `BattleEnemySetup(effectRule: ...)` 注入纯 `IEnemyBattleEffectRule`，返回同一 BattleEffectSequence，伤害仍标记 EnemyAttack 并复用双方修正。未配置时保持固定伤害。所有默认牌型与弃牌配置、表现端和场景保持原样；本层提供可配置行为与规则事件。
 
+### 文档牌型效果配置
+
+`PokerHandEffectRule` 是可直接注入 `BattlePlayerRules.EffectRule` 的正式牌型规则，复用上述效果计划、逐效果目标、伤害修正和状态生命周期。其不可变 `PokerHandEffectProfile` 保存版本、每个伤害牌型的数值、同花回血系数、眩晕次数与免控期限。文档尚未填写倍率，因此所有伤害项和回血系数必须显式提供，没有内置平衡数值。
+
+| 牌型 | 基础效果 |
+| --- | --- |
+| 高牌、一对、两对 | 单体一段伤害，各自独立系数 |
+| 顺子 | 单体多段伤害，配置 2–64 段及每段系数；附加流血／中毒属于后续遗物机制 |
+| 三条、四条 | 全部存活敌人各受一段伤害，各自独立系数，不分摊 |
+| 葫芦 | 敌方单体眩晕＋自身提前免控，不附加伤害、不清除已有控制 |
+| 同花 | 单体一段伤害＋自身按筹码回血，不读取实际伤害或敌方数量 |
+| 皇家同花顺 | 直接消灭全部存活敌人，绕过伤害修正与护盾 |
+| 普通同花顺、五条 | 文档缺项的兼容策略：各自配置的单体一段伤害，不获得皇家消灭效果 |
+
+每段基础伤害为 `floor(Score.Total × ScoreFactorPerHit)`，每段再独立经过既有攻击／承伤修正和护盾结算；顺子不把一个总量隐式均分，固定增伤也会按段重复生效。同花回血为 `floor(Score.Points × FlushHealPerChip)`，再由 Combat 限制到最大生命；当前 Points 仍包含既有牌型基础筹码，本次不修改计分口径。数值计算溢出由原行动管线拒绝并回滚牌区、分数、能量和战斗状态。
+
+单体目标默认选择首个存活敌人，也可向规则构造传入 Opponents(Requested / LowestHealth / HighestHealth)，继续复用具名目标槽位。不接受可能返回多人的 ActorPolicy 或 AllLiving 作为单体策略；三条／四条和皇家仍独立声明 AllLiving，同花治疗与葫芦免控独立声明 Self。皇家只依据权威 Hand 分类中的 StraightFlush 与 Ace 高顺识别；同花顺缺失 Hand 快照时拒绝，A2345 同花顺不会被认作皇家。
+
+下面的数值仅用于说明接入方式，不是策划定稿：
+
+```csharp
+var damage = new Dictionary<HandCategory, PokerHandDamageSettings> {
+    { HandCategory.HighCard, new PokerHandDamageSettings(1m) },
+    { HandCategory.OnePair, new PokerHandDamageSettings(1m) },
+    { HandCategory.TwoPair, new PokerHandDamageSettings(1m) },
+    { HandCategory.ThreeOfAKind, new PokerHandDamageSettings(1m) },
+    { HandCategory.Straight, new PokerHandDamageSettings(0.2m, hitCount: 5) },
+    { HandCategory.Flush, new PokerHandDamageSettings(1m) },
+    { HandCategory.FourOfAKind, new PokerHandDamageSettings(1m) },
+    { HandCategory.StraightFlush, new PokerHandDamageSettings(1m) },
+    { HandCategory.FiveOfAKind, new PokerHandDamageSettings(1m) }
+};
+var content = new PokerHandEffectProfile("hand-skills.example.1", damage,
+    flushHealPerChip: 0.1m, stunActionWindows: 1);
+var battle = new BattleRules("battle.example.1", 20,
+    statusCatalog: content.CreateStatusCatalog("hand-statuses.example.1"));
+var player = new BattlePlayerRules(effectRule: new PokerHandEffectRule(content));
+// 手动选敌时：new PokerHandEffectRule(content,
+//     EffectTargetSpec.Opponents(EffectTargetSelection.Requested, "attack"))
+// 命令用 BattleTargetBindings("attack", targets) 提交；自动 AOE 牌型不提交该槽位。
+```
+
+配置必须恰好包含所有九个非葫芦牌型，拒绝缺项、重复、额外葫芦项、负数和不符牌型的段数；字典防御性复制。眩晕默认消费一次行动窗口，免控默认覆盖下一完整敌方阶段，可通过 `stunActionWindows` / `controlImmunityLifetime` 覆盖；规则每次施加显式携带该配置期限。两个状态 ID 可自定义，`CreateStatusCatalog` 也可合并其它状态定义。`IBattleStatusCatalogValidator` 允许内容规则在 TeamBattle 创建时校验状态依赖，防止缺目录或错误行为导致控制仅被存储而不生效；此规则要求两个状态具有正确行为和 KeepLonger 重施策略。
+
+只有显式注入该规则的玩家启用这份映射，未配置玩家仍保留既有 DamagePolicy。此接入不更改牌型等级、计分公式、弃牌收益、费用、补牌或表现端；遗物触发、持续伤害、盾反、召唤和废牌仍不在本次映射范围。
+
 ## 通用基础层
 
 `CardDefinition` 为静态定义；`CardInstance` 为当前对局实体，`OriginId` 关联 Run 中的持久牌。复制牌产生新持久 ID 并继承强化，下一关重新创建实例牌。`StandardDeck` 提供标准 52 张牌，不依赖德州模块。

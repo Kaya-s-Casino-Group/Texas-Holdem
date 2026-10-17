@@ -9,6 +9,12 @@ namespace PokerEngine
         BattleEffectSequence Resolve(ScoredHandEffectContext context);
     }
 
+    /// <summary>Optional content dependency validation at battle creation, before accepting any action.</summary>
+    public interface IBattleStatusCatalogValidator
+    {
+        void ValidateStatusCatalog(CombatStatusCatalog catalog);
+    }
+
     public sealed class ScoredHandEffectContext
     {
         public CombatState Combat { get; }

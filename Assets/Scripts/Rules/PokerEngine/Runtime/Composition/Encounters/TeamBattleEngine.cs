@@ -202,6 +202,10 @@ namespace PokerEngine
             if (p.Length == 0 || e.Length == 0 || p.Length + e.Length > 64 || p.Any(x => x == null) || e.Any(x => x == null) ||
                 p.Select(x => x.Id).Concat(e.Select(x => x.Id)).Distinct().Count() != p.Length + e.Length)
                 throw new ArgumentException("A battle needs distinct participants on both teams (at most 64 units).");
+            foreach (var player in p)
+                (player.Rules?.EffectRule as IBattleStatusCatalogValidator)?.ValidateStatusCatalog(Definition.StatusCatalog);
+            foreach (var enemy in e)
+                (enemy.EffectRule as IBattleStatusCatalogValidator)?.ValidateStatusCatalog(Definition.StatusCatalog);
             return new TeamBattleState(Definition, new CombatState(id, 0,
                 p.Select(x => x.Definition.Create(x.Id, "player", x.InitialHealth)).Concat(e.Select(x => x.Definition.Create(x.Id, "enemy")))),
                 p.Select(x => {
