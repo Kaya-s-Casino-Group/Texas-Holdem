@@ -28,7 +28,7 @@ Unity 2022.3.62f3 / 内嵌 URP 14.0.12 / Deferred。复古效果是根据《邪�
 
 ### 复古后处理：独立 Renderer Feature
 
-实现为 `Assets/Rendering/Runtime/Features/RetroPostProcessFeature.cs`，Shader 为 `Assets/Rendering/Shaders/RetroPost.shader`。Feature 只负责后处理，不设置分辨率、相机 AA 或最终放大采样；可独立开关、移除，也可在 Renderer 降分能力关闭时使用。原有 Shader 和 Feature 的资产 GUID 与美术参数已保留。
+实现为 `Assets/Scripts/Infrastructure/Rendering/Runtime/Features/RetroPostProcessFeature.cs`，Shader 为 `Assets/GameAssets/Rendering/Shaders/RetroPost.shader`。Feature 只负责后处理，不设置分辨率、相机 AA 或最终放大采样；可独立开关、移除，也可在 Renderer 降分能力关闭时使用。原有 Shader 和 Feature 的资产 GUID 与美术参数已保留。
 
 中文 Inspector 的「执行时机 → 执行事件」可选透明物体渲染后、内置后处理前/后、场景渲染结束时、升采样前（默认推荐）。事件在每次加入渲染队列时读取，修改后下一次渲染即生效。
 

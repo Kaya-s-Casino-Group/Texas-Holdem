@@ -4,6 +4,13 @@
 
 ## [Unreleased]
 
+### 2026-10-17 — 自研脚本与模块资源统一目录
+
+- 自研 C# 集中到 `Assets/Scripts`，按 Rules / Gameplay / Presentation / Infrastructure / Tools 分组，模块内部保留 Runtime / Editor / Tests。
+- 模块预制件、配置、Shader、贴图和 Resources 归入 `Assets/GameAssets`；通用美术、音频、场景、管线设置和第三方插件保留原归属。
+- 706 个迁移项保留 `.meta` GUID，程序集、类名和命名空间不变；同步工具路径、Shader include、离线测试入口与文档链接。
+- Unity 编译通过（0 警告），73 项针对性 EditMode 测试通过；离线规则全量 436 通过、1 项既有计分期望失败。详细限制及分批说明见 [目录迁移验证记录](Tools/Validation/2026-10-17-script-layout.md)。
+
 ### 2026-10-17 — 场景、音频及项目设置归档
 
 - 归档现有森林场景、光照贴图、材质与主 Renderer 参数调整，以及战斗示例和卡牌渲染验证场景更新。

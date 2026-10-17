@@ -47,9 +47,9 @@ Atlas UV 原点在左下；`xy=offset, zw=scale`，不含扩展留边。Shader �
 在目标项目存在时检查以下文件；用户明确要求或实现有变化时更新约定，不把旧导出布局硬编码成原图生成规则。
 
 - `Tools/CardAtlas.md`：扫描、命名、原图校验和导出规则。
-- `Assets/CardArt/Editor/CardAtlasRecipe.cs`：图集默认设置。
-- `Assets/CardArt/Editor/CardImageValidator.cs`：原始文件 1024×1536、比例容差默认 0.5%。生成结果使用精确尺寸，不以容差掩盖错误。
-- `Assets/CardArt/Editor/CardAtlasBuilder.cs`：一次原图重采样、整组变换及扩展留边。
-- `Assets/Editor/CardTextureImporter.cs`：单图导入设置与作用路径；不作为美术风格依据。
+- `Assets/Scripts/Presentation/CardArt/Editor/CardAtlasRecipe.cs`：图集默认设置。
+- `Assets/Scripts/Presentation/CardArt/Editor/CardImageValidator.cs`：原始文件 1024×1536、比例容差默认 0.5%。生成结果使用精确尺寸，不以容差掩盖错误。
+- `Assets/Scripts/Presentation/CardArt/Editor/CardAtlasBuilder.cs`：一次原图重采样、整组变换及扩展留边。
+- `Assets/Scripts/Tools/Editor/CardTextureImporter.cs`：单图导入设置与作用路径；不作为美术风格依据。
 - `Assets/Art/CardAtlases/` 中对应 atlas 的 JSON：需要核对现有图集时查看实际配置。
-- `Assets/CardArt/Shaders/CardSurfaceCommon.hlsl`：图集采样边界和 UV 语义。
+- `Assets/GameAssets/CardArt/Shaders/CardSurfaceCommon.hlsl`：图集采样边界和 UV 语义。

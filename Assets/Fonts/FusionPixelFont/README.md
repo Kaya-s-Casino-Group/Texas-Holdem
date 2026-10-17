@@ -12,7 +12,7 @@
 
 普通界面文本可先使用 `fusion-pixel-12px-proportional-zh_hans.ttf`；需要对齐数字或列时可选择等宽版本。Unity 的 Font 字段可直接引用这些 TTF。使用 TextMeshPro 时，先以选定 TTF 创建 TMP Font Asset，再赋给文本组件。
 
-卡牌悬停信息 Prefab 使用 `TMP/FusionPixel12pxProportional.asset`：12px RASTER_HINTED 位图、Point 采样、动态字符图集，显式引用比例模式的 12px TTF。图集已预填 ASCII、四种花色名称、“筹码”与原生 `♠ ♥ ♣ ♦` 字形，支持继续补充文字；材质与纹理作为字体 Asset 子资源保存。接入说明见 [卡牌提示资源](../../CardPresentation/UI/README.md)。尚未修改全局默认字体或场景。像素文字的清晰程度还取决于字体图集、采样模式、Canvas 缩放及最终屏幕像素对齐，应在实际游戏分辨率下检查。
+卡牌悬停信息 Prefab 使用 `TMP/FusionPixel12pxProportional.asset`：12px RASTER_HINTED 位图、Point 采样、动态字符图集，显式引用比例模式的 12px TTF。图集已预填 ASCII、四种花色名称、“筹码”与原生 `♠ ♥ ♣ ♦` 字形，支持继续补充文字；材质与纹理作为字体 Asset 子资源保存。接入说明见 [卡牌提示资源](../../GameAssets/GameAssets/CardPresentation/UI/README.md)。尚未修改全局默认字体或场景。像素文字的清晰程度还取决于字体图集、采样模式、Canvas 缩放及最终屏幕像素对齐，应在实际游戏分辨率下检查。
 
 ## 来源与更新
 
@@ -22,4 +22,4 @@
 
 ## 许可证
 
-字体采用 **SIL Open Font License 1.1**。官方发布包的 [OFL.txt](OFL.txt) 和 [LICENSES/](LICENSES/) 中各上游字体的版权与授权说明已完整保留。随游戏分发字体时，应一并附带这些授权说明；具体条款以原文为准。
+字体采用 **SIL Open Font License 1.1**。官方发布包的 [OFL.txt](OFL.txt) 和 [LICENSES/](LICENSES) 中各上游字体的版权与授权说明已完整保留。随游戏分发字体时，应一并附带这些授权说明；具体条款以原文为准。

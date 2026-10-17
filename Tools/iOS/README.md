@@ -35,7 +35,7 @@ Unity 2022.3.62f3 exports an older UIApplication lifecycle. iOS 27 rejects apps
 built with the iOS 27 SDK unless they adopt UIScene. The observed native crash
 is `___UIApplicationEvaluateRuntimeIssueForNoSceneLifecycleAdoption_block_invoke`.
 
-`Assets/Editor/PokerIOSSceneLifecycle.cs` adds the single-window scene manifest
+`Assets/Scripts/Tools/Editor/PokerIOSSceneLifecycle.cs` adds the single-window scene manifest
 and copies `PokerSceneLifecycle.mm` into the exported UnityFramework target.
 The bridge delays Unity window creation until a UIWindowScene is connected,
 then forwards active/inactive and background/foreground events to the original

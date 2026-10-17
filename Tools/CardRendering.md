@@ -5,9 +5,9 @@ Unity 2022.3 / 项目内嵌 URP 14。验证场景：`Assets/Scenes/CardRendering
 ## 资源与实例
 
 - 几何：`Assets/Art/Models/Cards/Card_Rounded.fbx`，64×96×0.35 mm，圆角 0.8 mm，160 三角形，一个材质槽。保留导入法线和 UV1；禁止 Generate Lightmap UVs。
-- Shader：`Assets/CardArt/Shaders/CardDeferred.shader` / `CardArt/Card Deferred`。
+- Shader：`Assets/GameAssets/CardArt/Shaders/CardDeferred.shader` / `CardArt/Card Deferred`。
 - 皮肤共享材质：`Assets/Art/Materials/Cards/FourBeastsCards.mat`。
-- 通用 Prefab：`Assets/CardArt/Prefabs/Card.prefab`。根节点负责布局/翻转，Surface 上的 CardView 负责牌面绑定。Collider 厚度 1 mm 便于交互，与视觉厚度分离。
+- 通用 Prefab：`Assets/GameAssets/CardArt/Prefabs/Card.prefab`。根节点负责布局/翻转，Surface 上的 CardView 负责牌面绑定。Collider 厚度 1 mm 便于交互，与视觉厚度分离。
 - 所有 CardView 使用 MeshFilter.sharedMesh / Renderer.sharedMaterial，避免通过 mesh / material getter 产生副本。CardInstanceId 等玩法标识留在玩法层；CardView 只接受图集中的牌面 ID。
 
 ```csharp
@@ -97,7 +97,7 @@ EditMode 测试类 `CardArt.Tests.CardRenderingTests` 检查物理尺寸、160 �
 
 ### 2D 验证用无光照 Shader
 
-`Assets/CardArt/Shaders/CardValidationUnlit.shader`（`CardArt/Validation Unlit`）用于正交相机下的平面卡牌验证。它复用 `CardView`、共享 Mesh、图集与每实例 `_FrontUVRect` / `_ColorTint`。当前验证相机使用固定在 `Assets/Settings/Battle2DRenderer.asset` 的 `Simple2DRenderer`，优先绘制 `UniversalForwardOnly` Pass；该 Pass 也支持常规 URP 和 CardArt 编辑器预览。保留的 `Universal2D` Pass 可供官方 URP 2D Renderer 使用。HUD 独立使用 Canvas；卡牌 Shader 的入口是 MeshRenderer，不是 UGUI Graphic。
+`Assets/GameAssets/CardArt/Shaders/CardValidationUnlit.shader`（`CardArt/Validation Unlit`）用于正交相机下的平面卡牌验证。它复用 `CardView`、共享 Mesh、图集与每实例 `_FrontUVRect` / `_ColorTint`。当前验证相机使用固定在 `Assets/Settings/Battle2DRenderer.asset` 的 `Simple2DRenderer`，优先绘制 `UniversalForwardOnly` Pass；该 Pass 也支持常规 URP 和 CardArt 编辑器预览。保留的 `Universal2D` Pass 可供官方 URP 2D Renderer 使用。HUD 独立使用 Canvas；卡牌 Shader 的入口是 MeshRenderer，不是 UGUI Graphic。
 
 基础属性和两项坐标契约与现有卡牌一致。正反面按 UV1.x 选择图集区域，UV1.y 标记纸边，圆角沿用 `Card_Rounded` 网格，图集 Alpha 和 `_Cutoff` 决定裁切。颜色直接输出「图集或纸边 × `_BaseColor` × `_ColorTint`」，不受灯光影响；没有 GBuffer、阴影、镭射、火漆或红叉扩展。`DepthOnly` 使用相同的 Alpha 裁切。
 
@@ -119,7 +119,7 @@ view.SetFoilEnabled(false); // 保留颜色和强度，方便再次开启
 
 Shader 实例入口为 `_FoilEnabled`、`_FoilColor`、`_FoilStrength`，共享材质入口为 `_FoilMap`（灰度纹理）及 `_FoilSpeed`（动画速度，0 停止时间动画，仍响应视角）。可选契约 Tag 为 `CardFoilContract=ColorStrengthV1`，声明者必须将三个属性实现为 GPU 实例属性；旧版自定义卡牌 Shader 可继续绑定，不会收到这些额外属性。
 
-默认纹理 `Assets/CardArt/Textures/FoilPattern.png` 是 64×64 的菱形切面与斜向刻纹，Linear、Point、Repeat、无 mipmap。可在共享材质中替换；纹理固定在局部 UV 上，时间驱动彩虹亮带扫过切面，同时叠加视角变化。动画使用 Unity Shader 时间。只影响正面，保护深色油墨，背面、纸边、深度和阴影轮廓不变。GBuffer 中写入调整后的颜色、高光、光滑度及附加亮度；Forward 使用相同表面计算。不会新增 Pass、GBuffer 附件或逐牌材质。
+默认纹理 `Assets/GameAssets/CardArt/Textures/FoilPattern.png` 是 64×64 的菱形切面与斜向刻纹，Linear、Point、Repeat、无 mipmap。可在共享材质中替换；纹理固定在局部 UV 上，时间驱动彩虹亮带扫过切面，同时叠加视角变化。动画使用 Unity Shader 时间。只影响正面，保护深色油墨，背面、纸边、深度和阴影轮廓不变。GBuffer 中写入调整后的颜色、高光、光滑度及附加亮度；Forward 使用相同表面计算。不会新增 Pass、GBuffer 附件或逐牌材质。
 
 `工具/卡牌美术/渲染验证/预览闪卡` 打开独立的 `Assets/Scenes/CardFoilValidation.unity`：左侧普通牌、中间彩虹镭射、右侧粉色镭射。以附加方式打开，保留原场景的未保存修改。`Validate Foil Rendering` 检查颜色、强度、零强度、关闭恢复、纹理及动态相位；`Capture Foil Animation` 固定相机捕获 12 帧，验证时间动画。`Validate Card API Without Scene Reload` 执行四组同步测试断言，无需关闭当前场景。结果在 `ArtSource/Cards/RenderingValidation/Foil/`。
 
@@ -160,7 +160,7 @@ bool supported = card.SupportsRedCross;
 
 红叉使用局部 UV0 覆盖整个正面，透明区域显示原牌面；叠加顺序为牌面 → 镭射 → 火漆 → 红叉。红色油漆覆盖下层颜色、高光和 Emission，保留底层法线受光；不修改背面、侧边、卡牌 Alpha、深度或投影轮廓。Forward 与 Deferred 使用相同表面函数。
 
-内置 `Assets/CardArt/Textures/RedCross.png` 为 **128×192 RGBA**，从 `ArtSource/Cards/RedCross/RedCross_Portrait.png` 用最近邻缩小，保留原始 Alpha。导入使用 Point、Clamp、无 mipmap、无压缩、sRGB，NPOT Scale=None 保持 2:3。`工具/卡牌美术/素材准备/红叉贴图与材质` 可配置内置贴图与现有卡牌材质，保留已有自定义红叉贴图和每张牌的开关。
+内置 `Assets/GameAssets/CardArt/Textures/RedCross.png` 为 **128×192 RGBA**，从 `ArtSource/Cards/RedCross/RedCross_Portrait.png` 用最近邻缩小，保留原始 Alpha。导入使用 Point、Clamp、无 mipmap、无压缩、sRGB，NPOT Scale=None 保持 2:3。`工具/卡牌美术/素材准备/红叉贴图与材质` 可配置内置贴图与现有卡牌材质，保留已有自定义红叉贴图和每张牌的开关。
 
 Prefab 导出页的「手绘红叉（可选）」支持贴图选择、内置素材按钮和默认开关。校验 Shader 属性/实例声明、颜色图与 Alpha、Point/Clamp/无 mipmap、与逻辑单牌一致的宽高比。导出贴图至共享材质，开关保存至 CardView；未选贴图时保持空引用。
 

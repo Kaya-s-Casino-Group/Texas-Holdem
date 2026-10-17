@@ -147,7 +147,7 @@ standard format stores per-vertex position/normal data. Our two textures store
 piece pivot positions and rotation deltas, so rigidly transformed original
 normals and tangents are preserved without separate per-vertex normal textures.
 The package has its own `statue-rigid-vat-v1` schema; it cannot be decoded directly
-by the OpenVAT standard shader. Unity shader/importer integration is provided by `Assets/Editor/RigidVATAssetImport.cs`; the existing Gargoyle menus delegate to this shared importer.
+by the OpenVAT standard shader. Unity shader/importer integration is provided by `Assets/Scripts/Tools/Editor/RigidVATAssetImport.cs`; the existing Gargoyle menus delegate to this shared importer.
 
 ### Package and decode contract
 

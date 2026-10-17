@@ -26,14 +26,14 @@ $dependencies = @{
 $allReferences = @()
 foreach ($module in $modules) {
     $references = @($frameworkReferences) + @($dependencies[$module] | ForEach-Object { '-r:' + (Join-Path $OutputDirectory "PokerEngine.$_.dll") })
-    $sources = @(Get-ChildItem -LiteralPath (Join-Path $repo "Assets/PokerEngine/Runtime/$module") -Filter '*.cs' -Recurse | ForEach-Object FullName)
+    $sources = @(Get-ChildItem -LiteralPath (Join-Path $repo "Assets/Scripts/Rules/PokerEngine/Runtime/$module") -Filter '*.cs' -Recurse | ForEach-Object FullName)
     $dll = Join-Path $OutputDirectory "PokerEngine.$module.dll"
     & $Compiler -nologo -noconfig -nostdlib -langversion:7.2 -warnaserror -target:library @references "-out:$dll" @sources
     if ($LASTEXITCODE -ne 0) { throw "Compilation failed: $module" }
     $allReferences += "-r:$dll"
 }
 Copy-Item -LiteralPath $NUnit -Destination (Join-Path $OutputDirectory 'nunit.framework.dll') -Force
-$tests = @(Get-ChildItem -LiteralPath (Join-Path $repo 'Assets/PokerEngine/Tests/Editor') -Filter '*Tests.cs' | Where-Object Name -ne 'PackagingTests.cs' | ForEach-Object FullName)
+$tests = @(Get-ChildItem -LiteralPath (Join-Path $repo 'Assets/Scripts/Rules/PokerEngine/Tests/Editor') -Filter '*Tests.cs' | Where-Object Name -ne 'PackagingTests.cs' | ForEach-Object FullName)
 $exe = Join-Path $OutputDirectory 'PokerEngine.Tests.exe'
 & $Compiler -nologo -noconfig -nostdlib -langversion:7.2 -warnaserror @frameworkReferences @allReferences "-r:$NUnit" "-out:$exe" @tests (Join-Path $repo 'Tools/PokerEngineTestRunner.cs')
 if ($LASTEXITCODE -ne 0) { throw 'Test compilation failed.' }

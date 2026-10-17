@@ -24,14 +24,14 @@ for module in "${modules[@]}"; do
   references=(-r:System.Runtime.Serialization)
   for dependency in $dependencies; do references+=("-r:$test_dir/PokerEngine.$dependency.dll"); done
   sources=()
-  while IFS= read -r -d '' file; do sources+=("$file"); done < <(find "Assets/PokerEngine/Runtime/$module" -name '*.cs' -print0)
+  while IFS= read -r -d '' file; do sources+=("$file"); done < <(find "Assets/Scripts/Rules/PokerEngine/Runtime/$module" -name '*.cs' -print0)
   "$compiler" -langversion:7.2 -warnaserror -target:library "${references[@]}" \
     -out:"$test_dir/PokerEngine.$module.dll" "${sources[@]}"
   all_refs+=("-r:$test_dir/PokerEngine.$module.dll")
 done
 cp "$nunit" "$test_dir/nunit.framework.dll"
 tests=()
-while IFS= read -r -d '' file; do tests+=("$file"); done < <(find Assets/PokerEngine/Tests/Editor -name '*Tests.cs' ! -name 'PackagingTests.cs' -print0)
+while IFS= read -r -d '' file; do tests+=("$file"); done < <(find Assets/Scripts/Rules/PokerEngine/Tests/Editor -name '*Tests.cs' ! -name 'PackagingTests.cs' -print0)
 "$compiler" -langversion:7.2 -warnaserror -r:System.Runtime.Serialization "${all_refs[@]}" -r:"$test_dir/nunit.framework.dll" \
   -out:"$test_dir/PokerEngine.Tests.exe" "${tests[@]}" Tools/PokerEngineTestRunner.cs
 "$runtime" "$test_dir/PokerEngine.Tests.exe" "$@"

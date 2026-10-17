@@ -1,6 +1,6 @@
 # 森林遗迹光照 UV
 
-Unity 2022.3 / URP 14。运行项目不需要 Python：优化后的 UV1 已保存在 `Assets/Art/Models/Environment/ForestRuins/Editor/LightmapUV/SM_FR_EnvironmentLayout.json`，导入器按模型 SHA-256 与有向三角形位置匹配，写入 Mesh.uv2；保留原几何、法线、UV0、材质和背景通道。只有临时展开网格会被平滑。
+Unity 2022.3 / URP 14。运行项目不需要 Python：优化后的 UV1 已保存在 `Assets/Scripts/Tools/Editor/ForestRuins/LightmapUV/SM_FR_EnvironmentLayout.json`，导入器按模型 SHA-256 与有向三角形位置匹配，写入 Mesh.uv2；保留原几何、法线、UV0、材质和背景通道。只有临时展开网格会被平滑。
 
 ## 重新生成缓存
 
