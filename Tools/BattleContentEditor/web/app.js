@@ -1,4 +1,4 @@
-import {sections,descriptor,exclusiveChildren,initialize,meta,tr} from './schema.js';
+import {sections,descriptor,exclusiveChildren,initialize,meta,tr,help} from './schema.js';
 import {parse,serialize,pathOf,atPath,definitions,owner,references,uniqueId,addDefinition,addChild,cloneDefinition,fieldIssues} from './model.js';
 const $=id=>document.getElementById(id);
 const el=(tag,cls,text)=>{const node=document.createElement(tag);if(cls)node.className=cls;if(text!=null)node.textContent=text;return node;};
@@ -28,7 +28,7 @@ async function validate(forExport=false){
  return result.success;
  }catch(error){if(version===revision&&request===validationSequence){report=null;reportRevision=-1;$('connection').textContent='● 校验服务未连接';}throw error;}finally{if(request===validationSequence){checking=false;renderIssues();renderSummary();}}
 }
-function renderSummary(){if(!doc)return;for(const id of ['import','example','new-pack','export'])$(id).disabled=importing;const count=sections.reduce((sum,s)=>sum+definitions(doc,s[0]).length,0);$('pack-summary').textContent=count+' 项定义 · '+(snapshot()===lastExport?'已导出':'有未导出内容');$('undo').disabled=!undo.length;$('redo').disabled=!redo.length;}
+function renderSummary(){if(!doc)return;for(const id of ['import','example','new-pack','export'])$(id).disabled=importing;const count=sections.reduce((sum,s)=>sum+definitions(doc,s[0]).length,0);$('pack-summary').textContent=count+' 项配置 · '+(snapshot()===lastExport?'已导出':'有未导出内容');$('undo').disabled=!undo.length;$('redo').disabled=!redo.length;}
 function renderNavigation(){
  const nav=$('navigation');nav.replaceChildren();const query=$('search').value.trim().toLowerCase();let group;
  for(const s of sections){if(s[3]!==group){nav.append(el('div','nav-group',s[3]));group=s[3];}
@@ -43,7 +43,7 @@ function render(){
  $('duplicate').hidden=!definition;$('delete').hidden=!definition;
  $('breadcrumb').textContent=(doc.documentElement.getAttribute('name')||doc.documentElement.getAttribute('id'))+' / '+(section?tr(section):'内容包设置');
  $('title').textContent=selected?label(selected):tr(section);
- $('subtitle').textContent=selected?(selected===doc.documentElement?'版本与稳定标识；表单空白值继承规则默认配置':selected.getAttribute('id')):sections.find(s=>s[0]===section)?.[4];
+ $('subtitle').textContent=selected?(selected===doc.documentElement?'设置内容包的编号和版本；可选项留空时使用默认设置':selected.getAttribute('id')):sections.find(s=>s[0]===section)?.[4];
  if(xmlMode){if(!sourceDirty)$('xml-source').value=snapshot();renderIssues();return;}
  const editor=$('editor');editor.replaceChildren();
  if(selected)renderNode(selected,editor,0);else{
@@ -59,8 +59,9 @@ function renderNode(node,host,depth){
  const summary=el('summary');summary.append(el('strong','',tr(node.tagName)+(node.hasAttribute('category')?' · '+tr(node.getAttribute('category'))+(node.hasAttribute('variant')?' / '+tr(node.getAttribute('variant')):''):'')),el('small','',node.getAttribute('id')||node.getAttribute('ref')||node.getAttribute('statusRef')||tr(node.getAttribute('kind'))||''));details.append(summary);body=el('div','node-body');details.append(body);host.append(details);}
  else {body.dataset.path=path;}
  if(node.tagName==='HandModifier'){
-  const helper=el('div','step-help');helper.append(el('span','','浏览步骤来源（辅助选择，不写入遗物规则）'));const picker=el('select');picker.setAttribute('aria-label','浏览步骤来源');picker.append(new Option('选择牌型效果规则…',''));for(const rule of definitions(doc,'HandRules'))picker.append(new Option(label(rule)+' · '+rule.getAttribute('id'),rule.getAttribute('id')));picker.value=stepBrowser;picker.addEventListener('change',()=>{stepBrowser=picker.value;render();});helper.append(picker);body.append(helper);
+  const helper=el('div','step-help');helper.append(el('span','','先选一套牌型效果，查看可修改的效果编号'));const picker=el('select');picker.setAttribute('aria-label','浏览步骤来源');picker.append(new Option('选择牌型效果规则…',''));for(const rule of definitions(doc,'HandRules'))picker.append(new Option(label(rule)+' · '+rule.getAttribute('id'),rule.getAttribute('id')));picker.value=stepBrowser;picker.addEventListener('change',()=>{stepBrowser=picker.value;render();});helper.append(picker);body.append(helper);
  }
+ if(help[node.tagName])body.append(el('p','muted',help[node.tagName]));
  const advancedKeys=new Set(['attackMultiplier','attackFlat','incomingMultiplier','incomingFlat','attackTarget','allowRequestedTargets','maxReactionEffects','maxReactionDepth','sourcePolicy','priority','chain','sellPrice','upgradeCost','growthPerScoredRound']);
  const grid=el('div','field-grid');for(const field of spec.fields.filter(f=>!advancedKeys.has(f.key)))renderField(node,field,grid);body.append(grid);
  const advanced=spec.fields.filter(f=>advancedKeys.has(f.key));if(advanced.length){const panel=el('details','advanced-settings');panel.append(el('summary','','高级参数 · '+advanced.length+' 项'));const inner=el('div','field-grid');for(const field of advanced)renderField(node,field,inner);panel.append(inner);body.append(panel);}
@@ -86,8 +87,8 @@ function renderField(node,field,grid){
  box.append(title);const wrap=el('div','field-input');let input;const raw=node.getAttribute(field.key);
  const apply=async value=>{
   if(field.type==='ref'||['id','instanceId','stepId'].includes(field.key))value=value.trim();
-  if(field.key==='id'&&node.tagName==='Effect'&&value!==raw){const affected=stepUses(node);if(affected.length&&!await confirmDialog('修改被遗物引用的步骤','以下条目可能受影响：'+affected.join('、')+'。只修改当前步骤，不自动修改其他牌型规则的匹配标识。修改后请检查组合校验。')){render();return;}}
-  if(field.key==='id'&&node.parentElement?.parentElement===doc.documentElement&&raw&&value!==raw){const uses=references(doc,node.parentElement.tagName,raw);if(uses.length){if(!value.trim()){notify('被引用的 ID 不能为空。');render();return;}if(!await confirmDialog('重命名稳定标识','有 '+uses.length+' 处引用使用 '+raw+'。确认后同步更新为 '+value+'。')){render();return;}mutate(()=>{node.setAttribute(field.key,value);for(const use of uses)use.node.setAttribute(use.field.key,value);});return;}}
+  if(field.key==='id'&&node.tagName==='Effect'&&value!==raw){const affected=stepUses(node);if(affected.length&&!await confirmDialog('修改被遗物引用的步骤','以下条目可能受影响：'+affected.join('、')+'。只修改当前步骤，不自动修改其他牌型规则的效果编号。修改后请重新校验，并检查相关遗物。')){render();return;}}
+  if(field.key==='id'&&node.parentElement?.parentElement===doc.documentElement&&raw&&value!==raw){const uses=references(doc,node.parentElement.tagName,raw);if(uses.length){if(!value.trim()){notify('被引用的 ID 不能为空。');render();return;}if(!await confirmDialog('修改配置编号','有 '+uses.length+' 处引用使用 '+raw+'。确认后同步更新为 '+value+'。')){render();return;}mutate(()=>{node.setAttribute(field.key,value);for(const use of uses)use.node.setAttribute(use.field.key,value);});return;}}
   mutate(()=>{if(value==='')node.removeAttribute(field.key);else node.setAttribute(field.key,value);
    if(field.key==='preset'&&value===''&&node.tagName==='Scoring'&&!node.querySelector('Hand'))for(const rule of meta.scoring){const hand=addChild(doc,node,'Hand');for(const [key,v]of Object.entries(rule))hand.setAttribute(key,v);}
   });
@@ -102,7 +103,7 @@ function renderField(node,field,grid){
   const options=[...new Set([...field.options,...values.filter(Boolean)])];
   for(const value of options){const label=el('label');const check=el('input');check.type='checkbox';check.value=value;check.checked=values.includes(value);check.addEventListener('change',()=>apply([...group.querySelectorAll('input:checked')].map(i=>i.value).join(',')));label.append(check,document.createTextNode(tr(value)));group.append(label);}box.append(group,el('small','field-key',field.key+' · 默认 '+(field.default||'无')));grid.append(box);return;
  }else{
-  input=el('input');input.type='text';if(field.type==='number')input.inputMode='decimal';input.value=raw??'';input.placeholder=field.default!=null?'默认：'+tr(String(field.default)):field.required?'必填':'留空继承 / 不设置';
+  input=el('input');input.type='text';if(field.type==='number')input.inputMode='decimal';input.value=raw??'';input.placeholder=field.default!=null?'默认：'+tr(String(field.default)):field.required?'必填':'留空使用默认值 / 不设置';
   if(field.type==='ref'||field.type==='step'){
    const list=el('datalist');list.id='choices-'+Math.random().toString(36).slice(2);input.setAttribute('list',list.id);
    if(field.type==='ref')for(const n of definitions(doc,field.section))list.append(new Option(label(n)+' · '+n.getAttribute('id'),n.getAttribute('id')));
@@ -132,16 +133,17 @@ async function deleteDefinition(){
  if(await showDialog()){if(uses.length&&!replacement.value){notify('尚未选择替代项，配置未删除。');return;}mutate(()=>{for(const use of uses)use.node.setAttribute(use.field.key,replacement.value);node.remove();selected=null;});}
 }
 function renderContext(){
- const box=$('context');box.replaceChildren();if(!selected){box.append(el('p','muted','选择配置条目后，可以查看引用关系。'));return;}
+ const box=$('context');box.replaceChildren();if(!selected){box.append(el('p','muted','选择一项配置，查看它使用了哪些配置，以及在哪里被使用。'));return;}
  box.append(el('div','badge',selected===doc.documentElement?'内容包':tr(section)));
+ const description=sections.find(s=>s[0]===section)?.[4];if(description)box.append(el('p','muted',description));
  const outgoing=[];for(const n of [selected,...selected.querySelectorAll('*')])for(const field of descriptor(n).fields)if(field.type==='ref'&&n.hasAttribute(field.key))outgoing.push({id:n.getAttribute(field.key),section:field.section});
- const block=el('div','context-block');block.append(el('h3','','引用了'));if(!outgoing.length)block.append(el('p','','无外部定义引用'));
+ const block=el('div','context-block');block.append(el('h3','','使用的配置'));if(!outgoing.length)block.append(el('p','','未使用其他配置'));
  for(const use of outgoing){const target=definitions(doc,use.section).find(n=>n.getAttribute('id')?.trim()===use.id?.trim());block.append(btn(tr(use.section)+' / '+(target?label(target):use.id+'（缺失）'),()=>{if(target)selectNode(target);},'reference'));}box.append(block);
- const incoming=selected===doc.documentElement?[]:references(doc,section,selected.getAttribute('id'));const other=el('div','context-block');other.append(el('h3','','被引用'));if(!incoming.length)other.append(el('p','','尚未被其他配置使用'));for(const use of incoming)other.append(btn(label(owner(use.node))+' / '+use.field.label,()=>selectNode(use.node),'reference'));box.append(other);
+ const incoming=selected===doc.documentElement?[]:references(doc,section,selected.getAttribute('id'));const other=el('div','context-block');other.append(el('h3','','使用它的配置'));if(!incoming.length)other.append(el('p','','尚未被其他配置使用'));for(const use of incoming)other.append(btn(label(owner(use.node))+' / '+use.field.label,()=>selectNode(use.node),'reference'));box.append(other);
  const affected=stepUses(selected);if(affected.length){const list=el('div','context-block');list.append(el('h3','','匹配了这些牌型步骤的遗物'));for(const name of affected)list.append(el('p','',name));box.append(list);}
- box.append(el('p','muted','稳定 ID 用于连接配置；名称可自由修改。数字按字符串保存，避免大整数精度损失。'));
+ box.append(el('p','muted','配置编号用于关联其他配置，显示名称可自由修改。修改编号时，工具会提示同步更新关联项。'));
 }
-const errorLabels={UnknownReference:'引用不存在',UnknownAttribute:'字段无法识别',UnknownElement:'子项无法识别',NotApplicable:'字段不适用于当前选项',InvalidValue:'配置值或结构不符合规则',InvalidCombination:'编成组合不合法',InvalidAdditionalHits:'额外段数必须作用于伤害步骤',HandEffectLimit:'组合后的效果超过 64 步',UnmatchedHandStep:'步骤标识没有匹配项',Overflow:'数值超出范围',DuplicateSection:'目录重复'};
+const errorLabels={UnknownReference:'引用不存在',UnknownAttribute:'字段无法识别',UnknownElement:'子项无法识别',NotApplicable:'字段不适用于当前选项',InvalidValue:'配置值或结构不符合规则',InvalidCombination:'对局中的配置不能一起使用',InvalidAdditionalHits:'额外段数必须作用于伤害步骤',HandEffectLimit:'组合后的效果超过 64 步',UnmatchedHandStep:'效果编号没有匹配项',Overflow:'数值超出范围',DuplicateSection:'目录重复'};
 function renderIssues(){
  const state=$('validation-state'),box=$('issues');box.replaceChildren();state.className='badge';
  if(checking){state.textContent='校验中…';return;}

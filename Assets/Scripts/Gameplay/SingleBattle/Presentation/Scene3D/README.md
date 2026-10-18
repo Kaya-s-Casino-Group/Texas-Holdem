@@ -19,7 +19,17 @@
 
 ## 策划集中配置入口
 
-打开 `工具 > 卡牌战斗 > 数值配置`。窗口只读取当前活动场景实际绑定的 SingleBattleHost；当前使用 SingleBattleDemoNew 时直接编辑它的配置，不会跳到其他 Demo 的默认资产。多个战局入口时必须手动选择。
+`SingleBattleDemoNew` 已切换到 XML 内容入口：`Assets/GameAssets/SingleBattle/Configuration/Content/SingleBattleDemoNew.xml`，默认编成 `single-battle-new`。Host Inspector 选择 `XmlContent`、XML 文件和编成 ID；双方 Actor 数组按编成中的玩家/敌人顺序绑定，旧 RulesProfile 和 Actor Profile 在此场景已解绑。其他旧场景仍可选择 `LegacyProfiles`。
+
+使用 [外部 HTML 配置工具](../../../../../../Tools/BattleContentEditor/README.md) 导入该 XML，修改后导出覆盖原文件；Unity 刷新后重新开战生效。`工具 > 卡牌战斗 > 数值配置` 在 XML 模式显示当前文件、编成及统一校验入口；Host Inspector 也可校验。校验会真实组装未开局会话，不发牌、不触发开战效果。读取或引用错误、编成人数或接入会话的参与者顺序不匹配均会拒绝；失败重开保留原会话，诊断在 Inspector 与 HUD 显示。
+
+XML 按策划文档 revision 1277 配置：高牌/一对/两对单体伤害，三条/四条群伤，顺子三段伤害，同花伤害加按筹码治疗，葫芦单体眩晕一次行动窗口加自身免控至下个敌人阶段结束，皇家同花顺消灭全部存活敌人。免控沿用已确认的“提前施加”语义；普通同花顺和五条暂为显式单体伤害兼容项。文档未定数值均在 XML 注释为测试值，计分表及角色基础值沿用原场景。共享三点能量，出牌/弃牌各一点、立即补牌；弃牌每张八盾，流程图的有限次数暂为整场三次。
+
+同包提供 `single-battle-dot`、`single-battle-reflect`、`single-battle-overheal` 三个可选编成，分别测试顺子逐段附流血/中毒、弃牌盾反、同花治疗增幅与溢疗转伤；默认编成不装备遗物。切换 Host 的编成 ID 即可重开测试。新增的左侧 HUD 文字区显示预览、状态及期限、遗物次数冷却、触发和阶段结算；原有 Actor/VAT/护盾/卡牌表现继续使用原协议。敌人仍为明确配置的固定攻击，文档中未细化的召唤、护甲、污染牌库和完整 Run 流程未在本次新增。
+
+运行验证入口：在 `SingleBattleDemoNew` Play 模式执行 `工具 > 卡牌战斗 > XML内容 > 验证当前运行场景`；验证出牌、弃牌、补牌、格挡和完整回合并写入 `Library/SingleBattleTests/xml-scene.json`，成功后重新开战。该验证会消费当前测试对局的行动，请用于刚开局的默认编成。
+
+旧 SO 模式下，打开 `工具 > 卡牌战斗 > 数值配置`，窗口只读取当前活动场景实际绑定的 SingleBattleHost。多个战局入口时必须手动选择。
 
 - **配置总览**：查看公共规则、玩家与敌人的实际资产、阵容顺序和保存范围，直接跳到对应角色页。
 - **公共规则**：编辑回合上限、玩家格挡清除时机、共享牌型基础筹码/倍率、每级成长与单牌筹码。

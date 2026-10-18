@@ -58,7 +58,13 @@ namespace Poker.SingleBattle
         }
         public void Refresh()
         {
-            if (host == null || host.PresentedState == null || player == null) return;
+            if (host == null) return;
+            if (host.PresentedState == null)
+            {
+                if (message != null) message.text = host.Message;
+                RefreshRuleFeedback(true); return;
+            }
+            if (player == null) return;
             var state = host.PresentedState; var duel = state.Duel; var rules = host.Engine.Duel.Definition;
             var hero = host.Player.Unit; var monster = host.Enemy.Unit;
             if (hero == null || monster == null) return;
@@ -66,7 +72,8 @@ namespace Poker.SingleBattle
             player.text = "玩家 " + (host.Players.ToList().IndexOf(host.Player) + 1) + "   " + hero.Health + " / " + hero.MaxHealth + "\n格挡 " + hero.Block;
             enemy.text = string.Join("\n", host.Enemies.Select((actor, i) => "怪物 " + (i + 1) + "  " + actor.Unit.Health + " / " + actor.Unit.MaxHealth));
             if (energy != null) energy.text = "能量 " + host.Player.Turn.Energy + " / " + host.Player.Turn.MaxEnergy +
-                "\n出牌 " + host.Player.Rules.PlayEnergyCost + " · 弃牌 " + host.Player.Rules.DiscardEnergyCost;
+                "\n出牌 " + host.Engine.Duel.QueryActionCost(duel, host.Player.ParticipantId, ScoredDuelActionKind.ScoredHand).Cost +
+                " · 弃牌 " + host.Engine.Duel.QueryActionCost(duel, host.Player.ParticipantId, ScoredDuelActionKind.Discard).Cost;
             if (endTurn != null) endTurn.interactable = host.CanEndTurn;
             playerBar.rectTransform.anchorMax = new Vector2((float)hero.Health / hero.MaxHealth, 1);
             enemyBar.rectTransform.anchorMax = new Vector2((float)host.Enemies.Sum(actor => actor.Unit.Health) / host.Enemies.Sum(actor => actor.Unit.MaxHealth), 1);
@@ -78,7 +85,8 @@ namespace Poker.SingleBattle
             counts.text = "牌库 " + host.PlayerZone(CardZoneKinds.Deck).Cards.Count + " · 弃牌堆 " + host.PlayerZone(CardZoneKinds.Discard).Cards.Count +
                 "\n弃牌次数 " + (host.PresentedState.RemainingDiscardBudgetFor(host.Player.ParticipantId)?.ToString() ?? "不限");
             score.text = host.LastScore == null ? "总得分 " + duel.TotalScore :
-                "上次 " + HandName(host.LastScore.Category) + " · " + host.LastScore.Total + " 分\n伤害 " + host.LastDamage;
+                "上次 " + HandName(host.LastScore.Category) + " · " + host.LastScore.Total + " 分\n效果见规则反馈";
+            RefreshRuleFeedback(true);
             bool showResult = duel.IsFinished && !host.IsPresenting;
             resultPanel.SetActive(showResult); restart.interactable = !host.IsPresenting; resultRestart.interactable = !host.IsPresenting;
             if (endTurn != null) endTurn.gameObject.SetActive(!showResult);
@@ -134,6 +142,7 @@ namespace Poker.SingleBattle
         private void LateUpdate()
         {
             UpdateEnemyIntentBillboards();
+            RefreshRuleFeedback();
             if (host != null && endTurn != null) endTurn.interactable = host.CanEndTurn;
             if (switchPlayer != null) switchPlayer.interactable = host.CanSwitchPlayer && host.PresentedState.Duel.Players.Count(p => host.PresentedState.Duel.CanAct(p.Id)) > 1;
             if (Keyboard.current != null && Keyboard.current.tabKey.wasPressedThisFrame) SelectNextPlayer();

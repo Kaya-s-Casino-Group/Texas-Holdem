@@ -36,7 +36,7 @@ Minimal2D ───┘
           SingleBattleHost      Battle2DView
 ```
 
-`Configuration` 只将 ScriptableObject 作者数据构建成纯规则快照，不持有 Host、场景对象、动画或美术资源。配置资产归在 `Assets/GameAssets/SingleBattle/Configuration/Profiles`；同一资产可被两种前端引用，修改在下一场开战生效。
+`Configuration` 保留 ScriptableObject 到纯规则快照的兼容入口，不持有 Host、场景对象、动画或美术资源。旧配置资产归在 `Assets/GameAssets/SingleBattle/Configuration/Profiles`。`SingleBattleDemoNew` 改为消费 `Configuration/Content/SingleBattleDemoNew.xml`，直接复用规则层 `BattleContentCompiler / BattleContentFactory`；配置修改在下一场开战生效。
 
 `BattleSession` 完成规则推进并产出已结算步骤；`BattleSessionPlayback` 向公共表现接口提交快照。两种风格都遵守 `Initialize / Present / Synchronize / IsPresenting`，播放时长和取消不会改变规则结果。接口仍位于 `PokerEngine.Composition`，不依赖 Unity。
 
@@ -58,6 +58,8 @@ Minimal2D ───┘
 | `BattleSessionPlayback.PreviewPlay / PreviewDiscard` | 对当前权威快照只读验算，不提交状态或驱动表现 |
 
 `SingleBattleHost` 从场景 Actor 收集阵容，校验输入来源、切换观察玩家、绑定 CardMatch/Hand，并在 `SingleBattleHost.Presentation.cs` 投影 3D 步骤。`Battle2DHost` 从 Inspector 配置收集阵容，把本地选牌和按钮转换为相同命令，绑定 `Battle2DView` 并显示拒绝提示。Host 不构造规则引擎、不维护命令版本号，也不自行推进敌人回合。
+
+3D Host 的 `BuildConfiguredSession` 依据显式配置来源选择旧工厂或 XML 编译组装入口；XML 编成拥有属性、牌组、牌型、状态和遗物，场景 Actor 仅对应阵容席位。新场景及 HUD 文字反馈用法见 [Scene3D 说明](Presentation/Scene3D/README.md)。
 
 `SingleBattleHost` 与 `Battle2DHost` 均继承 `BaseBattleHost`。基类组合普通 C# `BattleHost`，由它先建立未开局 Session，再绑定表现，最后调用 `Playback.Start`。`RestartBattle` 重新读取当前配置创建新会话；`SynchronizeBattle` 取消表现并显示权威快照，不执行规则。3D 保留开局发牌动画，2D 保留即时开局；`AttachSession` 只接入已有状态，不自动重新开局。参与者 ID、阵容顺序与自定义牌堆/初始生命仍由输入配置确定。3D 的快速按钮检查使用共用轻量查询，2D 保留完整预览驱动按钮；规则算法都在共用层，前端只决定交互反馈方式。
 

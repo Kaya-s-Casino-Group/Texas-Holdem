@@ -73,7 +73,7 @@ namespace Poker.SingleBattle.Editor
 
         private void DrawWindow()
         {
-            if (activeSceneHandle != SceneManager.GetActiveScene().handle) RefreshHosts();
+            if (activeSceneHandle != SceneManager.GetActiveScene().handle || hosts.Any(item => item == null)) RefreshHosts();
             EditorGUILayout.Space(8);
             EditorGUILayout.LabelField("单局数值配置", EditorStyles.largeLabel);
             EditorGUILayout.LabelField("当前场景：" + SceneManager.GetActiveScene().name, EditorStyles.boldLabel);
@@ -90,6 +90,7 @@ namespace Poker.SingleBattle.Editor
                 EditorGUILayout.HelpBox(hosts.Length == 0 ? "当前场景没有单局战斗入口。请打开配置好 SingleBattleHost 的对局场景。" : "场景中存在多个战局，请先选择要配置的入口。", MessageType.Info);
                 return;
             }
+            if (host.UsesXmlContent) { DrawXmlContent(); return; }
             EditorGUILayout.HelpBox("编辑的是当前场景绑定的原始配置资产；所有共用它的角色或场景都会受影响。修改在下次开战生效，支持撤销。保存按钮仅保存配置资产，场景绑定仍在 Inspector 中管理。", MessageType.Info);
             if (EditorApplication.isPlayingOrWillChangePlaymode)
                 EditorGUILayout.HelpBox("运行期间只读。请退出运行模式后修改数值。", MessageType.Warning);
@@ -131,6 +132,35 @@ namespace Poker.SingleBattle.Editor
         }
 
         private static string HierarchyPath(Transform item) => item.parent == null ? item.name : HierarchyPath(item.parent) + "/" + item.name;
+
+        private void DrawXmlContent()
+        {
+            EditorGUILayout.HelpBox("当前场景使用 XML 内容配置。使用 Tools/BattleContentEditor 外部工具导入此文件、配置并导出覆盖；Unity 刷新后重新开战生效。", MessageType.Info);
+            using (new EditorGUI.DisabledScope(true))
+            {
+                EditorGUILayout.ObjectField("XML 内容包", host.ContentXml, typeof(TextAsset), false);
+                EditorGUILayout.TextField("编成 ID", host.ContentEncounterId ?? "");
+            }
+            if (host.ContentXml != null)
+            {
+                EditorGUILayout.SelectableLabel(AssetDatabase.GetAssetPath(host.ContentXml), EditorStyles.wordWrappedLabel, GUILayout.Height(40));
+                Locate(host.ContentXml, "定位 XML 文件");
+            }
+            Locate(host, "定位场景入口 / 修改编成");
+            EditorGUILayout.HelpBox("场景玩家和敌人按 XML 编成的各自顺序绑定；属性、牌型、状态、遗物、牌组均从 XML 组装。", MessageType.None);
+            using (new EditorGUI.DisabledScope(EditorApplication.isPlayingOrWillChangePlaymode))
+                if (GUILayout.Button("统一校验内容和场景阵容（不启动对局）"))
+                {
+                    try
+                    {
+                        host.BuildConfiguredSession();
+                        validation = "校验通过。未启动对局或修改当前会话。";
+                        validationType = MessageType.Info;
+                    }
+                    catch (Exception error) { validation = error.Message; validationType = MessageType.Error; }
+                }
+            if (!string.IsNullOrEmpty(validation)) EditorGUILayout.HelpBox(validation, validationType);
+        }
 
         private void DrawOverview()
         {

@@ -67,7 +67,7 @@ namespace Poker.SingleBattle
                 view.Visible = action != null;
                 view.Text.text = EnemyIntentText(action);
                 view.Root.sizeDelta = new Vector2(host.Players.Count > 1 ? 160 : IntentSize.x,
-                    IntentSize.y * (action != null && action.Action.Accepted ? Mathf.Max(1, action.Action.Hits.Count) : 1));
+                    IntentSize.y * Mathf.Max(1, view.Text.text.Count(character => character == '\n') + 1));
                 view.Root.gameObject.SetActive(view.Visible);
             }
             intent.gameObject.SetActive(false);
@@ -78,11 +78,11 @@ namespace Poker.SingleBattle
         {
             if (intent == null) return "";
             if (!intent.Action.Accepted) return "意图不可用";
-            // SettledDamage includes both modifiers, before block. Never collapse different targets into one value.
-            var players = host.Players.ToList();
-            return string.Join("\n", intent.Action.Hits.Select(hit =>
-                (players.Count > 1 ? "玩家 " + (players.FindIndex(player => player.ParticipantId == hit.Effect.Target) + 1) + " · " : "") +
-                "攻击 " + hit.SettledDamage));
+            if (intent.Action.IsSkipped) return "眩晕 · 跳过行动";
+            // Read every effect from the real preview, including healing, status and elimination.
+            var lines = BattleHudRuleText.Events(intent.Action.RuleEvents, host.PresentedState.Duel,
+                host.Engine.Duel.Definition.StatusCatalog, true);
+            return lines.Count == 0 ? "无效果" : string.Join("\n", lines);
         }
 
         private void UpdateEnemyIntentBillboards()

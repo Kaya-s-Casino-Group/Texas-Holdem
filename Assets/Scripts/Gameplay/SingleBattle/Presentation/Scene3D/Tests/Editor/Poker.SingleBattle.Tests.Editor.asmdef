@@ -6,6 +6,8 @@
     "PokerEngine.Core",
     "PokerEngine.Scoring",
     "PokerEngine.Combat",
+    "PokerEngine.Abilities",
+    "PokerEngine.Runs",
     "PokerEngine.Composition",
     "PokerEngine.Encounters",
     "CardInteraction.Runtime",

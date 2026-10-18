@@ -3,6 +3,7 @@
   "rootNamespace": "Poker.SingleBattle",
   "references": [
     "PokerEngine.Core",
+    "PokerEngine.Abilities",
     "PokerEngine.Scoring",
     "PokerEngine.Combat",
     "PokerEngine.Composition",

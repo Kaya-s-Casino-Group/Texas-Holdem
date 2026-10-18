@@ -15,10 +15,11 @@ namespace Poker.SingleBattle
         private Coroutine playback;
         private bool busy;
         private BattleSessionResult pendingPresentation;
+        public BattleSessionResult LastResolution { get; private set; }
 
         void IBattleSessionPresentation.Initialize(CardDuelState initialState)
         {
-            shieldFrames.Clear(); pendingPresentation = null;
+            shieldFrames.Clear(); pendingPresentation = null; LastResolution = null;
             PresentedState = initialState;
             LastScore = null; LastDamage = 0; LastPlayResolution = null; LastPlayedBy = default;
             LastDiscardResolution = null; LastDiscardedBy = default;
@@ -28,6 +29,7 @@ namespace Poker.SingleBattle
         }
         void IBattleSessionPresentation.Present(BattleSessionResult batch, bool animate)
         {
+            LastResolution = batch;
             var first = batch.Steps[0];
             if (first.Action == CardDuelAction.Start)
             {
