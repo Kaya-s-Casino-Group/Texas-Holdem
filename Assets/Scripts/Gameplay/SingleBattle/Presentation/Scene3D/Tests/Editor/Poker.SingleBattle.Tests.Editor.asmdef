@@ -18,14 +18,19 @@
     "Poker.Scoring.Runtime",
     "CardArt.Runtime",
     "Poker.BattleConfiguration.Runtime",
-    "Poker.BattleHosting.Runtime"
+    "Poker.BattleHosting.Runtime",
+    "BattlePresentation.Runtime",
+    "BattlePresentation.Unity",
+    "Poker.BattlePresentation.Shared",
+    "UIFoundation.Runtime"
   ],
   "includePlatforms": [
     "Editor"
   ],
   "overrideReferences": true,
   "precompiledReferences": [
-    "nunit.framework.dll"
+    "nunit.framework.dll",
+    "DOTween.dll"
   ],
   "optionalUnityReferences": [
     "TestAssemblies"

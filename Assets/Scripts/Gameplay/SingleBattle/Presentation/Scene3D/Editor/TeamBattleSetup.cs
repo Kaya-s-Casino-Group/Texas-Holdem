@@ -35,6 +35,7 @@ namespace Poker.SingleBattle.Editor
                 actor.transform.position = new Vector3(.10f + i * .18f, 0, .406f); actor.transform.localScale *= .65f;
             }
             host.ConfigureActors(players, enemies);
+            BattlePresentationSceneSetup.ConfigureHost(host);
             foreach (var label in scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<TMP_Text>(true)))
                 if (label.text.Contains("THE GUARDIAN")) label.text = "多人战局 / 2 PLAYERS vs 3 ENEMIES";
             EditorUtility.SetDirty(host); EditorSceneManager.MarkSceneDirty(scene); EditorSceneManager.SaveScene(scene);

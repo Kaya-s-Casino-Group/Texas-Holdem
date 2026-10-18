@@ -1,4 +1,5 @@
 using System;
+using global::BattlePresentation;
 using PokerEngine;
 using UnityEngine;
 
@@ -14,11 +15,25 @@ namespace Poker.SingleBattle
         public ParticipantId ActorId { get; }
         public CombatEvent Effect { get; }
         public ShieldSnapshot Shields { get; }
+        public string DisplayActorId { get; }
+        public EffectDisplayData DisplayEffect { get; }
+        public IMarkerSink Markers { get; }
+        public long HealthLost => DisplayEffect?.HealthLost ?? Effect?.HealthLost ?? 0;
+        public BattlePresentationCue(BattlePresentationKind kind, string actorId, EffectDisplayData effect = null,
+            IMarkerSink markers = null, ShieldSnapshot shields = null)
+        {
+            if (!Enum.IsDefined(typeof(BattlePresentationKind), kind) || string.IsNullOrEmpty(actorId))
+                throw new ArgumentException("Invalid display cue.");
+            Kind = kind; DisplayActorId = actorId; DisplayEffect = effect; Markers = markers; Shields = shields;
+        }
         public BattlePresentationCue(BattlePresentationKind kind, ParticipantId actorId, CombatEvent effect = null, ShieldSnapshot shields = null)
         {
             if (!Enum.IsDefined(typeof(BattlePresentationKind), kind) || !actorId.IsValid) throw new ArgumentException("Invalid presentation cue.");
-            Kind = kind; ActorId = actorId; Effect = effect; Shields = shields;
+            Kind = kind; ActorId = actorId; Effect = effect; Shields = shields; DisplayActorId = actorId.Value;
         }
+        public BattlePresentationCue WithKind(BattlePresentationKind kind) => Effect != null || ActorId.IsValid
+            ? new BattlePresentationCue(kind, ActorId, Effect, Shields)
+            : new BattlePresentationCue(kind, DisplayActorId, DisplayEffect, Markers, Shields);
     }
 
     /// <summary>Main-thread operation. The producer finishes it exactly once; late callbacks after cancellation are ignored.</summary>
@@ -37,6 +52,12 @@ namespace Poker.SingleBattle
         }
         public static BattlePresentationOperation Completed()
         { var operation = new BattlePresentationOperation(); operation.Complete(); return operation; }
+    }
+
+    /// <summary>Optional neutral display contract. Legacy rule-based synchronization remains a compatibility entry point.</summary>
+    public interface IBattleActorDisplayPresentation
+    {
+        void SynchronizeDisplay(UnitDisplayData unit);
     }
 
     public interface IShieldPresentation

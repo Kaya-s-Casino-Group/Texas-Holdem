@@ -1,4 +1,5 @@
 using System;
+using global::BattlePresentation;
 using System.Collections;
 using DG.Tweening;
 using PokerEngine;
@@ -8,7 +9,7 @@ namespace Poker.SingleBattle
 {
     /// <summary>Replaceable demo presentation. Owns model transforms and timings, not unit identity, HP or turns.</summary>
     [DisallowMultipleComponent]
-    public class BattleActorPresenter : MonoBehaviour, IBattleActorPresentation
+    public class BattleActorPresenter : MonoBehaviour, IBattleActorPresentation, IBattleActorDisplayPresentation
     {
         [SerializeField] private Transform model;
         [SerializeField] private MonoBehaviour audioPresentation;
@@ -33,6 +34,7 @@ namespace Poker.SingleBattle
         public virtual bool UsesDeathTimeline => false;
         public void ConfigureAttackOffset(Vector3 offset) => attackOffset = offset;
         public virtual void Synchronize(CombatantState unit) { }
+        public virtual void SynchronizeDisplay(UnitDisplayData unit) { }
 
         public void Configure(Transform target)
         {
@@ -54,11 +56,16 @@ namespace Poker.SingleBattle
             if (cue == null) throw new ArgumentNullException(nameof(cue));
             if (active != null && active.keepWaiting) throw new InvalidOperationException("Presentation operations must be sequenced.");
             if (cue.Kind == BattlePresentationKind.GainBlock || cue.Kind == BattlePresentationKind.ClearBlock ||
-                cue.Kind == BattlePresentationKind.BlockHit && (cue.Effect == null || cue.Effect.HealthLost == 0))
+                cue.Kind == BattlePresentationKind.BlockHit && cue.HealthLost == 0)
                 return BattlePresentationOperation.Completed();
-            if (cue.Kind == BattlePresentationKind.BlockHit) cue = new BattlePresentationCue(BattlePresentationKind.Hit, cue.ActorId, cue.Effect);
+            if (cue.Kind == BattlePresentationKind.BlockHit) cue = cue.WithKind(BattlePresentationKind.Hit);
             CapturePose(); active = new BattlePresentationOperation();
-            if (!Application.isPlaying || !isActiveAndEnabled || model == null) { Snap(cue); return BattlePresentationOperation.Completed(); }
+            if (!Application.isPlaying || !isActiveAndEnabled || model == null)
+            {
+                Snap(cue);
+                if (cue.Kind == BattlePresentationKind.Attack) cue.Markers?.Emit("Impact");
+                return BattlePresentationOperation.Completed();
+            }
             var operation = active;
             try { if (cue.Kind != BattlePresentationKind.PrepareAttack) Audio?.Play(cue.Kind); }
             catch (Exception error) { Debug.LogWarning("Battle sound skipped: " + error.Message, this); }
@@ -69,7 +76,7 @@ namespace Poker.SingleBattle
         private IEnumerator Run(BattlePresentationCue cue, BattlePresentationOperation operation)
         {
             var sequence = cue.Kind == BattlePresentationKind.Death ? PlayDeath() : cue.Kind == BattlePresentationKind.PrepareAttack
-                ? PrepareAttack() : Pulse(cue.Kind == BattlePresentationKind.Hit);
+                ? PrepareAttack() : Pulse(cue, operation);
             try
             {
                 while (operation.keepWaiting)
@@ -86,16 +93,22 @@ namespace Poker.SingleBattle
         }
         protected virtual IEnumerator PrepareAttack()
         { if (prepareSeconds > 0) yield return new WaitForSecondsRealtime(prepareSeconds); }
-        private IEnumerator Pulse(bool hit)
+        private IEnumerator Pulse(BattlePresentationCue cue, BattlePresentationOperation operation)
         {
+            bool hit = cue.Kind == BattlePresentationKind.Hit;
             float seconds = hit ? hitSeconds : attackSeconds;
-            if (seconds <= 0) { RestorePose(); yield break; }
+            if (seconds <= 0)
+            {
+                if (!hit) EmitImpact(cue, operation);
+                RestorePose(); yield break;
+            }
             bool completed = false;
             if (hit) motion = model.DOPunchPosition(hitPunch, seconds, hitVibrato, .5f);
             else
             {
                 motion = DOTween.Sequence()
                     .Append(model.DOLocalMove(restPosition + attackOffset, seconds * .4f).SetEase(Ease.OutQuad))
+                    .AppendCallback(() => EmitImpact(cue, operation))
                     .Append(model.DOLocalMove(restPosition, seconds * .6f).SetEase(Ease.InOutQuad));
             }
             motion.SetAutoKill(true).SetUpdate(true).OnComplete(() => completed = true);
@@ -103,6 +116,12 @@ namespace Poker.SingleBattle
             motion = null;
             if (!completed) throw new InvalidOperationException("The DOTween motion was interrupted.");
             RestorePose();
+        }
+        private void EmitImpact(BattlePresentationCue cue, BattlePresentationOperation operation)
+        {
+            if (!operation.keepWaiting) return;
+            try { cue.Markers?.Emit("Impact"); }
+            catch (Exception error) { operation.Fail(error); motion?.Kill(); }
         }
         protected virtual IEnumerator PlayDeath()
         {

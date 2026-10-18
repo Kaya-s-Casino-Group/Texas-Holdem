@@ -122,6 +122,52 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &28424412
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 28424413}
+  - component: {fileID: 28424414}
+  m_Layer: 0
+  m_Name: Actor Prepare
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &28424413
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 28424412}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1136878125}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &28424414
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 28424412}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5040b2b1302543f9bf19b1437aca7c28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 0}
+  kind: 0
 --- !u!1 &31957282
 GameObject:
   m_ObjectHideFlags: 0
@@ -407,6 +453,107 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!1 &84484693
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 84484694}
+  - component: {fileID: 84484695}
+  m_Layer: 0
+  m_Name: UI Damage enemy
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &84484694
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 84484693}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1136878125}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &84484695
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 84484693}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 110514045b424ca8ae9e684fae80bf78, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  template: {fileID: 1152109647}
+  outputRoot: {fileID: 1495604272}
+  kind: 4
+  textTemplate: '{target} -{damage}'
+  tint: {r: 1, g: 0.4, b: 0.32, a: 1}
+  seconds: 0.58
+  fadeInFraction: 0.12
+  fadeOutFraction: 0.3
+  rise: {x: 0, y: 24}
+  concurrentSpacing: 34
+  initialScale: 0.92
+--- !u!1 &99568712
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 99568713}
+  - component: {fileID: 99568714}
+  m_Layer: 0
+  m_Name: Actor Death
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &99568713
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 99568712}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1136878125}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &99568714
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 99568712}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5040b2b1302543f9bf19b1437aca7c28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 0}
+  kind: 3
 --- !u!1 &118586657
 GameObject:
   m_ObjectHideFlags: 0
@@ -549,6 +696,8 @@ GameObject:
   - component: {fileID: 151945505}
   - component: {fileID: 151945504}
   - component: {fileID: 151945506}
+  - component: {fileID: 151945507}
+  - component: {fileID: 151945508}
   m_Layer: 0
   m_Name: Card Match
   m_TagString: Untagged
@@ -585,7 +734,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1136878125}
   m_Father: {fileID: 942461831}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &151945506
@@ -600,6 +750,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dad9f709f4fa54521886b7d5b4574da3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  configurationSource: 1
+  contentXml: {fileID: 4900000, guid: 2e1406ff6b4f4cd68955b4ca6884b110, type: 3}
+  encounterId: single-battle-new
   match: {fileID: 151945504}
   actions: {fileID: 1593941721}
   overview: {fileID: 728451353}
@@ -609,9 +762,1839 @@ MonoBehaviour:
   enemyActors:
   - {fileID: 273413156}
   rulesProfile: {fileID: 0}
-  configurationSource: 1
-  contentXml: {fileID: 4900000, guid: 2e1406ff6b4f4cd68955b4ca6884b110, type: 3}
-  encounterId: single-battle-new
+  presentationDirector: {fileID: 151945507}
+--- !u!114 &151945507
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 151945503}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a8e0afbf57404560b3c67421b27604c2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targets:
+  - key: cards
+    target: {fileID: 339605498}
+  - key: player
+    target: {fileID: 1126122755}
+  - key: enemy
+    target: {fileID: 273413156}
+  - key: camera
+    target: {fileID: 528074928}
+  - key: scene
+    target: {fileID: 942461831}
+  - key: ui.feedback
+    target: {fileID: 1495604272}
+  timeline:
+  - semanticKey: ActionStarted
+    ruleAction: Play
+    filter:
+      effectPresence: 0
+      effectKind: 
+      targetId: 
+      targetTeam: 
+      targetRelation: 0
+      actorId: 
+      actorTeam: 
+      actorRelation: 0
+      healthLost: 0
+      blockAbsorbed: 0
+      healthChange: 0
+      blockChange: 0
+      isDeath: 0
+      skipped: 2
+    replaceDefault: 0
+    nodes:
+    - id: cards
+      action: {fileID: 1786954793}
+      targetKey: cards
+      blocking: 1
+      filter:
+        effectPresence: 0
+        effectKind: 
+        targetId: 
+        targetTeam: 
+        targetRelation: 0
+        actorId: 
+        actorTeam: 
+        actorRelation: 0
+        healthLost: 0
+        blockAbsorbed: 0
+        healthChange: 0
+        blockChange: 0
+        isDeath: 0
+        skipped: 0
+      after: []
+    - id: attack
+      action: {fileID: 695210762}
+      targetKey: 
+      blocking: 1
+      filter:
+        effectPresence: 0
+        effectKind: 
+        targetId: 
+        targetTeam: 
+        targetRelation: 0
+        actorId: 
+        actorTeam: 
+        actorRelation: 0
+        healthLost: 0
+        blockAbsorbed: 0
+        healthChange: 0
+        blockChange: 0
+        isDeath: 0
+        skipped: 0
+      after:
+      - actionId: cards
+        kind: 1
+        marker: ReadyToAttack
+    explicitCheckpoint: 1
+    checkpoint:
+    - actionId: attack
+      kind: 1
+      marker: Impact
+  - semanticKey: ActionStarted
+    ruleAction: Discard
+    filter:
+      effectPresence: 0
+      effectKind: 
+      targetId: 
+      targetTeam: 
+      targetRelation: 0
+      actorId: 
+      actorTeam: 
+      actorRelation: 0
+      healthLost: 0
+      blockAbsorbed: 0
+      healthChange: 0
+      blockChange: 0
+      isDeath: 0
+      skipped: 2
+    replaceDefault: 0
+    nodes:
+    - id: cards
+      action: {fileID: 1786954793}
+      targetKey: cards
+      blocking: 1
+      filter:
+        effectPresence: 0
+        effectKind: 
+        targetId: 
+        targetTeam: 
+        targetRelation: 0
+        actorId: 
+        actorTeam: 
+        actorRelation: 0
+        healthLost: 0
+        blockAbsorbed: 0
+        healthChange: 0
+        blockChange: 0
+        isDeath: 0
+        skipped: 0
+      after: []
+    explicitCheckpoint: 1
+    checkpoint:
+    - actionId: cards
+      kind: 2
+      marker: 
+  - semanticKey: ActionStarted
+    ruleAction: EnemyAction
+    filter:
+      effectPresence: 0
+      effectKind: 
+      targetId: 
+      targetTeam: 
+      targetRelation: 0
+      actorId: 
+      actorTeam: 
+      actorRelation: 0
+      healthLost: 0
+      blockAbsorbed: 0
+      healthChange: 0
+      blockChange: 0
+      isDeath: 0
+      skipped: 2
+    replaceDefault: 0
+    nodes:
+    - id: prepare
+      action: {fileID: 28424414}
+      targetKey: 
+      blocking: 1
+      filter:
+        effectPresence: 0
+        effectKind: 
+        targetId: 
+        targetTeam: 
+        targetRelation: 0
+        actorId: 
+        actorTeam: 
+        actorRelation: 0
+        healthLost: 0
+        blockAbsorbed: 0
+        healthChange: 0
+        blockChange: 0
+        isDeath: 0
+        skipped: 0
+      after: []
+    - id: attack
+      action: {fileID: 695210762}
+      targetKey: 
+      blocking: 1
+      filter:
+        effectPresence: 0
+        effectKind: 
+        targetId: 
+        targetTeam: 
+        targetRelation: 0
+        actorId: 
+        actorTeam: 
+        actorRelation: 0
+        healthLost: 0
+        blockAbsorbed: 0
+        healthChange: 0
+        blockChange: 0
+        isDeath: 0
+        skipped: 0
+      after:
+      - actionId: prepare
+        kind: 2
+        marker: 
+    explicitCheckpoint: 1
+    checkpoint:
+    - actionId: attack
+      kind: 1
+      marker: Impact
+  - semanticKey: EffectSettled
+    ruleAction: 
+    filter:
+      effectPresence: 1
+      effectKind: 
+      targetId: 
+      targetTeam: 
+      targetRelation: 0
+      actorId: 
+      actorTeam: 
+      actorRelation: 0
+      healthLost: 2
+      blockAbsorbed: 1
+      healthChange: 0
+      blockChange: 0
+      isDeath: 0
+      skipped: 0
+    replaceDefault: 0
+    nodes:
+    - id: effect
+      action: {fileID: 1610587712}
+      targetKey: 
+      blocking: 1
+      filter:
+        effectPresence: 0
+        effectKind: 
+        targetId: 
+        targetTeam: 
+        targetRelation: 0
+        actorId: 
+        actorTeam: 
+        actorRelation: 0
+        healthLost: 0
+        blockAbsorbed: 0
+        healthChange: 0
+        blockChange: 0
+        isDeath: 0
+        skipped: 0
+      after: []
+    - id: death
+      action: {fileID: 99568714}
+      targetKey: 
+      blocking: 1
+      filter:
+        effectPresence: 0
+        effectKind: 
+        targetId: 
+        targetTeam: 
+        targetRelation: 0
+        actorId: 
+        actorTeam: 
+        actorRelation: 0
+        healthLost: 0
+        blockAbsorbed: 0
+        healthChange: 0
+        blockChange: 0
+        isDeath: 1
+        skipped: 0
+      after:
+      - actionId: effect
+        kind: 2
+        marker: 
+    explicitCheckpoint: 1
+    checkpoint:
+    - actionId: effect
+      kind: 1
+      marker: Revealed
+  - semanticKey: EffectSettled
+    ruleAction: 
+    filter:
+      effectPresence: 1
+      effectKind: 
+      targetId: 
+      targetTeam: 
+      targetRelation: 0
+      actorId: 
+      actorTeam: 
+      actorRelation: 0
+      healthLost: 0
+      blockAbsorbed: 2
+      healthChange: 0
+      blockChange: 0
+      isDeath: 0
+      skipped: 0
+    replaceDefault: 0
+    nodes:
+    - id: effect
+      action: {fileID: 537729917}
+      targetKey: 
+      blocking: 1
+      filter:
+        effectPresence: 0
+        effectKind: 
+        targetId: 
+        targetTeam: 
+        targetRelation: 0
+        actorId: 
+        actorTeam: 
+        actorRelation: 0
+        healthLost: 0
+        blockAbsorbed: 0
+        healthChange: 0
+        blockChange: 0
+        isDeath: 0
+        skipped: 0
+      after: []
+    - id: death
+      action: {fileID: 99568714}
+      targetKey: 
+      blocking: 1
+      filter:
+        effectPresence: 0
+        effectKind: 
+        targetId: 
+        targetTeam: 
+        targetRelation: 0
+        actorId: 
+        actorTeam: 
+        actorRelation: 0
+        healthLost: 0
+        blockAbsorbed: 0
+        healthChange: 0
+        blockChange: 0
+        isDeath: 1
+        skipped: 0
+      after:
+      - actionId: effect
+        kind: 2
+        marker: 
+    explicitCheckpoint: 1
+    checkpoint:
+    - actionId: effect
+      kind: 1
+      marker: Revealed
+  - semanticKey: EffectSettled
+    ruleAction: 
+    filter:
+      effectPresence: 0
+      effectKind: GainBlock
+      targetId: 
+      targetTeam: 
+      targetRelation: 0
+      actorId: 
+      actorTeam: 
+      actorRelation: 0
+      healthLost: 0
+      blockAbsorbed: 0
+      healthChange: 0
+      blockChange: 1
+      isDeath: 0
+      skipped: 0
+    replaceDefault: 0
+    nodes:
+    - id: effect
+      action: {fileID: 227848127}
+      targetKey: 
+      blocking: 1
+      filter:
+        effectPresence: 0
+        effectKind: 
+        targetId: 
+        targetTeam: 
+        targetRelation: 0
+        actorId: 
+        actorTeam: 
+        actorRelation: 0
+        healthLost: 0
+        blockAbsorbed: 0
+        healthChange: 0
+        blockChange: 0
+        isDeath: 0
+        skipped: 0
+      after: []
+    - id: death
+      action: {fileID: 99568714}
+      targetKey: 
+      blocking: 1
+      filter:
+        effectPresence: 0
+        effectKind: 
+        targetId: 
+        targetTeam: 
+        targetRelation: 0
+        actorId: 
+        actorTeam: 
+        actorRelation: 0
+        healthLost: 0
+        blockAbsorbed: 0
+        healthChange: 0
+        blockChange: 0
+        isDeath: 1
+        skipped: 0
+      after:
+      - actionId: effect
+        kind: 2
+        marker: 
+    explicitCheckpoint: 1
+    checkpoint:
+    - actionId: effect
+      kind: 1
+      marker: Revealed
+  - semanticKey: EffectSettled
+    ruleAction: 
+    filter:
+      effectPresence: 0
+      effectKind: ClearBlock
+      targetId: 
+      targetTeam: 
+      targetRelation: 0
+      actorId: 
+      actorTeam: 
+      actorRelation: 0
+      healthLost: 0
+      blockAbsorbed: 0
+      healthChange: 0
+      blockChange: 2
+      isDeath: 0
+      skipped: 0
+    replaceDefault: 0
+    nodes:
+    - id: effect
+      action: {fileID: 1350881208}
+      targetKey: 
+      blocking: 1
+      filter:
+        effectPresence: 0
+        effectKind: 
+        targetId: 
+        targetTeam: 
+        targetRelation: 0
+        actorId: 
+        actorTeam: 
+        actorRelation: 0
+        healthLost: 0
+        blockAbsorbed: 0
+        healthChange: 0
+        blockChange: 0
+        isDeath: 0
+        skipped: 0
+      after: []
+    - id: death
+      action: {fileID: 99568714}
+      targetKey: 
+      blocking: 1
+      filter:
+        effectPresence: 0
+        effectKind: 
+        targetId: 
+        targetTeam: 
+        targetRelation: 0
+        actorId: 
+        actorTeam: 
+        actorRelation: 0
+        healthLost: 0
+        blockAbsorbed: 0
+        healthChange: 0
+        blockChange: 0
+        isDeath: 1
+        skipped: 0
+      after:
+      - actionId: effect
+        kind: 2
+        marker: 
+    explicitCheckpoint: 1
+    checkpoint:
+    - actionId: effect
+      kind: 1
+      marker: Revealed
+  - semanticKey: EffectSettled
+    ruleAction: 
+    filter:
+      effectPresence: 0
+      effectKind: 
+      targetId: 
+      targetTeam: 
+      targetRelation: 0
+      actorId: 
+      actorTeam: 
+      actorRelation: 0
+      healthLost: 1
+      blockAbsorbed: 1
+      healthChange: 0
+      blockChange: 3
+      isDeath: 1
+      skipped: 0
+    replaceDefault: 0
+    nodes:
+    - id: death
+      action: {fileID: 99568714}
+      targetKey: 
+      blocking: 1
+      filter:
+        effectPresence: 0
+        effectKind: 
+        targetId: 
+        targetTeam: 
+        targetRelation: 0
+        actorId: 
+        actorTeam: 
+        actorRelation: 0
+        healthLost: 0
+        blockAbsorbed: 0
+        healthChange: 0
+        blockChange: 0
+        isDeath: 0
+        skipped: 0
+      after: []
+    explicitCheckpoint: 1
+    checkpoint:
+    - actionId: death
+      kind: 1
+      marker: Revealed
+  - semanticKey: CardsMoved
+    ruleAction: 
+    filter:
+      effectPresence: 0
+      effectKind: 
+      targetId: 
+      targetTeam: 
+      targetRelation: 0
+      actorId: 
+      actorTeam: 
+      actorRelation: 0
+      healthLost: 0
+      blockAbsorbed: 0
+      healthChange: 0
+      blockChange: 0
+      isDeath: 0
+      skipped: 0
+    replaceDefault: 0
+    nodes:
+    - id: cards-settle
+      action: {fileID: 1227861332}
+      targetKey: cards
+      blocking: 1
+      filter:
+        effectPresence: 0
+        effectKind: 
+        targetId: 
+        targetTeam: 
+        targetRelation: 0
+        actorId: 
+        actorTeam: 
+        actorRelation: 0
+        healthLost: 0
+        blockAbsorbed: 0
+        healthChange: 0
+        blockChange: 0
+        isDeath: 0
+        skipped: 0
+      after: []
+    explicitCheckpoint: 1
+    checkpoint: []
+  - semanticKey: CardsDealt
+    ruleAction: 
+    filter:
+      effectPresence: 0
+      effectKind: 
+      targetId: 
+      targetTeam: 
+      targetRelation: 0
+      actorId: 
+      actorTeam: 
+      actorRelation: 0
+      healthLost: 0
+      blockAbsorbed: 0
+      healthChange: 0
+      blockChange: 0
+      isDeath: 0
+      skipped: 0
+    replaceDefault: 0
+    nodes:
+    - id: cards-settle
+      action: {fileID: 1227861332}
+      targetKey: cards
+      blocking: 1
+      filter:
+        effectPresence: 0
+        effectKind: 
+        targetId: 
+        targetTeam: 
+        targetRelation: 0
+        actorId: 
+        actorTeam: 
+        actorRelation: 0
+        healthLost: 0
+        blockAbsorbed: 0
+        healthChange: 0
+        blockChange: 0
+        isDeath: 0
+        skipped: 0
+      after: []
+    explicitCheckpoint: 1
+    checkpoint: []
+  - semanticKey: DeckRecycled
+    ruleAction: 
+    filter:
+      effectPresence: 0
+      effectKind: 
+      targetId: 
+      targetTeam: 
+      targetRelation: 0
+      actorId: 
+      actorTeam: 
+      actorRelation: 0
+      healthLost: 0
+      blockAbsorbed: 0
+      healthChange: 0
+      blockChange: 0
+      isDeath: 0
+      skipped: 0
+    replaceDefault: 0
+    nodes:
+    - id: cards-settle
+      action: {fileID: 1227861332}
+      targetKey: cards
+      blocking: 1
+      filter:
+        effectPresence: 0
+        effectKind: 
+        targetId: 
+        targetTeam: 
+        targetRelation: 0
+        actorId: 
+        actorTeam: 
+        actorRelation: 0
+        healthLost: 0
+        blockAbsorbed: 0
+        healthChange: 0
+        blockChange: 0
+        isDeath: 0
+        skipped: 0
+      after: []
+    explicitCheckpoint: 1
+    checkpoint: []
+  - semanticKey: BattleStarted
+    ruleAction: 
+    filter:
+      effectPresence: 0
+      effectKind: 
+      targetId: 
+      targetTeam: 
+      targetRelation: 0
+      actorId: 
+      actorTeam: 
+      actorRelation: 0
+      healthLost: 0
+      blockAbsorbed: 0
+      healthChange: 0
+      blockChange: 0
+      isDeath: 0
+      skipped: 0
+    replaceDefault: 0
+    nodes: []
+    explicitCheckpoint: 1
+    checkpoint: []
+  - semanticKey: PhaseStarted
+    ruleAction: 
+    filter:
+      effectPresence: 0
+      effectKind: 
+      targetId: 
+      targetTeam: 
+      targetRelation: 0
+      actorId: 
+      actorTeam: 
+      actorRelation: 0
+      healthLost: 0
+      blockAbsorbed: 0
+      healthChange: 0
+      blockChange: 0
+      isDeath: 0
+      skipped: 0
+    replaceDefault: 0
+    nodes: []
+    explicitCheckpoint: 1
+    checkpoint: []
+  - semanticKey: HandEvaluated
+    ruleAction: 
+    filter:
+      effectPresence: 0
+      effectKind: 
+      targetId: 
+      targetTeam: 
+      targetRelation: 0
+      actorId: 
+      actorTeam: 
+      actorRelation: 0
+      healthLost: 0
+      blockAbsorbed: 0
+      healthChange: 0
+      blockChange: 0
+      isDeath: 0
+      skipped: 0
+    replaceDefault: 0
+    nodes: []
+    explicitCheckpoint: 1
+    checkpoint: []
+  - semanticKey: ActionCostSettled
+    ruleAction: 
+    filter:
+      effectPresence: 0
+      effectKind: 
+      targetId: 
+      targetTeam: 
+      targetRelation: 0
+      actorId: 
+      actorTeam: 
+      actorRelation: 0
+      healthLost: 0
+      blockAbsorbed: 0
+      healthChange: 0
+      blockChange: 0
+      isDeath: 0
+      skipped: 0
+    replaceDefault: 0
+    nodes: []
+    explicitCheckpoint: 1
+    checkpoint: []
+  - semanticKey: ActionResolved
+    ruleAction: 
+    filter:
+      effectPresence: 0
+      effectKind: 
+      targetId: 
+      targetTeam: 
+      targetRelation: 0
+      actorId: 
+      actorTeam: 
+      actorRelation: 0
+      healthLost: 0
+      blockAbsorbed: 0
+      healthChange: 0
+      blockChange: 0
+      isDeath: 0
+      skipped: 0
+    replaceDefault: 0
+    nodes: []
+    explicitCheckpoint: 1
+    checkpoint: []
+  - semanticKey: PhaseEnding
+    ruleAction: 
+    filter:
+      effectPresence: 0
+      effectKind: 
+      targetId: 
+      targetTeam: 
+      targetRelation: 0
+      actorId: 
+      actorTeam: 
+      actorRelation: 0
+      healthLost: 0
+      blockAbsorbed: 0
+      healthChange: 0
+      blockChange: 0
+      isDeath: 0
+      skipped: 0
+    replaceDefault: 0
+    nodes: []
+    explicitCheckpoint: 1
+    checkpoint: []
+  - semanticKey: PhaseEnded
+    ruleAction: 
+    filter:
+      effectPresence: 0
+      effectKind: 
+      targetId: 
+      targetTeam: 
+      targetRelation: 0
+      actorId: 
+      actorTeam: 
+      actorRelation: 0
+      healthLost: 0
+      blockAbsorbed: 0
+      healthChange: 0
+      blockChange: 0
+      isDeath: 0
+      skipped: 0
+    replaceDefault: 0
+    nodes: []
+    explicitCheckpoint: 1
+    checkpoint: []
+  - semanticKey: PhaseClosed
+    ruleAction: 
+    filter:
+      effectPresence: 0
+      effectKind: 
+      targetId: 
+      targetTeam: 
+      targetRelation: 0
+      actorId: 
+      actorTeam: 
+      actorRelation: 0
+      healthLost: 0
+      blockAbsorbed: 0
+      healthChange: 0
+      blockChange: 0
+      isDeath: 0
+      skipped: 0
+    replaceDefault: 0
+    nodes: []
+    explicitCheckpoint: 1
+    checkpoint: []
+  - semanticKey: BattleEnded
+    ruleAction: 
+    filter:
+      effectPresence: 0
+      effectKind: 
+      targetId: 
+      targetTeam: 
+      targetRelation: 0
+      actorId: 
+      actorTeam: 
+      actorRelation: 0
+      healthLost: 0
+      blockAbsorbed: 0
+      healthChange: 0
+      blockChange: 0
+      isDeath: 0
+      skipped: 0
+    replaceDefault: 0
+    nodes: []
+    explicitCheckpoint: 1
+    checkpoint: []
+  - semanticKey: BattleStarted
+    ruleAction: 
+    filter:
+      effectPresence: 0
+      effectKind: 
+      targetId: 
+      targetTeam: 
+      targetRelation: 0
+      actorId: 
+      actorTeam: 
+      actorRelation: 0
+      healthLost: 0
+      blockAbsorbed: 0
+      healthChange: 0
+      blockChange: 0
+      isDeath: 0
+      skipped: 0
+    replaceDefault: 0
+    nodes:
+    - id: ui-opening
+      action: {fileID: 1895545319}
+      targetKey: ui.feedback
+      blocking: 1
+      filter:
+        effectPresence: 0
+        effectKind: 
+        targetId: 
+        targetTeam: 
+        targetRelation: 0
+        actorId: 
+        actorTeam: 
+        actorRelation: 0
+        healthLost: 0
+        blockAbsorbed: 0
+        healthChange: 0
+        blockChange: 0
+        isDeath: 0
+        skipped: 0
+      after: []
+    explicitCheckpoint: 1
+    checkpoint:
+    - actionId: ui-opening
+      kind: 1
+      marker: Revealed
+  - semanticKey: PhaseStarted
+    ruleAction: 
+    filter:
+      effectPresence: 0
+      effectKind: 
+      targetId: 
+      targetTeam: 
+      targetRelation: 0
+      actorId: 
+      actorTeam: 
+      actorRelation: 0
+      healthLost: 0
+      blockAbsorbed: 0
+      healthChange: 0
+      blockChange: 0
+      isDeath: 0
+      skipped: 0
+    replaceDefault: 0
+    nodes:
+    - id: ui-phase
+      action: {fileID: 1609582526}
+      targetKey: ui.feedback
+      blocking: 1
+      filter:
+        effectPresence: 0
+        effectKind: 
+        targetId: 
+        targetTeam: 
+        targetRelation: 0
+        actorId: 
+        actorTeam: 
+        actorRelation: 0
+        healthLost: 0
+        blockAbsorbed: 0
+        healthChange: 0
+        blockChange: 0
+        isDeath: 0
+        skipped: 0
+      after: []
+    explicitCheckpoint: 1
+    checkpoint:
+    - actionId: ui-phase
+      kind: 1
+      marker: Revealed
+  - semanticKey: HandEvaluated
+    ruleAction: Play
+    filter:
+      effectPresence: 0
+      effectKind: 
+      targetId: 
+      targetTeam: 
+      targetRelation: 0
+      actorId: 
+      actorTeam: 
+      actorRelation: 0
+      healthLost: 0
+      blockAbsorbed: 0
+      healthChange: 0
+      blockChange: 0
+      isDeath: 0
+      skipped: 0
+    replaceDefault: 0
+    nodes:
+    - id: ui-hand
+      action: {fileID: 1599163904}
+      targetKey: ui.feedback
+      blocking: 1
+      filter:
+        effectPresence: 0
+        effectKind: 
+        targetId: 
+        targetTeam: 
+        targetRelation: 0
+        actorId: 
+        actorTeam: 
+        actorRelation: 0
+        healthLost: 0
+        blockAbsorbed: 0
+        healthChange: 0
+        blockChange: 0
+        isDeath: 0
+        skipped: 0
+      after: []
+    explicitCheckpoint: 1
+    checkpoint:
+    - actionId: ui-hand
+      kind: 1
+      marker: Revealed
+  - semanticKey: ActionCostSettled
+    ruleAction: Play
+    filter:
+      effectPresence: 0
+      effectKind: 
+      targetId: 
+      targetTeam: 
+      targetRelation: 0
+      actorId: 
+      actorTeam: 
+      actorRelation: 0
+      healthLost: 0
+      blockAbsorbed: 0
+      healthChange: 0
+      blockChange: 0
+      isDeath: 0
+      skipped: 0
+    replaceDefault: 0
+    nodes:
+    - id: ui-cost
+      action: {fileID: 1940970026}
+      targetKey: ui.feedback
+      blocking: 1
+      filter:
+        effectPresence: 0
+        effectKind: 
+        targetId: 
+        targetTeam: 
+        targetRelation: 0
+        actorId: 
+        actorTeam: 
+        actorRelation: 0
+        healthLost: 0
+        blockAbsorbed: 0
+        healthChange: 0
+        blockChange: 0
+        isDeath: 0
+        skipped: 0
+      after: []
+    explicitCheckpoint: 1
+    checkpoint:
+    - actionId: ui-cost
+      kind: 1
+      marker: Revealed
+  - semanticKey: PhaseEnding
+    ruleAction: 
+    filter:
+      effectPresence: 0
+      effectKind: 
+      targetId: 
+      targetTeam: 
+      targetRelation: 0
+      actorId: 
+      actorTeam: 
+      actorRelation: 0
+      healthLost: 0
+      blockAbsorbed: 0
+      healthChange: 0
+      blockChange: 0
+      isDeath: 0
+      skipped: 0
+    replaceDefault: 0
+    nodes:
+    - id: ui-ending
+      action: {fileID: 1412391288}
+      targetKey: ui.feedback
+      blocking: 1
+      filter:
+        effectPresence: 0
+        effectKind: 
+        targetId: 
+        targetTeam: 
+        targetRelation: 0
+        actorId: 
+        actorTeam: 
+        actorRelation: 0
+        healthLost: 0
+        blockAbsorbed: 0
+        healthChange: 0
+        blockChange: 0
+        isDeath: 0
+        skipped: 0
+      after: []
+    explicitCheckpoint: 1
+    checkpoint:
+    - actionId: ui-ending
+      kind: 1
+      marker: Revealed
+  - semanticKey: BattleEnded
+    ruleAction: 
+    filter:
+      effectPresence: 0
+      effectKind: 
+      targetId: 
+      targetTeam: 
+      targetRelation: 0
+      actorId: 
+      actorTeam: 
+      actorRelation: 0
+      healthLost: 0
+      blockAbsorbed: 0
+      healthChange: 0
+      blockChange: 0
+      isDeath: 0
+      skipped: 0
+    replaceDefault: 0
+    nodes:
+    - id: ui-result
+      action: {fileID: 799404186}
+      targetKey: ui.feedback
+      blocking: 1
+      filter:
+        effectPresence: 0
+        effectKind: 
+        targetId: 
+        targetTeam: 
+        targetRelation: 0
+        actorId: 
+        actorTeam: 
+        actorRelation: 0
+        healthLost: 0
+        blockAbsorbed: 0
+        healthChange: 0
+        blockChange: 0
+        isDeath: 0
+        skipped: 0
+      after: []
+    explicitCheckpoint: 1
+    checkpoint:
+    - actionId: ui-result
+      kind: 1
+      marker: Revealed
+  - semanticKey: StatusChanged
+    ruleAction: 
+    filter:
+      effectPresence: 0
+      effectKind: 
+      targetId: 
+      targetTeam: 
+      targetRelation: 0
+      actorId: 
+      actorTeam: 
+      actorRelation: 0
+      healthLost: 0
+      blockAbsorbed: 0
+      healthChange: 0
+      blockChange: 0
+      isDeath: 0
+      skipped: 0
+    replaceDefault: 0
+    nodes:
+    - id: ui-status
+      action: {fileID: 2146067686}
+      targetKey: ui.feedback
+      blocking: 1
+      filter:
+        effectPresence: 0
+        effectKind: 
+        targetId: 
+        targetTeam: 
+        targetRelation: 0
+        actorId: 
+        actorTeam: 
+        actorRelation: 0
+        healthLost: 0
+        blockAbsorbed: 0
+        healthChange: 0
+        blockChange: 0
+        isDeath: 0
+        skipped: 0
+      after: []
+    explicitCheckpoint: 1
+    checkpoint:
+    - actionId: ui-status
+      kind: 1
+      marker: Revealed
+  - semanticKey: RelicActivated
+    ruleAction: 
+    filter:
+      effectPresence: 0
+      effectKind: 
+      targetId: 
+      targetTeam: 
+      targetRelation: 0
+      actorId: 
+      actorTeam: 
+      actorRelation: 0
+      healthLost: 0
+      blockAbsorbed: 0
+      healthChange: 0
+      blockChange: 0
+      isDeath: 0
+      skipped: 0
+    replaceDefault: 0
+    nodes:
+    - id: ui-relic
+      action: {fileID: 938613076}
+      targetKey: ui.feedback
+      blocking: 1
+      filter:
+        effectPresence: 0
+        effectKind: 
+        targetId: 
+        targetTeam: 
+        targetRelation: 0
+        actorId: 
+        actorTeam: 
+        actorRelation: 0
+        healthLost: 0
+        blockAbsorbed: 0
+        healthChange: 0
+        blockChange: 0
+        isDeath: 0
+        skipped: 0
+      after: []
+    explicitCheckpoint: 1
+    checkpoint:
+    - actionId: ui-relic
+      kind: 1
+      marker: Revealed
+  - semanticKey: ActionStarted
+    ruleAction: Play
+    filter:
+      effectPresence: 0
+      effectKind: 
+      targetId: 
+      targetTeam: 
+      targetRelation: 0
+      actorId: 
+      actorTeam: 
+      actorRelation: 0
+      healthLost: 0
+      blockAbsorbed: 0
+      healthChange: 0
+      blockChange: 0
+      isDeath: 0
+      skipped: 2
+    replaceDefault: 0
+    nodes:
+    - id: ui-play
+      action: {fileID: 253660657}
+      targetKey: ui.feedback
+      blocking: 1
+      filter:
+        effectPresence: 0
+        effectKind: 
+        targetId: 
+        targetTeam: 
+        targetRelation: 0
+        actorId: 
+        actorTeam: 
+        actorRelation: 0
+        healthLost: 0
+        blockAbsorbed: 0
+        healthChange: 0
+        blockChange: 0
+        isDeath: 0
+        skipped: 0
+      after:
+      - actionId: cards
+        kind: 1
+        marker: ReadyToAttack
+    explicitCheckpoint: 0
+    checkpoint: []
+  - semanticKey: EffectSettled
+    ruleAction: 
+    filter:
+      effectPresence: 0
+      effectKind: 
+      targetId: 
+      targetTeam: player
+      targetRelation: 0
+      actorId: 
+      actorTeam: 
+      actorRelation: 0
+      healthLost: 2
+      blockAbsorbed: 0
+      healthChange: 0
+      blockChange: 0
+      isDeath: 0
+      skipped: 0
+    replaceDefault: 0
+    nodes:
+    - id: ui-damage
+      action: {fileID: 167455879}
+      targetKey: ui.feedback
+      blocking: 1
+      filter:
+        effectPresence: 0
+        effectKind: 
+        targetId: 
+        targetTeam: 
+        targetRelation: 0
+        actorId: 
+        actorTeam: 
+        actorRelation: 0
+        healthLost: 0
+        blockAbsorbed: 0
+        healthChange: 0
+        blockChange: 0
+        isDeath: 0
+        skipped: 0
+      after:
+      - actionId: effect
+        kind: 1
+        marker: Revealed
+    explicitCheckpoint: 0
+    checkpoint: []
+  - semanticKey: EffectSettled
+    ruleAction: 
+    filter:
+      effectPresence: 0
+      effectKind: 
+      targetId: 
+      targetTeam: player
+      targetRelation: 0
+      actorId: 
+      actorTeam: 
+      actorRelation: 0
+      healthLost: 0
+      blockAbsorbed: 2
+      healthChange: 0
+      blockChange: 0
+      isDeath: 0
+      skipped: 0
+    replaceDefault: 0
+    nodes:
+    - id: ui-block-hit
+      action: {fileID: 298529637}
+      targetKey: ui.feedback
+      blocking: 1
+      filter:
+        effectPresence: 0
+        effectKind: 
+        targetId: 
+        targetTeam: 
+        targetRelation: 0
+        actorId: 
+        actorTeam: 
+        actorRelation: 0
+        healthLost: 0
+        blockAbsorbed: 0
+        healthChange: 0
+        blockChange: 0
+        isDeath: 0
+        skipped: 0
+      after:
+      - actionId: effect
+        kind: 1
+        marker: Revealed
+    explicitCheckpoint: 0
+    checkpoint: []
+  - semanticKey: EffectSettled
+    ruleAction: 
+    filter:
+      effectPresence: 0
+      effectKind: GainBlock
+      targetId: 
+      targetTeam: player
+      targetRelation: 0
+      actorId: 
+      actorTeam: 
+      actorRelation: 0
+      healthLost: 0
+      blockAbsorbed: 0
+      healthChange: 0
+      blockChange: 1
+      isDeath: 0
+      skipped: 0
+    replaceDefault: 0
+    nodes:
+    - id: ui-gain
+      action: {fileID: 1562163489}
+      targetKey: ui.feedback
+      blocking: 1
+      filter:
+        effectPresence: 0
+        effectKind: 
+        targetId: 
+        targetTeam: 
+        targetRelation: 0
+        actorId: 
+        actorTeam: 
+        actorRelation: 0
+        healthLost: 0
+        blockAbsorbed: 0
+        healthChange: 0
+        blockChange: 0
+        isDeath: 0
+        skipped: 0
+      after:
+      - actionId: effect
+        kind: 1
+        marker: Revealed
+    explicitCheckpoint: 0
+    checkpoint: []
+  - semanticKey: EffectSettled
+    ruleAction: 
+    filter:
+      effectPresence: 0
+      effectKind: ClearBlock
+      targetId: 
+      targetTeam: player
+      targetRelation: 0
+      actorId: 
+      actorTeam: 
+      actorRelation: 0
+      healthLost: 0
+      blockAbsorbed: 0
+      healthChange: 0
+      blockChange: 2
+      isDeath: 0
+      skipped: 0
+    replaceDefault: 0
+    nodes:
+    - id: ui-clear
+      action: {fileID: 1501295384}
+      targetKey: ui.feedback
+      blocking: 1
+      filter:
+        effectPresence: 0
+        effectKind: 
+        targetId: 
+        targetTeam: 
+        targetRelation: 0
+        actorId: 
+        actorTeam: 
+        actorRelation: 0
+        healthLost: 0
+        blockAbsorbed: 0
+        healthChange: 0
+        blockChange: 0
+        isDeath: 0
+        skipped: 0
+      after:
+      - actionId: effect
+        kind: 1
+        marker: Revealed
+    explicitCheckpoint: 0
+    checkpoint: []
+  - semanticKey: EffectSettled
+    ruleAction: 
+    filter:
+      effectPresence: 0
+      effectKind: Heal
+      targetId: 
+      targetTeam: player
+      targetRelation: 0
+      actorId: 
+      actorTeam: 
+      actorRelation: 0
+      healthLost: 0
+      blockAbsorbed: 0
+      healthChange: 1
+      blockChange: 0
+      isDeath: 0
+      skipped: 0
+    replaceDefault: 0
+    nodes:
+    - id: ui-heal
+      action: {fileID: 587687404}
+      targetKey: ui.feedback
+      blocking: 1
+      filter:
+        effectPresence: 0
+        effectKind: 
+        targetId: 
+        targetTeam: 
+        targetRelation: 0
+        actorId: 
+        actorTeam: 
+        actorRelation: 0
+        healthLost: 0
+        blockAbsorbed: 0
+        healthChange: 0
+        blockChange: 0
+        isDeath: 0
+        skipped: 0
+      after: []
+    explicitCheckpoint: 1
+    checkpoint:
+    - actionId: ui-heal
+      kind: 1
+      marker: Revealed
+  - semanticKey: EffectSettled
+    ruleAction: 
+    filter:
+      effectPresence: 0
+      effectKind: 
+      targetId: 
+      targetTeam: enemy
+      targetRelation: 0
+      actorId: 
+      actorTeam: 
+      actorRelation: 0
+      healthLost: 2
+      blockAbsorbed: 0
+      healthChange: 0
+      blockChange: 0
+      isDeath: 0
+      skipped: 0
+    replaceDefault: 0
+    nodes:
+    - id: ui-damage
+      action: {fileID: 84484695}
+      targetKey: ui.feedback
+      blocking: 1
+      filter:
+        effectPresence: 0
+        effectKind: 
+        targetId: 
+        targetTeam: 
+        targetRelation: 0
+        actorId: 
+        actorTeam: 
+        actorRelation: 0
+        healthLost: 0
+        blockAbsorbed: 0
+        healthChange: 0
+        blockChange: 0
+        isDeath: 0
+        skipped: 0
+      after:
+      - actionId: effect
+        kind: 1
+        marker: Revealed
+    explicitCheckpoint: 0
+    checkpoint: []
+  - semanticKey: EffectSettled
+    ruleAction: 
+    filter:
+      effectPresence: 0
+      effectKind: 
+      targetId: 
+      targetTeam: enemy
+      targetRelation: 0
+      actorId: 
+      actorTeam: 
+      actorRelation: 0
+      healthLost: 0
+      blockAbsorbed: 2
+      healthChange: 0
+      blockChange: 0
+      isDeath: 0
+      skipped: 0
+    replaceDefault: 0
+    nodes:
+    - id: ui-block-hit
+      action: {fileID: 418615830}
+      targetKey: ui.feedback
+      blocking: 1
+      filter:
+        effectPresence: 0
+        effectKind: 
+        targetId: 
+        targetTeam: 
+        targetRelation: 0
+        actorId: 
+        actorTeam: 
+        actorRelation: 0
+        healthLost: 0
+        blockAbsorbed: 0
+        healthChange: 0
+        blockChange: 0
+        isDeath: 0
+        skipped: 0
+      after:
+      - actionId: effect
+        kind: 1
+        marker: Revealed
+    explicitCheckpoint: 0
+    checkpoint: []
+  - semanticKey: EffectSettled
+    ruleAction: 
+    filter:
+      effectPresence: 0
+      effectKind: GainBlock
+      targetId: 
+      targetTeam: enemy
+      targetRelation: 0
+      actorId: 
+      actorTeam: 
+      actorRelation: 0
+      healthLost: 0
+      blockAbsorbed: 0
+      healthChange: 0
+      blockChange: 1
+      isDeath: 0
+      skipped: 0
+    replaceDefault: 0
+    nodes:
+    - id: ui-gain
+      action: {fileID: 1747080330}
+      targetKey: ui.feedback
+      blocking: 1
+      filter:
+        effectPresence: 0
+        effectKind: 
+        targetId: 
+        targetTeam: 
+        targetRelation: 0
+        actorId: 
+        actorTeam: 
+        actorRelation: 0
+        healthLost: 0
+        blockAbsorbed: 0
+        healthChange: 0
+        blockChange: 0
+        isDeath: 0
+        skipped: 0
+      after:
+      - actionId: effect
+        kind: 1
+        marker: Revealed
+    explicitCheckpoint: 0
+    checkpoint: []
+  - semanticKey: EffectSettled
+    ruleAction: 
+    filter:
+      effectPresence: 0
+      effectKind: ClearBlock
+      targetId: 
+      targetTeam: enemy
+      targetRelation: 0
+      actorId: 
+      actorTeam: 
+      actorRelation: 0
+      healthLost: 0
+      blockAbsorbed: 0
+      healthChange: 0
+      blockChange: 2
+      isDeath: 0
+      skipped: 0
+    replaceDefault: 0
+    nodes:
+    - id: ui-clear
+      action: {fileID: 421001187}
+      targetKey: ui.feedback
+      blocking: 1
+      filter:
+        effectPresence: 0
+        effectKind: 
+        targetId: 
+        targetTeam: 
+        targetRelation: 0
+        actorId: 
+        actorTeam: 
+        actorRelation: 0
+        healthLost: 0
+        blockAbsorbed: 0
+        healthChange: 0
+        blockChange: 0
+        isDeath: 0
+        skipped: 0
+      after:
+      - actionId: effect
+        kind: 1
+        marker: Revealed
+    explicitCheckpoint: 0
+    checkpoint: []
+  - semanticKey: EffectSettled
+    ruleAction: 
+    filter:
+      effectPresence: 0
+      effectKind: Heal
+      targetId: 
+      targetTeam: enemy
+      targetRelation: 0
+      actorId: 
+      actorTeam: 
+      actorRelation: 0
+      healthLost: 0
+      blockAbsorbed: 0
+      healthChange: 1
+      blockChange: 0
+      isDeath: 0
+      skipped: 0
+    replaceDefault: 0
+    nodes:
+    - id: ui-heal
+      action: {fileID: 554146845}
+      targetKey: ui.feedback
+      blocking: 1
+      filter:
+        effectPresence: 0
+        effectKind: 
+        targetId: 
+        targetTeam: 
+        targetRelation: 0
+        actorId: 
+        actorTeam: 
+        actorRelation: 0
+        healthLost: 0
+        blockAbsorbed: 0
+        healthChange: 0
+        blockChange: 0
+        isDeath: 0
+        skipped: 0
+      after: []
+    explicitCheckpoint: 1
+    checkpoint:
+    - actionId: ui-heal
+      kind: 1
+      marker: Revealed
+  - semanticKey: EffectSettled
+    ruleAction: 
+    filter:
+      effectPresence: 0
+      effectKind: 
+      targetId: 
+      targetTeam: enemy
+      targetRelation: 0
+      actorId: 
+      actorTeam: 
+      actorRelation: 0
+      healthLost: 2
+      blockAbsorbed: 1
+      healthChange: 0
+      blockChange: 0
+      isDeath: 0
+      skipped: 0
+    replaceDefault: 0
+    nodes:
+    - id: camera-impact
+      action: {fileID: 1140222691}
+      targetKey: camera
+      blocking: 1
+      filter:
+        effectPresence: 0
+        effectKind: 
+        targetId: 
+        targetTeam: 
+        targetRelation: 0
+        actorId: 
+        actorTeam: 
+        actorRelation: 0
+        healthLost: 0
+        blockAbsorbed: 0
+        healthChange: 0
+        blockChange: 0
+        isDeath: 0
+        skipped: 0
+      after:
+      - actionId: effect
+        kind: 1
+        marker: Revealed
+    explicitCheckpoint: 1
+    checkpoint:
+    - actionId: effect
+      kind: 1
+      marker: Revealed
+    - actionId: camera-impact
+      kind: 2
+      marker: 
+  - semanticKey: EffectSettled
+    ruleAction: 
+    filter:
+      effectPresence: 0
+      effectKind: 
+      targetId: 
+      targetTeam: enemy
+      targetRelation: 0
+      actorId: 
+      actorTeam: 
+      actorRelation: 0
+      healthLost: 0
+      blockAbsorbed: 2
+      healthChange: 0
+      blockChange: 0
+      isDeath: 0
+      skipped: 0
+    replaceDefault: 0
+    nodes:
+    - id: camera-impact
+      action: {fileID: 1140222691}
+      targetKey: camera
+      blocking: 1
+      filter:
+        effectPresence: 0
+        effectKind: 
+        targetId: 
+        targetTeam: 
+        targetRelation: 0
+        actorId: 
+        actorTeam: 
+        actorRelation: 0
+        healthLost: 0
+        blockAbsorbed: 0
+        healthChange: 0
+        blockChange: 0
+        isDeath: 0
+        skipped: 0
+      after:
+      - actionId: effect
+        kind: 1
+        marker: Revealed
+    explicitCheckpoint: 1
+    checkpoint:
+    - actionId: effect
+      kind: 1
+      marker: Revealed
+    - actionId: camera-impact
+      kind: 2
+      marker: 
+--- !u!114 &151945508
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 151945503}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e2817d1a4ba6f497686cddf57821eebc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  routes: []
+--- !u!1 &167455877
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 167455878}
+  - component: {fileID: 167455879}
+  m_Layer: 0
+  m_Name: UI Damage player
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &167455878
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 167455877}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1136878125}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &167455879
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 167455877}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 110514045b424ca8ae9e684fae80bf78, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  template: {fileID: 595078524}
+  outputRoot: {fileID: 1495604272}
+  kind: 4
+  textTemplate: '{target} -{damage}'
+  tint: {r: 1, g: 0.4, b: 0.32, a: 1}
+  seconds: 0.58
+  fadeInFraction: 0.12
+  fadeOutFraction: 0.3
+  rise: {x: 0, y: 24}
+  concurrentSpacing: 34
+  initialScale: 0.92
 --- !u!1 &188274531
 GameObject:
   m_ObjectHideFlags: 0
@@ -1271,6 +3254,52 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 214192585}
   m_CullTransparentMesh: 1
+--- !u!1 &227848125
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 227848126}
+  - component: {fileID: 227848127}
+  m_Layer: 0
+  m_Name: Actor Gain Block
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &227848126
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 227848125}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1136878125}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &227848127
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 227848125}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5040b2b1302543f9bf19b1437aca7c28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 0}
+  kind: 4
 --- !u!1 &243234759
 GameObject:
   m_ObjectHideFlags: 0
@@ -1347,6 +3376,61 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 243234759}
   m_CullTransparentMesh: 1
+--- !u!1 &253660655
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 253660656}
+  - component: {fileID: 253660657}
+  m_Layer: 0
+  m_Name: UI Play
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &253660656
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 253660655}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1136878125}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &253660657
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 253660655}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 110514045b424ca8ae9e684fae80bf78, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  template: {fileID: 492089247}
+  outputRoot: {fileID: 1495604272}
+  kind: 1
+  textTemplate: "\u51FA\u724C"
+  tint: {r: 1, g: 0.82, b: 0.35, a: 1}
+  seconds: 0.4
+  fadeInFraction: 0.12
+  fadeOutFraction: 0.3
+  rise: {x: 0, y: 24}
+  concurrentSpacing: 34
+  initialScale: 0.92
 --- !u!1 &265216967
 GameObject:
   m_ObjectHideFlags: 0
@@ -1901,6 +3985,61 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 294988085}
   m_CullTransparentMesh: 1
+--- !u!1 &298529635
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 298529636}
+  - component: {fileID: 298529637}
+  m_Layer: 0
+  m_Name: UI Block Hit player
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &298529636
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 298529635}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1136878125}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &298529637
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 298529635}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 110514045b424ca8ae9e684fae80bf78, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  template: {fileID: 595078524}
+  outputRoot: {fileID: 1495604272}
+  kind: 5
+  textTemplate: "\u683C\u6321\u62B5\u6D88 {block}"
+  tint: {r: 0.55, g: 0.85, b: 1, a: 1}
+  seconds: 0.58
+  fadeInFraction: 0.12
+  fadeOutFraction: 0.3
+  rise: {x: 0, y: 24}
+  concurrentSpacing: 34
+  initialScale: 0.92
 --- !u!1001 &307843399
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2025,7 +4164,7 @@ MonoBehaviour:
     Seed: 39
   faceCamera: 1
   facingCamera: {fileID: 0}
-  hasUnfacedRotation: 0
+  hasUnfacedRotation: 1
   unfacedLocalRotation: {x: -0.3494705, y: -0, z: -0, w: 0.9369474}
   drawSoundEnabled: 1
   drawSound: {fileID: 8300000, guid: cf60dbc74e49f4bc8a83c9e708a4e943, type: 3}
@@ -2078,6 +4217,9 @@ MonoBehaviour:
   selectionDeniedOffset: {x: 0, y: 0, z: 0.004}
   selectionDeniedRiseSeconds: 0.08
   selectionDeniedReturnSeconds: 0.18
+  selectionActionOffset: {x: 0, y: 0, z: 0.035}
+  selectionActionSeconds: 0.18
+  selectionActionReadyProgress: 0.7
 --- !u!4 &339605499
 Transform:
   m_ObjectHideFlags: 0
@@ -2086,7 +4228,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 339605497}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.3494705, y: -0, z: -0, w: 0.9369474}
+  m_LocalRotation: {x: -0.40232995, y: -0, z: -0, w: 0.91549474}
   m_LocalPosition: {x: 0, y: 0.845, z: -0.421}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -2296,6 +4438,116 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 384690236}
   m_CullTransparentMesh: 1
+--- !u!1 &418615828
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 418615829}
+  - component: {fileID: 418615830}
+  m_Layer: 0
+  m_Name: UI Block Hit enemy
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &418615829
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 418615828}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1136878125}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &418615830
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 418615828}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 110514045b424ca8ae9e684fae80bf78, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  template: {fileID: 1152109647}
+  outputRoot: {fileID: 1495604272}
+  kind: 5
+  textTemplate: "\u683C\u6321\u62B5\u6D88 {block}"
+  tint: {r: 0.55, g: 0.85, b: 1, a: 1}
+  seconds: 0.58
+  fadeInFraction: 0.12
+  fadeOutFraction: 0.3
+  rise: {x: 0, y: 24}
+  concurrentSpacing: 34
+  initialScale: 0.92
+--- !u!1 &421001185
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 421001186}
+  - component: {fileID: 421001187}
+  m_Layer: 0
+  m_Name: UI Clear Block enemy
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &421001186
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 421001185}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1136878125}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &421001187
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 421001185}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 110514045b424ca8ae9e684fae80bf78, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  template: {fileID: 1152109647}
+  outputRoot: {fileID: 1495604272}
+  kind: 5
+  textTemplate: "\u683C\u6321\u6D88\u9000"
+  tint: {r: 0.65, g: 0.75, b: 0.85, a: 1}
+  seconds: 0.58
+  fadeInFraction: 0.12
+  fadeOutFraction: 0.3
+  rise: {x: 0, y: 24}
+  concurrentSpacing: 34
+  initialScale: 0.92
 --- !u!1 &449452758
 GameObject:
   m_ObjectHideFlags: 0
@@ -2517,6 +4769,140 @@ CanvasRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 477695394}
+  m_CullTransparentMesh: 1
+--- !u!1 &492089245
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 492089246}
+  - component: {fileID: 492089248}
+  - component: {fileID: 492089247}
+  m_Layer: 5
+  m_Name: Banner Template
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!224 &492089246
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 492089245}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1495604272}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.8}
+  m_AnchorMax: {x: 0.5, y: 0.8}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 700, y: 80}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &492089247
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 492089245}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 0
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_text: 
+  m_isRightToLeft: 0
+  m_fontAsset: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+  m_sharedMaterial: {fileID: -9155245783391057968, guid: cdd8718265927455997f10004d747aec, type: 2}
+  m_fontSharedMaterials: []
+  m_fontMaterial: {fileID: 0}
+  m_fontMaterials: []
+  m_fontColor32:
+    serializedVersion: 2
+    rgba: 4294967295
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+  m_enableVertexGradient: 0
+  m_colorMode: 3
+  m_fontColorGradient:
+    topLeft: {r: 1, g: 1, b: 1, a: 1}
+    topRight: {r: 1, g: 1, b: 1, a: 1}
+    bottomLeft: {r: 1, g: 1, b: 1, a: 1}
+    bottomRight: {r: 1, g: 1, b: 1, a: 1}
+  m_fontColorGradientPreset: {fileID: 0}
+  m_spriteAsset: {fileID: 0}
+  m_tintAllSprites: 0
+  m_StyleSheet: {fileID: 0}
+  m_TextStyleHashCode: 0
+  m_overrideHtmlColors: 0
+  m_faceColor:
+    serializedVersion: 2
+    rgba: 4294967295
+  m_fontSize: 31
+  m_fontSizeBase: 31
+  m_fontWeight: 400
+  m_enableAutoSizing: 0
+  m_fontSizeMin: 18
+  m_fontSizeMax: 72
+  m_fontStyle: 0
+  m_HorizontalAlignment: 2
+  m_VerticalAlignment: 512
+  m_textAlignment: 65535
+  m_characterSpacing: 0
+  m_wordSpacing: 0
+  m_lineSpacing: 0
+  m_lineSpacingMax: 0
+  m_paragraphSpacing: 0
+  m_charWidthMaxAdj: 0
+  m_enableWordWrapping: 1
+  m_wordWrappingRatios: 0.4
+  m_overflowMode: 0
+  m_linkedTextComponent: {fileID: 0}
+  parentLinkedComponent: {fileID: 0}
+  m_enableKerning: 1
+  m_enableExtraPadding: 0
+  checkPaddingRequired: 0
+  m_isRichText: 1
+  m_parseCtrlCharacters: 1
+  m_isOrthographic: 1
+  m_isCullingEnabled: 0
+  m_horizontalMapping: 0
+  m_verticalMapping: 0
+  m_uvLineOffset: 0
+  m_geometrySortingOrder: 0
+  m_IsTextObjectScaleStatic: 0
+  m_VertexBufferAutoSizeReduction: 0
+  m_useMaxVisibleDescender: 1
+  m_pageToDisplay: 1
+  m_margin: {x: 0, y: 0, z: 0, w: 0}
+  m_isUsingLegacyAnimationComponent: 0
+  m_isVolumetricText: 0
+  m_hasFontAssetChanged: 0
+  m_baseMaterial: {fileID: 0}
+  m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!222 &492089248
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 492089245}
   m_CullTransparentMesh: 1
 --- !u!1001 &496338542
 PrefabInstance:
@@ -3233,6 +5619,107 @@ Transform:
   - {fileID: 585069291}
   m_Father: {fileID: 1842535861}
   m_LocalEulerAnglesHint: {x: 26.318, y: 0, z: 0}
+--- !u!1 &537729915
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 537729916}
+  - component: {fileID: 537729917}
+  m_Layer: 0
+  m_Name: Actor Block Hit
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &537729916
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 537729915}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1136878125}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &537729917
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 537729915}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5040b2b1302543f9bf19b1437aca7c28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 0}
+  kind: 5
+--- !u!1 &554146843
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 554146844}
+  - component: {fileID: 554146845}
+  m_Layer: 0
+  m_Name: UI Heal enemy
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &554146844
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 554146843}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1136878125}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &554146845
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 554146843}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 110514045b424ca8ae9e684fae80bf78, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  template: {fileID: 1152109647}
+  outputRoot: {fileID: 1495604272}
+  kind: 6
+  textTemplate: '{target} +{heal}'
+  tint: {r: 0.45, g: 1, b: 0.65, a: 1}
+  seconds: 0.58
+  fadeInFraction: 0.12
+  fadeOutFraction: 0.3
+  rise: {x: 0, y: 24}
+  concurrentSpacing: 34
+  initialScale: 0.92
 --- !u!1 &579842477
 GameObject:
   m_ObjectHideFlags: 0
@@ -3451,6 +5938,195 @@ Transform:
   m_Children: []
   m_Father: {fileID: 528074928}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &587687402
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 587687403}
+  - component: {fileID: 587687404}
+  m_Layer: 0
+  m_Name: UI Heal player
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &587687403
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 587687402}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1136878125}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &587687404
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 587687402}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 110514045b424ca8ae9e684fae80bf78, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  template: {fileID: 595078524}
+  outputRoot: {fileID: 1495604272}
+  kind: 6
+  textTemplate: '{target} +{heal}'
+  tint: {r: 0.45, g: 1, b: 0.65, a: 1}
+  seconds: 0.58
+  fadeInFraction: 0.12
+  fadeOutFraction: 0.3
+  rise: {x: 0, y: 24}
+  concurrentSpacing: 34
+  initialScale: 0.92
+--- !u!1 &595078522
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 595078523}
+  - component: {fileID: 595078525}
+  - component: {fileID: 595078524}
+  m_Layer: 5
+  m_Name: Player Effect Template
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!224 &595078523
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 595078522}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1495604272}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.28, y: 0.58}
+  m_AnchorMax: {x: 0.28, y: 0.58}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 480, y: 70}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &595078524
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 595078522}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 0
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_text: 
+  m_isRightToLeft: 0
+  m_fontAsset: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+  m_sharedMaterial: {fileID: -9155245783391057968, guid: cdd8718265927455997f10004d747aec, type: 2}
+  m_fontSharedMaterials: []
+  m_fontMaterial: {fileID: 0}
+  m_fontMaterials: []
+  m_fontColor32:
+    serializedVersion: 2
+    rgba: 4294967295
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+  m_enableVertexGradient: 0
+  m_colorMode: 3
+  m_fontColorGradient:
+    topLeft: {r: 1, g: 1, b: 1, a: 1}
+    topRight: {r: 1, g: 1, b: 1, a: 1}
+    bottomLeft: {r: 1, g: 1, b: 1, a: 1}
+    bottomRight: {r: 1, g: 1, b: 1, a: 1}
+  m_fontColorGradientPreset: {fileID: 0}
+  m_spriteAsset: {fileID: 0}
+  m_tintAllSprites: 0
+  m_StyleSheet: {fileID: 0}
+  m_TextStyleHashCode: 0
+  m_overrideHtmlColors: 0
+  m_faceColor:
+    serializedVersion: 2
+    rgba: 4294967295
+  m_fontSize: 35
+  m_fontSizeBase: 35
+  m_fontWeight: 400
+  m_enableAutoSizing: 0
+  m_fontSizeMin: 18
+  m_fontSizeMax: 72
+  m_fontStyle: 0
+  m_HorizontalAlignment: 2
+  m_VerticalAlignment: 512
+  m_textAlignment: 65535
+  m_characterSpacing: 0
+  m_wordSpacing: 0
+  m_lineSpacing: 0
+  m_lineSpacingMax: 0
+  m_paragraphSpacing: 0
+  m_charWidthMaxAdj: 0
+  m_enableWordWrapping: 1
+  m_wordWrappingRatios: 0.4
+  m_overflowMode: 0
+  m_linkedTextComponent: {fileID: 0}
+  parentLinkedComponent: {fileID: 0}
+  m_enableKerning: 1
+  m_enableExtraPadding: 0
+  checkPaddingRequired: 0
+  m_isRichText: 1
+  m_parseCtrlCharacters: 1
+  m_isOrthographic: 1
+  m_isCullingEnabled: 0
+  m_horizontalMapping: 0
+  m_verticalMapping: 0
+  m_uvLineOffset: 0
+  m_geometrySortingOrder: 0
+  m_IsTextObjectScaleStatic: 0
+  m_VertexBufferAutoSizeReduction: 0
+  m_useMaxVisibleDescender: 1
+  m_pageToDisplay: 1
+  m_margin: {x: 0, y: 0, z: 0, w: 0}
+  m_isUsingLegacyAnimationComponent: 0
+  m_isVolumetricText: 0
+  m_hasFontAssetChanged: 0
+  m_baseMaterial: {fileID: 0}
+  m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!222 &595078525
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 595078522}
+  m_CullTransparentMesh: 1
 --- !u!1 &602025036
 GameObject:
   m_ObjectHideFlags: 0
@@ -3985,6 +6661,7 @@ GameObject:
   - component: {fileID: 684489793}
   - component: {fileID: 684489792}
   - component: {fileID: 684489791}
+  - component: {fileID: 684489794}
   m_Layer: 0
   m_Name: Card UI EventSystem
   m_TagString: Untagged
@@ -4052,6 +6729,18 @@ Transform:
   m_Children: []
   m_Father: {fileID: 2123727683}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &684489794
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 684489790}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1511ccae7919cfc46b603b9b337fdc94, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &691192564
 GameObject:
   m_ObjectHideFlags: 0
@@ -4136,6 +6825,52 @@ MonoBehaviour:
   - AtOrBelowHealth: 0.25
     Progress: 1
     DepthMultiplier: 1
+--- !u!1 &695210760
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 695210761}
+  - component: {fileID: 695210762}
+  m_Layer: 0
+  m_Name: Actor Attack
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &695210761
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 695210760}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1136878125}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &695210762
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 695210760}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5040b2b1302543f9bf19b1437aca7c28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 0}
+  kind: 1
 --- !u!1 &728451352 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1841628168361872472, guid: b4a3ec7020daf44d78c3abcfaeacf8d0, type: 3}
@@ -4281,6 +7016,61 @@ Transform:
   - {fileID: 214086312}
   m_Father: {fileID: 1617202416}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &799404184
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 799404185}
+  - component: {fileID: 799404186}
+  m_Layer: 0
+  m_Name: UI Result
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &799404185
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 799404184}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1136878125}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &799404186
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 799404184}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 110514045b424ca8ae9e684fae80bf78, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  template: {fileID: 492089247}
+  outputRoot: {fileID: 1495604272}
+  kind: 9
+  textTemplate: 
+  tint: {r: 1, g: 0.82, b: 0.35, a: 1}
+  seconds: 0.9
+  fadeInFraction: 0.12
+  fadeOutFraction: 0.3
+  rise: {x: 0, y: 24}
+  concurrentSpacing: 34
+  initialScale: 0.92
 --- !u!1 &828900036
 GameObject:
   m_ObjectHideFlags: 0
@@ -4698,6 +7488,61 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 892648327}
   m_CullTransparentMesh: 1
+--- !u!1 &938613074
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 938613075}
+  - component: {fileID: 938613076}
+  m_Layer: 0
+  m_Name: UI Relic
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &938613075
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 938613074}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1136878125}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &938613076
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 938613074}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 110514045b424ca8ae9e684fae80bf78, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  template: {fileID: 492089247}
+  outputRoot: {fileID: 1495604272}
+  kind: 7
+  textTemplate: 
+  tint: {r: 1, g: 0.82, b: 0.35, a: 1}
+  seconds: 0.58
+  fadeInFraction: 0.12
+  fadeOutFraction: 0.3
+  rise: {x: 0, y: 24}
+  concurrentSpacing: 34
+  initialScale: 0.92
 --- !u!1 &942461830
 GameObject:
   m_ObjectHideFlags: 0
@@ -5202,6 +8047,7 @@ RectTransform:
   - {fileID: 449452762}
   - {fileID: 278159046}
   - {fileID: 477695395}
+  - {fileID: 1495604272}
   m_Father: {fileID: 2123727683}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -5259,6 +8105,66 @@ MonoBehaviour:
   visual: {fileID: 691192565}
   presentation: {fileID: 118586659}
   profile: {fileID: 0}
+--- !u!1 &1136878124
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1136878125}
+  m_Layer: 0
+  m_Name: Presentation Timeline
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1136878125
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1136878124}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1786954792}
+  - {fileID: 1227861331}
+  - {fileID: 28424413}
+  - {fileID: 695210761}
+  - {fileID: 1610587711}
+  - {fileID: 537729916}
+  - {fileID: 227848126}
+  - {fileID: 1350881207}
+  - {fileID: 99568713}
+  - {fileID: 1895545318}
+  - {fileID: 1609582525}
+  - {fileID: 1599163903}
+  - {fileID: 1940970025}
+  - {fileID: 1412391287}
+  - {fileID: 799404185}
+  - {fileID: 2146067685}
+  - {fileID: 938613075}
+  - {fileID: 253660656}
+  - {fileID: 167455878}
+  - {fileID: 298529636}
+  - {fileID: 1562163488}
+  - {fileID: 1501295383}
+  - {fileID: 587687403}
+  - {fileID: 84484694}
+  - {fileID: 418615829}
+  - {fileID: 1747080329}
+  - {fileID: 421001186}
+  - {fileID: 554146844}
+  - {fileID: 1140222692}
+  m_Father: {fileID: 151945505}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1138408339
 GameObject:
   m_ObjectHideFlags: 0
@@ -5275,7 +8181,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1138408340
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5330,6 +8236,197 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1140222690
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1140222692}
+  - component: {fileID: 1140222691}
+  m_Layer: 0
+  m_Name: Camera Impact
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1140222691
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1140222690}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cad1c2590b4249adb075457c5541bb63, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 0}
+  steps:
+  - localOffset: {x: 0, y: 0, z: 0}
+    localEuler: {x: 0.3, y: 0, z: 0.32}
+    scaleMultiplier: {x: 1, y: 1, z: 1}
+    duration: 0.045
+    marker: Peak
+  - localOffset: {x: 0, y: 0, z: 0}
+    localEuler: {x: 0, y: 0, z: 0}
+    scaleMultiplier: {x: 1, y: 1, z: 1}
+    duration: 0.1
+    marker: Settled
+  restoreOnComplete: 1
+--- !u!4 &1140222692
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1140222690}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1136878125}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1152109645
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1152109646}
+  - component: {fileID: 1152109648}
+  - component: {fileID: 1152109647}
+  m_Layer: 5
+  m_Name: Enemy Effect Template
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!224 &1152109646
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1152109645}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1495604272}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.72, y: 0.58}
+  m_AnchorMax: {x: 0.72, y: 0.58}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 480, y: 70}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1152109647
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1152109645}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 0
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_text: 
+  m_isRightToLeft: 0
+  m_fontAsset: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+  m_sharedMaterial: {fileID: -9155245783391057968, guid: cdd8718265927455997f10004d747aec, type: 2}
+  m_fontSharedMaterials: []
+  m_fontMaterial: {fileID: 0}
+  m_fontMaterials: []
+  m_fontColor32:
+    serializedVersion: 2
+    rgba: 4294967295
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+  m_enableVertexGradient: 0
+  m_colorMode: 3
+  m_fontColorGradient:
+    topLeft: {r: 1, g: 1, b: 1, a: 1}
+    topRight: {r: 1, g: 1, b: 1, a: 1}
+    bottomLeft: {r: 1, g: 1, b: 1, a: 1}
+    bottomRight: {r: 1, g: 1, b: 1, a: 1}
+  m_fontColorGradientPreset: {fileID: 0}
+  m_spriteAsset: {fileID: 0}
+  m_tintAllSprites: 0
+  m_StyleSheet: {fileID: 0}
+  m_TextStyleHashCode: 0
+  m_overrideHtmlColors: 0
+  m_faceColor:
+    serializedVersion: 2
+    rgba: 4294967295
+  m_fontSize: 35
+  m_fontSizeBase: 35
+  m_fontWeight: 400
+  m_enableAutoSizing: 0
+  m_fontSizeMin: 18
+  m_fontSizeMax: 72
+  m_fontStyle: 0
+  m_HorizontalAlignment: 2
+  m_VerticalAlignment: 512
+  m_textAlignment: 65535
+  m_characterSpacing: 0
+  m_wordSpacing: 0
+  m_lineSpacing: 0
+  m_lineSpacingMax: 0
+  m_paragraphSpacing: 0
+  m_charWidthMaxAdj: 0
+  m_enableWordWrapping: 1
+  m_wordWrappingRatios: 0.4
+  m_overflowMode: 0
+  m_linkedTextComponent: {fileID: 0}
+  parentLinkedComponent: {fileID: 0}
+  m_enableKerning: 1
+  m_enableExtraPadding: 0
+  checkPaddingRequired: 0
+  m_isRichText: 1
+  m_parseCtrlCharacters: 1
+  m_isOrthographic: 1
+  m_isCullingEnabled: 0
+  m_horizontalMapping: 0
+  m_verticalMapping: 0
+  m_uvLineOffset: 0
+  m_geometrySortingOrder: 0
+  m_IsTextObjectScaleStatic: 0
+  m_VertexBufferAutoSizeReduction: 0
+  m_useMaxVisibleDescender: 1
+  m_pageToDisplay: 1
+  m_margin: {x: 0, y: 0, z: 0, w: 0}
+  m_isUsingLegacyAnimationComponent: 0
+  m_isVolumetricText: 0
+  m_hasFontAssetChanged: 0
+  m_baseMaterial: {fileID: 0}
+  m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!222 &1152109648
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1152109645}
+  m_CullTransparentMesh: 1
 --- !u!1 &1186815307
 GameObject:
   m_ObjectHideFlags: 0
@@ -5464,6 +8561,51 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1186815307}
   m_CullTransparentMesh: 1
+--- !u!1 &1227861330
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1227861331}
+  - component: {fileID: 1227861332}
+  m_Layer: 0
+  m_Name: Cards Settle
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1227861331
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1227861330}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1136878125}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1227861332
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1227861330}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 60331b1e452a4797933594fb6ac574fe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  source: {fileID: 339605498}
 --- !u!1 &1237585820
 GameObject:
   m_ObjectHideFlags: 0
@@ -6075,6 +9217,52 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1325119177}
   m_CullTransparentMesh: 1
+--- !u!1 &1350881206
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1350881207}
+  - component: {fileID: 1350881208}
+  m_Layer: 0
+  m_Name: Actor Clear Block
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1350881207
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1350881206}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1136878125}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1350881208
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1350881206}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5040b2b1302543f9bf19b1437aca7c28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 0}
+  kind: 6
 --- !u!1 &1352222771
 GameObject:
   m_ObjectHideFlags: 0
@@ -6611,6 +9799,61 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1411965559}
   m_CullTransparentMesh: 1
+--- !u!1 &1412391286
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1412391287}
+  - component: {fileID: 1412391288}
+  m_Layer: 0
+  m_Name: UI Phase Ending
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1412391287
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1412391286}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1136878125}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1412391288
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1412391286}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 110514045b424ca8ae9e684fae80bf78, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  template: {fileID: 492089247}
+  outputRoot: {fileID: 1495604272}
+  kind: 0
+  textTemplate: "\u56DE\u5408\u7ED3\u675F"
+  tint: {r: 0.95, g: 0.95, b: 1, a: 1}
+  seconds: 0.58
+  fadeInFraction: 0.12
+  fadeOutFraction: 0.3
+  rise: {x: 0, y: 24}
+  concurrentSpacing: 34
+  initialScale: 0.92
 --- !u!1 &1441951555
 GameObject:
   m_ObjectHideFlags: 0
@@ -6718,6 +9961,112 @@ MonoBehaviour:
   hitSource: {fileID: 265216969}
   deathSource: {fileID: 2052560218}
   output: {fileID: 0}
+--- !u!1 &1495604271
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1495604272}
+  - component: {fileID: 1495604273}
+  m_Layer: 5
+  m_Name: Timeline Feedback
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1495604272
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1495604271}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 492089246}
+  - {fileID: 595078523}
+  - {fileID: 1152109646}
+  m_Father: {fileID: 1040263271}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!225 &1495604273
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1495604271}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 0
+  m_BlocksRaycasts: 0
+  m_IgnoreParentGroups: 0
+--- !u!1 &1501295382
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1501295383}
+  - component: {fileID: 1501295384}
+  m_Layer: 0
+  m_Name: UI Clear Block player
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1501295383
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1501295382}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1136878125}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1501295384
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1501295382}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 110514045b424ca8ae9e684fae80bf78, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  template: {fileID: 595078524}
+  outputRoot: {fileID: 1495604272}
+  kind: 5
+  textTemplate: "\u683C\u6321\u6D88\u9000"
+  tint: {r: 0.65, g: 0.75, b: 0.85, a: 1}
+  seconds: 0.58
+  fadeInFraction: 0.12
+  fadeOutFraction: 0.3
+  rise: {x: 0, y: 24}
+  concurrentSpacing: 34
+  initialScale: 0.92
 --- !u!1001 &1528730437
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6926,6 +10275,61 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1554145429}
   m_CullTransparentMesh: 1
+--- !u!1 &1562163487
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1562163488}
+  - component: {fileID: 1562163489}
+  m_Layer: 0
+  m_Name: UI Gain Block player
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1562163488
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1562163487}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1136878125}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1562163489
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1562163487}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 110514045b424ca8ae9e684fae80bf78, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  template: {fileID: 595078524}
+  outputRoot: {fileID: 1495604272}
+  kind: 5
+  textTemplate: "\u683C\u6321 +{amount}"
+  tint: {r: 0.5, g: 0.85, b: 1, a: 1}
+  seconds: 0.58
+  fadeInFraction: 0.12
+  fadeOutFraction: 0.3
+  rise: {x: 0, y: 24}
+  concurrentSpacing: 34
+  initialScale: 0.92
 --- !u!1 &1593941720 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 232080103181345935, guid: b32fb927643ae4cb08cd1d41de788f89, type: 3}
@@ -6962,6 +10366,162 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 2485608287510799988, guid: b32fb927643ae4cb08cd1d41de788f89, type: 3}
   m_PrefabInstance: {fileID: 1528730437}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1599163902
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1599163903}
+  - component: {fileID: 1599163904}
+  m_Layer: 0
+  m_Name: UI Hand
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1599163903
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1599163902}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1136878125}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1599163904
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1599163902}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 110514045b424ca8ae9e684fae80bf78, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  template: {fileID: 492089247}
+  outputRoot: {fileID: 1495604272}
+  kind: 2
+  textTemplate: 
+  tint: {r: 1, g: 0.82, b: 0.35, a: 1}
+  seconds: 0.58
+  fadeInFraction: 0.12
+  fadeOutFraction: 0.3
+  rise: {x: 0, y: 24}
+  concurrentSpacing: 34
+  initialScale: 0.92
+--- !u!1 &1609582524
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1609582525}
+  - component: {fileID: 1609582526}
+  m_Layer: 0
+  m_Name: UI Phase
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1609582525
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1609582524}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1136878125}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1609582526
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1609582524}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 110514045b424ca8ae9e684fae80bf78, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  template: {fileID: 492089247}
+  outputRoot: {fileID: 1495604272}
+  kind: 8
+  textTemplate: 
+  tint: {r: 0.95, g: 0.95, b: 1, a: 1}
+  seconds: 0.58
+  fadeInFraction: 0.12
+  fadeOutFraction: 0.3
+  rise: {x: 0, y: 24}
+  concurrentSpacing: 34
+  initialScale: 0.92
+--- !u!1 &1610587710
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1610587711}
+  - component: {fileID: 1610587712}
+  m_Layer: 0
+  m_Name: Actor Hit
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1610587711
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1610587710}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1136878125}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1610587712
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1610587710}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5040b2b1302543f9bf19b1437aca7c28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 0}
+  kind: 2
 --- !u!1 &1617202415
 GameObject:
   m_ObjectHideFlags: 0
@@ -7290,6 +10850,61 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!1 &1747080328
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1747080329}
+  - component: {fileID: 1747080330}
+  m_Layer: 0
+  m_Name: UI Gain Block enemy
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1747080329
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1747080328}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1136878125}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1747080330
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1747080328}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 110514045b424ca8ae9e684fae80bf78, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  template: {fileID: 1152109647}
+  outputRoot: {fileID: 1495604272}
+  kind: 5
+  textTemplate: "\u683C\u6321 +{amount}"
+  tint: {r: 0.5, g: 0.85, b: 1, a: 1}
+  seconds: 0.58
+  fadeInFraction: 0.12
+  fadeOutFraction: 0.3
+  rise: {x: 0, y: 24}
+  concurrentSpacing: 34
+  initialScale: 0.92
 --- !u!1 &1759056768
 GameObject:
   m_ObjectHideFlags: 0
@@ -7493,6 +11108,51 @@ Transform:
   m_Children: []
   m_Father: {fileID: 339605499}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1786954791
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1786954792}
+  - component: {fileID: 1786954793}
+  m_Layer: 0
+  m_Name: Cards Prepare
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1786954792
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1786954791}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1136878125}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1786954793
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1786954791}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37d8842748bb48fa91c7e80a5a052c40, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  source: {fileID: 339605498}
 --- !u!1 &1842535860
 GameObject:
   m_ObjectHideFlags: 0
@@ -7569,6 +11229,61 @@ Transform:
   - {fileID: 273413155}
   m_Father: {fileID: 942461831}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1895545317
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1895545318}
+  - component: {fileID: 1895545319}
+  m_Layer: 0
+  m_Name: UI Opening
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1895545318
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1895545317}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1136878125}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1895545319
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1895545317}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 110514045b424ca8ae9e684fae80bf78, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  template: {fileID: 492089247}
+  outputRoot: {fileID: 1495604272}
+  kind: 0
+  textTemplate: "\u6218\u6597\u5F00\u59CB"
+  tint: {r: 1, g: 0.82, b: 0.35, a: 1}
+  seconds: 0.58
+  fadeInFraction: 0.12
+  fadeOutFraction: 0.3
+  rise: {x: 0, y: 24}
+  concurrentSpacing: 34
+  initialScale: 0.92
 --- !u!1001 &1936677591
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -7697,6 +11412,61 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 1777998051}
   m_SourcePrefab: {fileID: 100100000, guid: 6b709c02eca1c4db99fe5b99a3d483c4, type: 3}
+--- !u!1 &1940970024
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1940970025}
+  - component: {fileID: 1940970026}
+  m_Layer: 0
+  m_Name: UI Cost
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1940970025
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1940970024}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1136878125}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1940970026
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1940970024}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 110514045b424ca8ae9e684fae80bf78, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  template: {fileID: 492089247}
+  outputRoot: {fileID: 1495604272}
+  kind: 3
+  textTemplate: 
+  tint: {r: 0.5, g: 0.8, b: 1, a: 1}
+  seconds: 0.58
+  fadeInFraction: 0.12
+  fadeOutFraction: 0.3
+  rise: {x: 0, y: 24}
+  concurrentSpacing: 34
+  initialScale: 0.92
 --- !u!1 &1951608726
 GameObject:
   m_ObjectHideFlags: 0
@@ -9482,6 +13252,61 @@ Transform:
   - {fileID: 1040263271}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2146067684
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2146067685}
+  - component: {fileID: 2146067686}
+  m_Layer: 0
+  m_Name: UI Status
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2146067685
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2146067684}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1136878125}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2146067686
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2146067684}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 110514045b424ca8ae9e684fae80bf78, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  template: {fileID: 492089247}
+  outputRoot: {fileID: 1495604272}
+  kind: 7
+  textTemplate: 
+  tint: {r: 0.8, g: 0.7, b: 1, a: 1}
+  seconds: 0.58
+  fadeInFraction: 0.12
+  fadeOutFraction: 0.3
+  rise: {x: 0, y: 24}
+  concurrentSpacing: 34
+  initialScale: 0.92
 --- !u!4 &543450653555838963 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2978344136780926286, guid: 74a767610ac764a3e85845daf25c1f99, type: 3}

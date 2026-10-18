@@ -27,7 +27,7 @@ namespace Poker.SingleBattle
         private IEnumerable<BattleActor> Actors => Players.Cast<BattleActor>().Concat(Enemies);
         public CardZone PlayerZone(string kind) => State.Zone(kind, playerActor.ParticipantId);
         public int PlayerDiscards => State.DiscardsFor(playerActor.ParticipantId);
-        public bool CanSwitchPlayer => State != null && ReferenceEquals(State, AuthorityState) && State.HasStarted && !busy && !State.Duel.IsFinished &&
+        public bool CanSwitchPlayer => State != null && ReferenceEquals(State, AuthorityState) && State.HasStarted && !IsPresenting && !State.Duel.IsFinished &&
             State.Duel.Phase == ScoredDuelPhase.AwaitingPlayerHand && actions != null &&
             !actions.Hand.GetComponent<HandZoneView>().IsTransitioning;
         public bool SelectPlayer(PlayerBattleActor player)
@@ -36,7 +36,7 @@ namespace Poker.SingleBattle
             if (player == playerActor) return true;
             // Stop only this observer's sessions. Authoritative cards, HP and round are untouched.
             actions.Hand.StopSession(); match.StopMatch();
-            playerActor = player; Bind(); Publish(); return true;
+            playerActor = player; Bind(); bridge?.Synchronize(AuthorityState); Publish(); return true;
         }
         [SerializeField, InspectorName("公共战局规则")] private BattleRulesProfile rulesProfile;
         public BattleRulesProfile RulesProfile => rulesProfile;
@@ -55,9 +55,8 @@ namespace Poker.SingleBattle
         public HandActionPresenter Actions => actions;
         public PlayerBattleActor Player => playerActor != null ? playerActor : playerActors.FirstOrDefault();
         public EnemyBattleActor Enemy => Enemies.FirstOrDefault(actor => actor != null && actor.IsAlive) ?? Enemies.FirstOrDefault();
-        public bool IsPresenting => busy;
-        bool IBattleSessionPresentation.IsPresenting => busy || actions != null && actions.Hand != null &&
-            actions.Hand.GetComponent<HandZoneView>().IsTransitioning;
+        public bool IsPresenting => busy || presentationDirector != null && presentationDirector.IsPresenting || actions != null && actions.Hand != null && actions.Hand.GetComponent<HandZoneView>().IsTransitioning;
+        bool IBattleSessionPresentation.IsPresenting => IsPresenting;
         public string Message { get; private set; } = "选择 1–5 张牌组成牌型";
         public ScoreResult LastScore { get; private set; }
         public long LastDamage { get; private set; }
@@ -106,7 +105,7 @@ namespace Poker.SingleBattle
             for (int i = 0; i < Enemies.Count; i++) Enemies[i].Bind(State.Duel.Enemies[i].Id);
         }
         protected override IBattleSessionPresentation BattlePresentation => this;
-        protected override bool CanStartBattle => !busy;
+        protected override bool CanStartBattle => !IsPresenting;
         protected override BattleSession CreateSession() => BuildConfiguredSession();
         /// <summary>Builds an undealt session for validation or play, without changing the current battle.</summary>
         public BattleSession BuildConfiguredSession(string battleId = null, RandomState random = null)
@@ -161,19 +160,26 @@ namespace Poker.SingleBattle
         internal bool ExecutePlayerEndTurn(PlayerBattleActor actor, bool animate)
         {
             if (actor != playerActor || !playerActor.CanEndTurn) return false;
-            return Playback.Submit(actor.ParticipantId, CardDuelAction.EndTurn, animate: animate).Accepted;
+            Interaction.BeginCommit();
+            var result = Playback.Submit(actor.ParticipantId, CardDuelAction.EndTurn, animate: animate);
+            if (!result.Accepted) { candidateKey = null; RefreshCandidate(); }
+            return result.Accepted;
         }
         internal int ExecutePlayerPlay(PlayerBattleActor actor, CardSelectionRequest request, bool animate)
         {
             if (actor != playerActor || !playerActor.CanPlay(request)) return 0;
-            return Playback.Submit(actor.ParticipantId, CardDuelAction.Play,
-                request.Cards, animate: animate).Accepted ? request.Cards.Count : 0;
+            RefreshCandidate(); Interaction.BeginCommit();
+            var result = Playback.Submit(actor.ParticipantId, CardDuelAction.Play, request.Cards, animate: animate);
+            if (!result.Accepted) { candidateKey = null; RefreshCandidate(); }
+            return result.Accepted ? request.Cards.Count : 0;
         }
         internal int ExecutePlayerDiscard(PlayerBattleActor actor, CardSelectionRequest request, bool animate)
         {
             if (actor != playerActor || !playerActor.CanDiscard(request)) return 0;
-            return Playback.Submit(actor.ParticipantId, CardDuelAction.Discard,
-                request.Cards, animate: animate).Accepted ? request.Cards.Count : 0;
+            RefreshCandidate(); Interaction.BeginCommit();
+            var result = Playback.Submit(actor.ParticipantId, CardDuelAction.Discard, request.Cards, animate: animate);
+            if (!result.Accepted) { candidateKey = null; RefreshCandidate(); }
+            return result.Accepted ? request.Cards.Count : 0;
         }
         private void Publish()
         {
@@ -193,7 +199,7 @@ namespace Poker.SingleBattle
         private void OnEnable()
         {
             if (!Application.isPlaying || State == null || match == null || actions == null) return;
-            SynchronizeBattle(); BindActors(); Bind(); Project(false); Publish();
+            SynchronizeBattle(); Bind(); Project(false); Publish();
         }
         private void OnDisable() { if (State != null) SnapToState(); }
     }

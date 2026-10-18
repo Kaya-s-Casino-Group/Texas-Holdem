@@ -1,4 +1,5 @@
 using System;
+using global::BattlePresentation;
 using System.Collections;
 using PokerEngine;
 using UnityEngine;
@@ -6,7 +7,7 @@ using UnityEngine;
 namespace Poker.SingleBattle
 {
     /// <summary>One Actor entry point. Body and shields share an operation; partial blocks never create a second serial hit.</summary>
-    public sealed class BattleActorPresentationCoordinator : MonoBehaviour, IBattleActorPresentation, IShieldPresentation
+    public sealed class BattleActorPresentationCoordinator : MonoBehaviour, IBattleActorPresentation, IBattleActorDisplayPresentation, IShieldPresentation
     {
         [SerializeField] private MonoBehaviour body;
         [SerializeField] private DiscardShieldPresenter shields;
@@ -22,16 +23,26 @@ namespace Poker.SingleBattle
             CancelPresentation(); body = modelPresentation; shields = shieldPresentation;
         }
         public void Synchronize(CombatantState unit) => Body?.Synchronize(unit);
+        public void SynchronizeDisplay(UnitDisplayData unit)
+        {
+            if (Body is IBattleActorDisplayPresentation display) display.SynchronizeDisplay(unit);
+        }
         public void SynchronizeShields(ShieldSnapshot snapshot) { current = snapshot ?? ShieldSnapshot.Empty; shields?.Snap(current); }
         public BattlePresentationOperation Play(BattlePresentationCue cue)
         {
             if (active != null && active.keepWaiting) throw new InvalidOperationException("Wait for the current actor presentation.");
-            if (!Application.isPlaying || !isActiveAndEnabled) { Snap(cue); return BattlePresentationOperation.Completed(); }
+            if (!Application.isPlaying || !isActiveAndEnabled)
+            {
+                Snap(cue);
+                if (cue.Kind == BattlePresentationKind.Attack) cue.Markers?.Emit("Impact");
+                return BattlePresentationOperation.Completed();
+            }
             active = new BattlePresentationOperation(); var pending = active;
             try
             {
                 var shieldWork = ApplyShields(cue, true);
                 var bodyWork = Body?.Play(cue) ?? BattlePresentationOperation.Completed();
+                if (Body == null && cue.Kind == BattlePresentationKind.Attack) cue.Markers?.Emit("Impact");
                 playback = StartCoroutine(Wait(pending, bodyWork, shieldWork));
                 if (!pending.keepWaiting) playback = null;
             }

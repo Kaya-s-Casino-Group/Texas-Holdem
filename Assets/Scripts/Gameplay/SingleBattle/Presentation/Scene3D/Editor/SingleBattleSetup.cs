@@ -77,6 +77,7 @@ namespace Poker.SingleBattle.Editor
                 playerBar, enemyBar, result.gameObject, resultTitle, details, restart, again, energy, endTurn);
             BattleHudLayout.Apply(hud);
             HandCandidateSetup.Apply(hud);
+            BattlePresentationSceneSetup.ConfigureHost(host);
             result.gameObject.SetActive(false);
             EditorUtility.SetDirty(host); EditorSceneManager.MarkSceneDirty(scene); EditorSceneManager.SaveScene(scene);
             Selection.activeObject = host;

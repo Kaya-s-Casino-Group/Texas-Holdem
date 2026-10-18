@@ -18,6 +18,9 @@
     "CardArt.Runtime",
     "Unity.InputSystem",
     "Poker.BattleConfiguration.Runtime",
-    "Poker.BattleHosting.Runtime"
+    "Poker.BattleHosting.Runtime",
+    "BattlePresentation.Runtime",
+    "Poker.BattlePresentation.Shared",
+    "BattlePresentation.Unity"
   ]
 }

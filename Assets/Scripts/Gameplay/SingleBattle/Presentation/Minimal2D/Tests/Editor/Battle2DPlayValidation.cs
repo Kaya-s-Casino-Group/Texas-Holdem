@@ -88,7 +88,7 @@ namespace Poker.Battle2DValidation.Tests
                         playerHome = host.View.PlayerActor.localPosition; enemyHome = host.View.EnemyActor.localPosition;
                         report.playerHome = playerHome; report.enemyHome = enemyHome; report.initialRevision = host.Session.State.Revision;
                         AssertRenderingConfiguration(); report.pipeline = ReadPipeline(camera);
-                        Assert.AreSame(host.Session.State, host.View.PresentedState); stage = 1; break;
+                        Battle2DDisplayAssertions.Match(host.Session.State, host.View.PresentedState); stage = 1; break;
                     case 1: BeginCardAction(CardDuelAction.Play); stage = 2; break;
                     case 2:
                         if (!Settled()) break;
@@ -110,7 +110,7 @@ namespace Poker.Battle2DValidation.Tests
                         host.View.enabled = false;
                         try
                         {
-                            Assert.IsFalse(host.View.IsPresenting); Assert.AreSame(committed, host.View.PresentedState);
+                            Assert.IsFalse(host.View.IsPresenting); Battle2DDisplayAssertions.Match(committed, host.View.PresentedState);
                             Assert.AreSame(committed, host.Session.State); AssertActorHomes();
                         }
                         finally { host.View.enabled = true; }
@@ -195,9 +195,9 @@ namespace Poker.Battle2DValidation.Tests
         private static bool Settled()
         {
             if (host.View.IsPresenting) return false;
-            Assert.AreSame(committed, host.Session.State); Assert.AreSame(committed, host.View.PresentedState);
+            Assert.AreSame(committed, host.Session.State); Battle2DDisplayAssertions.Match(committed, host.View.PresentedState);
             AssertActorHomes(); Assert.IsEmpty(host.View.Selected);
-            CollectionAssert.AreEqual(committed.Zone(CardZoneKinds.Hand, host.PlayerId).Cards, host.View.Cards.Select(card => card.Id));
+            CollectionAssert.AreEqual(committed.Zone(CardZoneKinds.Hand, host.PlayerId).Cards.Select(id => id.Value), host.View.Cards.Select(card => card.Id));
             movingCard = null; return true;
         }
 

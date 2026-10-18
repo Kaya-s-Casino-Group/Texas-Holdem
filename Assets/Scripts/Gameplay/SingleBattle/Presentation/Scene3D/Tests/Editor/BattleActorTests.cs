@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using global::BattlePresentation;
 using CardInteraction;
 using CardPresentation;
 using NUnit.Framework;
@@ -55,7 +56,9 @@ namespace Poker.SingleBattle.Tests
                 for (int i = 1; i < enemyCount; i++) { var actor = New("Enemy " + i).AddComponent<EnemyBattleActor>(); actor.Configure(Host); enemies.Add(actor); }
                 foreach (var actor in players) { var profile = ScriptableObject.CreateInstance<PlayerBattleProfile>(); profiles.Add(profile); profile.ConfigureDamage(damage); actor.ConfigureProfile(profile); }
                 foreach (var actor in enemies) { var profile = ScriptableObject.CreateInstance<EnemyBattleProfile>(); profiles.Add(profile); actor.ConfigureProfile(profile); SetProperty(profile, "maxHealth", 75); }
-                Host.ConfigureActors(players, enemies); if (start) Host.StartBattle();
+                Host.ConfigureActors(players, enemies);
+                Poker.SingleBattle.Editor.BattlePresentationSceneSetup.ConfigureHost(Host, includeFeedback: false);
+                if (start) Host.StartBattle();
             }
             private GameObject New(string name) { var go = new GameObject(name); SceneManager.MoveGameObjectToScene(go, Scene); return go; }
             public void Select()
@@ -300,7 +303,7 @@ namespace Poker.SingleBattle.Tests
                 var actual = f.Host.LastPlayResolution;
                 Assert.AreEqual(f.Player.ParticipantId, f.Host.LastPlayedBy);
                 Assert.AreEqual(preview.Score.Total, actual.Score.Total); Assert.AreEqual(preview.Damage.Explanation, actual.Damage.Explanation);
-                Assert.AreEqual(preview.Events.Single().HealthLost, actual.Events.Single().HealthLost); Assert.AreEqual(1, attacks);
+                Assert.AreEqual(preview.Events.Single().HealthLost, actual.Events.Single().HealthLost); Assert.AreEqual(0, attacks, "Instant synchronization does not replay attack cues.");
                 f.Host.StartBattle(); Assert.IsNull(f.Host.LastPlayResolution); f.Select();
                 Assert.AreEqual("equal.test.2", f.Host.PreviewSelectedPlay().Damage.RuleVersion);
             }
@@ -436,7 +439,7 @@ namespace Poker.SingleBattle.Tests
                 var authority = f.Host.AuthorityState; var hand = f.HandView.Data;
                 f.HandView.Present(new CardZoneViewData(hand.ZoneId, Array.Empty<CardVisualData>()), false);
                 f.HandView.Present(hand, true);
-                Assert.IsTrue(f.HandView.IsTransitioning); Assert.IsFalse(f.Host.IsPresenting);
+                Assert.IsTrue(f.HandView.IsTransitioning); Assert.IsTrue(f.Host.IsPresenting);
                 Assert.IsTrue(presentation.IsPresenting); Assert.IsFalse(f.Player.CanInteract);
                 presentation.Synchronize(authority);
                 Assert.IsFalse(f.HandView.IsTransitioning); Assert.IsFalse(presentation.IsPresenting);
@@ -463,7 +466,8 @@ namespace Poker.SingleBattle.Tests
                 f.Player.ActionPresented += () => attacks++;
                 f.Enemy.DamagePresented += effect => { Assert.That(effect.Effect.Target, Is.EqualTo(f.Enemy.ParticipantId)); hurts++; };
                 f.Select(); Assert.That(f.Hand.PlaySelected(false), Is.EqualTo(1));
-                Assert.That(f.Player.Turn.Energy, Is.EqualTo(2)); Assert.That(attacks, Is.EqualTo(1)); Assert.That(hurts, Is.EqualTo(1));
+                Assert.That(f.Player.Turn.Energy, Is.EqualTo(2)); Assert.That(attacks, Is.Zero); Assert.That(hurts, Is.Zero);
+                Assert.AreEqual(f.Enemy.Unit.Health, f.Enemy.DisplayUnit.Health, "Instant updates the neutral display without playing feedback.");
                 Assert.That(f.Enemy.Unit.Health, Is.LessThan(oldEnemy.Health)); Assert.That(oldEnemy.Health, Is.EqualTo(75));
                 Assert.That(f.Enemy.Unit, Is.SameAs(f.Host.State.Duel.Combat.Get(f.Enemy.ParticipantId)));
                 Assert.That(f.Player.Unit.Health, Is.EqualTo(40)); Assert.That(f.Host.State.Duel.CompletedRounds, Is.Zero);
@@ -475,7 +479,8 @@ namespace Poker.SingleBattle.Tests
             {
                 int attacks = 0, playerHurts = 0; f.Enemy.ActionPresented += () => attacks++; f.Player.DamagePresented += effect => playerHurts++;
                 Assert.That(f.Player.EndTurn(false), Is.True);
-                Assert.That(attacks, Is.EqualTo(1)); Assert.That(playerHurts, Is.EqualTo(1)); Assert.That(f.Player.Unit.Health, Is.EqualTo(33));
+                Assert.That(attacks, Is.Zero); Assert.That(playerHurts, Is.Zero); Assert.That(f.Player.Unit.Health, Is.EqualTo(33));
+                Assert.AreEqual(33, f.Player.DisplayUnit.Health);
                 Assert.That(f.Player.Turn.Energy, Is.EqualTo(3)); Assert.That(f.Host.State.Duel.CompletedRounds, Is.EqualTo(1));
                 Assert.That(f.Enemy.CanAct, Is.False); Assert.That(f.Enemy.ReadIntent().ExpectedRevision, Is.EqualTo(f.Host.State.Revision));
                 Assert.AreSame(f.Host.Session.State, f.Host.PresentedState);
@@ -502,7 +507,7 @@ namespace Poker.SingleBattle.Tests
                 var rootPosition = f.Enemy.transform.position; var rootRotation = f.Enemy.transform.rotation; var rootScale = f.Enemy.transform.localScale;
                 int deaths = 0; f.Enemy.DeathPresented += effect => deaths++;
                 f.Select(); f.Hand.PlaySelected(false);
-                Assert.That(f.Enemy.IsAlive, Is.False); Assert.That(deaths, Is.EqualTo(1)); Assert.That(f.Enemy.Visual.localScale, Is.EqualTo(rest * .75f));
+                Assert.That(f.Enemy.IsAlive, Is.False); Assert.That(deaths, Is.Zero, "Instant synchronization establishes the dead pose without playing a death action."); Assert.That(f.Enemy.Visual.localScale, Is.EqualTo(rest * .75f));
                 Assert.That(f.Enemy.transform.position, Is.EqualTo(rootPosition)); Assert.That(f.Enemy.transform.rotation, Is.EqualTo(rootRotation));
                 Assert.That(f.Enemy.transform.localScale, Is.EqualTo(rootScale));
                 Assert.That(f.Player.CanInteract, Is.False); Assert.That(f.Enemy.ReadIntent(), Is.Null);
@@ -526,16 +531,63 @@ namespace Poker.SingleBattle.Tests
                 ? new[] { f.Host.AuthorityState.Zone(CardZoneKinds.Hand, actor).Cards[0] } : Array.Empty<CardInstanceId>();
             var result = f.Host.Session.Execute(f.Host.AuthorityState.Revision, actor, action, ids);
             Assert.That(result.Accepted, Is.True);
-            var flags = BindingFlags.Instance | BindingFlags.NonPublic;
-            typeof(SingleBattleHost).GetMethod("PreparePresentation", flags).Invoke(f.Host, new object[] { result });
             return result;
         }
-        private static IEnumerator Sequence(Fixture f, CardDuelAction action)
+        /// <summary>Owns the clock only; the real host bridge, authored scene recipes, director and presenters execute unchanged.</summary>
+        private sealed class ManualPlayback : IEnumerator, IDisposable
         {
-            var result = Prepare(f, action);
-            var flags = BindingFlags.Instance | BindingFlags.NonPublic;
-            var sequence = (IEnumerator)typeof(SingleBattleHost).GetMethod("Present", flags).Invoke(f.Host, new object[] { result });
-            return (IEnumerator)typeof(SingleBattleHost).GetMethod("RunPresentation", flags).Invoke(f.Host, new object[] { sequence });
+            private sealed class Routine
+            {
+                public readonly IEnumerator Enumerator;
+                public object Waiting;
+                public bool Alive = true;
+                public Routine(IEnumerator enumerator) { Enumerator = enumerator; }
+                public void Advance()
+                {
+                    if (!Alive || Waiting is CustomYieldInstruction wait && wait.keepWaiting) return;
+                    if (!Enumerator.MoveNext()) { Cancel(); return; }
+                    Waiting = Enumerator.Current;
+                }
+                public void Cancel() { if (!Alive) return; Alive = false; (Enumerator as IDisposable)?.Dispose(); }
+            }
+            private readonly Fixture fixture;
+            private readonly List<Routine> routines = new List<Routine>();
+            public object Current { get; private set; }
+            public ManualPlayback(Fixture fixture) { this.fixture = fixture; fixture.Host.StartPresentationRoutine = Start; }
+            private Action Start(IEnumerator enumerator)
+            {
+                var routine = new Routine(enumerator); routines.Add(routine); routine.Advance(); return routine.Cancel;
+            }
+            public void Present(BattleSessionResult result) => ((IBattleSessionPresentation)fixture.Host).Present(result, true);
+            public void Step(float cardSeconds = .25f)
+            {
+                foreach (var probe in Probes()) probe.EmitCompletedMarkers();
+                if (cardSeconds > 0) fixture.HandView.AdvanceMotion(cardSeconds);
+                foreach (var routine in routines.ToArray()) routine.Advance();
+                routines.RemoveAll(routine => !routine.Alive);
+                fixture.Host.PresentationDirector.Tick();
+            }
+            private IEnumerable<ManualBattlePresentation> Probes() => fixture.Host.Players.Cast<BattleActor>().Concat(fixture.Host.Enemies)
+                .Select(actor => actor.Presentation).OfType<ManualBattlePresentation>();
+            public bool MoveNext()
+            {
+                Step();
+                Current = Probes().SelectMany(probe => probe.Operations).FirstOrDefault(operation => operation.keepWaiting);
+                return fixture.Host.IsPresenting;
+            }
+            public void Reset() => throw new NotSupportedException();
+            public void Dispose()
+            {
+                fixture.Host.SnapToState();
+                foreach (var routine in routines.ToArray()) routine.Cancel();
+                routines.Clear(); fixture.Host.StartPresentationRoutine = null;
+            }
+        }
+        private static ManualPlayback Sequence(Fixture f, CardDuelAction action)
+        {
+            var sequence = new ManualPlayback(f);
+            sequence.Present(Prepare(f, action));
+            return sequence;
         }
         private static BattlePresentationOperation NextPending(Fixture f, IEnumerator sequence)
         {
@@ -543,40 +595,36 @@ namespace Poker.SingleBattle.Tests
             {
                 if (!sequence.MoveNext()) return null;
                 if (sequence.Current is BattlePresentationOperation operation && operation.keepWaiting) return operation;
-                // The test owns the card-view clock; protocol operations remain manually gated.
-                f.HandView.CompleteTransitions();
             }
-            throw new AssertionException("The sequence failed to reach a presentation checkpoint.");
+            throw new AssertionException("The director failed to reach an actual presentation checkpoint.");
         }
         [TestCase(CardDuelAction.Play)] [TestCase(CardDuelAction.Discard)]
-        public void ActorPresentationStartsOnlyAfterCardActionViewCompletes(CardDuelAction action)
+        public void ActorPresentationWaitsForTheActualCardPreparationMilestone(CardDuelAction action)
         {
             using (var f = new Fixture(start: false))
             {
                 var reward = ScriptableObject.CreateInstance<PerCardBlockRewardProfile>();
-                IEnumerator sequence = null;
                 try
                 {
                     f.Player.Profile.ConfigureDiscardReward(reward);
                     f.Set("maxEnergy", 1); f.Set("initialEnergy", 1); f.Host.StartBattle();
-                    var probe = Probe(f.Player); f.HandView.CompleteTransitions();
-                    var result = Prepare(f, action);
-                    var authority = f.Host.AuthorityState;
-                    Assert.AreEqual(1, authority.Duel.CompletedRounds);
-                    Assert.AreEqual(0, f.Host.PresentedState.Duel.CompletedRounds);
-                    var flags = BindingFlags.Instance | BindingFlags.NonPublic;
-                    var cardAction = new CardActionViewOperation();
-                    var flow = (IEnumerator)typeof(SingleBattleHost).GetMethod("PresentAfterCardAction", flags)
-                        .Invoke(f.Host, new object[] { result, cardAction });
-                    sequence = (IEnumerator)typeof(SingleBattleHost).GetMethod("RunPresentation", flags).Invoke(f.Host, new object[] { flow });
-                    Assert.IsTrue(sequence.MoveNext()); Assert.AreSame(cardAction, sequence.Current);
-                    Assert.IsEmpty(probe.Cues); Assert.IsTrue(f.Host.IsPresenting);
-                    cardAction.Complete();
-                    Assert.IsNotNull(NextPending(f, sequence));
-                    Assert.AreEqual(action == CardDuelAction.Play ? BattlePresentationKind.Attack : BattlePresentationKind.GainBlock, probe.Cues.Single().Kind);
-                    Assert.AreSame(authority, f.Host.Session.State);
+                    var player = Probe(f.Player); Probe(f.Enemy);
+                    using (var sequence = Sequence(f, action))
+                    {
+                        var authority = f.Host.AuthorityState;
+                        Assert.AreEqual(1, authority.Duel.CompletedRounds);
+                        Assert.AreEqual(0, f.Host.PresentedState.Duel.CompletedRounds);
+                        sequence.Step(0);
+                        Assert.IsEmpty(player.Cues); Assert.IsTrue(f.Host.IsPresenting);
+                        f.HandView.AdvanceMotion(.01f); sequence.Step(0);
+                        Assert.IsEmpty(player.Cues, "Before the real card marker, no actor action can start.");
+                        f.HandView.AdvanceMotion(.3f); sequence.Step(0);
+                        Assert.IsNotNull(NextPending(f, sequence));
+                        Assert.AreEqual(action == CardDuelAction.Play ? BattlePresentationKind.Attack : BattlePresentationKind.GainBlock, player.Cues.First().Kind);
+                        Assert.AreSame(authority, f.Host.Session.State);
+                    }
                 }
-                finally { (sequence as IDisposable)?.Dispose(); f.Player.Profile.ConfigureDiscardReward(null); UnityEngine.Object.DestroyImmediate(reward); }
+                finally { f.Player.Profile.ConfigureDiscardReward(null); UnityEngine.Object.DestroyImmediate(reward); }
             }
         }
 
@@ -626,7 +674,7 @@ namespace Poker.SingleBattle.Tests
                 {
                     NextPending(f, sequence).Complete(); NextPending(f, sequence).Complete();
                     var death = NextPending(f, sequence); Assert.That(enemy.Cues.Last().Kind, Is.EqualTo(BattlePresentationKind.Death));
-                    Assert.That(f.Host.State.Duel.Phase, Is.EqualTo(ScoredDuelPhase.Won)); Assert.That(f.Host.IsPresenting, Is.True);
+                    Assert.That(f.Enemy.DisplayUnit.IsAlive, Is.False); Assert.That(f.Host.IsPresenting, Is.True);
                     Assert.That(f.Player.CanInteract, Is.False); Assert.That(f.Player.Unit.Health, Is.EqualTo(40));
                     death.Complete(); Assert.That(NextPending(f, sequence), Is.Null); Assert.That(f.Host.IsPresenting, Is.False);
                     Assert.That(player.Cues.Count, Is.EqualTo(1)); Assert.That(enemy.Cues.Any(c => c.Kind == BattlePresentationKind.Attack), Is.False);
@@ -698,7 +746,7 @@ namespace Poker.SingleBattle.Tests
                     var pending = NextPending(f, sequence); var authority = f.Host.AuthorityState;
                     Assert.That(authority.Duel.CompletedRounds, Is.EqualTo(1));
                     pending.Fail(new InvalidOperationException("Test presentation failure"));
-                    LogAssert.Expect(LogType.Exception, new Regex("InvalidOperationException: Test presentation failure"));
+                    LogAssert.Expect(LogType.Error, new Regex("Battle presentation:.*"));
                     Assert.That(NextPending(f, sequence), Is.Null);
                     Assert.That(f.Host.Session.State, Is.SameAs(authority)); Assert.That(f.Host.PresentedState, Is.SameAs(authority));
                     Assert.That(f.Host.IsPresenting, Is.False); Assert.That(f.Player.Unit.Health, Is.EqualTo(33));
@@ -723,8 +771,8 @@ namespace Poker.SingleBattle.Tests
                     var authority = f.Host.AuthorityState;
                     Assert.That(authority.Duel.CompletedRounds, Is.EqualTo(1));
                     Assert.That(authority.Duel.Combat.Get(f.Player.ParticipantId).Block, Is.EqualTo(1));
-                    Assert.That(f.Player.Unit.Block, Is.EqualTo(8)); Assert.That(f.Player.Shields.TotalBlock, Is.EqualTo(8));
                     var pending = NextPending(f, sequence);
+                    Assert.That(f.Player.Unit.Block, Is.EqualTo(8)); Assert.That(f.Player.Shields.TotalBlock, Is.EqualTo(8));
                     f.Host.SnapToState();
                     Assert.That(pending.Status, Is.EqualTo(BattlePresentationStatus.Cancelled));
                     Assert.That(f.Host.Session.State, Is.SameAs(authority)); Assert.That(f.Host.PresentedState, Is.SameAs(authority));
@@ -802,8 +850,9 @@ namespace Poker.SingleBattle.Tests
                         Assert.That(f.Host.SelectPlayer(f.Player), Is.False); prepare.Complete();
                         var attack = NextPending(f, sequence);
                         Assert.That(probes[f.Host.Enemies[i]].Cues.Last().Kind, Is.EqualTo(BattlePresentationKind.Attack));
-                        Assert.That(f.Player.Unit.Health, Is.EqualTo(40 - (i + 1) * 7)); attack.Complete();
-                        var hit = NextPending(f, sequence); Assert.That(probes[f.Player].Cues.Last().Kind, Is.EqualTo(BattlePresentationKind.Hit)); hit.Complete();
+                        Assert.That(f.Player.Unit.Health, Is.EqualTo(40 - i * 7)); attack.Complete();
+                        var hit = NextPending(f, sequence); Assert.That(probes[f.Player].Cues.Last().Kind, Is.EqualTo(BattlePresentationKind.Hit));
+                        Assert.That(f.Player.Unit.Health, Is.EqualTo(40 - (i + 1) * 7)); hit.Complete();
                     }
                     Assert.That(NextPending(f, sequence), Is.Null); Assert.That(f.Host.IsPresenting, Is.False);
                     Assert.That(f.Host.State.Duel.CompletedRounds, Is.EqualTo(1));
@@ -850,16 +899,155 @@ namespace Poker.SingleBattle.Tests
                 foreach (var zone in f.Host.State.Table.Zones) CollectionAssert.AreEquivalent(zone.Cards, f.Match.State.GetZone(zone.Id).Cards);
             }
         }
+        [Test] public void InstantPlaySynchronizesTheLastScoredStepSummaryWithoutPlayingAttacks()
+        {
+            using (var f = new Fixture(start: false))
+            {
+                f.Set("maxEnergy", 1); f.Set("initialEnergy", 1); f.Host.StartBattle(); f.Select();
+                int attacks = 0;
+                f.Player.ActionPresented += () => attacks++;
+                f.Enemy.ActionPresented += () => attacks++;
+                Assert.AreEqual(1, f.Player.Play(f.Hand.CaptureSelection(), false));
+                var batch = f.Host.LastResolution;
+                var scored = batch.Steps.Last(step => step.Transition.Score != null).Transition;
+                long expectedDamage = scored.Events.Sum(effect => (long)effect.HealthLost);
+                Assert.Greater(batch.Steps.Count, 1, "The summary belongs to the scored step, even when the batch also resolves an enemy turn.");
+                Assert.AreSame(scored.Score, f.Host.LastScore);
+                Assert.AreEqual(expectedDamage, f.Host.LastDamage);
+                Assert.AreEqual(SingleBattleHud.HandName(scored.Score.Category) + " · " + scored.Score.Total + " 分 → " + expectedDamage + " 伤害", f.Host.Message);
+                Assert.AreSame(batch.State, f.Host.State);
+                Assert.AreSame(batch.State, f.Host.AuthorityState);
+                Assert.AreEqual(0, attacks, "Instant synchronization must not replay actor feedback.");
+            }
+        }
+        [Test] public void SnapBeforeActionResolvedSynchronizesSummaryWithoutReplayingRulesOrAttacks()
+        {
+            using (var f = new Fixture(start: false))
+            {
+                f.Set("maxEnergy", 1); f.Set("initialEnergy", 1); f.Host.StartBattle();
+                Probe(f.Player); Probe(f.Enemy);
+                int attacks = 0;
+                f.Player.ActionPresented += () => attacks++;
+                f.Enemy.ActionPresented += () => attacks++;
+                using (var sequence = Sequence(f, CardDuelAction.Play))
+                {
+                    var attack = NextPending(f, sequence);
+                    var batch = f.Host.LastResolution;
+                    var committed = f.Host.AuthorityState;
+                    var scored = batch.Steps.Last(step => step.Transition.Score != null).Transition;
+                    long expectedDamage = scored.Events.Sum(effect => (long)effect.HealthLost);
+                    Assert.NotNull(attack);
+                    Assert.IsNull(f.Host.LastScore);
+                    Assert.Less(f.Host.Display.Cursor.Sequence, batch.Timeline.First(fact => fact.Kind == BattleTimelineKind.ActionResolved).Sequence);
+                    int alreadyPlayedAttacks = attacks;
+                    f.Host.SnapToState();
+                    Assert.AreSame(scored.Score, f.Host.LastScore);
+                    Assert.AreEqual(expectedDamage, f.Host.LastDamage);
+                    Assert.AreEqual(SingleBattleHud.HandName(scored.Score.Category) + " · " + scored.Score.Total + " 分 → " + expectedDamage + " 伤害", f.Host.Message);
+                    Assert.AreSame(committed, f.Host.AuthorityState);
+                    Assert.AreSame(committed, f.Host.State);
+                    Assert.AreEqual(BattlePresentationStatus.Cancelled, attack.Status);
+                    Assert.IsFalse(attack.Complete());
+                    sequence.Step();
+                    Assert.AreEqual(alreadyPlayedAttacks, attacks);
+                    Assert.AreSame(committed, f.Host.AuthorityState, "A stale completion cannot submit or repeat a rule command.");
+                    Assert.IsFalse(f.Host.IsPresenting);
+                }
+            }
+        }
+        [Test] public void DisabledSceneDirectorCompletesNewCommandsInstantlyWithoutAnUpdateLoop()
+        {
+            using (var f = new Fixture())
+            {
+                var player = Probe(f.Player); var enemy = Probe(f.Enemy);
+                using (var sequence = new ManualPlayback(f))
+                {
+                    f.Host.PresentationDirector.enabled = false;
+                    f.Select();
+                    Assert.AreEqual(1, f.Player.Play(f.Hand.CaptureSelection(), true));
+                    var batch = f.Host.LastResolution;
+                    Assert.IsFalse(f.Host.IsPresenting, "A disabled frontend has no Update loop to drain an animated plan.");
+                    Assert.AreSame(batch.State, f.Host.State);
+                    Assert.AreSame(batch.State, f.Host.AuthorityState);
+                    Assert.AreEqual(batch.Timeline.Last().Sequence, f.Host.Display.Cursor.Sequence);
+                    Assert.AreEqual(f.Enemy.Unit.Health, f.Host.Display.Unit(f.Enemy.ParticipantId.Value).Health);
+                    Assert.IsEmpty(player.Cues); Assert.IsEmpty(enemy.Cues);
+                    Assert.IsTrue(f.Player.CanInteract, "Instant completion restores the next decision window without a Tick.");
+                }
+            }
+        }
+        private sealed class BlockThenFullHealthHealReward : IDiscardRewardRule
+        {
+            public string Version => "display.no-op-shield-test.1";
+            public DiscardRewardPlan Resolve(DiscardRewardContext context) => new DiscardRewardPlan(Version,
+                "Gain block, then heal an already healthy player.", new[] {
+                    new CombatEffect(CombatEffectKind.GainBlock, context.Source, context.Source, 8),
+                    new CombatEffect(CombatEffectKind.Heal, context.Source, context.Source, 4)
+                });
+        }
+        [TestCase(false)] [TestCase(true)]
+        public void NoOpEffectBetweenBlockGainAndDamagePreservesShieldAttributionOnCompletionOrRecovery(bool recover)
+        {
+            using (var f = new Fixture(start: false))
+            {
+                var playerId = new ParticipantId("shield-order/player");
+                var enemyId = new ParticipantId("shield-order/enemy");
+                var engine = new CardDuelEngine(new BattleRules("shield-order.1", 8));
+                var rules = new BattlePlayerRules(maxEnergy: 1, initialEnergy: 1, discardReward: new BlockThenFullHealthHealReward());
+                var initial = engine.Create("shield-order", HmacDeckShuffler.FromSeed(new byte[32]),
+                    new[] { new BattlePlayerSetup(playerId, new CombatantDefinition("hero", 40), rules: rules) },
+                    new[] { new BattleEnemySetup(enemyId, new CombatantDefinition("monster", 1000), 7) });
+                var session = new BattleSession(engine, initial);
+                Assert.IsTrue(session.Execute(initial.Revision, playerId, CardDuelAction.Start).Accepted);
+                f.Host.AttachSession(session);
+                string cardId = session.State.Zone(CardZoneKinds.Hand, playerId).Cards[0].Value;
+                var player = Probe(f.Player); Probe(f.Enemy);
+                using (var sequence = Sequence(f, CardDuelAction.Discard))
+                {
+                    var committed = f.Host.AuthorityState;
+                    var effects = f.Host.LastResolution.Timeline.Where(fact => fact.RuleEvent is CombatEvent)
+                        .Select(fact => (CombatEvent)fact.RuleEvent).ToArray();
+                    CollectionAssert.AreEqual(new[] { CombatEffectKind.GainBlock, CombatEffectKind.Heal, CombatEffectKind.Damage }, effects.Select(effect => effect.Effect.Kind));
+                    Assert.AreEqual(8, effects[1].Before.Block); Assert.AreEqual(8, effects[1].After.Block);
+                    Assert.AreEqual(effects[1].Before.Health, effects[1].After.Health, "The heal must be a real fact without a reaction animation.");
+                    Assert.AreEqual(1, committed.Duel.Combat.Get(playerId).Block);
+                    var operation = NextPending(f, sequence);
+                    for (int i = 0; i < 8 && operation != null && player.Cues.Last().Kind != BattlePresentationKind.BlockHit; i++)
+                    { operation.Complete(); operation = NextPending(f, sequence); }
+                    Assert.NotNull(operation); Assert.AreEqual(BattlePresentationKind.BlockHit, player.Cues.Last().Kind);
+                    if (recover) {
+                        f.Host.SnapToState();
+                        Assert.AreEqual(BattlePresentationStatus.Cancelled, operation.Status);
+                        sequence.Step();
+                    }
+                    else { operation.Complete(); Assert.IsNull(NextPending(f, sequence)); }
+                    Assert.AreSame(committed, f.Host.AuthorityState); Assert.AreSame(committed, f.Host.State);
+                    Assert.AreEqual(1, f.Player.Shields.TotalBlock, "Revisiting an unrecorded no-op must not resurrect earlier block.");
+                    Assert.AreEqual(cardId, f.Player.Shields.Batches.Single().Cards.Single().Id,
+                        "Recovery must keep the surviving block attached to its discarded card, not replace it with unknown block.");
+                    Assert.IsFalse(f.Host.IsPresenting);
+                }
+            }
+        }
     }
-    public sealed class ManualBattlePresentation : MonoBehaviour, IBattleActorPresentation
+    public sealed class ManualBattlePresentation : MonoBehaviour, IBattleActorPresentation, IBattleActorDisplayPresentation
     {
+        private readonly HashSet<int> emitted = new HashSet<int>();
+        public UnitDisplayData DisplayUnit { get; private set; }
         public readonly List<BattlePresentationCue> Cues = new List<BattlePresentationCue>();
         public readonly List<BattlePresentationOperation> Operations = new List<BattlePresentationOperation>();
         public int Resets;
         public BattlePresentationOperation Play(BattlePresentationCue cue)
         { Cues.Add(cue); var operation = new BattlePresentationOperation(); Operations.Add(operation); return operation; }
+        public void EmitCompletedMarkers()
+        {
+            for (int index = 0; index < Operations.Count; index++)
+                if (Operations[index].Status == BattlePresentationStatus.Completed && Cues[index].Kind == BattlePresentationKind.Attack && emitted.Add(index))
+                    Cues[index].Markers?.Emit("Impact");
+        }
         public void Snap(BattlePresentationCue cue) { }
         public void Synchronize(CombatantState unit) { }
+        public void SynchronizeDisplay(UnitDisplayData unit) { DisplayUnit = unit; }
         public void CancelPresentation() { foreach (var operation in Operations) operation.Cancel(); }
         public void ResetPresentation() { CancelPresentation(); Resets++; }
     }

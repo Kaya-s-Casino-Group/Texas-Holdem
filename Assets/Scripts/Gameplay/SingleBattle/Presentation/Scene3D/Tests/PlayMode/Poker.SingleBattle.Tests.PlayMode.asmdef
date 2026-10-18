@@ -5,7 +5,16 @@
     "CardArt.Runtime",
     "CardPresentation.Runtime",
     "Poker.BattleConfiguration.Runtime",
-    "Poker.BattleHosting.Runtime"
+    "Poker.BattleHosting.Runtime",
+    "BattlePresentation.Runtime",
+    "BattlePresentation.Unity",
+    "CardInteraction.Runtime",
+    "PokerEngine.Core",
+    "PokerEngine.Abilities",
+    "PokerEngine.Scoring",
+    "PokerEngine.Combat",
+    "PokerEngine.Composition",
+    "PokerEngine.Encounters"
   ],
   "optionalUnityReferences": [
     "TestAssemblies"

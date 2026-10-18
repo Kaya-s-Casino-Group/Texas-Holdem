@@ -1,4 +1,5 @@
 using System;
+using global::BattlePresentation;
 using System.Collections;
 using RetroRendering;
 using PokerEngine;
@@ -15,6 +16,7 @@ namespace Poker.SingleBattle
         public HealthCrackPresenter Cracks => cracks;
         public void ConfigureCracks(HealthCrackPresenter view) => cracks = view;
         public override void Synchronize(CombatantState unit) { if (cracks != null) cracks.Synchronize(unit); }
+        public override void SynchronizeDisplay(UnitDisplayData unit) { if (cracks != null) cracks.SynchronizeDisplay(unit); }
         public void Configure(Transform model, RigidVATPlayer timeline)
         {
             if (timeline == null || !timeline.transform.IsChildOf(model) && timeline.transform != model)

@@ -1,6 +1,6 @@
 # 主线卡牌战斗：3D 场景表现（Scene3D）
 
-本模块是项目的主线卡牌战斗：玩家用扑克牌型发动攻击，消耗能量，处理生命、格挡、弃牌收益与敌方回合。支持 1v1 和多对多；`SingleBattle` 表示一场战斗，不表示只能有一名玩家。本目录实现现有 3D 场景表现；规则配置位于 `../../Configuration`，会话与公共表现接口位于纯 C# 的 PokerEngine。类名、命名空间和原有 3D 程序集名保持兼容。
+本模块是项目的主线卡牌战斗：玩家用扑克牌型发动攻击，消耗能量，处理生命、格挡、弃牌收益与敌方回合。支持 1v1 和多对多；`SingleBattle` 表示一场战斗，不表示只能有一名玩家。本目录实现现有 3D 场景适配；规则配置位于 `../../Configuration`，会话位于纯 C# 的 PokerEngine，通用显示与调度协议位于 [BattlePresentation](../../../../Presentation/BattlePresentation/README.md)。类名、命名空间和原有 3D 程序集名保持兼容。
 
 两个场景 Host 均继承 `BaseBattleHost`，会话生命周期由纯 C# `BattleHost` 管理。规则链为 `SingleBattleHost → BattleSessionPlayback → BattleSession → CardDuelEngine → TeamBattleEngine → CombatEngine`。`TeamBattleEngine` 是内部阵营回合规则，`TeamBattleDemo` 是本模块的多人阵容示例，两者都不是另一个并列玩法。[分数挑战（DrawBattle）](../../../DrawBattle/README.md) 是独立的达标计分模式，不负责本模块的抽牌。两种玩法共享 [卡牌交互](../../../../Presentation/CardInteraction/README.md) 与 [卡牌表现](../../../../Presentation/CardPresentation/README.md)。
 
@@ -13,9 +13,9 @@
 
 ## 目录与程序集
 
-`Runtime/Hosting` 负责 Session 接入与场景绑定；`Actors` 是场景单位适配；`Presentation` 保存 `SingleBattleHost.Presentation.cs` 的步骤投影，以及攻击、VAT、护盾和音频表现；`UI` 保存 HUD 与候选牌型展示。`IBattleActorPresentation` 是这里的局部 3D 协议，含 Unity 等待句柄，其他表现风格不需要实现它。
+`Runtime/Hosting` 负责 Session 接入与场景绑定；`Actors` 是场景单位适配；`Presentation` 保存 `SingleBattleHost.Presentation.cs` 的默认动作计划、旧牌区适配，以及攻击、VAT、护盾和音频表现；`UI` 只消费中性显示快照与候选模型。`IBattleActorPresentation` 是保留的局部 3D 兼容协议，现有组件另实现 `IBattleActorDisplayPresentation` 接收中性单位数据，其他表现风格不需要实现这两个局部接口。
 
-`Poker.SingleBattle.Runtime`、`.Editor` 和两套测试程序集保留原名。Runtime 显式引用 `Poker.BattleHosting.Runtime` 和 `Poker.BattleConfiguration.Runtime`；场景设置、数值审计和布局编辑器仍属于本前端。`Assets/GameAssets/SingleBattle/Presentation/Scene3D` 下的 `Shaders` 与 `ShieldAssets` 只服务此风格。
+`Poker.SingleBattle.Runtime`、`.Editor` 和两套测试程序集保留原名。Runtime 引用共享 Hosting、Configuration、`Poker.BattlePresentation.Shared` 与 `BattlePresentation.Runtime / .Unity`；场景设置、数值审计和布局编辑器仍属于本前端。`Assets/GameAssets/SingleBattle/Presentation/Scene3D` 下的 `Shaders` 与 `ShieldAssets` 只服务此风格。
 
 ## 策划集中配置入口
 
@@ -25,7 +25,7 @@
 
 XML 按策划文档 revision 1277 配置：高牌/一对/两对单体伤害，三条/四条群伤，顺子三段伤害，同花伤害加按筹码治疗，葫芦单体眩晕一次行动窗口加自身免控至下个敌人阶段结束，皇家同花顺消灭全部存活敌人。免控沿用已确认的“提前施加”语义；普通同花顺和五条暂为显式单体伤害兼容项。文档未定数值均在 XML 注释为测试值，计分表及角色基础值沿用原场景。共享三点能量，出牌/弃牌各一点、立即补牌；弃牌每张八盾，流程图的有限次数暂为整场三次。
 
-同包提供 `single-battle-dot`、`single-battle-reflect`、`single-battle-overheal` 三个可选编成，分别测试顺子逐段附流血/中毒、弃牌盾反、同花治疗增幅与溢疗转伤；默认编成不装备遗物。切换 Host 的编成 ID 即可重开测试。新增的左侧 HUD 文字区显示预览、状态及期限、遗物次数冷却、触发和阶段结算；原有 Actor/VAT/护盾/卡牌表现继续使用原协议。敌人仍为明确配置的固定攻击，文档中未细化的召唤、护甲、污染牌库和完整 Run 流程未在本次新增。
+同包提供 `single-battle-dot`、`single-battle-reflect`、`single-battle-overheal` 三个可选编成，分别测试顺子逐段附流血/中毒、弃牌盾反、同花治疗增幅与溢疗转伤；默认编成不装备遗物。切换 Host 的编成 ID 即可重开测试。左侧 HUD 文字区从中性模型读取预览、状态及期限、遗物次数冷却，并仅显示已揭示的触发和阶段结算；原有 Actor/VAT/护盾/卡牌组件已作为新调度器的动作适配器接入。敌人仍为明确配置的固定攻击，文档中未细化的召唤、护甲、污染牌库和完整 Run 流程未在本次新增。
 
 运行验证入口：在 `SingleBattleDemoNew` Play 模式执行 `工具 > 卡牌战斗 > XML内容 > 验证当前运行场景`；验证出牌、弃牌、补牌、格挡和完整回合并写入 `Library/SingleBattleTests/xml-scene.json`，成功后重新开战。该验证会消费当前测试对局的行动，请用于刚开局的默认编成。
 
@@ -130,7 +130,7 @@ Host 不再保存生命、攻击、能量、牌数等数值，仅持有玩家/�
 
 1. Create 时每位玩家分别创建标准不含大小王的 52 张牌，拥有自己的抽牌、手牌、出牌、弃牌四区，起手为 0。Start 首次进入玩家阶段，为所有玩家按各自策略免费发牌。
 2. 存活玩家共享行动阶段，可交错出牌/弃牌，每人独立扣费。能量为 0 自动标记该玩家结束；也可手动结束。初始能量为 0 时仍可手动空过，费用不足但非 0 时不强行结束。
-3. 所有存活玩家均结束，才进入怪物阶段。存活怪物按阵容列表顺序行动。BattleSession 在本次玩家命令内自动结算整个怪物队列；表现层按步骤逐个播放，不再提交怪物命令。
+3. 所有存活玩家均结束，才进入怪物阶段。存活怪物按阵容列表顺序行动。BattleSession 在本次玩家命令内自动结算整个怪物队列；表现层按有序事实及其动作依赖播放，不再提交怪物命令。
 4. 全部怪物完成后算一整轮。仍在战斗时，所有存活玩家恢复各自能量并按各自策略补牌。死亡玩家不再参与行动/等待条件，也不恢复能量或补牌。
 5. 怪物全灭胜利、玩家全灭失败；达到回合上限在完整怪物阶段后判负。部分队友/怪物死亡不提前终止整场。
 
@@ -146,35 +146,41 @@ Host 不再保存生命、攻击、能量、牌数等数值，仅持有玩家/�
 
 ## Session 与共用表现接口
 
-`BattleSession`、`BattleSessionResult/Step`、`IBattleSessionPresentation` 和 `BattleSessionPlayback` 均位于不引用 Unity 的 `PokerEngine.Composition`。规则与表现的连接为：
+`BattleSession`、`BattleSessionResult/Step`、`IBattleSessionPresentation` 和 `BattleSessionPlayback` 均位于不引用 Unity 的 `PokerEngine.Composition`。公共前端协议、显示存储和调度器位于既不引用 Unity 也不引用 PokerEngine 的 `BattlePresentation.Runtime`。当前连接为：
 
 ```text
-玩家命令 → BattleSessionPlayback → BattleSession → 不可变步骤批次
+玩家命令 → BattleSessionPlayback → BattleSession → 结果 + 有序 Timeline
+                    ↓ IBattleSessionPresentation
+          BattlePresentationBridge：过滤观察者数据，投影每个事实
+                    ↓ PresentationBatch / BattleDisplaySnapshot
+          IBattlePresentationFrontend
+                    ├─ ScenePresentationDirector：当前 3D 适配
+                    └─ Battle2DView：独立 2D 适配
                     ↓
-          IBattleSessionPresentation
-                    ├─ SingleBattleHost：现有 3D 适配
-                    └─ Battle2DView：独立 2D 验证实现
+          DisplayStore + PresentationDirector + InteractionSession
 ```
 
-共用接口包含 `Initialize(initialState)`、`Present(batch, animate)`、`IsPresenting` 和 `Synchronize(state)`。实现者自行决定布局、动画与输入方式；播放和同步不修改规则状态，`animate` 只属于表现协议。`IsPresenting` 包含该前端需要等待的过渡，当前 3D 也包含开局发牌。BattleSessionPlayback 负责共用开局、当前版本提交、规则可执行性查询、只读预览、本地播放门禁和提交后派发；无画面模拟可直接调用 Session，不受动画门禁影响。
+规则侧兼容接口保留 `Initialize(initialState)`、`Present(batch, animate)`、`IsPresenting` 和 `Synchronize(state)`，由共享 Bridge 转为中性的 `IBattlePresentationFrontend` 调用；后者的 `Present(batch, PlaybackMode)` 返回可等待操作。实现者自行决定布局、动画与输入方式。`IsPresenting` 覆盖前端的阻塞动作，当前 3D 也包含开局发牌和手牌实际过渡。BattleSessionPlayback 负责共用开局、当前版本提交、规则资格与预览、本地门禁及派发；无画面模拟可直接调用 Session，不受动画门禁影响。
 
-一次 `Session.Execute(expectedRevision, actor, action, selected, targets)` 接受 Start / Play / Discard / EndTurn。EnemyAction / CollectPlayed 仅由 Session 自动推进。`BattleSessionResult` 保存命令前状态、最终状态、只读步骤；每步含 Action、Actor、Selected、Before 与 Transition（计分、伤害、事件、步骤后状态）。自动步骤全部成功才提交权威状态；拒绝返回原状态与空步骤。相同规则、初始状态、随机种子和命令得到相同结果。
+一次 `Session.Execute(expectedRevision, actor, action, selected, targets)` 接受 Start / Play / Discard / EndTurn。EnemyAction / CollectPlayed 仅由 Session 自动推进。`BattleSessionResult` 保留命令前状态、最终状态和旧 `Steps`，新增 `Timeline` 记录每个事实发生时的中间状态，以 `Sequence` 排序，不能用可能相同的 revision 代替顺序。节点包含 `BattleStarted`、`PhaseStarted`、`ActionStarted`、判型/费用/效果/状态、移牌/发牌、`ActionResolved`、`PhaseEnding / PhaseEnded / PhaseClosed` 和 `BattleEnded`。自动步骤全部成功才提交权威状态；拒绝返回原状态及空步骤、空时间线。相同规则、初始状态、随机种子和命令得到相同结果。
 
 保留原有过牌顺序：出牌先进入 Played，再按策略补牌，最后收进 Discard；不可提前把本次出牌洗回。弃牌先入 Discard，可以按原规则立即洗回；终局出牌仍留在 Played。每个敌人动作按引擎原顺序收牌，最后敌人完成后才开始下一玩家阶段。
 
-`SingleBattleHost` 目前同时承担 Unity 场景组装与 3D 接口适配，负责绑定卡牌、角色、观察玩家和播放队列；不再拥有规则推进代码。`StartBattle` 收集 Actor 的 Setup 后交给共用 `BattleSessionFactory` 创建未开局 Session，绑定场景后调用 `Playback.Start`；`AttachSession(session)` 可把已有 Session 接入人数匹配的场景，不重新开局。[独立 2D 验证模块](../Minimal2D/README.md) 已复用 Session、Playback 和共用接口，以单人输入、卡牌和矩形的基础移动验证该边界，也支持即时同步；其视觉元素自行实现，不依赖 CardZoneView、VAT 或 3D Actor 协议。
+`SingleBattleHost` 承担 Unity 场景组装、输入与旧 CardMatch 接入，默认动作计划交由 `ScenePresentationDirector` 执行；规则推进仍在 Session。`StartBattle` 收集 Actor 的 Setup 后交给共用工厂创建未开局 Session，绑定场景后调用 `Playback.Start`；`AttachSession(session)` 可把已有 Session 接入人数匹配的场景，不重新开局。[独立 2D 验证模块](../Minimal2D/README.md) 使用同一个 Bridge、DisplayStore 和 Director，以卡牌和矩形移动验证中性边界；其 View 不读取规则对象，不依赖 CardZoneView、VAT 或 3D Actor 协议。
 
 - `Session.State / Host.AuthorityState`：已经提交的权威状态，用于命令和预览。
-- `Host.PresentedState`：当前播放步骤的快照，供 Actor、血条、能量、意图和 HUD 使用。旧 `Host.State` 保留为展示快照的兼容入口。
+- `Host.Display`：`DisplayStore` 已发布的中性快照，供 Actor 显示、生命、能量、牌区、意图和 HUD 使用。当前事实的 checkpoint 才能发布对应数据，不提前曝光最终批次。
+- `Host.Candidate / Host.Interaction`：候选读模型与独立交互会话；预选变化不会修改规则状态或 DisplayStore。
+- `Host.PresentedState / Host.State`：显示游标对应的规则快照，仅保留给 Host、旧 CardMatch/Actor 绑定和验算工具兼容；新 UI 与动作不得通过它重新查询规则。
 - `CardMatchHost.State`：当前观察者的卡牌投影与本地排序；不承担战斗权威。
 
-当前已有立即显示与手动逐步显示两种纯测试适配器，并有独立的最简 2D 场景实现。入口为 `工具 > 卡牌战斗 > 2D验证 > 打开验证场景`；该场景使用 `Assets/Art/Cards/StandardClassic` 牌面对应的 `Assets/Art/CardAtlases/Classic.asset` 图集，沿用原卡牌网格与 CardView，通过专用 Unlit 材质验证共同边界。2D 与 3D 共用 `Assets/Settings/MainURP.asset`，验证相机选择固定 `Assets/Settings/Battle2DRenderer.asset` 对应的 `Simple2DRenderer`；主 3D 和 UI 的既有 Renderer 槽位不变，编辑模式与 Play 不切换管线。现有 3D 场景继续保留原表现。
+旧立即显示与手动逐步测试适配器继续保留，新测试同时覆盖真实 Director 的信号与 checkpoint。最简 2D 入口为 `工具 > 卡牌战斗 > 2D验证 > 打开验证场景`；该场景使用 `Assets/Art/Cards/StandardClassic` 牌面对应的 `Assets/Art/CardAtlases/Classic.asset` 图集，沿用原卡牌网格与 CardView，通过专用 Unlit 材质验证共同边界。2D 与 3D 共用 `Assets/Settings/MainURP.asset`，验证相机选择固定 `Assets/Settings/Battle2DRenderer.asset` 对应的 `Simple2DRenderer`；主 3D 和 UI 的既有 Renderer 槽位不变，编辑模式与 Play 不切换管线。现有 3D 美术与组件保留，由新时间线调度。
 
 ## 数据与接口边界
 
 - `CardDuelState` 拥有全部卡牌、每位玩家四区、弃牌预算及洗牌状态；保留类名以兼容原调用，已支持多对多。新代码使用 `Zone(kind, playerId)` / `DiscardsFor(playerId)`，不使用默认第一玩家的便捷别名。
 - `TeamBattleState` 拥有共同 CombatState、各玩家能量与结束标记、怪物队列和战斗阶段。`TeamBattleEngine` 负责阵营回合、费用、伤害与胜负，`BattleRules` 只含公共规则。
-- 角色根节点持有 PlayerBattleActor / EnemyBattleActor，通过 ParticipantId 查询最新快照；Model 子物体继续承载 VAT、DOTween、裂纹与音效。角色绑定要求在 Host 阵容中具有对应席位，不能冒用同队另一个角色的身份。
+- 角色根节点持有 PlayerBattleActor / EnemyBattleActor，负责输入与参与者身份；新动作通过 `DisplayId / DisplayUnit` 接收中性数据，Model 子物体继续承载 VAT、DOTween、裂纹与音效。旧 `Unit` 规则查询仅为绑定和兼容保留。角色必须在 Host 阵容中具有对应席位，不能冒用同队另一个角色的身份。
 - `IBattleTargetPolicy.SelectTargets(BattleTargetContext)` 由行动来源角色的 BattleActorTargetRules.Attack 提供，接收源单位、当前状态、可选请求和存活对手集合，返回一个或多个目标。默认选第一个存活对手（或校验显式单目标）；引擎拒绝未知、死亡、友方和重复目标。接口支持多个伤害事件，但当前 Demo 不提供选目标或 AOE 操作 UI，也未定义范围/友方治疗规则。
 - `IBattleAllyTargetPolicy.SelectTargets(BattleAllyTargetContext)` 预留独立友方目标接口，默认自己，也可请求存活队友；引擎验证请求与策略输出，拒绝敌方、死亡、未知和重复目标。由行动来源角色的 BattleActorTargetRules.Support 提供；Unity 入口在 PlayerBattleProfile 的友方目标策略槽位。弃牌通过独立 IDiscardRewardRule 生成收益计划，默认空计划；费用/次数和过牌仍由原有流程处理，不按牌型换取格挡。
 - `PlayerBattleActor.CreateSetup(id, deck, initialHealth)` / `PlayerBattleProfile.BuildSetup` 可消费 Run 当前构筑和生命；缺省牌组为独立标准 52 张。Core 不依赖 ScriptableObject 或 Unity。
@@ -206,31 +212,50 @@ Host、CardDuelEngine、TeamBattleEngine 已移除全局目标策略参数和配
 
 返回 `EnemyActionPreview`，包含来源、原始规则 revision、错误及逐目标 `Hits`（正式 CombatEvent）；其中 `SettledDamage` 是两层修正后的格挡前伤害，`BlockAbsorbed` / `HealthLost` / `Overkill` 分别是格挡吸收、预计扣血和溢出伤害。没有安排本阶段行动、已经行动、死亡或终局返回 null；前序行动或当前行动失败则返回错误，不回退基础攻击值。
 
-`EnemyBattleActor.ReadIntent()` 仅包装该预览及 CardDuel 命令 revision。世界空间标签显示 `攻击 N`，N 取每个目标的 SettledDamage；多人时标明玩家序号，每个目标独立一行。面板高度及运行时 Gizmo 随行数调整，预览失败显示“意图不可用”。该数值是攻击伤害，格挡后的实际扣血可从同一预览事件读取。每次 StateChanged 刷新，不冻结玩家后续行动之前的旧预测。
+共享 `BattleDisplayProjector` 调用只读预览，将对应显示检查点的意图文字写入 `BattleDisplaySnapshot.Labels["intent/" + unitId]`。世界空间标签只读该字段，显示 `攻击 N`（每目标的 SettledDamage）；多人时标明玩家序号，每个目标独立一行。面板高度及运行时 Gizmo 随行数调整，预览失败显示“意图不可用”。`EnemyBattleActor.ReadIntent()` 保留给旧调用方，HUD 不再调用它；每次显示更新使用当前已揭示状态的预测。
 
 ## 战局信息层
 
-左侧新增候选牌型面板，根据当前观察玩家选中的手牌显示牌型、选中/计分牌数、整数筹码 × 整数倍率。候选使用 CardDuelEngine.PreviewHand，与正式 Play 共用判型计分；不进入费用、伤害或目标策略，未选牌显示零值。两个数字各自使用白色矩形背景，居中显示整数，不显示结果行。选择、取消和观察玩家变化后更新数字目标。
+左侧候选牌型面板只读 `Host.Candidate`，显示牌型、选中/计分牌数、筹码与倍率，未选牌显示零值。Host 捕获选择后通过共享 `BattleInteractionQueries` 调用规则预览，生成 `CandidatePresentationModel`；其中牌型识别与 `CanPlay / CanDiscard` 独立，因此能量不足仍可展示有效牌型。完整出/弃牌预览作为模型标签提供，UI 不再自行调用 Engine、Actor.Unit 或规则快照。两个数字各自使用白色矩形背景，保持现有布局。
 
-数字显示由独立 UIFoundation.Runtime 的 RollingNumberText 完成，仅接收 decimal 数字；增减均从当前显示值追向新 target，相同 target 不重启，最终值精确落位。候选面板是唯一游戏数据适配层。
+数字显示由独立 UIFoundation.Runtime 的 RollingNumberText 完成，仅接收 decimal 数字；增减均从当前显示值追向新 target，相同 target 不重启，最终值精确落位。`HandCandidatePresenter` 只负责模型到文字和数字的映射，禁用时终止未完成插值，启用时重新读取最新候选。
+
+`InteractionSession` 用战局、观察者、规则 revision、选择版本和卡牌 ID 校验预览结果，旧请求不能覆盖新选择。相同牌型更新现有反馈，切换牌型释放旧作用域并接入新反馈；清空选择回到 Empty，提交先冻结意图并进入 Committing，阶段切换、同步和禁用关闭预选。取消只撤去该预选自己的偏移、色彩或临时对象；不能恢复旧卡牌列表、旧排序或旧生命。镜头/角色预选可从当前显示姿态平滑转向新目标，独立贡献层归零后仍服从最新基础布局。
 
 战局 HUD 是只读信息层：小尺寸信息栏位于屏幕右侧，展示生命、格挡、能量与动作费用、回合、牌堆数量及最近得分/伤害；不显示操作教学或内部计算流程。结束回合、重开及多人切换保留为紧凑按钮，胜负信息也显示在右侧。
 
-每个存活怪物的攻击意图使用独立 World Space Canvas，统一放在 HUD 运行时创建的场景根节点 `WorldUIRoot` 下，不继承怪物或 HUD 的缩放与旋转。LateUpdate 跟随模型底部锚点，朝向统一与摄像机画面平行，透视模式下也不会因偏离画面中心而倾斜。标签采用固定世界尺寸，保留近大远小，死亡/终局隐藏；HUD 的“敌人意图（世界空间）”可调整世界单位/像素与世界偏移。HUD 销毁时清理其创建的 WorldUIRoot 与标签。Scene 视图开启 Gizmos 可见黄色面板范围、青色模型底部与偏移连线、蓝色朝向箭头；Edit 模式也能预览，使用与实际 Canvas 相同的世界尺寸和摄像机朝向，不叠加怪物缩放。意图来自 EnemyBattleActor 的只读结果，标签不持有战局命令权限。`工具 > 卡牌战斗 > 场景接入 > 整理战斗信息界面` 可仅更新当前场景的 HUD 布局，保留阵容、模型、牌区和相机配置；新建 Demo 使用相同布局。
+每个存活怪物的攻击意图使用独立 World Space Canvas，统一放在 HUD 运行时创建的场景根节点 `WorldUIRoot` 下，不继承怪物或 HUD 的缩放与旋转。LateUpdate 跟随模型底部锚点，朝向统一与摄像机画面平行，透视模式下也不会因偏离画面中心而倾斜。标签采用固定世界尺寸，保留近大远小，死亡/终局隐藏；HUD 的“敌人意图（世界空间）”可调整世界单位/像素与世界偏移。HUD 销毁时清理其创建的 WorldUIRoot 与标签。Scene 视图开启 Gizmos 可见黄色面板范围、青色模型底部与偏移连线、蓝色朝向箭头；Edit 模式也能预览，使用与实际 Canvas 相同的世界尺寸和摄像机朝向，不叠加怪物缩放。意图来自 `Host.Display`，Actor 引用仅用于定位场景模型，标签不持有战局命令权限。`工具 > 卡牌战斗 > 场景接入 > 整理战斗信息界面` 可仅更新当前场景的 HUD 布局，保留阵容、模型、牌区和相机配置；新建 Demo 使用相同布局。
 
 ## 可等待的表现协议
 
-逻辑角色绑定任意实现 `IBattleActorPresentation` 的子物体组件，宿主通过角色调用协议，不依赖具体 Presenter 类型、动画名称或持续时间。协议只接收已结算的只读 `BattlePresentationCue`（PrepareAttack / Attack / Hit / Death / GainBlock / BlockHit / ClearBlock、ActorId、可选 CombatEvent 和 ShieldSnapshot）；表现不获得战局命令权限。
+通用调度器只调用 `IPresentationAction.Play(ActionContext, IMarkerSink)`，取得 `IPresentationOperation`；动作接收中性事实、目标绑定、作用域和信号出口。卡牌、角色、UI、镜头或场景物件均可实现此接口，不必继承 Actor，也不获得战局命令权限。
+
+现有角色组件通过 `BattleActor.PresentDisplay` 适配为通用动作。`BattlePresentationCue` 的当前路径使用字符串 Actor ID、`EffectDisplayData`、`IMarkerSink` 和表现专用 `ShieldSnapshot`；`IBattleActorDisplayPresentation.SynchronizeDisplay(UnitDisplayData)` 负责单位外观同步。旧 `IBattleActorPresentation`、`Synchronize(CombatantState)`、含 `CombatEvent` 的 cue 构造和观察事件继续为绑定、工具与旧调用保留，新动作/HUD 不从这些兼容入口读取规则。现有角色组件的完成协议为：
 
 | 调用 | 协议要求 |
 | --- | --- |
 | `Play(cue)` | 返回 `BattlePresentationOperation`；实际动作结束时调用 `Complete()`，中断/错误时调用 `Cancel()` / `Fail(error)`。 |
-| `Synchronize(unit)` | 同步投影只读单位快照，例如生命分档裂纹；不播放动作、不修改生命、不阻塞流程。 |
+| `SynchronizeDisplay(unit)` | 同步中性单位快照，例如生命分档裂纹；不播放动作、不修改生命、不阻塞流程。 |
 | `Snap(cue)` | 同步显示最终姿态，用于不播放动画的执行或跳过；不能保留异步工作。 |
 | `CancelPresentation()` | 停止旧协程/动画/回调；旧句柄不得再影响新绑定。 |
 | `ResetPresentation()` | 取消旧表现并恢复初始姿态，用于新战局、重开和禁用。 |
 
-操作句柄在 Unity 主线程使用，仅允许一次终态（Completed / Cancelled / Failed），迟到或重复完成返回 false。宿主等待句柄完成后才进入下一表现/流程检查点；不再用固定 scoreHoldSeconds / enemyTellSeconds 推测动作时长。PrepareAttack 的停留也由 Presenter 决定。双方可独立替换成 Animator、Timeline 或其他适配器；当前只提供基础变换和 VAT 实现。
+操作句柄在 Unity 主线程使用，仅允许一次终态（Completed / Cancelled / Failed），迟到或重复完成返回 false。动作依赖可以等待 Started、已声明的 Marker 或 Completed；一组依赖按 AllOf 满足。checkpoint 决定何时发布该事实并允许下一事实开始，阻塞动作完成决定何时释放整批输入。所需信号未发送、依赖成环、动作异常或取消会使本批失败并恢复到已提交最终快照，不能猜测时长或伪造完成。旧作用域/播放代次的迟到回调无效。双方可独立接入 Animator、Timeline 或其他实现，当前基础变换与 VAT 已通过该路径运行。
+
+## 场景动作与预选配置入口
+
+`SingleBattleHost` 只接收输入、转接规则事实和同步显示镜像；不再生成出牌、受击或镜头动作计划。场景必须保存有节点的 `ScenePresentationDirector.timeline`。当前 `SingleBattleDemoNew` 的完整配方由 `工具 > 卡牌战斗 > 表现时间线 > 接入当前场景` 写入；此菜单将旧的空组迁移成实际节点，重复执行保留已有自定义组。没有配置的旧场景需先执行该菜单；运行时不会偷偷补回代码默认顺序。
+
+- `targets`：以 key 绑定任意 Unity 对象。Host 在运行时绑定 `cards` 为 HandZoneView、参与者 ID 为对应 Actor；镜头、UI、场景物体可使用其他 key。Actor 动作目标留空时使用当前事实的实际行动者/效果目标，兼容多角色。
+- `timeline`：每组按 `semanticKey`、可选 `ruleAction` 和 `filter` 匹配。filter 支持效果类型、目标 ID/阵营/与观察者或行动者的关系、行动者筛选、实际伤害/格挡消耗、格挡增减、死亡及跳过条件；所有条件必须同时满足。同一事实的匹配组按配置顺序合并，`replaceDefault` 表示替换此前累计计划，Host 不再提供默认计划。
+- `nodes`：填写唯一 id、派生 `PresentationActionBehaviour` 的组件、targetKey、blocking、after 依赖；节点也能配置 filter。依赖只引用同一事实最终计划内实际存在的节点，不能引用已过滤掉的节点或上一事实的节点。
+- `explicitCheckpoint` 开启后用 checkpoint 依赖指定整条显示快照的公开点；空数组表示立刻公开。未指定且没有继承 checkpoint 时，等所有阻塞节点完成。节点的 Started / Marker / Completed 可交叉编排，多条件按 AllOf 满足。
+- 当前出牌配置是 `cards.ReadyToAttack → attack`，`attack.Impact` 放行下一事实；真实效果通过筛选进入受击/格挡动作，在 `effect.Revealed` 后启动伤害浮字和目标镜头反馈。UI 提示自身也发 `Revealed`，可用于控制显示快照公开时点；HUD 的血量、能量等读取公开后的快照。
+- `HandPreparationTimelineAction`、`HandSettleTimelineAction`、`BattleActorTimelineAction` 是现有牌区/角色协议适配器；`TransformTimelineAction` 是通用分段变换；`UiFeedbackTimelineAction` 是通用文字淡入、上浮、淡出。全部派生基础表现组件，规则对象不传入这些动作。每次 UI 调用独立克隆模板，取消只释放自己的临时物体。
+- UI 模板、颜色、时长、位移和文本 token 可配置；例如 `{pattern}`、`{score}`、`{cost}`、`{damage}`、`{block}`、`{heal}`、`{before:target.health}`、`{after:target.health}`。数值来自本次事实快照，不能从实时权威层补查。
+- `SceneCandidateFeedback.routes` 继续按候选状态或 patternKey 路由 `IInteractionFeedback`；它与已提交的时间线分离，提交/取消时释放自己的偏移，不改规则或 CardList。
+
+`HandZoneView` 的 `selectionActionOffset / selectionActionSeconds / selectionActionReadyProgress` 控制卡牌准备动作；ReadyProgress 是缓动后的实际位移进度。角色攻击在真实前冲结束发出 `Impact`。修改任意动作间的依赖、显示 checkpoint 或目标筛选只需修改场景配方，不修改 Host 或规则。
 
 ## 当前石像表现方案
 
@@ -252,9 +277,9 @@ Host、CardDuelEngine、TeamBattleEngine 已移除全局目标策略参数和配
 
 表现组件通过可选 `IBattlePresentationAudio` 调用音效，不把音频资源/声源放入 BattleActor 或规则层。每种动作使用独立声源，允许不同动作的尾音重叠；空 Clip 静默跳过，Snap/恢复不播放音效。音效不参与表现操作的完成判定，动画仍按实际结束推进流程；音效错误不阻断动作，取消、重开或禁用会停止声音及延迟播放。当前不接入全局音频管理器或自动加载占位音频，后续可替换音效实现。
 
-当前播放顺序为：卡牌落位 → 攻击完成 → 受击完成 → 必要时死亡完成 → 收牌或敌人预备 → 敌人攻击/受击/死亡完成 → 补牌落位 → 释放输入/显示终局。每个攻击者只播放一次攻击，随后按事件等待各目标的受击与死亡；怪物之间也逐个等待。没有命中时刻标记、并发群体演出或镜头编排。观察事件不承担等待职责，所有阻塞工作必须通过协议句柄完成。
+当前出牌默认计划为：ActionStarted 中卡牌准备发出 `ReadyToAttack` → 玩家攻击在前冲节点发出 `Impact` → 依 Timeline 顺序揭示判型与效果等事实；受击/护盾效果开始时发出 `Revealed` 并发布相应生命/格挡，后续费用、CardsMoved/CardsDealt 事实分别更新能量、移牌与补牌。攻击收招可以和受击重叠；死亡依赖该单位效果动作完成，同一 Actor 的动作串行，多个目标可并行反应。敌人使用 PrepareAttack → Attack/Impact，受控制跳过的行动不播放攻击。整批事实及阻塞动作、手牌实际过渡全部结束后才释放输入；BattleEnded 在规则实际结束位置出现，不制造下一玩家阶段。观察事件不承担等待职责。
 
-**动画等待只发生在表现层。**BattleSession 在返回玩家命令前已结算到下一玩家决策点或终局，包括敌人队列、收牌和补牌；BattleSessionPlayback 通过共用接口把整批结果交给表现。3D 层延后播放对应步骤、输入释放与终局界面，不能延后或重复规则结算。播放失败、取消、`SnapToState` 或禁用宿主都只取消演出、补齐盾牌来源记录并同步到 Session.State；重新启用不会再执行敌人命令。不会用任意超时提前结束动画，协议实现必须报告完成或失败。
+**动画等待只发生在表现层。**BattleSession 在返回玩家命令前已结算到下一玩家决策点或终局，包括敌人队列、收牌和补牌；Bridge 把整批有序事实交给 Director。3D 层只控制显示检查点、输入释放与终局界面，不能延后或重复规则结算。播放失败、取消、`SnapToState` 或禁用宿主都会使旧作用域失效，取消演出、补齐表现专用盾牌来源记录并同步最终快照；重新启用不会再执行敌人命令。`Instant` 验证整批后一次发布最终快照，只做同步，不调用普通 Play、不发送中途 marker，也不播放音效。不会用任意超时提前结束动画，协议实现必须报告完成或失败。
 
 `CardDuelEngine.Create` 可传入每位玩家的 `BattlePlayerSetup`（包含当前 `DeckEntry` 列表），保留 OriginId 并按当前构筑数量实例化，例如 53/51 张；当前 Demo 启动入口使用标准 52 张。这里支持标准牌面与卡牌效果标记，尚未接入 RunCard 的完整增强、Relic、能力选择或 Run 宿主。
 
@@ -266,6 +291,8 @@ Host、CardDuelEngine、TeamBattleEngine 已移除全局目标策略参数和配
 
 `工具 > 测试面板 > 编辑模式测试` 中，“多人战局与阵营回合”验证独立牌组/独立角色数值、共享阶段、怪物队列、死亡跳过、整队胜负、错误目标和多目标接口；“角色与表现协议”验证 UI 权限切换、配置快照、真实 Actor 接入以及逐单位等待表现完成。仅运行专项，不自动执行全部规则测试。
 
+新架构专项包括规则 `BattleTimelineTests`、公共 `PresentationCoreTests`、Unity `SceneFeedbackTests`、卡牌 `CardZoneTransitionTests` 以及本模块 `BattleActorTests / HandCandidateDisplayTests`。`SceneTimelinePlaybackTests` 在 PlayMode 使用实际 `SingleBattleDemoNew` 验证开局、预选切换/清空、出牌、弃牌、敌方演出中途同步和重开；这些验证与完整 Player/IL2CPP 构建是不同范围。
+
 原“实战验证 > 卡牌战斗完整流程 / 卡牌战斗发牌专项”限定 SingleBattleDemo 的 1v1，临时克隆玩家/怪物配置完成验证，恢复原配置引用，避免修改共享资产。“实战验证 > 卡牌战斗多人阵容（2对3）”通过实际 HUD 回调与动画验证切换、全员结束、三个怪物依次演出及整轮恢复，结果写入 `Library/SingleBattleTests/team-play.json`。
 
 场景按 Battle / Card Table / Environment / Cameras / UI 五组组织。TeamBattleDemo 的两只 Fox 与三只 Dragon 复用既有美术与独立表现组件；音效槽位仍为空。场景不自动加入 Build Settings。
@@ -276,14 +303,14 @@ Host、CardDuelEngine、TeamBattleEngine 已移除全局目标策略参数和配
 
 ## 出牌表现入口
 
-当前 SingleBattle 使用统一的 `ICardMatchCommands` 提交出牌，不依赖 `PlayedZoneView`、出牌区 `CardZonePlayHost` 或 `CardZoneTransferPresenter`。按钮通过 `CardZonePlayHost.PlaySelected(animate)` 捕获 `CardSelectionRequest`，将对局、玩家、牌区与卡牌 ID 交给 `PlayerBattleActor` 校验；战斗宿主使用自身绑定的手牌表现消费结算结果。被打出的卡牌从手牌视图移除，剩余手牌仍使用现有理牌动画，暂不添加替代的出牌动画。计分、伤害、能量、补牌与规则层 Played → Discard 的收集流程保留。
+当前 SingleBattle 使用统一的 `ICardMatchCommands` 提交出牌，不依赖 `PlayedZoneView`、出牌区 `CardZonePlayHost` 或 `CardZoneTransferPresenter`。按钮通过 `CardZonePlayHost.PlaySelected(animate)` 捕获 `CardSelectionRequest`，将对局、玩家、牌区与卡牌 ID 交给 `PlayerBattleActor` 校验。规则接受后，ActionStarted 调用 `HandZoneView.PresentSelectionAction`，只在现有卡牌上添加准备偏移并发出 `ReadyToAttack`，此时不改变 `Data.Cards`；对应 CardsMoved 事实发布时才提交手牌成员变化，剩余手牌继续使用原理牌动画。计分、伤害、能量、补牌与规则层 Played → Discard 的收集顺序保留。
 
-当前 `SingleBattleDemoNew` 已移除旧出牌区对象与飞行组件。其他旧单战场景可用 `工具 > 卡牌战斗 > 场景接入 > 移除旧出牌区表现` 清理并保存；操作支持 Undo。新配置流程也会清理这些旧绑定。旧 DrawBattle / 卡牌跨区示例仍使用原有通用转移组件，不影响当前战斗入口。新出牌表现可在战斗结算后的表现阶段接入，不必重新引入目标牌区。
+当前 `SingleBattleDemoNew` 已移除旧出牌区对象与飞行组件。其他旧单战场景可用 `工具 > 卡牌战斗 > 场景接入 > 移除旧出牌区表现` 清理并保存；操作支持 Undo。新配置流程也会清理这些旧绑定。旧 DrawBattle / 卡牌跨区示例仍使用原有通用转移组件，不影响当前战斗入口。新增出牌表现应接入相应事实的动作组和 marker，不必重新引入目标牌区或修改规则移牌。
 
 
 ## 弃牌盾牌表现
 
-`BattleActorPresentationCoordinator` 是 Actor 的总表现入口，组合原有模型 Presenter 与 `DiscardShieldPresenter`。`GainBlock` 插入本次弃掉的牌；`BlockHit` 播放盾牌受击和整张溶解；`ClearBlock` 清空盾牌。完全格挡只播放盾牌表现；穿透格挡造成生命损失时，盾牌与角色受击同时执行，两个操作都完成后才释放流程。死亡也清空容器。规则先结算，表现只消费只读结果，不修改格挡或伤害。
+`BattleActorPresentationCoordinator` 是 Actor 的局部表现入口，组合原有模型 Presenter 与 `DiscardShieldPresenter`，通过中性 cue/单位快照适配新 Director。`GainBlock` 插入本次弃掉的牌；`BlockHit` 播放盾牌受击和整张溶解；`ClearBlock` 清空盾牌。完全格挡只播放盾牌表现；穿透格挡造成生命损失时，盾牌与角色受击同时执行，两个操作都完成后本动作才完成。死亡也清空容器。规则先结算，表现只消费只读结果，不修改格挡或伤害。
 
 每次弃牌记录独立批次：本次牌列表、实际获得格挡、剩余格挡。批次按获得顺序消耗，初始格挡和其他来源格挡占用无卡牌的账目，避免误消耗弃牌盾牌。每批累计溶解张数为 `ceil((初始格挡 - 剩余格挡) × 张数 / 初始格挡)`；例如三张牌提供 24 格挡，累计消耗 1–8 点溶解第一张，9–16 点溶解第二张，17–24 点溶解第三张。已选中的牌播放完整溶解，其他牌保持完整，不停留在半溶解状态；因此最后少量格挡尚在时，牌也可能已经全部溶解。战局重开重置账目，跳过或恢复直接同步最终状态，不重播音效与震动。
 
@@ -295,7 +322,9 @@ Host、CardDuelEngine、TeamBattleEngine 已移除全局目标策略参数和配
 - DOTween 使用不受 Time.timeScale 影响的时间：`FlightSeconds / CardInterval / ArcHeight` 控制逐张飞入，`DissolveSeconds / DissolveInterval` 控制逐张溶解。
 - 每张落地触发材质闪光、生成于卡牌底边中心的可选 `LandingEffect` 粒子（位置包含卡牌旋转与缩放）、`LandingSound` 与设备震动。当前落地音效复用手牌弃牌音效；当前场景粒子绑定 `Sword Slash 14 Hit Flashes`，`LandingEffectScale = 0.2`，实例按卡牌高度等比缩放，整组粒子只播放一次，位置仍在牌底；`BlockHitSound` 默认空，可自行配置。严格在实际播放非空且音量大于零的音效时请求一次震动；静默落地、Snap 和取消不会触发震动。手机与手柄能力沿用 `CardHapticsDriver`。
 
-盾牌容器是 Actor 根节点的子节点，配置时采用 Visual 的位置与朝向，保持独立于模型攻击前冲和受击晃动。弃牌分两段顺序播放：先沿手牌原有 `DiscardAnchor / DiscardLocalPosition` 飞出，由 View 返回本批次 `CardActionViewOperation`，所有离场卡牌（含错峰队列）结束后由 View 标记完成；宿主等待这个完成信号，再调用 Actor 的 `GainBlock` 播放盾牌从 `SpawnCenter / SpawnSize` 飞入圆弧。飞出时播放弃牌音效，盾牌落地时播放落地音效，各自每次实际发声请求一次震动；补牌在盾牌插入完成后投影。跳过动画时直接同步最终状态。弃牌 View 不持有 Actor 引用；宿主只衔接完成协议，不估算飞行时长，也不把剩余手牌理牌动画作为弃牌结束条件。取消、清空或禁用 View 会取消未完成句柄，宿主走恢复同步而不继续播放 Actor 动画。
+盾牌容器是 Actor 根节点的子节点，配置时采用 Visual 的位置与朝向，保持独立于模型攻击前冲和受击晃动。当前弃牌按真实事实顺序调度：ActionStarted 先完成手牌准备，EffectSettled 启动 `GainBlock` 并在 `Revealed` 发布格挡；随后 CardsMoved 才提交离场，沿原 `DiscardAnchor / DiscardLocalPosition` 飞出，CardsDealt 提交补牌。盾牌飞入、离场与补牌可以重叠，Director 与 Host 等实际阻塞句柄及手牌过渡都结束后释放输入。该顺序不把规则移牌提前，也不要求先飞出再给盾；若需要其他编排，应使用事实节点的动作依赖/checkpoint 配置。
+
+卡牌飞出和盾牌落地各自播放原有音效，每次实际发声请求一次震动；即时模式只同步最终状态。弃牌 View 不持有 Actor 引用，`CardActionViewOperation` 只报告本批离场卡牌（含错峰队列）的实际完成，不把剩余手牌理牌作为它自己的完成条件。取消、清空或禁用 View 会取消未完成句柄，由新调度链进入恢复同步。
 
 渲染使用共享 Mesh、共享图集材质和 MaterialPropertyBlock 的实例属性，不创建逐牌材质。`CardArt/Shield Deferred` 提供 URP GBuffer、Forward、ShadowCaster、DepthOnly、DepthNormals Pass；牌面无原卡牌附加视觉效果。Perlin 噪声叠加牌面局部高度渐变，自上向下 alpha clip，两个 step 构成自发光边缘；深度和阴影使用相同裁剪。落地闪光为默认特效，外部粒子可选。
 
@@ -306,6 +335,8 @@ Host、CardDuelEngine、TeamBattleEngine 已移除全局目标策略参数和配
 
 ### 卡牌动作 View 与 Actor 的统一交接协议
 
-出牌与弃牌均通过 `ICardActionView.PresentActionCommitted(Play / Discard, ...)` 返回 `CardActionViewOperation`。卡牌 View 只负责已提交动作的卡牌表现，完成状态为 Pending / Completed / Cancelled / Failed；单个句柄只允许一次终态。卡牌 View 不引用 Actor，也不修改战斗结算。
+提交准备使用 `HandZoneView.PresentSelectionAction` 返回 `CardActionViewOperation`，并在真实动作中发送 `ReadyToAttack`；这是不修改牌区成员的临时贡献。正式成员变化由 CardsMoved/CardsDealt 的显示检查点触发：出牌使用 `PresentCommitted`，弃牌离场继续使用 `ICardActionView.PresentActionCommitted(Discard, ...)`。旧 Play/Discard 调用协议继续为其他调用方保留。完成状态为 Pending / Completed / Cancelled / Failed；单个句柄只允许一次终态，View 不引用 Actor，也不修改战斗结算。
 
-宿主等待本次卡牌动作句柄 Completed 后，才把结算结果送入 Actor 的 `IBattleActorPresentation`，再等待角色/盾牌表现完成，最后补牌和释放输入。出牌目前直接移除牌，立即完成；弃牌等该批所有牌飞到指定区域后完成。剩余手牌理牌不参与这个动作完成判定。取消或失败进入宿主恢复同步，不能当成成功继续播放 Actor；未来添加出牌飞行时只需要实现同一个 View 协议。
+Director 用 `ReadyToAttack` 连接出牌准备和角色攻击，用 `Impact` 连接攻击与后续规则事实；弃牌默认等待准备动作 Completed 后进入收益效果。卡牌成员变化与补牌只跟随事实显示游标，动作结束不直接改写 cardlist。准备偏移拥有独立作用域，取消只释放自己的贡献；跨过准备信号后可与后续卡牌转移衔接，不能恢复过时位置或卡牌列表。任一动作取消或失败进入恢复同步，不当成成功继续播旧动作。扩展卡牌、镜头或场景物体演出应实现中性动作协议并配置依赖，无需恢复旧逐步协程路径。
+
+当前场景完整配置教程见 [BattlePresentationTimelineConfiguration.md](../../../../../../Tools/BattlePresentationTimelineConfiguration.md)，包含信号顺序、效果/目标筛选、基础 HUD 检查点及 UI 动画模板。

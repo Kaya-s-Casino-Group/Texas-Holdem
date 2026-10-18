@@ -1,6 +1,6 @@
 # 卡牌战斗 2D 验证（Battle2DValidation）
 
-本模块提供独立的最简 2D 战斗界面，用实际选牌、出牌、弃牌和敌方回合验证规则与表现的边界。它与 [主线卡牌战斗的 3D 表现](../Scene3D/README.md) 共用 `BattleSession`、`BattleSessionPlayback` 和 `IBattleSessionPresentation`。这是架构验证入口，尚不作为正式产品界面。
+本模块提供独立的最简 2D 战斗界面，用实际选牌、出牌、弃牌和敌方回合验证规则与表现的边界。它与 [主线卡牌战斗的 3D 表现](../Scene3D/README.md) 共用规则 Bridge、中性展示模型、`PresentationDirector` 和交互生命周期。这是架构验证入口，尚不作为正式产品界面。
 
 ## 目录与程序集
 
@@ -21,22 +21,29 @@
 
 ```text
 2D 卡片/按钮 → Battle2DHost → BattleSessionPlayback → BattleSession
-                                   ↓                    ↓
-                      IBattleSessionPresentation ← 已结算步骤批次
-                                   ↓
-                             Battle2DView
+                                  ↓                      ↓
+                        BattlePresentationBridge ← 有序规则时间线
+                                  ↓
+                 BattleDisplaySnapshot / PresentationBatch
+                                  ↓
+             Battle2DView → DisplayStore + PresentationDirector
+                                  ↓
+                       卡牌、矩形、文字和按钮
 ```
 
-`Battle2DHost` 负责收集场景配置和适配本地输入。`StartBattle()` 将阵容 Setup 交给共用 `BattleSessionFactory`，绑定 View 后通过 `Playback.Start` 开局；`AttachSession(session)` 接入已有会话，也接受已经开局的状态。出牌、弃牌和结束回合统一通过 `Playback.Submit` 提交；行动门禁与完整预览分别通过共用 `CanAct` 和 `PreviewPlay/PreviewDiscard` 查询。Host 只捕获当前选择和展示拒绝提示，不再组装引擎或拼装 expectedRevision。重新 Attach 时先停用旧命令入口，初始化新表现后刷新按钮，避免查询到上一场的状态。
+`Battle2DHost` 负责配置、规则输入和查询适配。它通过共享 `BattlePresentationBridge` 把规则结果投影到只读展示数据，通过 `BattleInteractionQueries` 生成候选模型。View 和 Card 不引用或接收 `CardDuelState`、`CardDuelTransition`、`CombatEvent` 等规则对象；卡牌身份为中性字符串，图集 key 由 Bridge 提供。其余规则引用只位于 Host。
 
-`Battle2DView` 实现与 `SingleBattleHost` 相同的表现接口：
+`Battle2DView` 实现中性的 `IBattlePresentationFrontend`：
 
-- `Initialize` 显示传入快照并清空选择和日志。
-- `Present` 在 Play 且请求动画时逐步显示已结算快照：出牌向上移动、弃牌向下移动，玩家和敌方矩形在攻击时前进再归位；每段移动约 0.18 秒。使用普通协程和 Transform，不依赖 DOTween。
-- `Synchronize` 终止当前表现，显示给定状态、清空本地选择并让矩形归位，不推进规则。播放中禁用 View 也会追上已提交状态。
-- `IsPresenting` 在步骤播放期间禁止重复输入；编辑模式或 `animate: false` 立即显示最终状态。
+- `Initialize` 初始化 `DisplayStore`，取消旧播放及反馈，清空日志。
+- `Present` 将有序批次交给公共 Director。出牌配方的卡牌移动发出 `ReadyToAttack`，启动玩家矩形动作；矩形的 `Impact` 推进展示检查点，收招继续运行。弃牌向下移动，敌人真正行动时矩形向前再归位；每段移动约 0.18 秒。眩晕跳过窗口不播放攻击。
+- `Synchronize` 取消 Director 的当前作用域并显示指定快照，清除选择，让矩形归位；不执行规则。播放中禁用 View 会追上已提交的最终展示快照。
+- `IsPresenting` 由公共 Director 统一提供；它会等待阻塞动作及收招全部完成。编辑模式或 Instant 模式原子发布最终展示快照，不伪造动画信号。
+- 每帧调用 Director.Tick 处理已到达的信号与完成通知。卡牌、矩形和 UI 读取同一个显示游标，动作上下文固定为所属事实的数据。
 
-一次命令返回前，Session 已完成自动敌人行动、收牌和下一决策点的推进。2D 使用卡牌与矩形的基础移动；现有 3D 使用攻击、命中和补牌演出。两者读取同一类步骤快照，都不在动画完成回调中执行战斗规则。播放速度和取消只影响展示进度。`CardInstanceId`、牌区、生命、格挡、能量和随机状态由 Session 持有；选中哪些卡、颜色和布局属于前端。
+候选使用共享 `InteractionSession`。同类牌型更新复用反馈作用域，替换、清空或提交释放旧反馈；临时选中偏移和颜色移除后，根据卡牌当前布局 slot 重建外观，不恢复捕获的旧坐标。提交前冻结卡牌 ID，进入 Committing；Bridge 在启动已接受批次之前关闭候选。拒绝提交重新查询当前合法候选。候选显示识别结果与提交资格分别提供，不影响权威规则状态。
+
+卡牌列表由当前展示快照对账，已有实例按稳定 ID 复用，列表重排只改变布局；UI 使用同一份生命、能量、牌堆和预算数据。一次命令返回前规则已完成结算，动画及取消只控制这些结果的展示进度。
 
 ## 卡牌美术复用
 
@@ -66,7 +73,7 @@ Battle2DCardArt.asset：Unlit 支持的颜色组合
 
 ## 验证范围
 
-`Battle2DValidationTests` 使用预览场景和真实卡片/按钮事件，覆盖编辑模式即时结果、重复绑定、无效选择拒绝、胜负与重启、固定种子命令与无界面规则执行等价、共享图集/材质与独立 MPB，以及固定管线中的相机 Renderer 选择和原槽位保护。`BattleSessionTests` 和 `BattleSessionPlaybackTests` 继续验证纯规则及立即/逐步表现的一致性。
+`Battle2DValidationTests` 使用预览场景和真实卡片/按钮事件，覆盖中性接口不暴露规则类型、候选更新与清空、纯展示快照重排保持实例、编辑模式即时结果、重复绑定、无效选择拒绝、胜负与重启、固定种子命令与无界面规则执行等价、共享图集/材质与独立 MPB，以及固定管线中的相机 Renderer 选择和原槽位保护。`BattleSessionTests` 和 `BattleSessionPlaybackTests` 继续验证纯规则及立即/逐步表现的一致性。
 
 同一测试文件中的 `Simple2DRenderingTests` 通过 URP 的 `SingleCameraRequest` 实际渲染到独立 RenderTexture，检查卡牌朝向与位置、深度遮挡，以及前后透明矩形的排序和混合。
 

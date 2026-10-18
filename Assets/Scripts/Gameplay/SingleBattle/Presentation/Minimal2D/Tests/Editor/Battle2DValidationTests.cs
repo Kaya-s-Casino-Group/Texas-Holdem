@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using CardArt;
+using global::BattlePresentation;
 using NUnit.Framework;
 using Poker.Battle2DValidation.Editor;
 using Poker.SingleBattle;
@@ -146,9 +147,9 @@ namespace Poker.Battle2DValidation.Tests
             using (var f = new Fixture())
             {
                 var session = f.Host.Session;
-                Assert.AreSame(session, f.Host.Playback.Session); Assert.AreSame(f.View, f.Host.Playback.Presentation);
-                Assert.AreSame(session.State, f.View.PresentedState); Assert.IsFalse(((IBattleSessionPresentation)f.View).IsPresenting);
-                CollectionAssert.AreEqual(session.State.Zone(CardZoneKinds.Hand, Player).Cards, f.View.Cards.Select(card => card.Id));
+                Assert.AreSame(session, f.Host.Playback.Session); Assert.AreSame(f.Host.PresentationBridge, f.Host.Playback.Presentation);
+                Battle2DDisplayAssertions.Match(session.State, f.View.PresentedState); Assert.IsFalse(((IBattlePresentationFrontend)f.View).IsPresenting);
+                CollectionAssert.AreEqual(session.State.Zone(CardZoneKinds.Hand, Player).Cards.Select(id => id.Value), f.View.Cards.Select(card => card.Id));
                 Assert.IsFalse(f.View.PlayButton.interactable); Assert.IsFalse(f.View.DiscardButton.interactable);
                 // Reconfiguration must remove the old button subscription before binding it again.
                 f.ConfigureView(); f.ConfigureView();
@@ -158,14 +159,14 @@ namespace Poker.Battle2DValidation.Tests
                 Assert.IsTrue(card.IsSelected); Assert.IsTrue(f.View.PlayButton.interactable); Assert.IsTrue(f.View.DiscardButton.interactable);
                 var expected = new BattleSession(session.Engine, session.State);
                 var expectedResult = expected.Execute(expected.State.Revision, Player,
-                    discard ? CardDuelAction.Discard : CardDuelAction.Play, new[] { card.Id });
+                    discard ? CardDuelAction.Discard : CardDuelAction.Play, new[] { new CardInstanceId(card.Id) });
                 Assert.IsTrue(expectedResult.Accepted);
                 f.Click((discard ? f.View.DiscardButton : f.View.PlayButton).gameObject);
                 SameState(expected.State, session.State);
-                Assert.AreSame(session, f.Host.Session); Assert.AreSame(session.State, f.View.PresentedState);
+                Assert.AreSame(session, f.Host.Session); Battle2DDisplayAssertions.Match(session.State, f.View.PresentedState);
                 Assert.IsFalse(f.View.IsPresenting); Assert.IsEmpty(f.View.Selected);
                 Assert.AreEqual(2, session.State.Duel.Player(Player).Energy.Energy);
-                CollectionAssert.AreEqual(session.State.Zone(CardZoneKinds.Hand, Player).Cards, f.View.Cards.Select(item => item.Id));
+                CollectionAssert.AreEqual(session.State.Zone(CardZoneKinds.Hand, Player).Cards.Select(id => id.Value), f.View.Cards.Select(item => item.Id));
                 StringAssert.Contains(discard ? "弃牌 1 张" : "出牌 1 张", f.View.LogText);
             }
         }
@@ -175,11 +176,11 @@ namespace Poker.Battle2DValidation.Tests
             using (var f = new Fixture())
             {
                 var before = f.Host.Session.State; var cards = f.View.Cards.ToArray();
-                f.View.ToggleSelection(new CardInstanceId("foreign")); Assert.IsEmpty(f.View.Selected);
+                f.View.ToggleSelection("foreign"); Assert.IsEmpty(f.View.Selected);
                 var play = f.Host.PlaySelected(); var discard = f.Host.DiscardSelected();
                 Assert.AreEqual(CardDuelError.InvalidSelection, play.Error); Assert.AreEqual(CardDuelError.InvalidSelection, discard.Error);
                 Assert.IsEmpty(play.Steps); Assert.IsEmpty(discard.Steps);
-                Assert.AreSame(before, f.Host.Session.State); Assert.AreSame(before, f.View.PresentedState);
+                Assert.AreSame(before, f.Host.Session.State); Battle2DDisplayAssertions.Match(before, f.View.PresentedState);
                 CollectionAssert.AreEqual(cards, f.View.Cards); StringAssert.Contains("操作未执行", f.View.LogText);
             }
         }
@@ -193,7 +194,7 @@ namespace Poker.Battle2DValidation.Tests
                 if (win) { f.Click(f.View.Cards[0].gameObject); f.Click(f.View.PlayButton.gameObject); }
                 else f.Click(f.View.EndTurnButton.gameObject);
                 Assert.AreEqual(win ? ScoredDuelPhase.Won : ScoredDuelPhase.Lost, session.State.Duel.Phase);
-                Assert.AreSame(session.State, f.View.PresentedState); Assert.IsFalse(f.View.IsPresenting);
+                Battle2DDisplayAssertions.Match(session.State, f.View.PresentedState); Assert.IsFalse(f.View.IsPresenting);
                 Assert.AreEqual(win ? 40 : 0, session.State.Duel.Combat.Get(Player).Health);
                 Assert.IsFalse(f.View.PlayButton.interactable); Assert.IsFalse(f.View.DiscardButton.interactable);
                 Assert.IsFalse(f.View.EndTurnButton.interactable); Assert.IsTrue(f.View.RestartButton.interactable);
@@ -204,7 +205,7 @@ namespace Poker.Battle2DValidation.Tests
                 f.Click(f.View.RestartButton.gameObject);
                 Assert.AreNotSame(session, f.Host.Session); Assert.AreEqual(ScoredDuelPhase.AwaitingPlayerHand, f.Host.Session.State.Duel.Phase);
                 Assert.AreEqual(0, f.Host.Session.State.Duel.CompletedRounds); Assert.AreEqual(8, f.View.Cards.Count);
-                Assert.AreSame(f.Host.Session.State, f.View.PresentedState); Assert.IsTrue(f.View.EndTurnButton.interactable);
+                Battle2DDisplayAssertions.Match(f.Host.Session.State, f.View.PresentedState); Assert.IsTrue(f.View.EndTurnButton.interactable);
                 Assert.IsEmpty(f.View.Selected); Assert.AreEqual("开局 · 发牌完成", f.View.LogText);
             }
         }
@@ -222,7 +223,7 @@ namespace Poker.Battle2DValidation.Tests
                 f.Host.AttachSession(next);
                 Assert.AreSame(before, next.State);
                 Assert.AreSame(next, f.Host.Playback.Session);
-                Assert.AreSame(before, f.View.PresentedState);
+                Battle2DDisplayAssertions.Match(before, f.View.PresentedState);
                 Assert.IsTrue(f.View.EndTurnButton.interactable);
                 f.Click(f.View.Cards[0].gameObject);
                 Assert.IsTrue(f.View.PlayButton.interactable);
@@ -243,15 +244,15 @@ namespace Poker.Battle2DValidation.Tests
                     var action = index % 3 == 0 ? CardDuelAction.Play : index % 3 == 1 ? CardDuelAction.Discard : CardDuelAction.EndTurn;
                     var cards = action == CardDuelAction.EndTurn ? Array.Empty<CardInstanceId>() :
                         baseline.State.Zone(CardZoneKinds.Hand, Player).Cards.Take(1).ToArray();
-                    foreach (var id in cards) f.View.ToggleSelection(id);
+                    foreach (var id in cards) f.View.ToggleSelection(id.Value);
                     var expected = baseline.Execute(baseline.State.Revision, Player, action, cards);
                     var actual = action == CardDuelAction.Play ? f.Host.PlaySelected() :
                         action == CardDuelAction.Discard ? f.Host.DiscardSelected() : f.Host.EndTurn();
                     Assert.IsTrue(expected.Accepted); Assert.IsTrue(actual.Accepted);
                     CollectionAssert.AreEqual(expected.Steps.Select(step => step.Action), actual.Steps.Select(step => step.Action));
                     SameState(baseline.State, f.Host.Session.State);
-                    Assert.AreSame(f.Host.Session.State, f.View.PresentedState); Assert.IsFalse(f.View.IsPresenting);
-                    CollectionAssert.AreEqual(actual.State.Zone(CardZoneKinds.Hand, Player).Cards, f.View.Cards.Select(card => card.Id));
+                    Battle2DDisplayAssertions.Match(f.Host.Session.State, f.View.PresentedState); Assert.IsFalse(f.View.IsPresenting);
+                    CollectionAssert.AreEqual(actual.State.Zone(CardZoneKinds.Hand, Player).Cards.Select(id => id.Value), f.View.Cards.Select(card => card.Id));
                 }
                 Assert.AreEqual(5, f.Host.Session.State.Duel.CompletedRounds);
             }
@@ -291,6 +292,84 @@ namespace Poker.Battle2DValidation.Tests
                 Assert.AreEqual(original, EditorJsonUtility.ToJson(sourceMaterial));
             }
             Assert.AreEqual(original, EditorJsonUtility.ToJson(sourceMaterial));
+        }
+
+        [Test] public void CandidateSwitchAndClearReuseCardsWithoutChangingAuthority()
+        {
+            using (var f = new Fixture())
+            {
+                var authority = f.Host.AuthorityState;
+                var first = f.View.Cards[0]; var second = f.View.Cards[1];
+                var firstSlot = first.transform.localPosition; var secondSlot = second.transform.localPosition;
+                Assert.AreEqual(CandidateState.Empty, f.View.Candidate.State);
+                f.Click(first.gameObject);
+                Assert.AreEqual(CandidateState.Valid, f.View.Candidate.State);
+                long version = f.View.Candidate.SelectionVersion;
+                Assert.That(first.transform.localPosition.y, Is.GreaterThan(firstSlot.y));
+                f.Click(second.gameObject);
+                Assert.Greater(f.View.Candidate.SelectionVersion, version);
+                CollectionAssert.AreEquivalent(new[] { first.Id, second.Id }, f.View.Candidate.SelectedIds);
+                f.Click(first.gameObject); f.Click(second.gameObject);
+                Assert.AreEqual(CandidateState.Empty, f.View.Candidate.State);
+                Assert.IsEmpty(f.View.Selected); Assert.IsFalse(f.View.PlayButton.interactable);
+                Assert.AreSame(authority, f.Host.AuthorityState);
+                Assert.AreSame(first, f.View.Cards[0]); Assert.AreSame(second, f.View.Cards[1]);
+                Assert.AreEqual(firstSlot, first.transform.localPosition); Assert.AreEqual(secondSlot, second.transform.localPosition);
+            }
+        }
+
+        [Test] public void DisablingViewClearsSelectionAndReenablingCannotRestoreOldFeedback()
+        {
+            using (var f = new Fixture())
+            {
+                var authority = f.Host.AuthorityState;
+                f.Click(f.View.Cards[0].gameObject); Assert.IsNotEmpty(f.View.Selected);
+                f.View.enabled = false;
+                // PreviewScene EditMode does not send lifecycle callbacks to this runtime component.
+                typeof(Battle2DView).GetMethod("OnDisable", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+                    .Invoke(f.View, null);
+                Assert.IsEmpty(f.View.Selected); Assert.IsFalse(f.View.IsPresenting);
+                f.View.enabled = true;
+                typeof(Battle2DView).GetMethod("OnEnable", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+                    .Invoke(f.View, null);
+                Assert.IsEmpty(f.View.Selected); Assert.AreEqual(CandidateState.Empty, f.View.Candidate.State);
+                Assert.IsFalse(f.View.PlayButton.interactable); Assert.IsTrue(f.View.EndTurnButton.interactable);
+                Assert.AreSame(authority, f.Host.AuthorityState);
+            }
+        }
+
+        [Test] public void NeutralSnapshotReordersExistingCardsWithoutACommandOrCapturedPositionRestore()
+        {
+            using (var f = new Fixture())
+            {
+                var authority = f.Host.AuthorityState;
+                var snapshot = f.View.PresentedState;
+                var originalCards = f.View.Cards.ToDictionary(card => card.Id);
+                var zones = snapshot.Zones.Select(zone => zone.Kind == "hand" && zone.OwnerId == snapshot.ObserverId
+                    ? new CardZoneDisplayData(zone.Id, zone.OwnerId, zone.Kind, zone.Cards.Reverse()) : zone);
+                var reordered = new BattleDisplaySnapshot(snapshot.BattleId, snapshot.ObserverId, snapshot.RuleRevision,
+                    snapshot.Phase, snapshot.Round, snapshot.Result, snapshot.Units, zones, snapshot.Resources,
+                    snapshot.Cursor, hasStarted: snapshot.HasStarted, completedRounds: snapshot.CompletedRounds);
+                f.View.Synchronize(reordered);
+                CollectionAssert.AreEqual(snapshot.Zones.Single(zone => zone.Kind == "hand" && zone.OwnerId == snapshot.ObserverId)
+                    .Cards.Reverse().Select(card => card.CardId), f.View.Cards.Select(card => card.Id));
+                foreach (var card in f.View.Cards) Assert.AreSame(originalCards[card.Id], card);
+                Assert.AreSame(authority, f.Host.AuthorityState); Assert.IsEmpty(f.View.Selected);
+            }
+        }
+
+        [Test] public void ViewAndCardPublicContractsDoNotExposeRuleObjects()
+        {
+            var types = new[] { typeof(Battle2DView), typeof(Battle2DCard) };
+            foreach (var type in types)
+            {
+                var properties = type.GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.DeclaredOnly);
+                var methods = type.GetMethods(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.DeclaredOnly);
+                Assert.IsFalse(properties.Any(property => ContainsRules(property.PropertyType)), type.Name + " property leaks a rule type.");
+                Assert.IsFalse(methods.Any(method => ContainsRules(method.ReturnType) || method.GetParameters().Any(parameter => ContainsRules(parameter.ParameterType))),
+                    type.Name + " method leaks a rule type.");
+            }
+            bool ContainsRules(Type type) => type.Namespace == "PokerEngine" || type.IsGenericType && type.GetGenericArguments().Any(ContainsRules);
         }
 
         [Test] public void ValidationCameraSelectsSimple2DRendererWithinTheUnchangedMainPipeline()
@@ -426,6 +505,34 @@ namespace Poker.Battle2DValidation.Tests
                 EditorSceneManager.ClosePreviewScene(scene);
                 target.Release(); Object.DestroyImmediate(target); Object.DestroyImmediate(readback);
             }
+        }
+    }
+}
+
+namespace Poker.Battle2DValidation.Tests
+{
+    internal static class Battle2DDisplayAssertions
+    {
+        public static void Match(CardDuelState expected, BattleDisplaySnapshot actual)
+        {
+            Assert.IsNotNull(actual);
+            Assert.AreEqual(expected.Revision, actual.RuleRevision);
+            Assert.AreEqual(expected.Duel.CompletedRounds, actual.Round);
+            var phase = expected.Duel.Phase == ScoredDuelPhase.Won ? "won" :
+                expected.Duel.Phase == ScoredDuelPhase.Lost ? "lost" :
+                expected.Duel.Phase == ScoredDuelPhase.AwaitingEnemyAction ? "enemy" : "player";
+            Assert.AreEqual(phase, actual.Phase);
+            foreach (var unit in expected.Duel.Combat.Combatants)
+            {
+                var displayed = actual.Unit(unit.Id.Value);
+                Assert.IsNotNull(displayed);
+                Assert.AreEqual(unit.Health, displayed.Health);
+                Assert.AreEqual(unit.MaxHealth, displayed.MaxHealth);
+                Assert.AreEqual(unit.Block, displayed.Block);
+            }
+            var hand = actual.Zones.Single(zone => zone.OwnerId == expected.Duel.PlayerId.Value && zone.Kind == "hand");
+            CollectionAssert.AreEqual(expected.Zone(CardZoneKinds.Hand, expected.Duel.PlayerId).Cards.Select(id => id.Value),
+                hand.Cards.Select(card => card.CardId));
         }
     }
 }

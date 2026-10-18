@@ -54,6 +54,7 @@ namespace Poker.SingleBattle.Tests
                 foreach (var actor in Players) actor.Configure(Host);
                 foreach (var actor in Enemies) actor.Configure(Host);
                 Host.ConfigureActors(Players, Enemies);
+                Poker.SingleBattle.Editor.BattlePresentationSceneSetup.ConfigureHost(Host, includeFeedback: false);
             }
 
             private GameObject New(string name)

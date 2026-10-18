@@ -15,7 +15,9 @@
     "UIFoundation.Runtime",
     "CardArt.Runtime",
     "Poker.BattleConfiguration.Runtime",
-    "Poker.BattleHosting.Runtime"
+    "Poker.BattleHosting.Runtime",
+    "BattlePresentation.Runtime",
+    "BattlePresentation.Unity"
   ],
   "includePlatforms": [
     "Editor"

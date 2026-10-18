@@ -1,4 +1,5 @@
 using System.Linq;
+using global::BattlePresentation;
 using PokerEngine;
 using TMPro;
 using UnityEngine;
@@ -38,7 +39,7 @@ namespace Poker.SingleBattle
             if (host == null || !host.CanSwitchPlayer) return;
             var players = host.Players.ToList(); int current = players.IndexOf(host.Player);
             for (int offset = 1; offset < players.Count; offset++)
-                if (host.PresentedState.Duel.CanAct(players[(current + offset) % players.Count].ParticipantId))
+                if (host.Display?.Resource(players[(current + offset) % players.Count].ParticipantId.Value, "canAct")?.Value == 1)
                 { host.SelectPlayer(players[(current + offset) % players.Count]); return; }
         }
         public Button RestartButton => restart;
@@ -59,49 +60,54 @@ namespace Poker.SingleBattle
         public void Refresh()
         {
             if (host == null) return;
-            if (host.PresentedState == null)
+            var snapshot = host.Display;
+            if (snapshot == null)
             {
                 if (message != null) message.text = host.Message;
                 RefreshRuleFeedback(true); return;
             }
             if (player == null) return;
-            var state = host.PresentedState; var duel = state.Duel; var rules = host.Engine.Duel.Definition;
-            var hero = host.Player.Unit; var monster = host.Enemy.Unit;
-            if (hero == null || monster == null) return;
+            var hero = snapshot.Unit(snapshot.ObserverId);
+            var enemies = snapshot.Units.Where(unit => unit.Team == "enemy").ToArray();
+            if (hero == null || enemies.Length == 0) return;
+            var players = snapshot.Units.Where(unit => unit.Team == "player").ToList();
             EnsurePlayerSwitch();
-            player.text = "玩家 " + (host.Players.ToList().IndexOf(host.Player) + 1) + "   " + hero.Health + " / " + hero.MaxHealth + "\n格挡 " + hero.Block;
-            enemy.text = string.Join("\n", host.Enemies.Select((actor, i) => "怪物 " + (i + 1) + "  " + actor.Unit.Health + " / " + actor.Unit.MaxHealth));
-            if (energy != null) energy.text = "能量 " + host.Player.Turn.Energy + " / " + host.Player.Turn.MaxEnergy +
-                "\n出牌 " + host.Engine.Duel.QueryActionCost(duel, host.Player.ParticipantId, ScoredDuelActionKind.ScoredHand).Cost +
-                " · 弃牌 " + host.Engine.Duel.QueryActionCost(duel, host.Player.ParticipantId, ScoredDuelActionKind.Discard).Cost;
+            player.text = "玩家 " + (players.FindIndex(unit => unit.Id == hero.Id) + 1) + "   " + hero.Health + " / " + hero.MaxHealth + "\n格挡 " + hero.Block;
+            enemy.text = string.Join("\n", enemies.Select((unit, i) => "怪物 " + (i + 1) + "  " + unit.Health + " / " + unit.MaxHealth));
+            if (energy != null) energy.text = "能量 " + hero.Energy + " / " + hero.MaxEnergy +
+                "\n出牌 " + ResourceValue(snapshot, hero.Id, "playCost") + " · 弃牌 " + ResourceValue(snapshot, hero.Id, "discardCost");
             if (endTurn != null) endTurn.interactable = host.CanEndTurn;
-            playerBar.rectTransform.anchorMax = new Vector2((float)hero.Health / hero.MaxHealth, 1);
-            enemyBar.rectTransform.anchorMax = new Vector2((float)host.Enemies.Sum(actor => actor.Unit.Health) / host.Enemies.Sum(actor => actor.Unit.MaxHealth), 1);
-            int round = duel.IsFinished ? duel.CompletedRounds : duel.CompletedRounds + 1;
-            turn.text = "回合 " + round + " / " + rules.RoundLimit + "\n" + (duel.IsFinished ? "战斗结束" :
-                duel.Phase == ScoredDuelPhase.AwaitingPlayerHand ? "玩家行动 · 剩余 " + duel.Players.Count(p => duel.CanAct(p.Id)) : "敌人行动");
+            playerBar.rectTransform.anchorMax = new Vector2(hero.MaxHealth > 0 ? Mathf.Clamp01((float)hero.Health / hero.MaxHealth) : 0, 1);
+            double enemyMaximum = enemies.Sum(unit => (double)unit.MaxHealth);
+            enemyBar.rectTransform.anchorMax = new Vector2(enemyMaximum > 0 ? Mathf.Clamp01((float)(enemies.Sum(unit => (double)unit.Health) / enemyMaximum)) : 0, 1);
+            long round = snapshot.IsFinished ? snapshot.CompletedRounds : snapshot.CompletedRounds + 1;
+            turn.text = "回合 " + round + " / " + ResourceValue(snapshot, "", "roundLimit") + "\n" + (snapshot.IsFinished ? "战斗结束" :
+                snapshot.Phase == "player" ? "玩家行动 · 剩余 " + players.Count(unit => ResourceValue(snapshot, unit.Id, "canAct") == 1) : "敌人行动");
             RefreshEnemyIntents();
-            message.text = "玩家 " + host.Players.Count(actor => actor.IsAlive) + " · 怪物 " + host.Enemies.Count(actor => actor.IsAlive);
-            counts.text = "牌库 " + host.PlayerZone(CardZoneKinds.Deck).Cards.Count + " · 弃牌堆 " + host.PlayerZone(CardZoneKinds.Discard).Cards.Count +
-                "\n弃牌次数 " + (host.PresentedState.RemainingDiscardBudgetFor(host.Player.ParticipantId)?.ToString() ?? "不限");
-            score.text = host.LastScore == null ? "总得分 " + duel.TotalScore :
-                "上次 " + HandName(host.LastScore.Category) + " · " + host.LastScore.Total + " 分\n效果见规则反馈";
+            message.text = "玩家 " + players.Count(unit => unit.IsAlive) + " · 怪物 " + enemies.Count(unit => unit.IsAlive);
+            long discardBudget = snapshot.Resource(hero.Id, "discards")?.Value ?? -1;
+            counts.text = "牌库 " + ZoneCount(snapshot, hero.Id, "deck") + " · 弃牌堆 " + ZoneCount(snapshot, hero.Id, "discard") +
+                "\n弃牌次数 " + (discardBudget < 0 ? "不限" : discardBudget.ToString());
+            score.text = snapshot.Labels.TryGetValue("lastScorePattern", out var lastPattern) && snapshot.Labels.TryGetValue("lastScoreTotal", out var lastTotal)
+                ? "上次 " + lastPattern + " · " + lastTotal + " 分\n效果见规则反馈" : "总得分 " + ResourceValue(snapshot, "", "totalScore");
             RefreshRuleFeedback(true);
-            bool showResult = duel.IsFinished && !host.IsPresenting;
+            bool showResult = snapshot.IsFinished && !host.IsPresenting;
             resultPanel.SetActive(showResult); restart.interactable = !host.IsPresenting; resultRestart.interactable = !host.IsPresenting;
             if (endTurn != null) endTurn.gameObject.SetActive(!showResult);
             restart.gameObject.SetActive(!showResult);
             if (switchPlayer != null) switchPlayer.gameObject.SetActive(!showResult);
             if (showResult)
             {
-                var result = host.Engine.Duel.ReadProgress(duel).Result;
-                bool won = duel.Phase == ScoredDuelPhase.Won;
+                bool won = snapshot.Phase == "won";
                 resultTitle.text = won ? "战斗胜利" : "战斗失败";
                 resultTitle.color = won ? new Color32(233, 193, 112, 255) : new Color32(237, 125, 123, 255);
-                resultDetails.text = (won ? "全部怪物已被击败" : result.Reason == EncounterEndReason.RoundLimit ? "回合已用尽" : "全部玩家已阵亡") +
-                    "\n完成回合 " + duel.CompletedRounds + "\n总得分 " + duel.TotalScore;
+                bool roundLimit = snapshot.Labels.TryGetValue("resultReason", out var reason) && reason == "RoundLimit";
+                resultDetails.text = (won ? "全部怪物已被击败" : roundLimit ? "回合已用尽" : "全部玩家已阵亡") +
+                    "\n完成回合 " + snapshot.CompletedRounds + "\n总得分 " + ResourceValue(snapshot, "", "totalScore");
             }
         }
+        private static long ResourceValue(BattleDisplaySnapshot snapshot, string owner, string key) => snapshot.Resource(owner, key)?.Value ?? 0;
+        private static int ZoneCount(BattleDisplaySnapshot snapshot, string owner, string kind) => snapshot.Zones.FirstOrDefault(zone => zone.OwnerId == owner && zone.Kind == kind)?.Cards.Count ?? 0;
         public static string HandName(HandCategory category)
         {
             switch (category)
@@ -144,7 +150,7 @@ namespace Poker.SingleBattle
             UpdateEnemyIntentBillboards();
             RefreshRuleFeedback();
             if (host != null && endTurn != null) endTurn.interactable = host.CanEndTurn;
-            if (switchPlayer != null) switchPlayer.interactable = host.CanSwitchPlayer && host.PresentedState.Duel.Players.Count(p => host.PresentedState.Duel.CanAct(p.Id)) > 1;
+            if (switchPlayer != null) switchPlayer.interactable = host.CanSwitchPlayer && host.Display != null && host.Display.Units.Count(unit => unit.Team == "player" && ResourceValue(host.Display, unit.Id, "canAct") == 1) > 1;
             if (Keyboard.current != null && Keyboard.current.tabKey.wasPressedThisFrame) SelectNextPlayer();
         }
     }

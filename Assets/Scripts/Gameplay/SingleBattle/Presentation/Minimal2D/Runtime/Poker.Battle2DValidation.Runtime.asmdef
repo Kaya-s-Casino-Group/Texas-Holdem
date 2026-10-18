@@ -11,6 +11,8 @@
     "CardArt.Runtime",
     "Unity.TextMeshPro",
     "Unity.ugui",
-    "Poker.BattleHosting.Runtime"
+    "Poker.BattleHosting.Runtime",
+    "BattlePresentation.Runtime",
+    "Poker.BattlePresentation.Shared"
   ]
 }

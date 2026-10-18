@@ -63,26 +63,18 @@ namespace Poker.SingleBattle
                         Renderers = actor.Visual != null ? actor.Visual.GetComponentsInChildren<Renderer>(true) : new Renderer[0] };
                     enemyIntents.Add(actor, view);
                 }
-                var action = actor.ReadIntent();
-                view.Visible = action != null;
-                view.Text.text = EnemyIntentText(action);
+                var snapshot = host.Display;
+                var unit = actor.IsBound ? snapshot?.Unit(actor.ParticipantId.Value) : null;
+                string intentLabel = null;
+                if (unit != null && unit.IsAlive && !snapshot.IsFinished) snapshot.Labels.TryGetValue("intent/" + unit.Id, out intentLabel);
+                view.Visible = intentLabel != null;
+                view.Text.text = string.IsNullOrEmpty(intentLabel) ? "无效果" : intentLabel;
                 view.Root.sizeDelta = new Vector2(host.Players.Count > 1 ? 160 : IntentSize.x,
                     IntentSize.y * Mathf.Max(1, view.Text.text.Count(character => character == '\n') + 1));
                 view.Root.gameObject.SetActive(view.Visible);
             }
             intent.gameObject.SetActive(false);
             UpdateEnemyIntentBillboards();
-        }
-
-        private string EnemyIntentText(EnemyBattleIntent intent)
-        {
-            if (intent == null) return "";
-            if (!intent.Action.Accepted) return "意图不可用";
-            if (intent.Action.IsSkipped) return "眩晕 · 跳过行动";
-            // Read every effect from the real preview, including healing, status and elimination.
-            var lines = BattleHudRuleText.Events(intent.Action.RuleEvents, host.PresentedState.Duel,
-                host.Engine.Duel.Definition.StatusCatalog, true);
-            return lines.Count == 0 ? "无效果" : string.Join("\n", lines);
         }
 
         private void UpdateEnemyIntentBillboards()
@@ -137,7 +129,7 @@ namespace Poker.SingleBattle
                 foreach (var actor in host.Enemies)
                 {
                     if (actor == null || actor.Visual == null || !actor.Visual.gameObject.activeInHierarchy ||
-                        Application.isPlaying && actor.IsBound && !actor.IsAlive) continue;
+                        Application.isPlaying && actor.IsBound && host.Display?.Unit(actor.ParticipantId.Value)?.IsAlive == false) continue;
                     var size = new Vector2(host.Players.Count > 1 ? 160 : IntentSize.x, IntentSize.y);
                     if (Application.isPlaying && enemyIntents.TryGetValue(actor, out var view))
                     {

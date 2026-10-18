@@ -1,6 +1,5 @@
 using System;
 using CardArt;
-using PokerEngine;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -11,12 +10,12 @@ namespace Poker.Battle2DValidation
     {
         private Battle2DView owner;
         private Vector3 slot;
-        public CardInstanceId Id { get; private set; }
+        public string Id { get; private set; }
         public CardView Surface { get; private set; }
         public bool IsSelected { get; private set; }
-        public void Bind(Battle2DView presentation, CardInstanceId id, string artwork)
+        public void Bind(Battle2DView presentation, string id, string artwork)
         {
-            owner = presentation; Id = id; Surface = GetComponentInChildren<CardView>();
+            owner = presentation; Id = id ?? throw new ArgumentNullException(nameof(id)); Surface = GetComponentInChildren<CardView>();
             if (Surface == null) throw new InvalidOperationException("The 2D card prefab needs a CardView surface.");
             Surface.SetCard(artwork);
         }

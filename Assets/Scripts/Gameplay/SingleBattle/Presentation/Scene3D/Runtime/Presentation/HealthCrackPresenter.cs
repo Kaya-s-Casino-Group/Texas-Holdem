@@ -1,4 +1,5 @@
 using System;
+using global::BattlePresentation;
 using System.Linq;
 using PokerEngine;
 using UnityEngine;
@@ -50,8 +51,18 @@ namespace Poker.SingleBattle
         public void Synchronize(CombatantState unit)
         {
             if (unit == null) throw new ArgumentNullException(nameof(unit));
+            SynchronizeHealth(unit.Health, unit.MaxHealth);
+        }
+        public void SynchronizeDisplay(UnitDisplayData unit)
+        {
+            if (unit == null) throw new ArgumentNullException(nameof(unit));
+            SynchronizeHealth(unit.Health, unit.MaxHealth);
+        }
+        private void SynchronizeHealth(long current, long maximum)
+        {
+            if (maximum <= 0 || current < 0 || current > maximum) throw new ArgumentException("Invalid display health.");
             ValidateStages();
-            float health = (float)unit.Health / unit.MaxHealth; int stage = 0;
+            float health = (float)current / maximum; int stage = 0;
             for (int i = 1; i < stages.Length; ++i) if (health <= stages[i].AtOrBelowHealth) stage = i;
             Apply(stage);
         }

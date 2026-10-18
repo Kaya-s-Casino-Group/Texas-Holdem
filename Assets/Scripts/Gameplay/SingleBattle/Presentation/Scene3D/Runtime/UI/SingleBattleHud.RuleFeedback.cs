@@ -1,8 +1,6 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using PokerEngine;
+using global::BattlePresentation;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -13,12 +11,9 @@ namespace Poker.SingleBattle
     {
         private TMP_Text ruleFeedback;
         private ScrollRect ruleScroll;
-        private CardDuelState feedbackState;
-        private BattleSessionResult feedbackBatch;
-        private ParticipantId feedbackPlayer;
-        private CardInstanceId[] feedbackSelection;
-        private bool feedbackCanPreview;
-        private IReadOnlyList<BattleDiagnostic> feedbackDiagnostics;
+        private BattleDisplaySnapshot feedbackState;
+        private CandidatePresentationModel feedbackCandidate;
+        private string feedbackBatchId, feedbackFacts, feedbackDiagnostics;
         public string RuleFeedbackText => ruleFeedback != null ? ruleFeedback.text : "";
 
         private void EnsureRuleFeedback()
@@ -56,63 +51,40 @@ namespace Poker.SingleBattle
         {
             if (host == null || message == null) return;
             EnsureRuleFeedback();
-            var state = host.PresentedState;
-            if (state == null)
+            var snapshot = host.Display;
+            string diagnostics = host.ContentDiagnosticsText ?? "";
+            if (snapshot == null)
             {
-                if (!force && ReferenceEquals(feedbackDiagnostics, host.ContentDiagnostics)) return;
-                feedbackDiagnostics = host.ContentDiagnostics;
-                SetRuleFeedback(DiagnosticText() + (host.ContentDiagnostics.Count == 0 ? "等待战斗初始化" : "无法开战，请修正 XML 后重新开始"), true);
+                if (!force && feedbackDiagnostics == diagnostics) return;
+                feedbackDiagnostics = diagnostics;
+                SetRuleFeedback(diagnostics + (diagnostics.Length == 0 ? "等待战斗初始化" : "无法开战，请修正 XML 后重新开始"), true);
                 return;
             }
-            if (host.Player == null || !host.Player.IsBound) return;
-            var selected = host.Actions != null && host.Actions.Hand != null ? host.Actions.Hand.Cards.Where(card => card.Interaction.IsSelected)
-                .Select(card => card.Card.Id).OrderBy(id => id.Value, StringComparer.Ordinal).ToArray() : Array.Empty<CardInstanceId>();
-            bool canPreview = host.CanReceivePlayerInput;
-            if (!force && ReferenceEquals(feedbackState, state) && ReferenceEquals(feedbackBatch, host.LastResolution) &&
-                ReferenceEquals(feedbackDiagnostics, host.ContentDiagnostics) &&
-                feedbackPlayer == host.Player.ParticipantId && feedbackSelection != null && feedbackSelection.SequenceEqual(selected) && feedbackCanPreview == canPreview) return;
-            bool newBatch = !ReferenceEquals(feedbackBatch, host.LastResolution);
-            feedbackState = state; feedbackBatch = host.LastResolution; feedbackPlayer = host.Player.ParticipantId;
-            feedbackSelection = selected; feedbackCanPreview = canPreview;
-            feedbackDiagnostics = host.ContentDiagnostics;
-            var catalog = host.Engine.Duel.Definition.StatusCatalog;
-            var text = new StringBuilder();
-            text.Append(DiagnosticText());
-            if (host.ContentDiagnostics.Any(diagnostic => diagnostic.Severity == BattleDiagnosticSeverity.Error))
-                text.AppendLine("配置未生效；当前仍是上次成功创建的战斗。\n");
-            if (selected.Length > 0)
+            var candidate = host.Candidate;
+            string revealed = host.DisplayFeedback ?? "";
+            if (!force && ReferenceEquals(feedbackState, snapshot) && ReferenceEquals(feedbackCandidate, candidate) &&
+                feedbackFacts == revealed && feedbackDiagnostics == diagnostics) return;
+            bool newBatch = feedbackBatchId != snapshot.Cursor.BatchId;
+            feedbackState = snapshot; feedbackCandidate = candidate; feedbackFacts = revealed;
+            feedbackDiagnostics = diagnostics; feedbackBatchId = snapshot.Cursor.BatchId;
+            var text = new StringBuilder(); text.Append(diagnostics);
+            if (candidate != null && candidate.SelectedIds.Count > 0 && candidate.State != CandidateState.Closed && candidate.State != CandidateState.Committing)
             {
-                text.AppendLine("【选牌预览 · " + selected.Length + " 张】");
-                if (canPreview)
-                {
-                    text.AppendLine("出牌：");
-                    text.AppendLine(BattleHudRuleText.Transition(host.PreviewSelectedPlay(), state.Duel, catalog));
-                    text.AppendLine("弃牌：");
-                    text.AppendLine(BattleHudRuleText.Transition(host.PreviewSelectedDiscard(), state.Duel, catalog));
-                }
-                else text.AppendLine(host.IsPresenting ? "正在结算，完成后更新预览" : "等待可操作窗口");
+                text.AppendLine("【选牌预览 · " + candidate.SelectedIds.Count + " 张】");
+                text.AppendLine("出牌：");
+                text.AppendLine(candidate.Labels.TryGetValue("playPreview", out var playPreview) ? playPreview : candidate.Reason ?? "当前选择不可用");
+                text.AppendLine("弃牌：");
+                text.AppendLine(candidate.Labels.TryGetValue("discardPreview", out var discardPreview) ? discardPreview : candidate.Reason ?? "当前选择不可用");
                 text.AppendLine();
             }
-            text.AppendLine(BattleHudRuleText.Snapshot(state, feedbackPlayer, catalog));
-            if (host.LastResolution != null)
+            if (snapshot.Labels.TryGetValue("statusSummary", out var statusText)) text.AppendLine(statusText);
+            if (!string.IsNullOrEmpty(revealed))
             {
                 text.AppendLine(); text.AppendLine("【最近结算】");
-                // The batch is authoritative already; disclose only the steps currently projected by the host.
-                foreach (var step in host.LastResolution.Steps.Where(step => step.Transition.State.Revision <= state.Revision))
-                {
-                    text.AppendLine(BattleHudRuleText.Participant(state.Duel, step.Actor) + " · " + ActionName(step.Action));
-                    text.AppendLine(BattleHudRuleText.Transition(step.Transition, state.Duel, catalog));
-                }
+                // This string contains only facts revealed at the display cursor, never future authority data.
+                text.AppendLine(revealed);
             }
             SetRuleFeedback(text.ToString().TrimEnd(), newBatch);
-        }
-
-        private string DiagnosticText()
-        {
-            if (host.ContentDiagnostics.Count == 0) return "";
-            return "【XML 配置诊断】\n" + string.Join("\n", host.ContentDiagnostics.Select(diagnostic =>
-                (diagnostic.Severity == BattleDiagnosticSeverity.Error ? "错误 " : "提示 ") + diagnostic.Code + " · " +
-                diagnostic.Location.Line + ":" + diagnostic.Location.Column + "\n" + diagnostic.Location.Path + "\n" + diagnostic.Message)) + "\n\n";
         }
 
         private void SetRuleFeedback(string value, bool scrollToTop)
@@ -123,18 +95,5 @@ namespace Poker.SingleBattle
             if (scrollToTop) ruleScroll.verticalNormalizedPosition = 1;
         }
 
-        private static string ActionName(CardDuelAction action)
-        {
-            switch (action)
-            {
-                case CardDuelAction.Play: return "出牌";
-                case CardDuelAction.Discard: return "弃牌";
-                case CardDuelAction.EnemyAction: return "敌人行动";
-                case CardDuelAction.Start: return "开战";
-                case CardDuelAction.SkipPlayerTurn: return "跳过行动";
-                case CardDuelAction.EndTurn: return "结束回合";
-                default: return "收牌与阶段结算";
-            }
-        }
     }
 }

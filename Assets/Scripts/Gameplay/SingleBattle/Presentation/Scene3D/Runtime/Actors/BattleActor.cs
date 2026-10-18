@@ -1,4 +1,5 @@
 using System;
+using global::BattlePresentation;
 using PokerEngine;
 using UnityEngine;
 
@@ -18,6 +19,48 @@ namespace Poker.SingleBattle
         internal ShieldSnapshot RecordBlockEffect(CombatEvent effect, ShieldCard[] cards) =>
             shieldLedger.Apply(effect.Revision + "/" + effect.Index, effect.Before.Block, effect.After.Block, cards);
         private BattlePresentationOperation pending;
+        private bool startingPresentation;
+        private UnitDisplayData displayUnit;
+        public UnitDisplayData DisplayUnit => displayUnit;
+        public string DisplayId => displayUnit?.Id ?? (participant.IsValid ? participant.Value : null);
+        public bool IsDisplayBusy => startingPresentation || pending != null && pending.keepWaiting;
+
+        public ShieldSnapshot RecordDisplayBlock(string effectKey, EffectDisplayData effect, ShieldCard[] cards)
+        {
+            if (string.IsNullOrEmpty(effectKey) || effect?.Before == null || effect.After == null)
+                throw new ArgumentException("A display shield fact needs an identity and before/after units.");
+            return shieldLedger.Apply(effectKey, checked((int)effect.Before.Block), checked((int)effect.After.Block), cards);
+        }
+        /// <summary>Neutral scene adapter. It consumes already-projected facts and never reads the rule session.</summary>
+        public BattlePresentationOperation PresentDisplay(BattlePresentationKind kind, EffectDisplayData effect,
+            IMarkerSink markers, ShieldSnapshot shields = null)
+        {
+            if (string.IsNullOrEmpty(DisplayId)) throw new InvalidOperationException("Synchronize the display actor before playing actions.");
+            if (kind != BattlePresentationKind.Attack && kind != BattlePresentationKind.PrepareAttack &&
+                effect != null && effect.TargetId != DisplayId) return BattlePresentationOperation.Completed();
+            if (effect?.After != null && effect.TargetId == DisplayId)
+            {
+                displayUnit = effect.After;
+                (Presentation as IBattleActorDisplayPresentation)?.SynchronizeDisplay(displayUnit);
+            }
+            if (kind == BattlePresentationKind.Attack) ActionPresented?.Invoke();
+            return Play(new BattlePresentationCue(kind, DisplayId, effect, markers, shields), true);
+        }
+        public void SynchronizeDisplay(UnitDisplayData unit, bool reset = false)
+        {
+            if (unit == null || string.IsNullOrEmpty(unit.Id)) throw new ArgumentException("A display unit needs stable identity.");
+            bool first = displayUnit == null;
+            bool identityChanged = displayUnit != null && displayUnit.Id != unit.Id;
+            bool blockChanged = Shields.TotalBlock != unit.Block;
+            if (reset || identityChanged) ResetPresentation();
+            displayUnit = unit;
+            if (identityChanged) shieldLedger.Reset(checked((int)unit.Block));
+            else shieldLedger.Reconcile(checked((int)unit.Block));
+            (Presentation as IBattleActorDisplayPresentation)?.SynchronizeDisplay(unit);
+            if (reset || first || identityChanged || blockChanged)
+                (Presentation as IShieldPresentation)?.SynchronizeShields(Shields);
+            if (reset && !unit.IsAlive) Presentation?.Snap(new BattlePresentationCue(BattlePresentationKind.Death, unit.Id));
+        }
         public SingleBattleHost Battle => battle;
         public Transform Visual => visual;
         public IBattleActorPresentation Presentation => presentation != null ? presentation as IBattleActorPresentation : null;
@@ -35,7 +78,7 @@ namespace Poker.SingleBattle
             if (owner == null || owner.gameObject.scene != gameObject.scene ||
                 model != null && (model == transform || !model.IsChildOf(transform)))
                 throw new ArgumentException("Bind an owner in this scene and an optional visual beneath this actor.");
-            ResetPresentation(); battle = owner; visual = model; participant = default;
+            ResetPresentation(); battle = owner; visual = model; participant = default; displayUnit = null;
         }
         public void ConfigurePresentation(MonoBehaviour implementation)
         {
@@ -51,7 +94,7 @@ namespace Poker.SingleBattle
                 throw new ArgumentException("Actor type and participant slot must agree.");
             if (visual != null && (visual == transform || !visual.IsChildOf(transform)))
                 throw new ArgumentException("The visual must be beneath the logical actor, not its root.");
-            ResetPresentation(); participant = id;
+            ResetPresentation(); participant = id; displayUnit = null;
             string session = battle.PresentedState.Table.MatchId.ToString() + "/" + id;
             if (shieldSession != session) { shieldSession = session; shieldLedger.Reset(Unit.Block); }
             else shieldLedger.Reconcile(Unit.Block);
@@ -89,17 +132,32 @@ namespace Poker.SingleBattle
         }
         private BattlePresentationOperation Play(BattlePresentationCue cue, bool animate)
         {
-            if (pending != null && pending.keepWaiting) throw new InvalidOperationException("Wait for the previous actor presentation first.");
-            if (Presentation == null) return BattlePresentationOperation.Completed();
+            if (IsDisplayBusy) throw new InvalidOperationException("Wait for the previous actor presentation first.");
+            if (Presentation == null)
+            {
+                if (animate && cue.Kind == BattlePresentationKind.Attack) cue.Markers?.Emit("Impact");
+                return BattlePresentationOperation.Completed();
+            }
             if (!animate) { Presentation.Snap(cue); return BattlePresentationOperation.Completed(); }
             if (!presentation.isActiveAndEnabled) throw new InvalidOperationException("The actor presentation is disabled.");
-            pending = Presentation.Play(cue) ?? throw new InvalidOperationException("A presentation must return a completion operation.");
-            return pending;
+            startingPresentation = true;
+            try
+            {
+                pending = Presentation.Play(cue) ?? throw new InvalidOperationException("A presentation must return a completion operation.");
+                return pending;
+            }
+            finally { startingPresentation = false; }
         }
         internal void CancelPresentation()
         {
             pending?.Cancel(); pending = null;
             Presentation?.CancelPresentation();
+        }
+        /// <summary>Adapters may release only their own operation, never a later action on this actor.</summary>
+        internal bool CancelDisplayOperation(BattlePresentationOperation expected)
+        {
+            if (expected == null || !ReferenceEquals(pending, expected)) return false;
+            CancelPresentation(); return true;
         }
         private void ResetPresentation() { CancelPresentation(); Presentation?.ResetPresentation(); }
         internal void SnapToCurrentState()

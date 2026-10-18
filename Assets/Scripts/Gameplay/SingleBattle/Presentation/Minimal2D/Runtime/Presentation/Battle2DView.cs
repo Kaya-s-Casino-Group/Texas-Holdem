@@ -1,37 +1,49 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using CardArt;
-using PokerEngine;
+using global::BattlePresentation;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace Poker.Battle2DValidation
 {
-    /// <summary>Minimal card and rectangle movement using the same presentation port as the 3D battle.</summary>
-    public sealed class Battle2DView : MonoBehaviour, IBattleSessionPresentation
+    /// <summary>A rule-independent frontend. The same display store and director drive cards, actors and UI.</summary>
+    public sealed class Battle2DView : MonoBehaviour, IBattlePresentationFrontend, IInteractionFeedback
     {
         [SerializeField] private GameObject cardPrefab;
         [SerializeField] private Transform cardRoot;
         [SerializeField] private Transform playerActor, enemyActor;
-        private Vector3 playerHome, enemyHome;
-        private Coroutine playback;
-        private CardDuelState settledState;
         [SerializeField] private TMP_Text status, details, log;
         [SerializeField] private Button play, discard, endTurn, restart;
-        private Battle2DHost host;
-        private readonly List<CardInstanceId> selected = new List<CardInstanceId>();
+        private Vector3 playerHome, enemyHome;
+        private DisplayStore store;
+        private PresentationDirector director;
+        private InteractionSession interaction;
+        private PresentationScope feedbackScope;
+        private readonly DictionaryTargetResolver targets = new DictionaryTargetResolver();
+        private BattleDisplaySnapshot settledState;
+        private readonly List<string> selected = new List<string>();
         private readonly List<Battle2DCard> cards = new List<Battle2DCard>();
         private readonly Queue<string> history = new Queue<string>();
-        private static readonly Dictionary<CardDefinitionId, CardDefinition> Faces = StandardDeck.Cards().ToDictionary(card => card.Id);
-        public bool IsPresenting { get; private set; }
+        private readonly SortedDictionary<long, string> pendingLogs = new SortedDictionary<long, string>();
+        private string logBatchId;
+        private Action<string> selectionIntent;
+        private Action playIntent, discardIntent, endTurnIntent, restartIntent;
+        private bool canPlay, canDiscard, canEndTurn;
+        private long playbackEpoch;
+        public event Action DisplayChanged;
+        public event Action InteractionClosed;
+        public event Action PresentationFinished;
+        public bool IsPresenting => director != null && director.IsPresenting;
         public Transform PlayerActor => playerActor;
         public Transform EnemyActor => enemyActor;
-        public CardDuelState PresentedState { get; private set; }
-        public IReadOnlyList<CardInstanceId> Selected => selected.AsReadOnly();
+        public BattleDisplaySnapshot PresentedState => store?.Current;
+        public IDisplayReader Display => store;
+        public CandidatePresentationModel Candidate => interaction?.Current;
+        public long NextSelectionVersion => (interaction?.SelectionVersion ?? 0) + 1;
+        public IReadOnlyList<string> Selected => selected.AsReadOnly();
         public IReadOnlyList<Battle2DCard> Cards => cards.AsReadOnly();
         public Button PlayButton => play;
         public Button DiscardButton => discard;
@@ -48,13 +60,45 @@ namespace Poker.Battle2DValidation
             if (cardPrefab == null || cardRoot == null || status == null || details == null || log == null ||
                 play == null || discard == null || endTurn == null || restart == null)
                 throw new ArgumentException("Configure the card artwork and minimal 2D controls.");
+            EnsurePresentation();
             if (isActiveAndEnabled) Subscribe();
         }
         public void ConfigureActors(Transform player, Transform enemy)
         {
             playerActor = player; enemyActor = enemy; RememberActorHomes();
+            targets.Bind("player", playerActor); targets.Bind("enemy", enemyActor);
         }
-        private void Awake() => RememberActorHomes();
+        private void Awake() { RememberActorHomes(); EnsurePresentation(); }
+        private void Update() => director?.Tick();
+        private void EnsurePresentation()
+        {
+            if (store != null) return;
+            store = new DisplayStore();
+            ResetInteraction();
+            store.Changed += OnDisplayChanged;
+            director = new PresentationDirector(store, targets, BuildPlan);
+            targets.Bind("player", playerActor); targets.Bind("enemy", enemyActor);
+            targets.Bind("cards", this);
+        }
+        private void ResetInteraction()
+        {
+            if (interaction != null)
+            {
+                interaction.Changed -= OnCandidateChanged;
+                interaction.Dispose();
+            }
+            interaction = new InteractionSession(this);
+            interaction.Changed += OnCandidateChanged;
+        }
+        private void OnDisplayChanged(DisplayUpdate update)
+        {
+            if (update.Current.Cursor.BatchId == logBatchId)
+            {
+                foreach (var entry in pendingLogs.Where(entry => entry.Key <= update.Current.Cursor.Sequence).ToArray())
+                { AddLog(entry.Value); pendingLogs.Remove(entry.Key); }
+            }
+            Render(); DisplayChanged?.Invoke();
+        }
         private void RememberActorHomes()
         {
             if (playerActor != null) playerHome = playerActor.localPosition;
@@ -65,114 +109,200 @@ namespace Poker.Battle2DValidation
             if (playerActor != null) playerActor.localPosition = playerHome;
             if (enemyActor != null) enemyActor.localPosition = enemyHome;
         }
-        public void BindCommands(Battle2DHost owner) { host = owner; RefreshButtons(); }
-        public void Initialize(CardDuelState initialState)
+        public void BindCommands(Action<string> select, Action playAction, Action discardAction, Action endAction, Action restartAction)
         {
-            StopPresentation(); ClearCards(); history.Clear(); selected.Clear();
-            PresentedState = initialState ?? throw new ArgumentNullException(nameof(initialState));
+            selectionIntent = select; playIntent = playAction; discardIntent = discardAction;
+            endTurnIntent = endAction; restartIntent = restartAction; RefreshButtons();
+        }
+        public void SetInteraction(CandidatePresentationModel candidate, bool endAllowed)
+        {
+            EnsurePresentation(); canEndTurn = endAllowed;
+            interaction.Reconcile(candidate); RefreshButtons();
+        }
+        public void BeginCommit() { interaction?.BeginCommit(); canEndTurn = false; RefreshButtons(); }
+        public void CloseInteraction()
+        {
+            interaction?.Close(); canPlay = canDiscard = canEndTurn = false;
+            selected.Clear(); ReconcileSelection(); RefreshButtons(); InteractionClosed?.Invoke();
+        }
+        private void OnCandidateChanged(CandidatePresentationModel candidate)
+        {
+            canPlay = candidate.CanPlay; canDiscard = candidate.CanDiscard;
+            if (candidate.State == CandidateState.Closed || candidate.State == CandidateState.Committing)
+            { selected.Clear(); ReconcileSelection(); }
             Render();
         }
-        public void Present(BattleSessionResult batch, bool animate)
+        public void Reconcile(CandidatePresentationModel next, PresentationScope scope)
         {
-            if (batch == null || !batch.Accepted) throw new ArgumentException("Present an accepted session batch.", nameof(batch));
-            if (animate && Application.isPlaying && isActiveAndEnabled)
-            {
-                settledState = batch.State; IsPresenting = true; RefreshButtons();
-                playback = StartCoroutine(ShowSteps(batch));
-                return;
-            }
-            foreach (var step in batch.Steps) LogStep(step);
-            Synchronize(batch.State);
+            feedbackScope = scope;
+            selected.Clear(); selected.AddRange(next.SelectedIds);
+            ReconcileSelection();
         }
-        private IEnumerator ShowSteps(BattleSessionResult batch)
+        public void Release(PresentationScope scope, ReleaseMode mode)
         {
-            try
+            if (!ReferenceEquals(feedbackScope, scope)) return;
+            feedbackScope = null; selected.Clear();
+            // Selection contributes an offset/tint only. Removing it reuses each card's latest layout slot.
+            ReconcileSelection();
+        }
+        public void Initialize(BattleDisplaySnapshot snapshot)
+        {
+            EnsurePresentation(); ++playbackEpoch; settledState = null;
+            CloseInteraction();
+            // Initialize starts a new session generation, even when a host reuses the battle id.
+            ResetInteraction(); ClearCards(); history.Clear(); pendingLogs.Clear(); logBatchId = null;
+            director.Initialize(snapshot ?? throw new ArgumentNullException(nameof(snapshot)));
+            ResetActors(); Render();
+        }
+        public IPresentationOperation Present(PresentationBatch batch, PlaybackMode mode)
+        {
+            if (batch == null) throw new ArgumentNullException(nameof(batch));
+            EnsurePresentation();
+            CloseInteraction();
+            settledState = batch.FinalSnapshot; long epoch = ++playbackEpoch;
+            PrepareLogs(batch);
+            var operation = director.Present(batch,
+                mode == PlaybackMode.Animated && Application.isPlaying && isActiveAndEnabled ? PlaybackMode.Animated : PlaybackMode.Instant);
+            bool finished = false;
+            void Finish(PresentationStatus value)
             {
-                foreach (var step in batch.Steps)
+                if (finished || epoch != playbackEpoch || value == PresentationStatus.Pending) return;
+                finished = true; settledState = null; ResetActors(); Render(); PresentationFinished?.Invoke();
+            }
+            operation.Finished += Finish;
+            Finish(operation.Status);
+            RefreshButtons();
+            return operation;
+        }
+        public void Synchronize(BattleDisplaySnapshot snapshot)
+        {
+            if (snapshot == null) throw new ArgumentNullException(nameof(snapshot));
+            EnsurePresentation(); ++playbackEpoch; settledState = null;
+            CloseInteraction();
+            if (snapshot.Cursor.BatchId != logBatchId) { pendingLogs.Clear(); logBatchId = null; }
+            director.Synchronize(snapshot); ResetActors(); Render(); PresentationFinished?.Invoke();
+        }
+
+        private ActionPlan BuildPlan(ActionContext context)
+        {
+            var fact = context.Data;
+            string action = Value(fact, "action");
+            if (fact.SemanticKey != "ActionStarted") return ActionPlan.Empty;
+            if (action == "Play")
+            {
+                return new ActionPlan(new[]
                 {
-                    PresentedState = step.Before; Render();
-                    var moving = cards.Where(card => step.Selected.Contains(card.Id)).Select(card => card.transform).ToArray();
-                    var starts = moving.Select(card => card.localPosition).ToArray();
-                    var actor = step.Action == CardDuelAction.Play ? playerActor : step.Action == CardDuelAction.EnemyAction ? enemyActor : null;
-                    Vector3 actorStart = actor != null ? actor.localPosition : Vector3.zero;
-                    if (moving.Length > 0 || actor != null)
+                    new ActionNode("cards", Motion("cards.submit", true, false, "ReadyToAttack"), targetKey: "cards"),
+                    new ActionNode("actor", Motion("actor.attack", false, false, "Impact"),
+                        new[] { ActionDependency.Marker("cards", "ReadyToAttack") }, targetKey: "player")
+                }, new[] { ActionDependency.Marker("actor", "Impact") });
+            }
+            if (action == "Discard")
+                return new ActionPlan(new[] { new ActionNode("cards", Motion("cards.discard", true, true, "Released"), targetKey: "cards") });
+            if (action == "EnemyAction" && Value(fact, "skipped") != "true" && Value(fact, "skipped") != "True")
+                return new ActionPlan(new[] { new ActionNode("actor", Motion("enemy.attack", false, false, "Impact"), targetKey: "enemy") },
+                    new[] { ActionDependency.Marker("actor", "Impact") });
+            return ActionPlan.Empty;
+        }
+        private IPresentationAction Motion(string key, bool moveCards, bool discardCards, string marker)
+        {
+            return new DelegatePresentationAction(new ActionDescriptor(key, new[] { marker }), (context, markers) =>
+            {
+                Coroutine running = null;
+                var actor = moveCards ? null : context.Target as Transform;
+                var moving = moveCards ? cards.Where(card => context.Data.CardIds.Contains(card.Id)).ToArray() : Array.Empty<Battle2DCard>();
+                var starts = moving.Select(card => card.transform.localPosition).ToArray();
+                var actorStart = actor != null ? actor.localPosition : Vector3.zero;
+                var operation = new PresentationOperation(() =>
+                {
+                    if (running != null) StopCoroutine(running);
+                    if (actor != null) actor.localPosition = actorStart;
+                });
+                if (moving.Length == 0 && actor == null)
+                { markers.Emit(marker); operation.TryComplete(); return operation; }
+                running = StartCoroutine(Move());
+                return operation;
+
+                IEnumerator Move()
+                {
+                    bool emitted = false; float elapsed = 0;
+                    while (elapsed < .18f && operation.Status == PresentationStatus.Pending)
                     {
-                        float elapsed = 0;
-                        while (elapsed < .18f)
-                        {
-                            elapsed += Time.deltaTime;
-                            float t = Mathf.Clamp01(elapsed / .18f);
-                            for (int index = 0; index < moving.Length; index++)
-                                moving[index].localPosition = starts[index] + Vector3.up * (step.Action == CardDuelAction.Discard ? -.7f : .7f) * t;
-                            if (actor != null) actor.localPosition = actorStart + Vector3.right *
-                                (actor == playerActor ? .6f : -.6f) * (1 - Mathf.Abs(2 * t - 1));
-                            yield return null;
-                        }
-                        if (actor != null) actor.localPosition = actorStart;
+                        elapsed += Time.deltaTime;
+                        float t = Mathf.Clamp01(elapsed / .18f);
+                        for (int index = 0; index < moving.Length; index++)
+                            if (moving[index] != null)
+                                moving[index].transform.localPosition = starts[index] + Vector3.up * (discardCards ? -.7f : .7f) * t;
+                        if (actor != null) actor.localPosition = actorStart + Vector3.right *
+                            (actor == playerActor ? .6f : -.6f) * (1 - Mathf.Abs(2 * t - 1));
+                        if (!emitted && t >= .5f) { emitted = true; markers.Emit(marker); }
+                        yield return null;
                     }
-                    LogStep(step); selected.Clear(); PresentedState = step.Transition.State; Render();
+                    if (actor != null) actor.localPosition = actorStart;
+                    if (operation.Status != PresentationStatus.Pending) yield break;
+                    if (!emitted) markers.Emit(marker);
+                    running = null; operation.TryComplete();
+                }
+            }, _ => ResetActors());
+        }
+        private static string Value(BattleDisplayChange change, string key) => change.Values.TryGetValue(key, out var value) ? value : "";
+        private void PrepareLogs(PresentationBatch batch)
+        {
+            pendingLogs.Clear(); logBatchId = batch.Id;
+            foreach (var completed in batch.Changes.Where(fact => fact.SemanticKey == "ActionResolved"))
+            {
+                string actionId = Value(completed, "actionId");
+                var facts = batch.Changes.Where(fact => Value(fact, "actionId") == actionId).ToArray();
+                var started = facts.FirstOrDefault(fact => fact.SemanticKey == "ActionStarted");
+                int count = started?.CardIds.Count ?? 0;
+                string score = facts.Select(fact => Value(fact, "score")).LastOrDefault(value => !string.IsNullOrEmpty(value)) ?? "0";
+                long damage = facts.Sum(fact => fact.Effect?.HealthLost ?? 0);
+                switch (Value(completed, "action"))
+                {
+                    case "Start": pendingLogs[completed.Sequence] = "开局 · 发牌完成"; break;
+                    case "Play": pendingLogs[completed.Sequence] = "出牌 " + count + " 张 · " + score + " 分 · 造成 " + damage + " 伤害"; break;
+                    case "Discard": pendingLogs[completed.Sequence] = "弃牌 " + count + " 张" + (facts.Any(fact => fact.Effect != null) ? " · 格挡/治疗收益已结算" : ""); break;
+                    case "EndTurn": pendingLogs[completed.Sequence] = "玩家结束回合"; break;
+                    case "EnemyAction": pendingLogs[completed.Sequence] = "敌人行动 · 造成 " + damage + " 伤害"; break;
                 }
             }
-            finally
-            {
-                // Coroutine errors and cancellation must release input without settling any rules again.
-                playback = null; settledState = null; IsPresenting = false; ResetActors();
-                selected.Clear(); PresentedState = batch.State; Render();
-            }
         }
-        private void LogStep(BattleSessionStep step)
+        public void ToggleSelection(string id)
         {
-            var transition = step.Transition;
-            switch (step.Action)
-            {
-                case CardDuelAction.Start: AddLog("开局 · 发牌完成"); break;
-                case CardDuelAction.Play:
-                    AddLog("出牌 " + step.Selected.Count + " 张 · " + transition.Score.Total + " 分 · 造成 " + transition.Events.Sum(e => e.HealthLost) + " 伤害"); break;
-                case CardDuelAction.Discard:
-                    AddLog("弃牌 " + step.Selected.Count + " 张" + (transition.Events.Count > 0 ? " · 格挡/治疗收益已结算" : "")); break;
-                case CardDuelAction.EndTurn: AddLog("玩家结束回合"); break;
-                case CardDuelAction.EnemyAction: AddLog("敌人行动 · 造成 " + transition.Events.Sum(e => e.HealthLost) + " 伤害"); break;
-            }
+            if (!IsPresenting && !string.IsNullOrEmpty(id)) selectionIntent?.Invoke(id);
         }
-        public void Synchronize(CardDuelState state)
-        {
-            if (state == null) throw new ArgumentNullException(nameof(state));
-            StopPresentation(); PresentedState = state; selected.Clear(); Render();
-        }
-        private void StopPresentation()
-        {
-            if (playback != null) StopCoroutine(playback);
-            playback = null; settledState = null; IsPresenting = false; ResetActors();
-        }
-        public void ToggleSelection(CardInstanceId id)
-        {
-            var state = PresentedState;
-            if (IsPresenting || state == null || !state.HasStarted || !state.Duel.CanAct(state.Duel.PlayerId) ||
-                !state.Zone(CardZoneKinds.Hand, state.Duel.PlayerId).Cards.Contains(id) || state.Table.GetCard(id).IsDisabled) return;
-            if (!selected.Remove(id))
-            {
-                if (selected.Count >= state.Duel.Player(state.Duel.PlayerId).Rules.MaxSelection) return;
-                selected.Add(id);
-            }
-            foreach (var card in cards) card.ShowSelection(selected.Contains(card.Id), state.Table.GetCard(card.Id).IsDisabled);
-            RefreshButtons();
-        }
-        public void ShowRejected(CardDuelError error) { AddLog("操作未执行：" + error); Render(); }
+        public void ShowRejected(string reason) { AddLog("操作未执行：" + reason); Render(); }
         private void AddLog(string value) { history.Enqueue(value); while (history.Count > 5) history.Dequeue(); }
+        private CardZoneDisplayData Hand => PresentedState?.Zones.FirstOrDefault(zone => zone.OwnerId == PresentedState.ObserverId && zone.Kind == "hand");
+        private void ReconcileSelection()
+        {
+            var hand = Hand;
+            foreach (var card in cards)
+            {
+                var data = hand?.Cards.FirstOrDefault(item => item.CardId == card.Id);
+                card.ShowSelection(selected.Contains(card.Id), data != null && !string.IsNullOrEmpty(data.DisabledReason));
+            }
+        }
         private void Render()
         {
-            if (PresentedState == null || cardRoot == null) return;
-            var state = PresentedState; var duel = state.Duel; var player = duel.Player(duel.PlayerId);
-            var unit = duel.Combat.Get(player.Id); var hand = state.Zone(CardZoneKinds.Hand, player.Id);
-            foreach (var old in cards.Where(card => !hand.Cards.Contains(card.Id)).ToArray()) { cards.Remove(old); Remove(old.gameObject); }
-            foreach (var id in hand.Cards)
+            var snapshot = PresentedState;
+            if (snapshot == null || cardRoot == null) return;
+            var hand = Hand;
+            if (hand == null) return;
+            var player = snapshot.Unit(snapshot.ObserverId);
+            if (player == null) return;
+            var displayedCards = hand.Cards.Where(card => !card.Hidden && !string.IsNullOrEmpty(card.CardId)).ToArray();
+            foreach (var old in cards.Where(card => displayedCards.All(item => item.CardId != card.Id)).ToArray())
+            { cards.Remove(old); Remove(old.gameObject); }
+            foreach (var data in displayedCards)
             {
-                if (cards.Any(card => card.Id == id)) continue;
-                var instance = Instantiate(cardPrefab, cardRoot); instance.name = "Card " + id;
-                var card = instance.AddComponent<Battle2DCard>(); card.Bind(this, id, ArtId(state.Table.GetCard(id)));
-                cards.Add(card);
+                var existing = cards.FirstOrDefault(card => card.Id == data.CardId);
+                if (existing != null) { existing.Surface.SetCard(data.ArtKey); continue; }
+                var instance = Instantiate(cardPrefab, cardRoot); instance.name = "Card " + data.ViewId;
+                var card = instance.AddComponent<Battle2DCard>(); card.Bind(this, data.CardId, data.ArtKey); cards.Add(card);
             }
-            cards.Sort((a, b) => hand.Cards.ToList().IndexOf(a.Id).CompareTo(hand.Cards.ToList().IndexOf(b.Id)));
+            var order = displayedCards.Select(item => item.CardId).ToList();
+            cards.Sort((a, b) => order.IndexOf(a.Id).CompareTo(order.IndexOf(b.Id)));
             int columns = Math.Min(8, cards.Count), rows = Math.Max(1, (cards.Count + 7) / 8);
             float height = Math.Min(1.8f, 4.3f / rows);
             var collider = cardPrefab.GetComponent<BoxCollider>();
@@ -183,47 +313,49 @@ namespace Poker.Battle2DValidation
                 int row = index / 8, column = index % 8;
                 cards[index].Place(new Vector3((column - (columns - 1) * .5f) * spacing,
                     -.15f + ((rows - 1) * .5f - row) * (height + .18f), 0), scale);
-                cards[index].ShowSelection(selected.Contains(cards[index].Id), state.Table.GetCard(cards[index].Id).IsDisabled);
             }
-            string outcome = duel.Phase == ScoredDuelPhase.Won ? "战斗胜利" : duel.Phase == ScoredDuelPhase.Lost ? "战斗失败" : duel.Phase == ScoredDuelPhase.AwaitingEnemyAction ? "敌人行动" : "玩家行动";
-            status.text = outcome + "     回合 " + (duel.IsFinished ? duel.CompletedRounds : duel.CompletedRounds + 1);
-            status.color = duel.Phase == ScoredDuelPhase.Won ? new Color(.4f, 1, .6f) : duel.Phase == ScoredDuelPhase.Lost ? new Color(1, .45f, .4f) : Color.white;
-            details.text = "玩家 HP " + unit.Health + "/" + unit.MaxHealth + "   格挡 " + unit.Block + "   能量 " + player.Energy.Energy + "/" + player.Energy.MaxEnergy +
-                "\n" + string.Join("    ", duel.Enemies.Select((enemy, index) => "敌人 " + (index + 1) + " HP " + duel.Combat.Get(enemy.Id).Health + "/" + duel.Combat.Get(enemy.Id).MaxHealth)) +
-                "\n手牌 " + hand.Cards.Count + "   牌库 " + state.Zone(CardZoneKinds.Deck, player.Id).Cards.Count + "   弃牌堆 " + state.Zone(CardZoneKinds.Discard, player.Id).Cards.Count +
-                "   剩余弃牌次数 " + (state.RemainingDiscardBudgetFor(player.Id)?.ToString() ?? "不限");
-            log.text = string.Join("\n", history);
-            RefreshButtons();
+            ReconcileSelection();
+            string outcome = snapshot.Phase == "won" ? "战斗胜利" : snapshot.Phase == "lost" ? "战斗失败" : snapshot.Phase == "enemy" ? "敌人行动" : "玩家行动";
+            status.text = outcome + "     回合 " + (snapshot.IsFinished ? snapshot.CompletedRounds : snapshot.CompletedRounds + 1);
+            status.color = snapshot.Phase == "won" ? new Color(.4f, 1, .6f) : snapshot.Phase == "lost" ? new Color(1, .45f, .4f) : Color.white;
+            long discardBudget = snapshot.Resource(player.Id, "discards")?.Value ?? -1;
+            details.text = "玩家 HP " + player.Health + "/" + player.MaxHealth + "   格挡 " + player.Block + "   能量 " + player.Energy + "/" + player.MaxEnergy +
+                "\n" + string.Join("    ", snapshot.Units.Where(unit => unit.Team == "enemy").Select((unit, index) => "敌人 " + (index + 1) + " HP " + unit.Health + "/" + unit.MaxHealth)) +
+                "\n手牌 " + hand.Cards.Count + "   牌库 " + ZoneCount("deck") + "   弃牌堆 " + ZoneCount("discard") +
+                "   剩余弃牌次数 " + (discardBudget < 0 ? "不限" : discardBudget.ToString()) + CandidateText();
+            log.text = string.Join("\n", history); RefreshButtons();
         }
-        private static string ArtId(CardInstance card)
+        private string CandidateText()
         {
-            var face = Faces[card.DefinitionId];
-            string rank = face.Rank == Rank.Ace ? "a" : face.Rank == Rank.King ? "k" : face.Rank == Rank.Queen ? "q" :
-                face.Rank == Rank.Jack ? "j" : ((int)face.Rank).ToString("00", CultureInfo.InvariantCulture);
-            return face.Suit.ToString().ToLowerInvariant() + "_" + rank;
+            var candidate = Candidate;
+            if (candidate == null || candidate.State == CandidateState.Empty || candidate.State == CandidateState.Closed || candidate.State == CandidateState.Committing) return "";
+            return candidate.State == CandidateState.Valid
+                ? "\n候选：" + candidate.PatternName + "   " + candidate.Points + " × " + candidate.Multiplier + " = " + candidate.Total
+                : "\n" + (candidate.Reason ?? "当前选择不可用");
         }
+        private int ZoneCount(string kind) => PresentedState.Zones.FirstOrDefault(zone => zone.OwnerId == PresentedState.ObserverId && zone.Kind == kind)?.Cards.Count ?? 0;
         private void RefreshButtons()
         {
-            if (play != null) play.interactable = host != null && host.CanPlay;
-            if (discard != null) discard.interactable = host != null && host.CanDiscard;
-            if (endTurn != null) endTurn.interactable = host != null && host.CanEndTurn;
-            if (restart != null) restart.interactable = host != null && !IsPresenting;
+            if (play != null) play.interactable = playIntent != null && canPlay && !IsPresenting;
+            if (discard != null) discard.interactable = discardIntent != null && canDiscard && !IsPresenting;
+            if (endTurn != null) endTurn.interactable = endTurnIntent != null && canEndTurn && !IsPresenting;
+            if (restart != null) restart.interactable = restartIntent != null && !IsPresenting;
         }
-        private void OnPlay() { if (host != null && host.CanPlay) host.PlaySelected(); }
-        private void OnDiscard() { if (host != null && host.CanDiscard) host.DiscardSelected(); }
-        private void OnEndTurn() { if (host != null && host.CanEndTurn) host.EndTurn(); }
-        private void OnRestart() { if (host != null) host.StartBattle(); }
+        private void OnPlay() { if (canPlay && !IsPresenting) playIntent?.Invoke(); }
+        private void OnDiscard() { if (canDiscard && !IsPresenting) discardIntent?.Invoke(); }
+        private void OnEndTurn() { if (canEndTurn && !IsPresenting) endTurnIntent?.Invoke(); }
+        private void OnRestart() { if (!IsPresenting) restartIntent?.Invoke(); }
         private void Subscribe() { play?.onClick.AddListener(OnPlay); discard?.onClick.AddListener(OnDiscard); endTurn?.onClick.AddListener(OnEndTurn); restart?.onClick.AddListener(OnRestart); }
         private void Unsubscribe() { play?.onClick.RemoveListener(OnPlay); discard?.onClick.RemoveListener(OnDiscard); endTurn?.onClick.RemoveListener(OnEndTurn); restart?.onClick.RemoveListener(OnRestart); }
         private void ClearCards() { foreach (var card in cards) if (card != null) Remove(card.gameObject); cards.Clear(); }
         private static void Remove(GameObject value) { value.SetActive(false); if (Application.isPlaying) Destroy(value); else DestroyImmediate(value); }
-        private void OnEnable() { Subscribe(); if (PresentedState != null) Render(); }
+        private void OnEnable() { Subscribe(); if (PresentedState != null) { Render(); PresentationFinished?.Invoke(); } }
         private void OnDisable()
         {
             Unsubscribe();
-            var final = settledState;
-            if (final != null) Synchronize(final); else StopPresentation();
+            var final = settledState ?? PresentedState;
+            if (final != null) Synchronize(final);
         }
-        private void OnDestroy() => ClearCards();
+        private void OnDestroy() { if (store != null) store.Changed -= OnDisplayChanged; interaction?.Dispose(); ClearCards(); }
     }
 }
