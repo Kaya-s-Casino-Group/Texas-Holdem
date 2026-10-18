@@ -2,7 +2,7 @@
 
 此模块把 Unity 中的作者配置构建成不可变的 PokerEngine 规则快照，供 Scene3D 与 Minimal2D 共用。它不持有战局当前状态，不绑定场景对象，不播放动画。
 
-这里的 SO 配置为兼容入口。`SingleBattleDemoNew` 已改用 `Assets/GameAssets/SingleBattle/Configuration/Content/SingleBattleDemoNew.xml`；3D Host 直接调用纯规则 XML 编译器和内容工厂，旧配置资产继续供其他场景使用。XML 通过外部 HTML 工具配置；详见 [场景接入说明](../Presentation/Scene3D/README.md)。
+这里的 SO 配置为兼容入口。`SingleBattleDemoNew` 已改用 `External/BattleToolkit/Engine/Content/SingleBattleDemoNew.xml`；3D Host 直接调用纯规则 XML 编译器和内容工厂，旧配置资产继续供其他场景使用。XML 通过外部 HTML 工具配置；详见 [场景接入说明](../Presentation/Scene3D/README.md)。
 
 - `Runtime`：共用 `BattleSessionFactory` 与 17 个 Profile。公共规则与牌型配置、玩家和敌人初始数据、攻击目标与友方策略、得分伤害、弃牌收益、攻击和承伤修正。
 - `Editor`：出牌伤害和无弃牌收益的 CustomEditor，以及对应默认配置菜单。依赖当前 3D Host 的数值窗口与审计仍在 Scene3D/Editor。

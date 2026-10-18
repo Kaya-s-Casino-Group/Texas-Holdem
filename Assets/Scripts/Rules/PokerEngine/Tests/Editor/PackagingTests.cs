@@ -174,7 +174,7 @@ namespace PokerEngine.Tests
             var playerAssemblies = CompilationPipeline.GetAssemblies(AssembliesType.Player).Select(a => a.name).ToArray();
             foreach (var module in new[] { "Core", "Abilities", "Scoring", "Holdem", "Draw", "Runs", "Progression", "Encounters", "Combat", "Composition" })
                 Assert.That(playerAssemblies, Does.Contain("PokerEngine." + module));
-            var projectTests = Directory.GetFiles("Assets", "*.asmdef", SearchOption.AllDirectories)
+            var projectTests = ProjectAssemblyDefinitions()
                 .Where(path => path.Replace('\\', '/').Contains("/Tests/"))
                 .Select(path => UnityEngine.JsonUtility.FromJson<TestAssemblyDefinition>(File.ReadAllText(path)).name);
             Assert.That(playerAssemblies.Intersect(projectTests), Is.Empty);
@@ -182,7 +182,7 @@ namespace PokerEngine.Tests
         [Test]
         public void EveryTestAssemblyExplicitlyTargetsEditorAndIsNotAutomaticallyReferenced()
         {
-            foreach (var path in Directory.GetFiles("Assets", "*.asmdef", SearchOption.AllDirectories)
+            foreach (var path in ProjectAssemblyDefinitions()
                 .Where(path => path.Replace('\\', '/').Contains("/Tests/")))
             {
                 var definition = UnityEngine.JsonUtility.FromJson<TestAssemblyDefinition>(File.ReadAllText(path));
@@ -202,23 +202,29 @@ namespace PokerEngine.Tests
         [Test]
         public void LinkerPreservesTheBasePlayerDataContracts()
         {
-            var document = XDocument.Load("Assets/Scripts/Rules/PokerEngine/Runtime/link.xml");
+            var document = XDocument.Load(Path.Combine(EnginePackagePath, "Runtime/link.xml"));
             foreach (var module in new[] { "Core", "Abilities", "Scoring", "Holdem", "Draw", "Runs", "Progression", "Encounters", "Combat", "Composition" })
                 Assert.That(document.Root.Elements("assembly").Any(a =>
                     (string)a.Attribute("fullname") == "PokerEngine." + module && (string)a.Attribute("preserve") == "all"), Is.True);
         }
 
+        private static string EnginePackagePath => UnityEditor.PackageManager.PackageInfo.FindForAssembly(typeof(CardDuelEngine).Assembly).resolvedPath;
+        private static IEnumerable<string> ProjectAssemblyDefinitions() =>
+            Directory.GetFiles("Assets", "*.asmdef", SearchOption.AllDirectories)
+                .Concat(Directory.GetFiles(EnginePackagePath, "*.asmdef", SearchOption.AllDirectories));
+
         [Test]
         public void EngineAssetsHaveImportedUniqueMetadata()
         {
             var guids = new HashSet<string>();
-            var paths = new[] { "Assets/Scripts/Rules/PokerEngine" }
-                .Concat(Directory.GetDirectories("Assets/Scripts/Rules/PokerEngine", "*", SearchOption.AllDirectories))
-                .Concat(Directory.GetFiles("Assets/Scripts/Rules/PokerEngine", "*", SearchOption.AllDirectories).Where(p => !p.EndsWith(".meta")));
+            string root = EnginePackagePath;
+            var paths = Directory.GetDirectories(root, "*", SearchOption.AllDirectories)
+                .Concat(Directory.GetFiles(root, "*", SearchOption.AllDirectories).Where(p => !p.EndsWith(".meta")));
             foreach (var path in paths)
             {
                 Assert.That(File.Exists(path + ".meta"), Is.True, path);
-                var guid = AssetDatabase.AssetPathToGUID(path.Replace('\\', '/'));
+                string assetPath = "Packages/com.kaya.battle-engine/" + path.Substring(root.Length + 1).Replace('\\', '/');
+                var guid = AssetDatabase.AssetPathToGUID(assetPath);
                 Assert.That(guid, Is.Not.Empty, path);
                 Assert.That(guids.Add(guid), Is.True, "Duplicate GUID: " + path);
             }

@@ -4,6 +4,15 @@
 
 ## [Unreleased]
 
+### 2026-10-18 — 拆分独立规则工具仓库并通过 submodule 集成
+
+- 将十个纯 C# 模块、共享 XML、纯规则测试及网页配置试玩工具迁至私有 BattleToolkit 仓库；Unity 通过 `External/BattleToolkit` 子模块和 `com.kaya.battle-engine` 本地 UPM 包固定引用。
+- 150 个 Runtime C# 文件与共享 XML 逐字节保持不变，程序集名、资源 GUID 和场景绑定保留。Unity 集成测试及测试面板留在主工程，纯测试通过包的 testables 导入；旧工具/测试路径保留轻量转发入口。
+- 独立工具改用 .NET 10 原生 HTTP 宿主，仍调用相同编译器与 BattleSession；Windows `start.cmd`、macOS `start.command` 自动准备本地 SDK、构建并打开默认浏览器，无需 Unity/Python/Mono。
+- 测试工程使用官方 NUnit 与 .NET SDK，无 Unity Library 依赖；新增 Windows/macOS CI，包含首次下载安装、中文空格目录、HTTP 与浏览器回归。
+- 验证：独立规则 1247、HTTP 56、浏览器 37、启动脚本 12 项通过；Unity 场景/HUD/表现 71、包与旧配置兼容 11、共享内容及模块边界 21 项通过。全新独立克隆约 5.2 MiB（不含 SDK/构建缓存），自检及 XML/场景内容 171 项通过。
+- 主工程的场景、渲染、模型和卡牌表现等既有工作区修改未纳入本次迁移提交。未进行 Player/IL2CPP 构建。
+
 ### 2026-10-18 — 外部配置工具接入对局试玩
 
 - 新增独立工具宿主 PlaytestBridge 与网页试玩面板，原样编译复用纯 C# 规则层，通过 BattleContentFactory / BattleSession 运行当前 XML 中的对局配置，无需 Unity。

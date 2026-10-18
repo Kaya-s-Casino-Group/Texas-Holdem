@@ -154,7 +154,7 @@ namespace Poker.SingleBattle.Tests
                 var host = scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<SingleBattleHost>(true)).Single();
                 Assert.That(host.UsesXmlContent, Is.True);
                 Assert.That(host.ContentXml, Is.SameAs(AssetDatabase.LoadAssetAtPath<TextAsset>(
-                    "Assets/GameAssets/SingleBattle/Configuration/Content/SingleBattleDemoNew.xml")));
+                    "Packages/com.kaya.battle-engine/Content/SingleBattleDemoNew.xml")));
                 Assert.That(host.ContentEncounterId, Is.EqualTo("single-battle-new"));
                 Assert.That(host.RulesProfile, Is.Null);
                 Assert.That(host.Players.All(actor => actor.Profile == null), Is.True);

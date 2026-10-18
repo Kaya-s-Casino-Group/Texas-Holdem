@@ -26,7 +26,7 @@ namespace PokerEngine.Tests
         private static string outputFolder = "PokerEngineTests";
         private static string OutputDirectory => Path.GetFullPath(Path.Combine(Application.dataPath, "../Library/" + outputFolder));
 
-        public static void Run() => RunSuite(typeof(PokerEngineTestMenu).Assembly, "PokerEngineTests");
+        public static void Run() => RunSuite(Assembly.Load("PokerEngine.Tests.Editor"), "PokerEngineTests");
 
         public static void RunPresentation() => RunSuite(Assembly.Load("CardPresentation.Tests.Editor"), "CardPresentationTests");
 

@@ -19,9 +19,9 @@
 
 ## 策划集中配置入口
 
-`SingleBattleDemoNew` 已切换到 XML 内容入口：`Assets/GameAssets/SingleBattle/Configuration/Content/SingleBattleDemoNew.xml`，默认编成 `single-battle-new`。Host Inspector 选择 `XmlContent`、XML 文件和编成 ID；双方 Actor 数组按编成中的玩家/敌人顺序绑定，旧 RulesProfile 和 Actor Profile 在此场景已解绑。其他旧场景仍可选择 `LegacyProfiles`。
+`SingleBattleDemoNew` 已切换到 XML 内容入口：`External/BattleToolkit/Engine/Content/SingleBattleDemoNew.xml`，默认编成 `single-battle-new`。Host Inspector 选择 `XmlContent`、XML 文件和编成 ID；双方 Actor 数组按编成中的玩家/敌人顺序绑定，旧 RulesProfile 和 Actor Profile 在此场景已解绑。其他旧场景仍可选择 `LegacyProfiles`。
 
-使用 [外部 HTML 配置工具](../../../../../../Tools/BattleContentEditor/README.md) 导入该 XML，修改后导出覆盖原文件；Unity 刷新后重新开战生效。`工具 > 卡牌战斗 > 数值配置` 在 XML 模式显示当前文件、编成及统一校验入口；Host Inspector 也可校验。校验会真实组装未开局会话，不发牌、不触发开战效果。读取或引用错误、编成人数或接入会话的参与者顺序不匹配均会拒绝；失败重开保留原会话，诊断在 Inspector 与 HUD 显示。
+使用 [外部 HTML 配置工具](../../../../../../External/BattleToolkit/Tools/BattleContentEditor/README.md) 导入该 XML，修改后导出覆盖原文件；Unity 刷新后重新开战生效。`工具 > 卡牌战斗 > 数值配置` 在 XML 模式显示当前文件、编成及统一校验入口；Host Inspector 也可校验。校验会真实组装未开局会话，不发牌、不触发开战效果。读取或引用错误、编成人数或接入会话的参与者顺序不匹配均会拒绝；失败重开保留原会话，诊断在 Inspector 与 HUD 显示。
 
 XML 按策划文档 revision 1277 配置：高牌/一对/两对单体伤害，三条/四条群伤，顺子三段伤害，同花伤害加按筹码治疗，葫芦单体眩晕一次行动窗口加自身免控至下个敌人阶段结束，皇家同花顺消灭全部存活敌人。免控沿用已确认的“提前施加”语义；普通同花顺和五条暂为显式单体伤害兼容项。文档未定数值均在 XML 注释为测试值，计分表及角色基础值沿用原场景。共享三点能量，出牌/弃牌各一点、立即补牌；弃牌每张八盾，流程图的有限次数暂为整场三次。
 
@@ -65,7 +65,7 @@ Host 不再保存生命、攻击、能量、牌数等数值，仅持有玩家/�
 - `BattleRulesProfile.playerBlockExpiry` → `BattleRules.PlayerBlockExpiry`：默认 `Retain`，格挡保留至被消耗。选 `AfterEnemyPhase` 时，最后一个敌人结算完伤害后，清除所有仍存活玩家的剩余格挡；不会在两个敌人之间清除，不修改怪物格挡。到达回合上限时同样清除，但不恢复下一轮能量；玩家提前击杀全部敌人不会触发不存在的敌人阶段。清除通过 CombatEngine 生成 ClearBlock 事件，按伤害事件后顺序追加，0 格挡不生成空事件。
 - 新建 `玩法/战局/弃牌收益配置（每张格挡）` 可得到 `PerCardBlockRewardProfile`，独立配置 `blockPerCard`（新建默认 8，允许 0）；引用到玩家配置的弃牌收益槽位后才启用。纯 C# 对应 `PerCardBlockRewardRule`。每个选定存活友方获得 `实际弃牌张数 × 每张格挡`，默认目标策略为自己；多友方目标时每人各获得全额，非均分。规则不计牌型，0 收益不生成战斗事件，溢出拒绝整次动作。
 
-离线验证：`Assets/Scripts/Rules/PokerEngine/Tests/Editor/BattleConfigurationTests.cs` 覆盖默认兼容、独立上限、次数/能量约束、实际弃牌计数、预览与执行、回滚、多敌人格挡时序与基础方案组合；这是规则正确性验证，不代表这些参数已经完成平衡验证。Windows 可运行 `Tools/test-poker-engine.ps1 -Compiler <csc.exe> -Runtime <mono.exe> -NUnit <已有的 NUnit3 DLL> -Fixtures BattleConfigurationTests,CardDuelTests,TeamBattleTests,DiscardRewardTests,CombatTests,AttackContextTests,ScoredHandDamageTests,ModuleBoundaryTests`。脚本按模块分别编译，不启动 Unity、不下载依赖；编译输出默认保存在系统临时目录。已有 bash 脚本也支持将测试类名作为参数传入。
+离线验证：`External/BattleToolkit/Engine/Tests/Editor/BattleConfigurationTests.cs` 覆盖默认兼容、独立上限、次数/能量约束、实际弃牌计数、预览与执行、回滚、多敌人格挡时序与基础方案组合；这是规则正确性验证，不代表这些参数已经完成平衡验证。Windows 可运行 `Tools/test-poker-engine.ps1 -Fixtures BattleConfigurationTests,CardDuelTests,TeamBattleTests,DiscardRewardTests,CombatTests,AttackContextTests,ScoredHandDamageTests,ModuleBoundaryTests`。脚本按模块分别编译，不启动 Unity；首次运行由启动器准备 .NET SDK，并从 NuGet 还原测试依赖。已有 bash 脚本也支持将测试类名作为参数传入。
 
 ## 牌型计分
 

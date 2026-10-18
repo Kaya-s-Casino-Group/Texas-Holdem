@@ -135,7 +135,7 @@ namespace Poker.SingleBattle.Editor
 
         private void DrawXmlContent()
         {
-            EditorGUILayout.HelpBox("当前场景使用 XML 内容配置。使用 Tools/BattleContentEditor 外部工具导入此文件、配置并导出覆盖；Unity 刷新后重新开战生效。", MessageType.Info);
+            EditorGUILayout.HelpBox("当前场景使用 XML 内容配置。使用 External/BattleToolkit/Tools/BattleContentEditor 外部工具导入此文件、配置并导出覆盖；Unity 刷新后重新开战生效。", MessageType.Info);
             using (new EditorGUI.DisabledScope(true))
             {
                 EditorGUILayout.ObjectField("XML 内容包", host.ContentXml, typeof(TextAsset), false);

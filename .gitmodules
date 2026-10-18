@@ -1,0 +1,3 @@
+[submodule "External/BattleToolkit"]
+	path = External/BattleToolkit
+	url = https://github.com/Kaya-s-Casino-Group/BattleToolkit.git

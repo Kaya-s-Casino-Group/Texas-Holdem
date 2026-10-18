@@ -38,7 +38,7 @@ namespace PokerEngine.Tests
             Suite("BattleSettlementTests", "生命、伤害与结算", "共用战斗状态、伤害换算、胜负及动作账本。", "PokerEngine.Tests.Editor", "CombatTests", "ScoredDuelTests"),
             Suite("CardZoneWindowTests", "实战牌区工具", "只读数据、表现参数、派生 View 和安全关闭。", "CardPresentation.Tests.Editor", "CardMatchHostTests", "CardZoneInheritanceTests", "PlayedZoneViewTests"),
             Suite("SingleBattleActorTests", "角色与表现协议", "玩家/怪物边界、等待表现、裂纹与能量权限。", "Poker.SingleBattle.Tests.Editor"),
-            Suite("EditorIsolationTests", "编辑器隔离与打包边界", "测试程序集限定 Editor、Player 不引用测试、资源元数据。", "PokerEngine.Tests.Editor", "PackagingTests")
+            Suite("EditorIsolationTests", "编辑器隔离与打包边界", "测试程序集限定 Editor、Player 不引用测试、资源元数据。", "PokerEngine.Integration.Tests.Editor", "PackagingTests", "SingleBattleLegacyContentIntegrationTests")
         };
         private static readonly Entry[] LiveChecks = {
             Live("team-battle-ui", "卡牌战斗多人阵容（2对3）", "切换玩家、独立手牌、全员结束、怪物依次演出与整轮恢复。", "Poker.SingleBattle.Tests.Editor", "Poker.SingleBattle.Tests.TeamBattlePlayValidation", "Run", "Library/SingleBattleTests/team-play.json", "Poker.SingleBattle.SingleBattleHost"),
