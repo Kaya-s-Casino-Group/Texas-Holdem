@@ -1,0 +1,15 @@
+角色资产完整交付 — 2026-10-18
+
+范围：PokerCharacter FBX/贴图/材质/预制体/四段动画、角色 Deferred Shader、待机脚本、模型后处理、手部测试工具与场景、CharacterValidation 及已有烘焙数据。
+配置：Charactor 更名为 CharacterRenderer 并保留 GUID；MainURP 注册 Renderer 索引 3；收录角色/教堂/远景层。
+静态依赖检查：角色资产与两测试场景所需 GUID 均属于已提交资产或本次交付，未发现外部未提交引用。
+
+验证（现有 Unity 编辑器加载的角色程序集执行）：
+标准预制体：归一化根变换、有效 Humanoid、30 根手指骨骼、三种手指弯曲采样通过。
+角色 Shader：实际 Deferred、5 个 Pass、Shader 错误 0；几何描边及屏幕描边有效，排除层像素变化为 0。
+动画：Idle/Listen/LastChip/Tarot 均为 Humanoid，最大脚步漂移 0.012025 m，小于 0.025 m 阈值。
+表情：Blink_L、Blink_R、Smile_Subtle；脸部邻域外的法线/切线变化为 0；12/50/100 眨眼权重下非眼部法线/切线变化为 0。
+报告副本：Assets/Art/Models/Characters/PokerCharacter/Reports。
+
+全项目重新编译状态：另有正在修改的战斗 2D 代码出现 11 处 CardInstanceId/string 类型错误（Battle2DCard/Battle2DView）；未修改或纳入角色提交。
+因此本次不宣称当前整个工作区编译通过；角色资产/Shader 与上述验证通过。

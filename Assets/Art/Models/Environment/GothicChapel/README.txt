@@ -1,6 +1,6 @@
 Gothic Chapel / 哥特教堂场景
 
-本地集成测试：Assets/Scenes/CharacterValidation.unity（含其他工作中的角色/照明，不随此资产提交）
+集成测试：Assets/Scenes/CharacterValidation.unity（角色、教堂与已有照明组合验证，随角色资产提交）
 预制体：Prefabs/PF_GC_GothicChapel.prefab
 源布局：Source/GothicChapel_Layout.json（米；保存对象位置、材质和摄像机）
 本地 Blender 工作文件：output/gothic-scene/gothic-real-scale.blend（外部创作文件，按仓库策略保留本地）

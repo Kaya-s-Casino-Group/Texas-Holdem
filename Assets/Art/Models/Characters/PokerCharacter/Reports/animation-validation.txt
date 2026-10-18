@@ -1,0 +1,7 @@
+Avatar valid=True; BlendShapes=3
+Idle duration=16; humanoid=True
+Listen duration=5.466667; humanoid=True
+LastChip duration=8; humanoid=True
+Tarot duration=7; humanoid=True
+Max sampled foot drift=0.012025 m
+Blink_L and Blink_R imported; scene/prefab controller assigned

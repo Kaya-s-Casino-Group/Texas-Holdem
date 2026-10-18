@@ -9,7 +9,7 @@ LS_HandSkinValidation：本地手部蒙皮验证场景使用。
 
 本次只整理配置资产位置与名称，不重新烘焙，也不调整灯光物体。
 LightingData、Lightmap、ReflectionProbe 等烘焙结果继续跟随各自场景存放。
-角色/手部验证场景及其资源未随此配置提交；可在对应场景的 Lighting 窗口绑定这些配置。
+角色/手部验证场景及其依赖随角色资产提交；两个场景已绑定对应配置。
 
 LS_CharacterValidation / LS_HandSkinValidation 当前参数：
 Baked GI 开，Realtime GI 关；手动烘焙；Mixed Shadowmask；Directional Lightmaps。
