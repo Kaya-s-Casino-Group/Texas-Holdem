@@ -33,7 +33,7 @@ namespace Poker.SingleBattle.Editor
             Bar(root, "Player/Health Bar", 10, 48);
             Text(root, "Player/Energy", 10, 64, 170, 36, 13, "能量 3 / 3\n出牌 1 · 弃牌 1");
             var state = new SerializedObject(hud);
-            var host = state.FindProperty("host").objectReferenceValue as SingleBattleHost;
+            var host = state.FindProperty("host").objectReferenceValue as SingleBattleSceneAdapter;
             int enemies = host != null ? host.Enemies.Count : 1;
             float enemyHeight = 30 + Mathf.Max(1, enemies) * 19;
             Panel(root, "Enemy", 196, enemyHeight);

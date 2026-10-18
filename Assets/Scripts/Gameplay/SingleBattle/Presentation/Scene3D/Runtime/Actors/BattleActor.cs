@@ -9,7 +9,7 @@ namespace Poker.SingleBattle
     [DisallowMultipleComponent]
     public abstract class BattleActor : MonoBehaviour
     {
-        [SerializeField] private SingleBattleHost battle;
+        [SerializeField] private SingleBattleSceneAdapter battle;
         [SerializeField] private Transform visual;
         [SerializeField] private MonoBehaviour presentation;
         private ParticipantId participant;
@@ -61,7 +61,7 @@ namespace Poker.SingleBattle
                 (Presentation as IShieldPresentation)?.SynchronizeShields(Shields);
             if (reset && !unit.IsAlive) Presentation?.Snap(new BattlePresentationCue(BattlePresentationKind.Death, unit.Id));
         }
-        public SingleBattleHost Battle => battle;
+        public SingleBattleSceneAdapter Battle => battle;
         public Transform Visual => visual;
         public IBattleActorPresentation Presentation => presentation != null ? presentation as IBattleActorPresentation : null;
         public bool IsBound => battle != null && battle.PresentedState != null && participant.IsValid && OwnsParticipant(battle.PresentedState, participant);
@@ -73,7 +73,7 @@ namespace Poker.SingleBattle
         public event Action<CombatEvent> DeathPresented;
         protected abstract bool OwnsParticipant(CardDuelState state, ParticipantId id);
 
-        public void Configure(SingleBattleHost owner, Transform model = null)
+        public void Configure(SingleBattleSceneAdapter owner, Transform model = null)
         {
             if (owner == null || owner.gameObject.scene != gameObject.scene ||
                 model != null && (model == transform || !model.IsChildOf(transform)))

@@ -77,13 +77,19 @@ namespace PokerEngine.Tests
         {
             var scene = LoadAssembly("Poker.SingleBattle.Runtime");
             var minimal = LoadAssembly("Poker.Battle2DValidation.Runtime");
-            var sceneHost = scene.GetType("Poker.SingleBattle.SingleBattleHost", throwOnError: true);
+            var sceneHost = scene.GetType("Poker.SingleBattle.SingleBattleSceneAdapter", throwOnError: true);
             var minimalHost = minimal.GetType("Poker.Battle2DValidation.Battle2DHost", throwOnError: true);
             var minimalView = minimal.GetType("Poker.Battle2DValidation.Battle2DView", throwOnError: true);
             Assert.That(typeof(IBattleSessionPresentation).IsAssignableFrom(sceneHost), Is.True);
-            Assert.That(typeof(IBattleSessionPresentation).IsAssignableFrom(minimalView), Is.True);
+            var frontend = LoadAssembly("BattlePresentation.Runtime").GetType("BattlePresentation.IBattlePresentationFrontend", throwOnError: true);
+            Assert.That(frontend.IsAssignableFrom(minimalView), Is.True);
             var hostBase = LoadAssembly("Poker.BattleHosting.Runtime").GetType("Poker.BattleHosting.BaseBattleHost", throwOnError: true);
-            foreach (var host in new[] { sceneHost, minimalHost })
+            var genericHost = LoadAssembly("Poker.BattleHosting.Runtime").GetType("Poker.BattleHosting.BattleSceneHost", throwOnError: true);
+            var adapterContract = LoadAssembly("Poker.BattleHosting.Runtime").GetType("Poker.BattleHosting.IBattleSceneAdapter", throwOnError: true);
+            Assert.That(adapterContract.IsAssignableFrom(sceneHost), Is.True);
+            Assert.That(hostBase.IsAssignableFrom(sceneHost), Is.False, "Scene projection no longer owns a lifecycle.");
+            Assert.That(sceneHost.GetProperty("SceneHost")?.PropertyType, Is.EqualTo(genericHost));
+            foreach (var host in new[] { genericHost, minimalHost })
             {
                 Assert.That(host.BaseType, Is.EqualTo(hostBase), host.FullName);
                 Assert.That(host.GetProperty("Lifecycle")?.PropertyType, Is.EqualTo(typeof(BattleHost)), host.FullName);

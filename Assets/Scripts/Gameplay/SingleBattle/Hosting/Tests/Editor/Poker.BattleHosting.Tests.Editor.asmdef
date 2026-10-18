@@ -1,0 +1,7 @@
+{
+  "name": "Poker.BattleHosting.Tests.Editor",
+  "references": ["Poker.BattleHosting.Runtime", "Poker.BattleHosting.Editor", "Poker.BattlePresentation.Shared.Unity", "BattlePresentation.Runtime", "BattlePresentation.Unity", "PokerEngine.Core", "PokerEngine.Composition", "PokerEngine.Combat", "PokerEngine.Scoring"],
+  "includePlatforms": ["Editor"],
+  "optionalUnityReferences": ["TestAssemblies"],
+  "autoReferenced": false
+}

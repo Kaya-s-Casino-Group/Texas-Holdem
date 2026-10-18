@@ -11,8 +11,8 @@ using UnityEngine;
 namespace Poker.SingleBattle
 {
     /// <summary>Adapts scene bindings and player input to the shared battle factory and command port.</summary>
-    [DisallowMultipleComponent, DefaultExecutionOrder(-150)]
-    public sealed partial class SingleBattleHost : BaseBattleHost, IBattleSessionPresentation
+    [DisallowMultipleComponent, RequireComponent(typeof(BattleSceneHost))]
+    public sealed partial class SingleBattleSceneAdapter : MonoBehaviour, IBattleSceneAdapter, IBattleSessionSource
     {
         [SerializeField] private CardMatchHost match;
         [SerializeField] private HandActionPresenter actions;
@@ -70,7 +70,7 @@ namespace Poker.SingleBattle
         public CardDuelTransition PreviewSelectedPlay() => CanReceivePlayerInput
             ? Playback.PreviewPlay(playerActor.ParticipantId, actions.Hand.CaptureSelection().Cards) : null;
         public event Action StateChanged;
-        internal bool CanReceivePlayerInput => isActiveAndEnabled && State != null && ReferenceEquals(State, AuthorityState) && match != null && match.IsRunning &&
+        internal bool CanReceivePlayerInput => isActiveAndEnabled && SceneHost.isActiveAndEnabled && State != null && ReferenceEquals(State, AuthorityState) && match != null && match.IsRunning &&
             playerActor != null && ReferenceEquals(match.Commands, playerActor) && Playback != null && Playback.CanAct(playerActor.ParticipantId) &&
             Enemies.All(actor => actor != null && actor.IsBound && (!actor.IsAlive || actor.isActiveAndEnabled)) &&
             actions != null && actions.Hand.IsRunning && !actions.Hand.GetComponent<HandZoneView>().IsTransitioning;
@@ -104,9 +104,7 @@ namespace Poker.SingleBattle
             for (int i = 0; i < Players.Count; i++) Players[i].Bind(State.Duel.Players[i].Id);
             for (int i = 0; i < Enemies.Count; i++) Enemies[i].Bind(State.Duel.Enemies[i].Id);
         }
-        protected override IBattleSessionPresentation BattlePresentation => this;
-        protected override bool CanStartBattle => !IsPresenting;
-        protected override BattleSession CreateSession() => BuildConfiguredSession();
+        BattleSession IBattleSessionSource.CreateSession() => BuildConfiguredSession();
         /// <summary>Builds an undealt session for validation or play, without changing the current battle.</summary>
         public BattleSession BuildConfiguredSession(string battleId = null, RandomState random = null)
         {
@@ -125,16 +123,16 @@ namespace Poker.SingleBattle
             if (playerActor == null) playerActor = Players[0];
             if (match.Commands != null && !ReferenceEquals(match.Commands, playerActor)) throw new InvalidOperationException("Another authority owns the card UI.");
         }
-        protected override void ValidateSession(BattleSession session)
+        void IBattleSceneAdapter.ValidateSession(BattleSession session)
         {
             if (busy) throw new InvalidOperationException("Finish or synchronize the current presentation before replacing its session.");
-            base.ValidateSession(session);
+            if (session == null) throw new ArgumentNullException(nameof(session));
             RequireSceneBindings();
             if (session.State.Duel.Players.Count != Players.Count || session.State.Duel.Enemies.Count != Enemies.Count)
                 throw new ArgumentException("The scene actors must match the session's roster slots.", nameof(session));
             if (UsesXmlContent) ValidateContentRoster(ReadContentEncounter(), session);
         }
-        protected override void OnSessionAttached() => Publish();
+        void IBattleSceneAdapter.SessionAttached() => Publish();
         private void Bind()
         {
             actions.Hand.StopSession();
@@ -190,12 +188,7 @@ namespace Poker.SingleBattle
             }
             StateChanged?.Invoke(); actions?.Refresh();
         }
-        private void Start()
-        {
-            // This host runs before the hand components. Wait until all scene OnEnable callbacks
-            // have completed so HandZoneView can animate the opening projection from an empty hand.
-            if (State == null && match != null && actions != null) StartBattle();
-        }
+        private void Awake() => EnsureSceneHost();
         private void OnEnable()
         {
             if (!Application.isPlaying || State == null || match == null || actions == null) return;

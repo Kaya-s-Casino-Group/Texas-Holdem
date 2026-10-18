@@ -3,6 +3,8 @@
   "rootNamespace": "Poker.BattleHosting",
   "references": [
     "PokerEngine.Core",
-    "PokerEngine.Composition"
+    "PokerEngine.Composition",
+    "PokerEngine.Encounters",
+    "PokerEngine.Combat"
   ]
 }

@@ -22,7 +22,7 @@ namespace Poker.SingleBattle.Editor
         }
         public static void Apply(SingleBattleHud hud)
         {
-            var host = (SingleBattleHost)new SerializedObject(hud).FindProperty("host").objectReferenceValue;
+            var host = (SingleBattleSceneAdapter)new SerializedObject(hud).FindProperty("host").objectReferenceValue;
             var root = hud.transform.Find("Hand Candidate") as RectTransform;
             if (root == null)
             {

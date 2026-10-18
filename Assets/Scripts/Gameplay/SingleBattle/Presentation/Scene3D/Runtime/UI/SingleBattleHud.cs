@@ -12,7 +12,7 @@ namespace Poker.SingleBattle
     /// <summary>Read-only battle projection; buttons delegate to the host.</summary>
     public sealed partial class SingleBattleHud : MonoBehaviour
     {
-        [SerializeField] private SingleBattleHost host;
+        [SerializeField] private SingleBattleSceneAdapter host;
         [SerializeField] private TMP_Text player, enemy, turn, intent, message, counts, score, resultTitle, resultDetails;
         [SerializeField] private Image playerBar, enemyBar;
         [SerializeField] private GameObject resultPanel;
@@ -47,7 +47,7 @@ namespace Poker.SingleBattle
         public string EnergyText => energy.text;
         public GameObject ResultPanel => resultPanel;
         public string TurnText => turn.text;
-        public void Configure(SingleBattleHost owner, TMP_Text playerText, TMP_Text enemyText, TMP_Text turnText, TMP_Text intentText,
+        public void Configure(SingleBattleSceneAdapter owner, TMP_Text playerText, TMP_Text enemyText, TMP_Text turnText, TMP_Text intentText,
             TMP_Text messageText, TMP_Text countsText, TMP_Text scoreText, Image playerFill, Image enemyFill,
             GameObject result, TMP_Text title, TMP_Text details, Button restartButton, Button resultButton, TMP_Text energyText, Button endTurnButton)
         {

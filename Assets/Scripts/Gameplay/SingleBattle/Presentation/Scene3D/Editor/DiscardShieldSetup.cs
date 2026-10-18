@@ -17,7 +17,7 @@ namespace Poker.SingleBattle.Editor
         {
             if (Application.isPlaying) throw new InvalidOperationException("请先停止 Play。");
             var scene = SceneManager.GetActiveScene();
-            var hosts = scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<SingleBattleHost>(true)).ToArray();
+            var hosts = scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<SingleBattleSceneAdapter>(true)).ToArray();
             if (hosts.Length == 0) throw new InvalidOperationException("场景中没有单场战斗入口。");
             foreach (var host in hosts)
             {

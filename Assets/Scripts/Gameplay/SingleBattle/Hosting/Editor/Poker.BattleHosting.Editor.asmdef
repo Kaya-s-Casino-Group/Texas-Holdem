@@ -1,0 +1,5 @@
+{
+  "name": "Poker.BattleHosting.Editor",
+  "references": ["Poker.BattleHosting.Runtime", "Poker.BattlePresentation.Shared.Unity", "BattlePresentation.Unity", "PokerEngine.Core", "PokerEngine.Composition"],
+  "includePlatforms": ["Editor"]
+}

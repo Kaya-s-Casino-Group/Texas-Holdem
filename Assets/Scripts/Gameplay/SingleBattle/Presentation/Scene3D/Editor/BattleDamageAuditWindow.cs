@@ -9,7 +9,7 @@ namespace Poker.SingleBattle.Editor
     /// <summary>Read-only observer. All numbers come from the real CardDuel transition, never a parallel calculator.</summary>
     public sealed class BattleDamageAuditWindow : EditorWindow
     {
-        private SingleBattleHost host;
+        private SingleBattleSceneAdapter host;
         private CardDuelState observedState;
         private PlayerBattleActor observedPlayer;
         private CardInstanceId[] observedSelection;
@@ -38,11 +38,11 @@ namespace Poker.SingleBattle.Editor
         {
             if (host == null)
             {
-                var hosts = FindObjectsOfType<SingleBattleHost>();
+                var hosts = FindObjectsOfType<SingleBattleSceneAdapter>();
                 if (hosts.Length == 1) { host = hosts[0]; ClearPreview(); }
             }
             EditorGUI.BeginChangeCheck();
-            host = (SingleBattleHost)EditorGUILayout.ObjectField("观察战局", host, typeof(SingleBattleHost), true);
+            host = (SingleBattleSceneAdapter)EditorGUILayout.ObjectField("观察战局", host, typeof(SingleBattleSceneAdapter), true);
             if (EditorGUI.EndChangeCheck()) ClearPreview();
             EditorGUILayout.HelpBox("只读：读取当前选牌，调用正式出牌结算入口；不提交返回状态，不扣能量、不移牌、不播放动作。参数请在独立配置资产中编辑，重新开局生效。", MessageType.Info);
             mode = GUILayout.Toolbar(mode, new[] { "当前选牌预计结果", "最近一次实际出牌" });

@@ -698,6 +698,7 @@ GameObject:
   - component: {fileID: 151945506}
   - component: {fileID: 151945507}
   - component: {fileID: 151945508}
+  - component: {fileID: 151945509}
   m_Layer: 0
   m_Name: Card Match
   m_TagString: Untagged
@@ -762,6 +763,7 @@ MonoBehaviour:
   enemyActors:
   - {fileID: 273413156}
   rulesProfile: {fileID: 0}
+  sceneHost: {fileID: 151945509}
   presentationDirector: {fileID: 151945507}
 --- !u!114 &151945507
 MonoBehaviour:
@@ -2540,6 +2542,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   routes: []
+--- !u!114 &151945509
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 151945503}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6ab54d6d4843747e79e935259b53e152, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  sessionSource: {fileID: 151945506}
+  sceneAdapter: {fileID: 151945506}
+  autoStart: 1
+  animateOpening: 1
 --- !u!1 &167455877
 GameObject:
   m_ObjectHideFlags: 0

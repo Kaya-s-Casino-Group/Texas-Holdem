@@ -2,7 +2,7 @@
 
 日期：2026-10-18。适用场景：`Assets/Scenes/SingleBattleDemoNew.unity`。架构和恢复约定见 [实施记录](BattlePresentationImplementation.md)，规则与表现的完整设计见 [设计文档](BattlePresentationDesign.md)。
 
-当前场景的出牌顺序完整保存在 `ScenePresentationDirector.timeline`。Host 提交规则命令、桥接不可变数据、同步牌区和基础 HUD；它不再生成 `BuildPlan`，也不调用固定的“牌区→攻击→受击”协程。
+当前场景的出牌顺序完整保存在 `ScenePresentationDirector.timeline`。`SingleBattleSceneAdapter` 通过通用 Host 的命令端口提交规则命令，桥接不可变数据并同步牌区和基础 HUD；它不再生成 `BuildPlan`，也不调用固定的“牌区→攻击→受击”协程。
 
 ## 1. 先找到三个配置位置
 
@@ -12,7 +12,7 @@
 | `Battle/Card Match/Presentation Timeline` | 各个可复用动作组件：`Cards Prepare`、`Cards Settle`、`Actor Attack`、`Actor Hit`、`Camera Impact`、`UI …` 等 |
 | `UI/Battle HUD/Timeline Feedback` | `Banner Template`、`Player Effect Template`、`Enemy Effect Template`；模板保持禁用，播放时克隆 |
 
-`targets` 已绑定 `cards`、`player`、`enemy`、`camera`、`scene`、`ui.feedback`。Host 运行时另外以实际参与者 ID 绑定 Actor，因此动态目标、反伤、多目标效果不依赖“第一个敌人”。
+`targets` 已绑定 `cards`、`player`、`enemy`、`camera`、`scene`、`ui.feedback`。场景适配器运行时另外以实际参与者 ID 绑定 Actor，因此动态目标、反伤、多目标效果不依赖“第一个敌人”。
 
 选择动作组件可以调整它的动画参数；选择 Director 可以改变动作何时启动。两类配置职责不同。
 
@@ -213,7 +213,7 @@ ActionStarted 的 attack.Impact
 
 ```text
 DisplayStore.Apply
-→ Host.DisplayChanged
+→ SingleBattleSceneAdapter.DisplayChanged
 → StateChanged
 → SingleBattleHud.Refresh
 ```
@@ -276,7 +276,7 @@ BattlePresentationSceneSetup.ConfigureHost(host, replaceExisting: true);
 BattlePresentationSceneSetup.ConfigureHost(host, includeFeedback: false);
 ```
 
-这是编辑器建场景工具，不是运行时自动默认逻辑。运行场景必须保存有效 timeline；Host 在缺少配置时会报错。
+这是编辑器建场景工具，不是运行时自动默认逻辑。当前 3D 场景适配器要求保存有效 timeline，缺少配置时在开战前报错。通用最小入口允许空 Timeline，直接发布显示快照；见 [BattleSceneHost 接入教程](BattleSceneHostSetup.md)。
 
 新 Unity 动作派生 `BattlePresentation.Unity.PresentationActionBehaviour`，实现 `Descriptor / Play / Synchronize`。`Play` 只消费 `ActionContext` 的中性数据和对象绑定，返回真实操作句柄，通过 `IMarkerSink` 发出已声明的信号。基础类提供 `StartRoutine`、可注入的 `StartPresentationRoutine` 和 `DeltaTimeProvider`，既可运行在 Unity，也可用确定性的测试时钟驱动。
 

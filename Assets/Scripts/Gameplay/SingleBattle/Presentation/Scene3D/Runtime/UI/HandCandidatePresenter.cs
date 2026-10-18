@@ -8,7 +8,7 @@ namespace Poker.SingleBattle
     /// <summary>Displays the shared immutable candidate model; recognition and legality stay at the bridge.</summary>
     public sealed class HandCandidatePresenter : MonoBehaviour
     {
-        [SerializeField] private SingleBattleHost host;
+        [SerializeField] private SingleBattleSceneAdapter host;
         [SerializeField] private TMP_Text handName, details;
         [SerializeField] private RollingNumberText chips, multiplier;
         private InteractionSession subscribedInteraction;
@@ -19,7 +19,7 @@ namespace Poker.SingleBattle
         public string HandText => handName != null ? handName.text : "";
         public string DetailText => details != null ? details.text : "";
 
-        public void Configure(SingleBattleHost owner, TMP_Text name, TMP_Text info, RollingNumberText points, RollingNumberText mult)
+        public void Configure(SingleBattleSceneAdapter owner, TMP_Text name, TMP_Text info, RollingNumberText points, RollingNumberText mult)
         {
             if (owner == null) throw new System.ArgumentNullException(nameof(owner));
             Unsubscribe(); host = owner; ConfigureViews(name, info, points, mult);

@@ -22,7 +22,7 @@ namespace Poker.SingleBattle.Tests
             private readonly List<UnityEngine.Object> owned = new List<UnityEngine.Object>();
             public readonly Scene Scene = EditorSceneManager.NewPreviewScene();
             public readonly CardMatchHost Match;
-            public readonly SingleBattleHost Host;
+            public readonly SingleBattleSceneAdapter Host;
             public readonly CardZonePlayHost Hand;
             public readonly HandZoneView HandView;
             public readonly HandActionPresenter Actions;
@@ -47,7 +47,7 @@ namespace Poker.SingleBattle.Tests
                     panel.RankSortButton.GetComponentInChildren<TMP_Text>(), panel.SuitSortButton.GetComponentInChildren<TMP_Text>());
                 Actions = ui.GetComponent<HandActionPresenter>() ?? ui.AddComponent<HandActionPresenter>();
                 Actions.Configure(Hand, panel);
-                Host = root.AddComponent<SingleBattleHost>();
+                Host = root.AddComponent<SingleBattleSceneAdapter>();
                 Host.Configure(Match, Actions, null, null);
                 Players = Enumerable.Range(0, players).Select(index => New("Player " + index).AddComponent<PlayerBattleActor>()).ToArray();
                 Enemies = Enumerable.Range(0, enemies).Select(index => New("Enemy " + index).AddComponent<EnemyBattleActor>()).ToArray();
@@ -152,7 +152,7 @@ namespace Poker.SingleBattle.Tests
             if (opened) scene = EditorSceneManager.OpenScene(path, OpenSceneMode.Additive);
             try
             {
-                var host = scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<SingleBattleHost>(true)).Single();
+                var host = scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<SingleBattleSceneAdapter>(true)).Single();
                 Assert.That(host.UsesXmlContent, Is.True);
                 Assert.That(host.ContentXml, Is.SameAs(AssetDatabase.LoadAssetAtPath<TextAsset>(
                     "Packages/com.kaya.battle-engine/Content/SingleBattleDemoNew.xml")));

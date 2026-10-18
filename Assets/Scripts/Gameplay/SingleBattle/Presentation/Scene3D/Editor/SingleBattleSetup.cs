@@ -28,7 +28,7 @@ namespace Poker.SingleBattle.Editor
             var actions = roots.SelectMany(root => root.GetComponentsInChildren<HandActionPresenter>(true)).Single(item => item.isActiveAndEnabled);
             var match = actions.Hand.Match;
             foreach (var old in roots.SelectMany(root => root.GetComponentsInChildren<DrawBattleHost>(true))) UnityEngine.Object.DestroyImmediate(old);
-            var host = match.GetComponent<SingleBattleHost>() ?? match.gameObject.AddComponent<SingleBattleHost>();
+            var host = match.GetComponent<SingleBattleSceneAdapter>() ?? match.gameObject.AddComponent<SingleBattleSceneAdapter>();
             var overview = roots.SelectMany(root => root.GetComponentsInChildren<DeckOverviewPresenter>(true)).FirstOrDefault(item => item.Match == match);
             var pile = roots.SelectMany(root => root.GetComponentsInChildren<DrawPilePresenter>(true)).FirstOrDefault(item => item.Source == actions.Hand);
             host.Configure(match, actions, overview, pile);
@@ -88,12 +88,12 @@ namespace Poker.SingleBattle.Editor
         {
             var scene = SceneManager.GetActiveScene();
             if (Application.isPlaying || scene.path != ScenePath) throw new InvalidOperationException("Open SingleBattleDemo in Edit mode first.");
-            var host = scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<SingleBattleHost>(true)).Single();
+            var host = scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<SingleBattleSceneAdapter>(true)).Single();
             ConnectActors(scene, host); EditorUtility.SetDirty(host); EditorSceneManager.MarkSceneDirty(scene); EditorSceneManager.SaveScene(scene);
             Selection.activeObject = host.Player;
             Debug.Log("PlayerBattleActor and EnemyBattleActor connected and saved; existing HUD, models and layout preserved.");
         }
-        private static void ConnectActors(Scene scene, SingleBattleHost host)
+        private static void ConnectActors(Scene scene, SingleBattleSceneAdapter host)
         {
             var roots = scene.GetRootGameObjects();
             var actors = host.Player != null ? host.Player.transform.parent.gameObject : FindSceneObject(scene, "Battle Actors");
@@ -201,7 +201,7 @@ namespace Poker.SingleBattle.Editor
         {
             var scene = SceneManager.GetActiveScene();
             if (Application.isPlaying || scene.path != ScenePath) throw new InvalidOperationException("Open SingleBattleDemo in Edit mode first.");
-            var host = scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<SingleBattleHost>(true)).Single();
+            var host = scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<SingleBattleSceneAdapter>(true)).Single();
             PrepareRuntimeCardZones(scene, host);
             EditorSceneManager.MarkSceneDirty(scene); EditorSceneManager.SaveScene(scene);
             Debug.Log("SingleBattleDemo saved without editor card seeds. The battle supplies zones and deals at the first player turn.");
@@ -211,15 +211,15 @@ namespace Poker.SingleBattle.Editor
         {
             if (Application.isPlaying) throw new InvalidOperationException("Stop Play mode before removing the old played zone.");
             var scene = SceneManager.GetActiveScene();
-            var hosts = scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<SingleBattleHost>(true)).ToArray();
-            if (hosts.Length == 0) throw new InvalidOperationException("当前场景没有 SingleBattleHost。");
+            var hosts = scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<SingleBattleSceneAdapter>(true)).ToArray();
+            if (hosts.Length == 0) throw new InvalidOperationException("当前场景没有 SingleBattleSceneAdapter。");
             Undo.SetCurrentGroupName("移除出牌区表现"); int group = Undo.GetCurrentGroup();
             foreach (var host in hosts) RemovePlayedPresentation(host);
             Undo.CollapseUndoOperations(group);
             EditorSceneManager.MarkSceneDirty(scene); EditorSceneManager.SaveScene(scene);
             Debug.Log("已移除出牌区及飞行路径；出牌只更新手牌与战斗数据，后续表现待配置。");
         }
-        internal static void RemovePlayedPresentation(SingleBattleHost host)
+        internal static void RemovePlayedPresentation(SingleBattleSceneAdapter host)
         {
             var actions = host.Actions;
             if (actions == null || actions.Hand == null) throw new InvalidOperationException("Bind the hand action presenter first.");
@@ -239,7 +239,7 @@ namespace Poker.SingleBattle.Editor
             }
         }
 
-        private static void PrepareRuntimeCardZones(Scene scene, SingleBattleHost host)
+        private static void PrepareRuntimeCardZones(Scene scene, SingleBattleSceneAdapter host)
         {
             RemovePlayedPresentation(host);
             host.Actions.Hand.StopSession();
@@ -267,7 +267,7 @@ namespace Poker.SingleBattle.Editor
             var scene = SceneManager.GetActiveScene();
             if (Application.isPlaying || scene.path != ScenePath) throw new InvalidOperationException("Open SingleBattleDemo in Edit mode first.");
             var roots = scene.GetRootGameObjects();
-            var host = roots.SelectMany(root => root.GetComponentsInChildren<SingleBattleHost>(true)).Single();
+            var host = roots.SelectMany(root => root.GetComponentsInChildren<SingleBattleSceneAdapter>(true)).Single();
             if (host.Player == null || host.Enemy == null) throw new InvalidOperationException("Connect the battle actors first.");
             var fox = FindSceneObject(scene, "FoxStatue_Collapse_VAT");
             var dragon = host.Enemy.Visual.GetComponentsInChildren<MeshFilter>(true).Single().gameObject;

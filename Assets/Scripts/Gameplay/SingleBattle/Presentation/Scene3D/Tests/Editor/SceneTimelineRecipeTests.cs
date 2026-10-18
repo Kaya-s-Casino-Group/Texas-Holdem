@@ -20,7 +20,7 @@ namespace Poker.SingleBattle.Tests
         private sealed class Fixture : IDisposable
         {
             internal readonly Scene Scene = EditorSceneManager.NewPreviewScene();
-            internal readonly SingleBattleHost Host;
+            internal readonly SingleBattleSceneAdapter Host;
             internal readonly ScenePresentationDirector Director;
             internal Fixture()
             {
@@ -30,7 +30,7 @@ namespace Poker.SingleBattle.Tests
                 var ui = (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/GameAssets/CardPresentation/Prefabs/HandActionPanel.prefab"), Scene);
                 var actions = ui.GetComponent<HandActionPresenter>() ?? ui.AddComponent<HandActionPresenter>();
                 actions.Configure(hand, ui.GetComponent<HandActionPanelView>());
-                Host = root.AddComponent<SingleBattleHost>(); Host.Configure(match, actions, null, null);
+                Host = root.AddComponent<SingleBattleSceneAdapter>(); Host.Configure(match, actions, null, null);
                 var camera = New("Recipe camera"); camera.tag = "MainCamera"; camera.AddComponent<Camera>();
                 New("Recipe UI").AddComponent<Canvas>();
                 Director = BattlePresentationSceneSetup.ConfigureHost(Host);

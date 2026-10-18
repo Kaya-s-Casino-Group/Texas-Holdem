@@ -14,12 +14,12 @@ namespace Poker.SingleBattle.Editor
     {
         private static readonly string[] Tabs = { "配置总览", "公共规则", "玩家配置", "敌人配置" };
         private static readonly string[] HandNames = { "高牌", "一对", "两对", "三条", "顺子", "同花", "葫芦", "四条", "同花顺", "五条" };
-        [SerializeField] private SingleBattleHost host;
+        [SerializeField] private SingleBattleSceneAdapter host;
         [SerializeField] private int tab;
         [SerializeField] private int playerIndex;
         [SerializeField] private int enemyIndex;
         [SerializeField] private Vector2 scroll;
-        private SingleBattleHost[] hosts = Array.Empty<SingleBattleHost>();
+        private SingleBattleSceneAdapter[] hosts = Array.Empty<SingleBattleSceneAdapter>();
         private int activeSceneHandle;
         private readonly Dictionary<Object, UnityEditor.Editor> editors = new Dictionary<Object, UnityEditor.Editor>();
         private readonly Dictionary<string, bool> folds = new Dictionary<string, bool>();
@@ -56,8 +56,8 @@ namespace Poker.SingleBattle.Editor
             var scene = SceneManager.GetActiveScene();
             activeSceneHandle = scene.handle;
             hosts = scene.IsValid() && scene.isLoaded
-                ? scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<SingleBattleHost>(true)).ToArray()
-                : Array.Empty<SingleBattleHost>();
+                ? scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<SingleBattleSceneAdapter>(true)).ToArray()
+                : Array.Empty<SingleBattleSceneAdapter>();
             if (!hosts.Contains(host)) host = hosts.Length == 1 ? hosts[0] : null;
             validation = null;
             Repaint();
@@ -87,7 +87,7 @@ namespace Poker.SingleBattle.Editor
             }
             if (host == null)
             {
-                EditorGUILayout.HelpBox(hosts.Length == 0 ? "当前场景没有单局战斗入口。请打开配置好 SingleBattleHost 的对局场景。" : "场景中存在多个战局，请先选择要配置的入口。", MessageType.Info);
+                EditorGUILayout.HelpBox(hosts.Length == 0 ? "当前场景没有单局战斗入口。请打开配置好 SingleBattleSceneAdapter 的对局场景。" : "场景中存在多个战局，请先选择要配置的入口。", MessageType.Info);
                 return;
             }
             if (host.UsesXmlContent) { DrawXmlContent(); return; }

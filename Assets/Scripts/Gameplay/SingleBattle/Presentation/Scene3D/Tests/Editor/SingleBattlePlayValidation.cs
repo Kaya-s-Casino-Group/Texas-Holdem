@@ -17,7 +17,7 @@ namespace Poker.SingleBattle.Tests
     /// <summary>Real UI/animation integration; uses runtime-only rule overrides to exercise both terminal paths.</summary>
     public static class SingleBattlePlayValidation
     {
-        private static SingleBattleHost host;
+        private static SingleBattleSceneAdapter host;
         private static PlayerBattleProfile originalPlayer, testPlayer;
         private static EnemyBattleProfile originalEnemy, testEnemy;
         private static int stage, playerHealth, enemyHealth, enemyDamage, automaticPlays;
@@ -45,7 +45,7 @@ namespace Poker.SingleBattle.Tests
         public static void Run()
         {
             if (!Application.isPlaying || host != null) throw new InvalidOperationException("Enter Play and finish any previous validation first.");
-            var candidate = Object.FindObjectsOfType<SingleBattleHost>().Single(item => item.State != null);
+            var candidate = Object.FindObjectsOfType<SingleBattleSceneAdapter>().Single(item => item.State != null);
             if (candidate.Players.Count != 1 || candidate.Enemies.Count != 1) throw new InvalidOperationException("此项验证需要 1v1 的 SingleBattleDemo 场景。");
             host = candidate; originalPlayer = host.Player.Profile; originalEnemy = host.Enemy.Profile;
             testPlayer = Object.Instantiate(originalPlayer); testEnemy = Object.Instantiate(originalEnemy);

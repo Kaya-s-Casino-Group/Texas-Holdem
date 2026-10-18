@@ -12,7 +12,7 @@ using global::BattlePresentation.Unity;
 namespace Poker.SingleBattle
 {
     /// <summary>Scene adapter: rules enter only through the shared bridge; scheduling consumes neutral facts.</summary>
-    public sealed partial class SingleBattleHost
+    public sealed partial class SingleBattleSceneAdapter
     {
         [SerializeField] private ScenePresentationDirector presentationDirector;
         private BattlePresentationBridge bridge;

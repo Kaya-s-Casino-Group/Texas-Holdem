@@ -21,7 +21,7 @@ namespace Poker.SingleBattle.Tests
             Directory.CreateDirectory(Folder);
             File.WriteAllText(Folder + "/status.txt", "Running EditMode");
             Api.Execute(new ExecutionSettings(new Filter { testMode = TestMode.EditMode,
-                assemblyNames = new[] { "BattlePresentation.Tests.Editor", "BattlePresentation.Unity.Tests.Editor", "Poker.BattlePresentation.Shared.Tests", "Poker.SingleBattle.Tests.Editor", "Poker.Battle2DValidation.Tests.Editor", "CardPresentation.Tests.Editor" } }));
+                assemblyNames = new[] { "Poker.BattleHosting.Tests.Editor", "PokerEngine.Integration.Tests.Editor", "BattlePresentation.Tests.Editor", "BattlePresentation.Unity.Tests.Editor", "Poker.BattlePresentation.Shared.Tests", "Poker.SingleBattle.Tests.Editor", "Poker.Battle2DValidation.Tests.Editor", "CardPresentation.Tests.Editor" } }));
         }
         [MenuItem("工具/卡牌战斗/表现时间线/验证 PlayMode")]
         public static void RunPlayMode()

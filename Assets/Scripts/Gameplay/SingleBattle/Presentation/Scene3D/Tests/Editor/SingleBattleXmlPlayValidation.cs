@@ -16,7 +16,7 @@ namespace Poker.SingleBattle.Tests
         public static void Run()
         {
             if (!Application.isPlaying) throw new InvalidOperationException("请先运行 SingleBattleDemoNew 场景。");
-            var host = UnityEngine.Object.FindObjectsOfType<SingleBattleHost>().Single();
+            var host = UnityEngine.Object.FindObjectsOfType<SingleBattleSceneAdapter>().Single();
             var report = new Report();
             try
             {

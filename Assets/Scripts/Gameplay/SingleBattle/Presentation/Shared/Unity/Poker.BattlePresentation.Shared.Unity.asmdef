@@ -1,0 +1,5 @@
+{
+  "name": "Poker.BattlePresentation.Shared.Unity",
+  "rootNamespace": "Poker.BattlePresentation",
+  "references": ["Poker.BattleHosting.Runtime", "Poker.BattlePresentation.Shared", "BattlePresentation.Runtime", "BattlePresentation.Unity", "PokerEngine.Core", "PokerEngine.Composition", "PokerEngine.Combat", "PokerEngine.Scoring"]
+}

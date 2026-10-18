@@ -1,8 +1,8 @@
 # 主线卡牌战斗：3D 场景表现（Scene3D）
 
-本模块是项目的主线卡牌战斗：玩家用扑克牌型发动攻击，消耗能量，处理生命、格挡、弃牌收益与敌方回合。支持 1v1 和多对多；`SingleBattle` 表示一场战斗，不表示只能有一名玩家。本目录实现现有 3D 场景适配；规则配置位于 `../../Configuration`，会话位于纯 C# 的 PokerEngine，通用显示与调度协议位于 [BattlePresentation](../../../../Presentation/BattlePresentation/README.md)。类名、命名空间和原有 3D 程序集名保持兼容。
+本模块是项目的主线卡牌战斗：玩家用扑克牌型发动攻击，消耗能量，处理生命、格挡、弃牌收益与敌方回合。支持 1v1 和多对多；`SingleBattle` 表示一场战斗，不表示只能有一名玩家。本目录实现现有 3D 场景适配；规则配置位于 `../../Configuration`，会话位于纯 C# 的 PokerEngine，通用显示与调度协议位于 [BattlePresentation](../../../../Presentation/BattlePresentation/README.md)。原有 3D 程序集名与命名空间保留，具体入口更名为 `SingleBattleSceneAdapter`，脚本 GUID 保留。
 
-两个场景 Host 均继承 `BaseBattleHost`，会话生命周期由纯 C# `BattleHost` 管理。规则链为 `SingleBattleHost → BattleSessionPlayback → BattleSession → CardDuelEngine → TeamBattleEngine → CombatEngine`。`TeamBattleEngine` 是内部阵营回合规则，`TeamBattleDemo` 是本模块的多人阵容示例，两者都不是另一个并列玩法。[分数挑战（DrawBattle）](../../../DrawBattle/README.md) 是独立的达标计分模式，不负责本模块的抽牌。两种玩法共享 [卡牌交互](../../../../Presentation/CardInteraction/README.md) 与 [卡牌表现](../../../../Presentation/CardPresentation/README.md)。
+通用 `BattleSceneHost` 继承 `BaseBattleHost` 并持有纯 C# `BattleHost`；`SingleBattleSceneAdapter` 通过组合接入它，不再持有生命周期。规则链为 `SingleBattleSceneAdapter → BattleSessionPlayback → BattleSession → CardDuelEngine → TeamBattleEngine → CombatEngine`。`TeamBattleEngine` 是内部阵营回合规则，`TeamBattleDemo` 是本模块的多人阵容示例，两者都不是另一个并列玩法。[分数挑战（DrawBattle）](../../../DrawBattle/README.md) 是独立的达标计分模式，不负责本模块的抽牌。两种玩法共享 [卡牌交互](../../../../Presentation/CardInteraction/README.md) 与 [卡牌表现](../../../../Presentation/CardPresentation/README.md)。
 
 主入口为 **工具 > 卡牌战斗 > 数值配置**。同组的“默认配置”“验算”“场景接入”“示例场景”“截图”分别提供规则资产、结果检查、表现绑定和示例维护。示例场景工具仍按原有场景限制执行；菜单改名不会自动迁移或修改场景。测试入口为 **工具 > 测试面板**。
 
@@ -13,42 +13,42 @@
 
 ## 目录与程序集
 
-`Runtime/Hosting` 负责 Session 接入与场景绑定；`Actors` 是场景单位适配；`Presentation` 保存 `SingleBattleHost.Presentation.cs` 的默认动作计划、旧牌区适配，以及攻击、VAT、护盾和音频表现；`UI` 只消费中性显示快照与候选模型。`IBattleActorPresentation` 是保留的局部 3D 兼容协议，现有组件另实现 `IBattleActorDisplayPresentation` 接收中性单位数据，其他表现风格不需要实现这两个局部接口。
+`Runtime/Hosting` 负责 Session 接入与场景绑定；`Actors` 是场景单位适配；`Presentation` 保存 `SingleBattleSceneAdapter.Presentation.cs` 的显示投影、牌区适配，以及攻击、VAT、护盾和音频表现；`UI` 只消费中性显示快照与候选模型。`IBattleActorPresentation` 是保留的局部 3D 兼容协议，现有组件另实现 `IBattleActorDisplayPresentation` 接收中性单位数据，其他表现风格不需要实现这两个局部接口。
 
 `Poker.SingleBattle.Runtime`、`.Editor` 和两套测试程序集保留原名。Runtime 引用共享 Hosting、Configuration、`Poker.BattlePresentation.Shared` 与 `BattlePresentation.Runtime / .Unity`；场景设置、数值审计和布局编辑器仍属于本前端。`Assets/GameAssets/SingleBattle/Presentation/Scene3D` 下的 `Shaders` 与 `ShieldAssets` 只服务此风格。
 
 ## 策划集中配置入口
 
-`SingleBattleDemoNew` 已切换到 XML 内容入口：`External/BattleToolkit/Engine/Content/SingleBattleDemoNew.xml`，默认编成 `single-battle-new`。Host Inspector 选择 `XmlContent`、XML 文件和编成 ID；双方 Actor 数组按编成中的玩家/敌人顺序绑定，旧 RulesProfile 和 Actor Profile 在此场景已解绑。其他旧场景仍可选择 `LegacyProfiles`。
+`SingleBattleDemoNew` 已切换到 XML 内容入口：`External/BattleToolkit/Engine/Content/SingleBattleDemoNew.xml`，默认编成 `single-battle-new`。SingleBattleSceneAdapter Inspector 选择 `XmlContent`、XML 文件和编成 ID；双方 Actor 数组按编成中的玩家/敌人顺序绑定，旧 RulesProfile 和 Actor Profile 在此场景已解绑。其他旧场景仍可选择 `LegacyProfiles`。
 
-使用 [外部 HTML 配置工具](../../../../../../External/BattleToolkit/Tools/BattleContentEditor/README.md) 导入该 XML，修改后导出覆盖原文件；Unity 刷新后重新开战生效。`工具 > 卡牌战斗 > 数值配置` 在 XML 模式显示当前文件、编成及统一校验入口；Host Inspector 也可校验。校验会真实组装未开局会话，不发牌、不触发开战效果。读取或引用错误、编成人数或接入会话的参与者顺序不匹配均会拒绝；失败重开保留原会话，诊断在 Inspector 与 HUD 显示。
+使用 [外部 HTML 配置工具](../../../../../../External/BattleToolkit/Tools/BattleContentEditor/README.md) 导入该 XML，修改后导出覆盖原文件；Unity 刷新后重新开战生效。`工具 > 卡牌战斗 > 数值配置` 在 XML 模式显示当前文件、编成及统一校验入口；SingleBattleSceneAdapter Inspector 也可校验。校验会真实组装未开局会话，不发牌、不触发开战效果。读取或引用错误、编成人数或接入会话的参与者顺序不匹配均会拒绝；失败重开保留原会话，诊断在 Inspector 与 HUD 显示。
 
 XML 按策划文档 revision 1277 配置：高牌/一对/两对单体伤害，三条/四条群伤，顺子三段伤害，同花伤害加按筹码治疗，葫芦单体眩晕一次行动窗口加自身免控至下个敌人阶段结束，皇家同花顺消灭全部存活敌人。免控沿用已确认的“提前施加”语义；普通同花顺和五条暂为显式单体伤害兼容项。文档未定数值均在 XML 注释为测试值，计分表及角色基础值沿用原场景。共享三点能量，出牌/弃牌各一点、立即补牌；弃牌每张八盾，流程图的有限次数暂为整场三次。
 
-同包提供 `single-battle-dot`、`single-battle-reflect`、`single-battle-overheal` 三个可选编成，分别测试顺子逐段附流血/中毒、弃牌盾反、同花治疗增幅与溢疗转伤；默认编成不装备遗物。切换 Host 的编成 ID 即可重开测试。左侧 HUD 文字区从中性模型读取预览、状态及期限、遗物次数冷却，并仅显示已揭示的触发和阶段结算；原有 Actor/VAT/护盾/卡牌组件已作为新调度器的动作适配器接入。敌人仍为明确配置的固定攻击，文档中未细化的召唤、护甲、污染牌库和完整 Run 流程未在本次新增。
+同包提供 `single-battle-dot`、`single-battle-reflect`、`single-battle-overheal` 三个可选编成，分别测试顺子逐段附流血/中毒、弃牌盾反、同花治疗增幅与溢疗转伤；默认编成不装备遗物。切换场景适配器的编成 ID 即可重开测试。左侧 HUD 文字区从中性模型读取预览、状态及期限、遗物次数冷却，并仅显示已揭示的触发和阶段结算；原有 Actor/VAT/护盾/卡牌组件已作为新调度器的动作适配器接入。敌人仍为明确配置的固定攻击，文档中未细化的召唤、护甲、污染牌库和完整 Run 流程未在本次新增。
 
 运行验证入口：在 `SingleBattleDemoNew` Play 模式执行 `工具 > 卡牌战斗 > XML内容 > 验证当前运行场景`；验证出牌、弃牌、补牌、格挡和完整回合并写入 `Library/SingleBattleTests/xml-scene.json`，成功后重新开战。该验证会消费当前测试对局的行动，请用于刚开局的默认编成。
 
-旧 SO 模式下，打开 `工具 > 卡牌战斗 > 数值配置`，窗口只读取当前活动场景实际绑定的 SingleBattleHost。多个战局入口时必须手动选择。
+旧 SO 模式下，打开 `工具 > 卡牌战斗 > 数值配置`，窗口只读取当前活动场景实际绑定的 SingleBattleSceneAdapter。多个战局入口时必须手动选择。
 
 - **配置总览**：查看公共规则、玩家与敌人的实际资产、阵容顺序和保存范围，直接跳到对应角色页。
 - **公共规则**：编辑回合上限、玩家格挡清除时机、共享牌型基础筹码/倍率、每级成长与单牌筹码。
 - **玩家配置**：选择阵容内玩家，编辑生命、能量、出弃牌预算、补牌时机和个人牌型等级；展开编辑出牌伤害、弃牌收益、友方与攻击目标策略、攻击和承伤修正。
 - **敌人配置**：选择敌人，编辑生命、初始格挡、基础攻击及该敌人的目标策略、攻击和承伤修正。
 
-每项独立资产显示路径并可定位；角色内部的规则资产引用可直接替换，场景的 Host / Actor 根配置绑定仍在 Inspector 管理。修改通过 SerializedObject 支持撤销，修改共享资产会影响所有引用者；需要独立数值时应先复制资产再替换引用。保存前调用规则层 Build 方法静态校验，不启动对局、不执行战斗动作；保存按钮仅保存当前战局关联且已修改的配置资产，不保存场景、美术或其他无关资源。关窗不会自动撤销已经修改的资产，Unity 自身的保存行为仍然有效。
+每项独立资产显示路径并可定位；角色内部的规则资产引用可直接替换，场景适配器 / Actor 的根配置绑定仍在 Inspector 管理。修改通过 SerializedObject 支持撤销，修改共享资产会影响所有引用者；需要独立数值时应先复制资产再替换引用。保存前调用规则层 Build 方法静态校验，不启动对局、不执行战斗动作；保存按钮仅保存当前战局关联且已修改的配置资产，不保存场景、美术或其他无关资源。关窗不会自动撤销已经修改的资产，Unity 自身的保存行为仍然有效。
 
 所有数值在下次开战时生成快照；运行期间窗口只读。本窗口不提供局内状态修改、阵容编辑、卡组编辑或表现参数配置。
 
 ## 配置归属
 
-Host 不再保存生命、攻击、能量、牌数等数值，仅持有玩家/怪物 Actor 数组、公共规则引用、UI/表现绑定与运行时流程。数组顺序定义阵容席位与怪物行动顺序，双方人数可不同，总单位数受 CombatState 的 64 上限约束。
+`BattleSceneHost` 仅管理每局生命周期。`SingleBattleSceneAdapter` 持有玩家/怪物 Actor 数组、内容来源与 UI/表现绑定，不保存生命、攻击、能量、牌数等规则数值。数组顺序定义阵容席位与怪物行动顺序，双方人数可不同，总单位数受 CombatState 的 64 上限约束。
 
 | 位置 | 内容 | 默认 Demo 资产 |
 | --- | --- | --- |
 | PlayerBattleActor → 玩家配置 | 单位 ID、最大生命、初始格挡、能量上限/初始值、出牌/弃牌费用、手牌上限、弃牌次数及无限开关、独立出/弃牌张数上限、两种补牌时机、出牌伤害、弃牌收益、攻击/承伤修正资产 | `Assets/GameAssets/SingleBattle/Configuration/Profiles/SingleBattlePlayer.asset` |
 | EnemyBattleActor → 怪物配置 | 单位 ID、最大生命、初始格挡、基础攻击伤害、攻击/承伤修正资产；没有能量或牌组字段 | `Assets/GameAssets/SingleBattle/Configuration/Profiles/SingleBattleEnemy.asset` |
-| SingleBattleHost → 公共战局规则 | 规则版本、回合上限、玩家格挡清除时机、共享牌型计分基础表 | `Assets/GameAssets/SingleBattle/Configuration/Profiles/SingleBattleRules.asset` |
+| SingleBattleSceneAdapter → 公共战局规则 | 规则版本、回合上限、玩家格挡清除时机、共享牌型计分基础表 | `Assets/GameAssets/SingleBattle/Configuration/Profiles/SingleBattleRules.asset` |
 
 使用 Assets/Create/玩法/战局 创建不同角色/怪物的配置，分别拖到对应 Actor。多个 Actor 可复用同一模板，但需要不同数值时应复制或另建配置再绑定。共享资产不是角色当前状态：开战时转成不可变的 BattlePlayerSetup / BattleEnemySetup / BattlePlayerRules，当前 HP、格挡、能量、手牌仅由战局状态持有；修改配置应用于下一场战斗。
 
@@ -138,7 +138,7 @@ Host 不再保存生命、攻击、能量、牌数等数值，仅持有玩家/�
 
 本地 Demo 用一套 CardZone/UI 观察当前玩家，点击“切换玩家”或 Tab 切换。结束后自动转到仍可行动的队友。切换只重新绑定观察者牌区和命令接收者，不移动逻辑卡牌、不重开战局；牌库总览也仅包含当前玩家的完整构筑。表现/发牌过程中禁止切换与重复输入。
 
-场景首次自动开局在 SingleBattleHost.Start 中执行，等待各牌区完成 OnEnable 后，先绑定空手牌，再提交 Start 发牌并播放入列动画；避免 Host 较早的 OnEnable 在 HandZoneView 尚未激活时跳过动画。逻辑手牌一次性提交，逐张飞入属于表现；重新启用已有对局仍恢复当前状态，不再次发开局牌。
+场景首次自动开局在 BattleSceneHost.Start 中执行，等待各牌区完成 OnEnable 后，先绑定空手牌，再提交 Start 发牌并播放入列动画；避免 Host 较早的 OnEnable 在 HandZoneView 尚未激活时跳过动画。逻辑手牌一次性提交，逐张飞入属于表现；重新启用已有对局仍恢复当前状态，不再次发开局牌。
 
 手牌默认按点数理牌，开局发牌及后续补牌落位后自动执行；切换玩家也按当前选择的方式理牌。手动切换为花色理牌后，后续发牌沿用花色排序。排序只调整观察者的显示顺序，不改变权威牌区或洗牌状态。
 
@@ -166,7 +166,7 @@ Host 不再保存生命、攻击、能量、牌数等数值，仅持有玩家/�
 
 保留原有过牌顺序：出牌先进入 Played，再按策略补牌，最后收进 Discard；不可提前把本次出牌洗回。弃牌先入 Discard，可以按原规则立即洗回；终局出牌仍留在 Played。每个敌人动作按引擎原顺序收牌，最后敌人完成后才开始下一玩家阶段。
 
-`SingleBattleHost` 承担 Unity 场景组装、输入与旧 CardMatch 接入，默认动作计划交由 `ScenePresentationDirector` 执行；规则推进仍在 Session。`StartBattle` 收集 Actor 的 Setup 后交给共用工厂创建未开局 Session，绑定场景后调用 `Playback.Start`；`AttachSession(session)` 可把已有 Session 接入人数匹配的场景，不重新开局。[独立 2D 验证模块](../Minimal2D/README.md) 使用同一个 Bridge、DisplayStore 和 Director，以卡牌和矩形移动验证中性边界；其 View 不读取规则对象，不依赖 CardZoneView、VAT 或 3D Actor 协议。
+`SingleBattleSceneAdapter` 承担 Unity 场景组装、输入与旧 CardMatch 接入，序列化时间线交由 `ScenePresentationDirector` 执行；规则推进仍在 Session。`StartBattle` 收集 Actor 的 Setup 后交给共用工厂创建未开局 Session，绑定场景后调用 `Playback.Start`；`AttachSession(session)` 可把已有 Session 接入人数匹配的场景，不重新开局。[独立 2D 验证模块](../Minimal2D/README.md) 使用同一个 Bridge、DisplayStore 和 Director，以卡牌和矩形移动验证中性边界；其 View 不读取规则对象，不依赖 CardZoneView、VAT 或 3D Actor 协议。
 
 - `Session.State / Host.AuthorityState`：已经提交的权威状态，用于命令和预览。
 - `Host.Display`：`DisplayStore` 已发布的中性快照，供 Actor 显示、生命、能量、牌区、意图和 HUD 使用。当前事实的 checkpoint 才能发布对应数据，不提前曝光最终批次。
@@ -244,7 +244,7 @@ Host、CardDuelEngine、TeamBattleEngine 已移除全局目标策略参数和配
 
 ## 场景动作与预选配置入口
 
-`SingleBattleHost` 只接收输入、转接规则事实和同步显示镜像；不再生成出牌、受击或镜头动作计划。场景必须保存有节点的 `ScenePresentationDirector.timeline`。当前 `SingleBattleDemoNew` 的完整配方由 `工具 > 卡牌战斗 > 表现时间线 > 接入当前场景` 写入；此菜单将旧的空组迁移成实际节点，重复执行保留已有自定义组。没有配置的旧场景需先执行该菜单；运行时不会偷偷补回代码默认顺序。
+`SingleBattleSceneAdapter` 只接收输入、转接规则事实和同步显示镜像；不再生成出牌、受击或镜头动作计划。场景必须保存有节点的 `ScenePresentationDirector.timeline`。当前 `SingleBattleDemoNew` 的完整配方由 `工具 > 卡牌战斗 > 表现时间线 > 接入当前场景` 写入；此菜单将旧的空组迁移成实际节点，重复执行保留已有自定义组。没有配置的旧场景需先执行该菜单；运行时不会偷偷补回代码默认顺序。
 
 - `targets`：以 key 绑定任意 Unity 对象。Host 在运行时绑定 `cards` 为 HandZoneView、参与者 ID 为对应 Actor；镜头、UI、场景物体可使用其他 key。Actor 动作目标留空时使用当前事实的实际行动者/效果目标，兼容多角色。
 - `timeline`：每组按 `semanticKey`、可选 `ruleAction` 和 `filter` 匹配。filter 支持效果类型、目标 ID/阵营/与观察者或行动者的关系、行动者筛选、实际伤害/格挡消耗、格挡增减、死亡及跳过条件；所有条件必须同时满足。同一事实的匹配组按配置顺序合并，`replaceDefault` 表示替换此前累计计划，Host 不再提供默认计划。

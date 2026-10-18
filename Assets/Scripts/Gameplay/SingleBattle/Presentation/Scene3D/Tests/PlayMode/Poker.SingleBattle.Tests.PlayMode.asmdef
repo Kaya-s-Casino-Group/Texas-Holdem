@@ -14,7 +14,8 @@
     "PokerEngine.Scoring",
     "PokerEngine.Combat",
     "PokerEngine.Composition",
-    "PokerEngine.Encounters"
+    "PokerEngine.Encounters",
+    "Poker.BattlePresentation.Shared.Unity"
   ],
   "optionalUnityReferences": [
     "TestAssemblies"

@@ -5,8 +5,8 @@ using UnityEngine;
 
 namespace Poker.SingleBattle.Editor
 {
-    [CustomEditor(typeof(SingleBattleHost))]
-    public sealed class SingleBattleHostEditor : UnityEditor.Editor
+    [CustomEditor(typeof(SingleBattleSceneAdapter))]
+    public sealed class SingleBattleSceneAdapterEditor : UnityEditor.Editor
     {
         public override void OnInspectorGUI()
         {
@@ -24,16 +24,16 @@ namespace Poker.SingleBattle.Editor
                 else EditorGUILayout.PropertyField(serializedObject.FindProperty("rulesProfile"));
                 DrawPropertiesExcluding(serializedObject, "m_Script", "configurationSource", "contentXml", "encounterId", "rulesProfile");
                 serializedObject.ApplyModifiedProperties();
-                if (xml && GUILayout.Button("校验 XML 和场景绑定（不启动对局）")) Validate((SingleBattleHost)target);
+                if (xml && GUILayout.Button("校验 XML 和场景绑定（不启动对局）")) Validate((SingleBattleSceneAdapter)target);
             }
-            var host = (SingleBattleHost)target;
+            var host = (SingleBattleSceneAdapter)target;
             foreach (var diagnostic in host.ContentDiagnostics)
                 EditorGUILayout.HelpBox(diagnostic.Code + " · " + diagnostic.Location.Line + ":" + diagnostic.Location.Column +
                     " · " + diagnostic.Location.Path + "\n" + diagnostic.Message,
                     diagnostic.Severity == BattleDiagnosticSeverity.Error ? MessageType.Error : MessageType.Warning);
         }
 
-        internal static void Validate(SingleBattleHost host)
+        internal static void Validate(SingleBattleSceneAdapter host)
         {
             try
             {

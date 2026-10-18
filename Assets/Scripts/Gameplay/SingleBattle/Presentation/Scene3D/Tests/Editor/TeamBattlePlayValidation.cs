@@ -12,7 +12,7 @@ namespace Poker.SingleBattle.Tests
     /// <summary>Focused live validation through existing HUD callbacks, waiting for actual animation completion.</summary>
     public static class TeamBattlePlayValidation
     {
-        private static SingleBattleHost host;
+        private static SingleBattleSceneAdapter host;
         private static SingleBattleHud hud;
         private static double deadline;
         private static int stage, attacks;
@@ -21,7 +21,7 @@ namespace Poker.SingleBattle.Tests
         public static void Run()
         {
             if (!Application.isPlaying || host != null) throw new InvalidOperationException("请在多人 Demo 的 Play 中运行，等待上次验证完成。");
-            var candidate = UnityEngine.Object.FindObjectsOfType<SingleBattleHost>().Single();
+            var candidate = UnityEngine.Object.FindObjectsOfType<SingleBattleSceneAdapter>().Single();
             if (candidate.Players.Count != 2 || candidate.Enemies.Count != 3) throw new InvalidOperationException("此验证需要 2v3 阵容。");
             host = candidate; hud = UnityEngine.Object.FindObjectsOfType<SingleBattleHud>().Single();
             host.SnapToState(); host.StartBattle(); stage = 0; attacks = 0;

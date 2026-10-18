@@ -20,16 +20,18 @@ namespace Poker.SingleBattle.Editor
         {
             if (Application.isPlaying) throw new InvalidOperationException("Exit Play Mode before saving scene bindings.");
             var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
-            var host = scene.GetRootGameObjects().SelectMany(o => o.GetComponentsInChildren<SingleBattleHost>(true)).Single();
+            var host = scene.GetRootGameObjects().SelectMany(o => o.GetComponentsInChildren<SingleBattleSceneAdapter>(true)).Single();
             ConfigureHost(host);
             EditorSceneManager.MarkSceneDirty(scene); EditorSceneManager.SaveScene(scene);
             Debug.Log("Scene-authored presentation timeline connected: " + scene.path, host);
         }
 
         /// <summary>Authors a real scene recipe; fixtures may omit decorative feedback when they have no Canvas.</summary>
-        public static ScenePresentationDirector ConfigureHost(SingleBattleHost host, bool replaceExisting = false, bool includeFeedback = true)
+        public static ScenePresentationDirector ConfigureHost(SingleBattleSceneAdapter host, bool replaceExisting = false, bool includeFeedback = true)
         {
             if (host == null) throw new ArgumentNullException(nameof(host));
+            var battleHost = host.EnsureSceneHost();
+            EditorUtility.SetDirty(battleHost);
             if (host.Actions == null || host.Actions.Hand == null) throw new InvalidOperationException("Bind the host's hand before authoring its timeline.");
             var director = host.GetComponent<ScenePresentationDirector>();
             if (director == null) director = Undo.AddComponent<ScenePresentationDirector>(host.gameObject);
@@ -104,7 +106,7 @@ namespace Poker.SingleBattle.Editor
             var deathNode = Node("death", death, null, Completed("effect")); deathNode.filter.isDeath = SceneMatchBoolean.True;
             return Group("EffectSettled", null, filter, new[] { Node("effect", reaction), deathNode }, Marker("effect", "Revealed"));
         }
-        private static void AddFeedback(SingleBattleHost host, Transform actions, Camera camera, List<SceneTimelineGroup> groups, List<SceneTargetBinding> bindings)
+        private static void AddFeedback(SingleBattleSceneAdapter host, Transform actions, Camera camera, List<SceneTimelineGroup> groups, List<SceneTargetBinding> bindings)
         {
             var roots = host.gameObject.scene.GetRootGameObjects();
             var hud = roots.SelectMany(o => o.GetComponentsInChildren<SingleBattleHud>(true)).FirstOrDefault();

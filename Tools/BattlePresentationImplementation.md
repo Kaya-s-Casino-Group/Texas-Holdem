@@ -55,7 +55,7 @@ flowchart LR
 
 ## 配置任意对象与动作
 
-当前场景 `Battle/Card Match` 保存 `ScenePresentationDirector` 和 `SceneCandidateFeedback`，Host 的 `presentationDirector` 指向前者。`Battle/Card Match/Presentation Timeline` 保存可拖入节点的动作组件；`UI/Battle HUD/Timeline Feedback` 保存禁用的 TMP 模板。UI 动画每次克隆模板，不移动基础 HUD，不阻挡点击。
+当前场景 `Battle/Card Match` 保存 `ScenePresentationDirector` 和 `SceneCandidateFeedback`，`SingleBattleSceneAdapter` 的 `presentationDirector` 指向前者。`Battle/Card Match/Presentation Timeline` 保存可拖入节点的动作组件；`UI/Battle HUD/Timeline Feedback` 保存禁用的 TMP 模板。UI 动画每次克隆模板，不移动基础 HUD，不阻挡点击。
 
 - `timeline` 按数组顺序匹配 `semanticKey`、可选 `ruleAction` 和 `filter`。同一事实可以命中多个组，合并成一张动作图。
 - `SceneTimelineFilter` 可按 effectKind、真实 healthLost/blockAbsorbed、healthChange/blockChange、isDeath、skipped、目标/行动者身份与队伍等筛选。组和节点各自有 filter，条件全部满足才保留。
@@ -88,3 +88,7 @@ flowchart LR
 - 持久摘要与最终测试计数见 `Tools/Validation/2026-10-18-battle-presentation.md`。
 
 首版提供 Inspector 配方和代码协议，不包括可视化轨道编辑器、跨机器网络预测或 Run 流程。旧渲染/提示框测试中与本任务分开的失败会在验证记录中保留，不修改现有 Renderer 资产来迁就这些断言。
+
+## 每局入口拆分
+
+后续已把生命周期收敛到 `BattleSceneHost`，原 `SingleBattleHost` 更名为 `SingleBattleSceneAdapter` 并保留脚本 GUID。具体场景通过来源与适配器接口组合接入，不再继承 Host。最小预制体、一键添加菜单和迁移约定见 [接入教程](BattleSceneHostSetup.md)，本次新增验证结果见 [Host 拆分验证](Validation/2026-10-18-battle-host-split.md)。上文的 386/390 和 4/4 是此前时间线改造的验证记录。

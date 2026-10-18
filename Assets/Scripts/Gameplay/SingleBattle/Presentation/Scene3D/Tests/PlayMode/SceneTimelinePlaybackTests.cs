@@ -4,6 +4,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using CardInteraction;
+using Poker.BattleHosting;
+using Poker.BattlePresentation;
+using UnityEditor;
 using CardPresentation;
 using NUnit.Framework;
 using PokerEngine;
@@ -43,11 +46,14 @@ namespace Poker.SingleBattle.Tests
         public IEnumerator AuthoredSceneUsesTimelineForOpeningSelectionPlayDiscardAndCancellation()
         {
             yield return EditorSceneManager.LoadSceneAsyncInPlayMode("Assets/Scenes/SingleBattleDemoNew.unity", new LoadSceneParameters(LoadSceneMode.Single));
-            var host = Object.FindObjectsOfType<SingleBattleHost>().Single();
+            var host = Object.FindObjectsOfType<SingleBattleSceneAdapter>().Single();
+            Assert.AreSame(host.SceneHost, host.GetComponent<BattleSceneHost>());
+            Assert.AreSame(host, host.SceneHost.SceneAdapter);
+            Assert.AreSame(host.Session, host.SceneHost.Session);
             Assert.NotNull(host.GetComponent<ScenePresentationDirector>(), "The saved scene must carry the new frontend.");
             Assert.NotNull(host.GetComponent<SceneCandidateFeedback>());
             Assert.IsTrue(host.PresentationDirector.HasConfiguredTimeline);
-            Assert.IsNull(typeof(SingleBattleHost).GetMethod("BuildPlan", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic),
+            Assert.IsNull(typeof(SingleBattleSceneAdapter).GetMethod("BuildPlan", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic),
                 "The current scene sequence must come from authored configuration, not a Host plan factory.");
             var uiActions = host.GetComponentsInChildren<UiFeedbackTimelineAction>(true);
             Assert.IsTrue(uiActions.Any(action => action.Kind == UiFeedbackKind.Damage));
@@ -149,14 +155,41 @@ namespace Poker.SingleBattle.Tests
             Assert.IsTrue(host.CanEndTurn);
             Assert.IsNull(host.PresentationDirector.LastError);
         }
-        private static IEnumerator Idle(SingleBattleHost host)
+        [UnityTest]
+        public IEnumerator MinimalPrefabAutoStartsTwoIndependentBattlesWithoutSceneBindings()
+        {
+            var previous = SceneManager.GetActiveScene();
+            var empty = SceneManager.CreateScene("Battle Host Minimal Runtime Validation");
+            SceneManager.SetActiveScene(empty);
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/GameAssets/SingleBattle/Hosting/BattleSceneHostMinimal.prefab");
+            Assert.NotNull(prefab);
+            var first = Object.Instantiate(prefab).GetComponent<BattleSceneHost>();
+            var second = Object.Instantiate(prefab).GetComponent<BattleSceneHost>();
+            yield return null;
+            Assert.NotNull(first.Session); Assert.NotNull(second.Session);
+            Assert.IsTrue(first.AuthorityState.HasStarted); Assert.IsTrue(second.AuthorityState.HasStarted);
+            var adapter = (BattleTimelineSceneAdapter)first.SceneAdapter;
+            var untouched = second.AuthorityState;
+            adapter.SelectCards(first.AuthorityState.Zone(CardZoneKinds.Hand, adapter.ObserverId).Cards.Take(1).Select(id => id.Value));
+            Assert.IsTrue(adapter.PlaySelected().Accepted);
+            Assert.AreSame(untouched, second.AuthorityState);
+            var state = first.AuthorityState;
+            first.gameObject.SetActive(false); yield return null;
+            first.gameObject.SetActive(true); yield return null;
+            Assert.AreSame(state, first.AuthorityState); Assert.IsTrue(adapter.CanAct);
+            first.RestartBattle(); yield return null;
+            Assert.AreNotSame(state, first.AuthorityState); Assert.AreSame(untouched, second.AuthorityState);
+            SceneManager.SetActiveScene(previous);
+            yield return SceneManager.UnloadSceneAsync(empty);
+        }
+        private static IEnumerator Idle(SingleBattleSceneAdapter host)
         {
             float deadline = Time.realtimeSinceStartup + 15;
             yield return null;
             while (host.IsPresenting && Time.realtimeSinceStartup < deadline) yield return null;
             Assert.IsFalse(host.IsPresenting, "The scene did not reach a decision window before the test deadline.");
         }
-        private static void Select(SingleBattleHost host, int count)
+        private static void Select(SingleBattleSceneAdapter host, int count)
         {
             var hand = host.Actions.Hand;
             foreach(var card in hand.Cards.ToArray()) hand.SetInteraction(card.Id, default);

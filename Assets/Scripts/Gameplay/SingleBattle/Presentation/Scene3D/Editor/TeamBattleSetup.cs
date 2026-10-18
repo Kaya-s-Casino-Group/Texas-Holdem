@@ -20,7 +20,7 @@ namespace Poker.SingleBattle.Editor
             if (AssetDatabase.LoadAssetAtPath<SceneAsset>(ScenePath) != null) { EditorSceneManager.OpenScene(ScenePath); return; }
             if (!AssetDatabase.CopyAsset(SingleBattleSetup.ScenePath, ScenePath)) throw new InvalidOperationException("无法复制单局 Demo。");
             var scene = EditorSceneManager.OpenScene(ScenePath);
-            var host = scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<SingleBattleHost>(true)).Single();
+            var host = scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<SingleBattleSceneAdapter>(true)).Single();
             var player = host.Player; var enemy = host.Enemy;
             var players = new[] { player, UnityEngine.Object.Instantiate(player, player.transform.parent) };
             var enemies = new[] { enemy, UnityEngine.Object.Instantiate(enemy, enemy.transform.parent), UnityEngine.Object.Instantiate(enemy, enemy.transform.parent) };

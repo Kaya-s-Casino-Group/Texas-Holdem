@@ -9,7 +9,7 @@ namespace Poker.SingleBattle.Editor
     /// <summary>Read-only projection of the formal discard transition, with no separate reward calculator.</summary>
     public sealed class DiscardRewardAuditWindow : EditorWindow
     {
-        private SingleBattleHost host;
+        private SingleBattleSceneAdapter host;
         private CardDuelState observedState;
         private PlayerBattleActor observedPlayer;
         private CardInstanceId[] observedCards;
@@ -36,11 +36,11 @@ namespace Poker.SingleBattle.Editor
         {
             if (host == null)
             {
-                var hosts = FindObjectsOfType<SingleBattleHost>();
+                var hosts = FindObjectsOfType<SingleBattleSceneAdapter>();
                 if (hosts.Length == 1) { host = hosts[0]; ClearPreview(); }
             }
             EditorGUI.BeginChangeCheck();
-            host = (SingleBattleHost)EditorGUILayout.ObjectField("观察战局", host, typeof(SingleBattleHost), true);
+            host = (SingleBattleSceneAdapter)EditorGUILayout.ObjectField("观察战局", host, typeof(SingleBattleSceneAdapter), true);
             if (EditorGUI.EndChangeCheck()) ClearPreview();
             EditorGUILayout.HelpBox("只读：复用正式弃牌入口，不提交状态、不消耗能量或次数、不移动卡牌。默认无额外收益；不进行牌型计分。配置修改后重新开局生效。", MessageType.Info);
             mode = GUILayout.Toolbar(mode, new[] { "当前选牌预计结果", "最近一次实际弃牌" });

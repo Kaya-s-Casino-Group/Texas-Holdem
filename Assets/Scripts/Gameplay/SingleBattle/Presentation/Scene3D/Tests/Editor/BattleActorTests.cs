@@ -25,7 +25,7 @@ namespace Poker.SingleBattle.Tests
         {
             public readonly Scene Scene = EditorSceneManager.NewPreviewScene();
             public readonly CardMatchHost Match;
-            public readonly SingleBattleHost Host;
+            public readonly SingleBattleSceneAdapter Host;
             public readonly PlayerBattleActor Player;
             public readonly EnemyBattleActor Enemy;
             public readonly CardZonePlayHost Hand;
@@ -43,7 +43,7 @@ namespace Poker.SingleBattle.Tests
                 var panel = ui.GetComponent<HandActionPanelView>(); panel.Configure(panel.PlayButton, panel.DiscardButton, panel.RankSortButton, panel.SuitSortButton,
                     panel.PlayButton.GetComponentInChildren<TMP_Text>(), panel.DiscardButton.GetComponentInChildren<TMP_Text>(), panel.RankSortButton.GetComponentInChildren<TMP_Text>(), panel.SuitSortButton.GetComponentInChildren<TMP_Text>());
                 Actions = ui.GetComponent<HandActionPresenter>() ?? ui.AddComponent<HandActionPresenter>(); Actions.Configure(Hand, panel);
-                Host = root.AddComponent<SingleBattleHost>(); Host.Configure(Match, Actions, null, null);
+                Host = root.AddComponent<SingleBattleSceneAdapter>(); Host.Configure(Match, Actions, null, null);
                 var rules = ScriptableObject.CreateInstance<BattleRulesProfile>(); profiles.Add(rules);
                 var damage = ScriptableObject.CreateInstance<ScoreDamageProfile>(); profiles.Add(damage);
                 Host.ConfigureRules(rules);
@@ -720,7 +720,7 @@ namespace Poker.SingleBattle.Tests
                     {
                         f.Host.enabled = false;
                         // The EditMode test owns the playback and lifecycle clocks.
-                        typeof(SingleBattleHost).GetMethod("OnDisable", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(f.Host, null);
+                        typeof(SingleBattleSceneAdapter).GetMethod("OnDisable", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(f.Host, null);
                     }
                     else f.Host.SnapToState();
                     Assert.That(f.Host.Session.State, Is.SameAs(authority));

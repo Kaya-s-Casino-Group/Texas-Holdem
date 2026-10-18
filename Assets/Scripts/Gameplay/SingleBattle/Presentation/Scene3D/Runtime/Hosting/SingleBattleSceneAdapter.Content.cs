@@ -8,7 +8,7 @@ namespace Poker.SingleBattle
 {
     public enum BattleConfigurationSource { LegacyProfiles, XmlContent }
 
-    public sealed partial class SingleBattleHost
+    public sealed partial class SingleBattleSceneAdapter
     {
         [Header("规则内容入口（修改后重新开战生效）")]
         [SerializeField] private BattleConfigurationSource configurationSource;

@@ -41,10 +41,10 @@ namespace PokerEngine.Tests
             Suite("EditorIsolationTests", "编辑器隔离与打包边界", "测试程序集限定 Editor、Player 不引用测试、资源元数据。", "PokerEngine.Integration.Tests.Editor", "PackagingTests", "SingleBattleLegacyContentIntegrationTests")
         };
         private static readonly Entry[] LiveChecks = {
-            Live("team-battle-ui", "卡牌战斗多人阵容（2对3）", "切换玩家、独立手牌、全员结束、怪物依次演出与整轮恢复。", "Poker.SingleBattle.Tests.Editor", "Poker.SingleBattle.Tests.TeamBattlePlayValidation", "Run", "Library/SingleBattleTests/team-play.json", "Poker.SingleBattle.SingleBattleHost"),
-            Live("dealing", "卡牌战斗发牌专项", "真实按钮与动画：动作后立刻补满、下回合补满。", "Poker.SingleBattle.Tests.Editor", "Poker.SingleBattle.Tests.SingleBattlePlayValidation", "RunDealing", "Library/SingleBattleTests/dealing.json", "Poker.SingleBattle.SingleBattleHost"),
-            Live("battle-ui", "卡牌战斗完整流程", "能量、连续出牌、怪物回合、胜负与重开。", "Poker.SingleBattle.Tests.Editor", "Poker.SingleBattle.Tests.SingleBattlePlayValidation", "Run", "Library/SingleBattleTests/play.json", "Poker.SingleBattle.SingleBattleHost"),
-            Live("live-window", "实战牌区窗口", "读取当前牌局、调整表现参数、切换与关闭。", "CardPresentation.Tests.Editor", "CardPresentation.Tests.CardMatchHostTests", "ValidateLiveWindow", "Library/CardPresentationTests/live-validator.json", "Poker.SingleBattle.SingleBattleHost"),
+            Live("team-battle-ui", "卡牌战斗多人阵容（2对3）", "切换玩家、独立手牌、全员结束、怪物依次演出与整轮恢复。", "Poker.SingleBattle.Tests.Editor", "Poker.SingleBattle.Tests.TeamBattlePlayValidation", "Run", "Library/SingleBattleTests/team-play.json", "Poker.SingleBattle.SingleBattleSceneAdapter"),
+            Live("dealing", "卡牌战斗发牌专项", "真实按钮与动画：动作后立刻补满、下回合补满。", "Poker.SingleBattle.Tests.Editor", "Poker.SingleBattle.Tests.SingleBattlePlayValidation", "RunDealing", "Library/SingleBattleTests/dealing.json", "Poker.SingleBattle.SingleBattleSceneAdapter"),
+            Live("battle-ui", "卡牌战斗完整流程", "能量、连续出牌、怪物回合、胜负与重开。", "Poker.SingleBattle.Tests.Editor", "Poker.SingleBattle.Tests.SingleBattlePlayValidation", "Run", "Library/SingleBattleTests/play.json", "Poker.SingleBattle.SingleBattleSceneAdapter"),
+            Live("live-window", "实战牌区窗口", "读取当前牌局、调整表现参数、切换与关闭。", "CardPresentation.Tests.Editor", "CardPresentation.Tests.CardMatchHostTests", "ValidateLiveWindow", "Library/CardPresentationTests/live-validator.json", "Poker.SingleBattle.SingleBattleSceneAdapter"),
             Live("deck-motion", "牌堆与总览动画", "牌堆图标、面板与提示的显示动画，保持牌局状态。", "CardPresentation.Tests.Editor", "CardPresentation.Tests.DeckOverviewPlayValidation", "ValidateMotion", "Library/DeckOverviewValidation/motion.json", "CardInteraction.DrawPilePresenter"),
             Live("draw-battle", "分数挑战完整流程", "独立分数挑战的按钮、计分、补牌和流程恢复。", "Poker.DrawBattle.Tests.Editor", "Poker.DrawBattle.Tests.DrawBattlePlayValidation", "Run", "Library/DrawBattleTests/play.json", "Poker.DrawBattle.DrawBattleHost")
         };
