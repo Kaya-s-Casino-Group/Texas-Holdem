@@ -1,0 +1,5 @@
+PASS: layout max position error=0 m
+PASS: 37 mesh renderers and UV1
+PASS: no imported Light components
+Camera vertical FOV=46.98917
+Current scene=Assets/Scenes/CharacterValidation.unity

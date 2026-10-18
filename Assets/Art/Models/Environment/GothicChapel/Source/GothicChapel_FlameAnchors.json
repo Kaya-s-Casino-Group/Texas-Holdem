@@ -1,0 +1,124 @@
+{
+  "anchors": [
+    {
+      "candle": "SM_Candles_StatueLeft",
+      "position": {
+        "x": 0.00447,
+        "y": 0.34851,
+        "z": 0.03539
+      }
+    },
+    {
+      "candle": "SM_Candles_StatueLeft",
+      "position": {
+        "x": -0.09449,
+        "y": 0.239,
+        "z": -0.01939
+      }
+    },
+    {
+      "candle": "SM_Candles_StatueLeft",
+      "position": {
+        "x": 0.1073,
+        "y": 0.16,
+        "z": -0.00687
+      }
+    },
+    {
+      "candle": "SM_Candles_NearPillar",
+      "position": {
+        "x": 0.01781,
+        "y": 0.14802,
+        "z": 0.01478
+      }
+    },
+    {
+      "candle": "SM_Candles_NearPillar",
+      "position": {
+        "x": -0.10951,
+        "y": 0.097,
+        "z": 0.03332
+      }
+    },
+    {
+      "candle": "SM_Candles_NearPillar",
+      "position": {
+        "x": 0.09164,
+        "y": 0.07474,
+        "z": -0.08726
+      }
+    },
+    {
+      "candle": "SM_Candles_StatueRight",
+      "position": {
+        "x": -0.06416,
+        "y": 0.23529,
+        "z": 0.04409
+      }
+    },
+    {
+      "candle": "SM_Candles_StatueRight",
+      "position": {
+        "x": 0.08744,
+        "y": 0.16921,
+        "z": -0.00764
+      }
+    },
+    {
+      "candle": "SM_Candles_StatueRight",
+      "position": {
+        "x": -0.0053,
+        "y": 0.10715,
+        "z": -0.0352
+      }
+    },
+    {
+      "candle": "SM_Candles_WindowTray",
+      "position": {
+        "x": -0.04323,
+        "y": 0.32184,
+        "z": -0.02361
+      }
+    },
+    {
+      "candle": "SM_Candles_WindowTray",
+      "position": {
+        "x": 0.04032,
+        "y": 0.24483,
+        "z": -0.10571
+      }
+    },
+    {
+      "candle": "SM_Candles_WindowTray",
+      "position": {
+        "x": -0.06357,
+        "y": 0.21141,
+        "z": 0.06575
+      }
+    },
+    {
+      "candle": "SM_Candles_WindowTray",
+      "position": {
+        "x": 0.07084,
+        "y": 0.15257,
+        "z": -0.01126
+      }
+    },
+    {
+      "candle": "SM_Candles_WindowTray",
+      "position": {
+        "x": -0.00835,
+        "y": 0.13658,
+        "z": 0.10935
+      }
+    },
+    {
+      "candle": "SM_Candle_HolderMounted",
+      "position": {
+        "x": 0,
+        "y": 0.18563,
+        "z": 0
+      }
+    }
+  ]
+}

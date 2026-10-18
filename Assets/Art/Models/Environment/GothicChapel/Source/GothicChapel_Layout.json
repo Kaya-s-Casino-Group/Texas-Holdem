@@ -1,0 +1,957 @@
+{
+  "version": 1,
+  "units": "meters",
+  "coordinateConversion": "Blender (x,y,z) -> Unity (x,z,y); reverse triangle winding",
+  "materials": [
+    {
+      "name": "MAT_Architecture_ArcadeWall",
+      "baseMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Architecture_ArcadeWall_BaseColor.png",
+      "normalMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Architecture_ArcadeWall_Normal.png",
+      "maskMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Architecture_ArcadeWall_Mask.png",
+      "color": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "normalStrength": 1.0,
+      "metallic": 1.0,
+      "smoothness": 1.0,
+      "cutoff": 0.0,
+      "unlit": 0.0,
+      "bakeEmission": 0.0
+    },
+    {
+      "name": "MAT_Architecture_GothicWindow",
+      "baseMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Architecture_GothicWindow_BaseColor.png",
+      "normalMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Architecture_GothicWindow_Normal.png",
+      "maskMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Architecture_GothicWindow_Mask.png",
+      "color": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "normalStrength": 1.0,
+      "metallic": 1.0,
+      "smoothness": 1.0,
+      "cutoff": 0.0,
+      "unlit": 0.0,
+      "bakeEmission": 0.0
+    },
+    {
+      "name": "MAT_Architecture_ForegroundPillar",
+      "baseMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Architecture_ForegroundPillar_BaseColor.png",
+      "normalMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Architecture_ForegroundPillar_Normal.png",
+      "maskMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Architecture_ForegroundPillar_Mask.png",
+      "color": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "normalStrength": 1.0,
+      "metallic": 1.0,
+      "smoothness": 1.0,
+      "cutoff": 0.0,
+      "unlit": 0.0,
+      "bakeEmission": 0.0
+    },
+    {
+      "name": "MAT_Floor_StoneTiles",
+      "baseMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Floor_StoneTiles_BaseColor.png",
+      "normalMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Floor_StoneTiles_Normal.png",
+      "maskMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Floor_StoneTiles_Mask.png",
+      "color": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "normalStrength": 1.0,
+      "metallic": 1.0,
+      "smoothness": 1.0,
+      "cutoff": 0.0,
+      "unlit": 0.0,
+      "bakeEmission": 0.0
+    },
+    {
+      "name": "MAT_Prop_ReligiousStatue",
+      "baseMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Prop_ReligiousStatue_BaseColor.png",
+      "normalMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Prop_ReligiousStatue_Normal.png",
+      "maskMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Prop_ReligiousStatue_Mask.png",
+      "color": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "normalStrength": 1.0,
+      "metallic": 1.0,
+      "smoothness": 1.0,
+      "cutoff": 0.0,
+      "unlit": 0.0,
+      "bakeEmission": 0.0
+    },
+    {
+      "name": "MAT_Prop_GoldenCrucifix",
+      "baseMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Prop_GoldenCrucifix_BaseColor.png",
+      "normalMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Prop_GoldenCrucifix_Normal.png",
+      "maskMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Prop_GoldenCrucifix_Mask.png",
+      "color": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "normalStrength": 1.0,
+      "metallic": 1.0,
+      "smoothness": 1.0,
+      "cutoff": 0.0,
+      "unlit": 0.0,
+      "bakeEmission": 0.0
+    },
+    {
+      "name": "MAT_Prop_WoodenBench",
+      "baseMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Prop_WoodenBench_BaseColor.png",
+      "normalMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Prop_WoodenBench_Normal.png",
+      "maskMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Prop_WoodenBench_Mask.png",
+      "color": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "normalStrength": 1.0,
+      "metallic": 1.0,
+      "smoothness": 1.0,
+      "cutoff": 0.0,
+      "unlit": 0.0,
+      "bakeEmission": 0.0
+    },
+    {
+      "name": "MAT_Prop_StoneAltar",
+      "baseMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Prop_StoneAltar_BaseColor.png",
+      "normalMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Prop_StoneAltar_Normal.png",
+      "maskMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Prop_StoneAltar_Mask.png",
+      "color": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "normalStrength": 1.0,
+      "metallic": 1.0,
+      "smoothness": 1.0,
+      "cutoff": 0.0,
+      "unlit": 0.0,
+      "bakeEmission": 0.0
+    },
+    {
+      "name": "MAT_Candles_StatueLeft",
+      "baseMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Candles_StatueLeft_BaseColor.png",
+      "normalMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Candles_StatueLeft_Normal.png",
+      "maskMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Candles_StatueLeft_Mask.png",
+      "color": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "normalStrength": 1.0,
+      "metallic": 1.0,
+      "smoothness": 1.0,
+      "cutoff": 0.0,
+      "unlit": 0.0,
+      "bakeEmission": 0.0
+    },
+    {
+      "name": "MAT_Candles_NearPillar",
+      "baseMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Candles_NearPillar_BaseColor.png",
+      "normalMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Candles_NearPillar_Normal.png",
+      "maskMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Candles_NearPillar_Mask.png",
+      "color": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "normalStrength": 1.0,
+      "metallic": 1.0,
+      "smoothness": 1.0,
+      "cutoff": 0.0,
+      "unlit": 0.0,
+      "bakeEmission": 0.0
+    },
+    {
+      "name": "MAT_Candles_StatueRight",
+      "baseMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Candles_StatueRight_BaseColor.png",
+      "normalMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Candles_StatueRight_Normal.png",
+      "maskMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Candles_StatueRight_Mask.png",
+      "color": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "normalStrength": 1.0,
+      "metallic": 1.0,
+      "smoothness": 1.0,
+      "cutoff": 0.0,
+      "unlit": 0.0,
+      "bakeEmission": 0.0
+    },
+    {
+      "name": "MAT_Candles_WindowTray",
+      "baseMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Candles_WindowTray_BaseColor.png",
+      "normalMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Candles_WindowTray_Normal.png",
+      "maskMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Candles_WindowTray_Mask.png",
+      "color": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "normalStrength": 1.0,
+      "metallic": 1.0,
+      "smoothness": 1.0,
+      "cutoff": 0.0,
+      "unlit": 0.0,
+      "bakeEmission": 0.0
+    },
+    {
+      "name": "MAT_Candle_HolderMounted",
+      "baseMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Candle_HolderMounted_BaseColor.png",
+      "normalMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Candle_HolderMounted_Normal.png",
+      "maskMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Candle_HolderMounted_Mask.png",
+      "color": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "normalStrength": 1.0,
+      "metallic": 1.0,
+      "smoothness": 1.0,
+      "cutoff": 0.0,
+      "unlit": 0.0,
+      "bakeEmission": 0.0
+    },
+    {
+      "name": "MAT_Holder_Brass",
+      "baseMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Holder_Brass_BaseColor.png",
+      "normalMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Holder_Brass_Normal.png",
+      "maskMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Holder_Brass_Mask.png",
+      "color": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "normalStrength": 1.0,
+      "metallic": 1.0,
+      "smoothness": 1.0,
+      "cutoff": 0.0,
+      "unlit": 0.0,
+      "bakeEmission": 0.0
+    },
+    {
+      "name": "MAT_Ivy_Leaf_0",
+      "baseMap": "",
+      "normalMap": "",
+      "maskMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Ivy_Leaf_0_Mask.png",
+      "color": [
+        0.10499999672174454,
+        0.14499999582767487,
+        0.03700000047683716,
+        1.0
+      ],
+      "normalStrength": 0.0,
+      "metallic": 1.0,
+      "smoothness": 1.0,
+      "cutoff": 0.0,
+      "unlit": 0.0,
+      "bakeEmission": 0.0
+    },
+    {
+      "name": "MAT_Ivy_Leaf_1",
+      "baseMap": "",
+      "normalMap": "",
+      "maskMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Ivy_Leaf_1_Mask.png",
+      "color": [
+        0.1599999964237213,
+        0.20499999821186066,
+        0.06499999761581421,
+        1.0
+      ],
+      "normalStrength": 0.0,
+      "metallic": 1.0,
+      "smoothness": 1.0,
+      "cutoff": 0.0,
+      "unlit": 0.0,
+      "bakeEmission": 0.0
+    },
+    {
+      "name": "MAT_Ivy_Leaf_2",
+      "baseMap": "",
+      "normalMap": "",
+      "maskMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Ivy_Leaf_2_Mask.png",
+      "color": [
+        0.22499999403953552,
+        0.2549999952316284,
+        0.08500000089406967,
+        1.0
+      ],
+      "normalStrength": 0.0,
+      "metallic": 1.0,
+      "smoothness": 1.0,
+      "cutoff": 0.0,
+      "unlit": 0.0,
+      "bakeEmission": 0.0
+    },
+    {
+      "name": "MAT_Ivy_Leaf_3",
+      "baseMap": "",
+      "normalMap": "",
+      "maskMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Ivy_Leaf_3_Mask.png",
+      "color": [
+        0.07500000298023224,
+        0.10999999940395355,
+        0.028999999165534973,
+        1.0
+      ],
+      "normalStrength": 0.0,
+      "metallic": 1.0,
+      "smoothness": 1.0,
+      "cutoff": 0.0,
+      "unlit": 0.0,
+      "bakeEmission": 0.0
+    },
+    {
+      "name": "MAT_Ivy_Stem",
+      "baseMap": "",
+      "normalMap": "",
+      "maskMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Ivy_Stem_Mask.png",
+      "color": [
+        0.07000000029802322,
+        0.08500000089406967,
+        0.02500000037252903,
+        1.0
+      ],
+      "normalStrength": 0.0,
+      "metallic": 1.0,
+      "smoothness": 1.0,
+      "cutoff": 0.0,
+      "unlit": 0.0,
+      "bakeEmission": 0.0
+    },
+    {
+      "name": "MAT_Banner_OxbloodGold",
+      "baseMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Banner_OxbloodGold_BaseColor.png",
+      "normalMap": "",
+      "maskMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Banner_OxbloodGold_Mask.png",
+      "color": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "normalStrength": 0.0,
+      "metallic": 1.0,
+      "smoothness": 1.0,
+      "cutoff": 0.0,
+      "unlit": 0.0,
+      "bakeEmission": 0.0
+    },
+    {
+      "name": "MAT_Banner_AgedIron",
+      "baseMap": "",
+      "normalMap": "",
+      "maskMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Banner_AgedIron_Mask.png",
+      "color": [
+        0.03500000014901161,
+        0.02800000086426735,
+        0.01899999938905239,
+        1.0
+      ],
+      "normalStrength": 0.0,
+      "metallic": 1.0,
+      "smoothness": 1.0,
+      "cutoff": 0.0,
+      "unlit": 0.0,
+      "bakeEmission": 0.0
+    },
+    {
+      "name": "MAT_Backdrop_Sky",
+      "baseMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Backdrop_Sky_BaseColor.png",
+      "normalMap": "",
+      "maskMap": "",
+      "color": [
+        0.699999988079071,
+        0.699999988079071,
+        0.699999988079071,
+        1
+      ],
+      "normalStrength": 0.0,
+      "metallic": 1.0,
+      "smoothness": 1.0,
+      "cutoff": 0,
+      "unlit": 1,
+      "bakeEmission": 0.0
+    },
+    {
+      "name": "MAT_Backdrop_Mountains",
+      "baseMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Backdrop_Mountains_BaseColor.png",
+      "normalMap": "",
+      "maskMap": "",
+      "color": [
+        0.699999988079071,
+        0.699999988079071,
+        0.699999988079071,
+        1
+      ],
+      "normalStrength": 0.0,
+      "metallic": 1.0,
+      "smoothness": 1.0,
+      "cutoff": 0.45,
+      "unlit": 1,
+      "bakeEmission": 0.0,
+      "atmosphere": [
+        0.1899999976158142,
+        0.25999999046325684,
+        0.33000001311302185,
+        1.0
+      ],
+      "atmosphereBlend": 0.23000000417232513
+    },
+    {
+      "name": "MAT_Backdrop_Castle",
+      "baseMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Backdrop_Castle_BaseColor.png",
+      "normalMap": "",
+      "maskMap": "",
+      "color": [
+        0.699999988079071,
+        0.699999988079071,
+        0.699999988079071,
+        1
+      ],
+      "normalStrength": 0.0,
+      "metallic": 1.0,
+      "smoothness": 1.0,
+      "cutoff": 0.45,
+      "unlit": 1,
+      "bakeEmission": 0.0,
+      "atmosphere": [
+        0.1899999976158142,
+        0.25999999046325684,
+        0.33000001311302185,
+        1.0
+      ],
+      "atmosphereBlend": 0.11999999731779099
+    },
+    {
+      "name": "MAT_Backdrop_Forest",
+      "baseMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Backdrop_Forest_BaseColor.png",
+      "normalMap": "",
+      "maskMap": "",
+      "color": [
+        0.699999988079071,
+        0.699999988079071,
+        0.699999988079071,
+        1
+      ],
+      "normalStrength": 0.0,
+      "metallic": 1.0,
+      "smoothness": 1.0,
+      "cutoff": 0.45,
+      "unlit": 1,
+      "bakeEmission": 0.0
+    },
+    {
+      "name": "MAT_Backdrop_Branches",
+      "baseMap": "Assets/Art/Models/Environment/GothicChapel/Textures/TEX_Backdrop_Branches_BaseColor.png",
+      "normalMap": "",
+      "maskMap": "",
+      "color": [
+        0.699999988079071,
+        0.699999988079071,
+        0.699999988079071,
+        1
+      ],
+      "normalStrength": 0.0,
+      "metallic": 1.0,
+      "smoothness": 1.0,
+      "cutoff": 0.45,
+      "unlit": 1,
+      "bakeEmission": 0.0
+    }
+  ],
+  "objects": [
+    {
+      "name": "SM_Architecture_ArcadeWall",
+      "path": "Assets/Art/Models/Environment/GothicChapel/Source/SM_Architecture_ArcadeWall.json",
+      "category": "COL_01_Architecture",
+      "position": {
+        "x": 0.0003661513328552246,
+        "y": 1.56695556640625,
+        "z": -0.00604248046875
+      },
+      "backdrop": false,
+      "foliage": false
+    },
+    {
+      "name": "SM_Architecture_GothicWindow",
+      "path": "Assets/Art/Models/Environment/GothicChapel/Source/SM_Architecture_GothicWindow.json",
+      "category": "COL_01_Architecture",
+      "position": {
+        "x": 3.805561065673828,
+        "y": 1.6885015964508057,
+        "z": -2.467552661895752
+      },
+      "backdrop": false,
+      "foliage": false
+    },
+    {
+      "name": "SM_Architecture_ForegroundPillar",
+      "path": "Assets/Art/Models/Environment/GothicChapel/Source/SM_Architecture_ForegroundPillar.json",
+      "category": "COL_01_Architecture",
+      "position": {
+        "x": -0.9847670197486877,
+        "y": 1.4732035398483276,
+        "z": -5.535980224609375
+      },
+      "backdrop": false,
+      "foliage": false
+    },
+    {
+      "name": "SM_Floor_StoneTiles_01",
+      "path": "Assets/Art/Models/Environment/GothicChapel/Source/SM_Floor_StoneTiles_01.json",
+      "category": "COL_02_Floor",
+      "position": {
+        "x": 0.01635134220123291,
+        "y": -0.24066469073295593,
+        "z": -1.7767659425735474
+      },
+      "backdrop": false,
+      "foliage": false
+    },
+    {
+      "name": "SM_Floor_StoneTiles_02",
+      "path": "Assets/Art/Models/Environment/GothicChapel/Source/SM_Floor_StoneTiles_02.json",
+      "category": "COL_02_Floor",
+      "position": {
+        "x": -8.758252143859863,
+        "y": -0.1720229685306549,
+        "z": -2.355839729309082
+      },
+      "backdrop": false,
+      "foliage": false
+    },
+    {
+      "name": "SM_Floor_StoneTiles_03",
+      "path": "Assets/Art/Models/Environment/GothicChapel/Source/SM_Floor_StoneTiles_03.json",
+      "category": "COL_02_Floor",
+      "position": {
+        "x": 0.01635134220123291,
+        "y": -0.1720229685306549,
+        "z": -7.666940212249756
+      },
+      "backdrop": false,
+      "foliage": false
+    },
+    {
+      "name": "SM_Floor_StoneTiles_04",
+      "path": "Assets/Art/Models/Environment/GothicChapel/Source/SM_Floor_StoneTiles_04.json",
+      "category": "COL_02_Floor",
+      "position": {
+        "x": -8.758252143859863,
+        "y": -0.1720229685306549,
+        "z": -8.260289192199707
+      },
+      "backdrop": false,
+      "foliage": false
+    },
+    {
+      "name": "SM_Prop_ReligiousStatue",
+      "path": "Assets/Art/Models/Environment/GothicChapel/Source/SM_Prop_ReligiousStatue.json",
+      "category": "COL_03_Props",
+      "position": {
+        "x": 0.5415865778923035,
+        "y": 0.0,
+        "z": -0.4854561984539032
+      },
+      "backdrop": false,
+      "foliage": false
+    },
+    {
+      "name": "SM_Prop_GoldenCrucifix",
+      "path": "Assets/Art/Models/Environment/GothicChapel/Source/SM_Prop_GoldenCrucifix.json",
+      "category": "COL_03_Props",
+      "position": {
+        "x": -5.043945789337158,
+        "y": 1.0475752353668213,
+        "z": -2.85176420211792
+      },
+      "backdrop": false,
+      "foliage": false
+    },
+    {
+      "name": "SM_Prop_WoodenBench",
+      "path": "Assets/Art/Models/Environment/GothicChapel/Source/SM_Prop_WoodenBench.json",
+      "category": "COL_03_Props",
+      "position": {
+        "x": -2.1948347091674805,
+        "y": -0.09505835175514221,
+        "z": -1.0727208852767944
+      },
+      "backdrop": false,
+      "foliage": false
+    },
+    {
+      "name": "SM_Prop_StoneAltar",
+      "path": "Assets/Art/Models/Environment/GothicChapel/Source/SM_Prop_StoneAltar.json",
+      "category": "COL_03_Props",
+      "position": {
+        "x": -5.043945789337158,
+        "y": 0.0,
+        "z": -2.85176420211792
+      },
+      "backdrop": false,
+      "foliage": false
+    },
+    {
+      "name": "SM_Candles_StatueLeft",
+      "path": "Assets/Art/Models/Environment/GothicChapel/Source/SM_Candles_StatueLeft.json",
+      "category": "COL_04_Candles_and_Holders",
+      "position": {
+        "x": 0.07999999821186066,
+        "y": -0.016346240416169167,
+        "z": -1.0800000429153442
+      },
+      "backdrop": false,
+      "foliage": false
+    },
+    {
+      "name": "SM_Candles_NearPillar",
+      "path": "Assets/Art/Models/Environment/GothicChapel/Source/SM_Candles_NearPillar.json",
+      "category": "COL_04_Candles_and_Holders",
+      "position": {
+        "x": -1.9199999570846558,
+        "y": -0.07665139436721802,
+        "z": -4.159999847412109
+      },
+      "backdrop": false,
+      "foliage": false
+    },
+    {
+      "name": "SM_Candles_StatueRight",
+      "path": "Assets/Art/Models/Environment/GothicChapel/Source/SM_Candles_StatueRight.json",
+      "category": "COL_04_Candles_and_Holders",
+      "position": {
+        "x": 0.9919999837875366,
+        "y": -0.03955649584531784,
+        "z": -1.1759999990463257
+      },
+      "backdrop": false,
+      "foliage": false
+    },
+    {
+      "name": "SM_Candles_WindowTray",
+      "path": "Assets/Art/Models/Environment/GothicChapel/Source/SM_Candles_WindowTray.json",
+      "category": "COL_04_Candles_and_Holders",
+      "position": {
+        "x": 2.9200000762939453,
+        "y": -0.07736634463071823,
+        "z": -2.9200000762939453
+      },
+      "backdrop": false,
+      "foliage": false
+    },
+    {
+      "name": "SM_Candle_HolderMounted",
+      "path": "Assets/Art/Models/Environment/GothicChapel/Source/SM_Candle_HolderMounted.json",
+      "category": "COL_04_Candles_and_Holders",
+      "position": {
+        "x": 1.159999966621399,
+        "y": 0.4202756881713867,
+        "z": -0.656000018119812
+      },
+      "backdrop": false,
+      "foliage": false
+    },
+    {
+      "name": "SM_Holder_Brass",
+      "path": "Assets/Art/Models/Environment/GothicChapel/Source/SM_Holder_Brass.json",
+      "category": "COL_04_Candles_and_Holders",
+      "position": {
+        "x": 1.159999966621399,
+        "y": -0.05170828476548195,
+        "z": -0.656000018119812
+      },
+      "backdrop": false,
+      "foliage": false
+    },
+    {
+      "name": "SM_Ivy_Cards_05",
+      "path": "Assets/Art/Models/Environment/GothicChapel/Source/SM_Ivy_Cards_05.json",
+      "category": "COL_05_Ivy",
+      "position": {
+        "x": 3.9090347290039062,
+        "y": 1.6965759992599487,
+        "z": -0.14702965319156647
+      },
+      "backdrop": false,
+      "foliage": true
+    },
+    {
+      "name": "SM_Ivy_Cards_06",
+      "path": "Assets/Art/Models/Environment/GothicChapel/Source/SM_Ivy_Cards_06.json",
+      "category": "COL_05_Ivy",
+      "position": {
+        "x": 4.308569431304932,
+        "y": 2.2268857955932617,
+        "z": -1.0447914600372314
+      },
+      "backdrop": false,
+      "foliage": true
+    },
+    {
+      "name": "SM_Ivy_Cards_07",
+      "path": "Assets/Art/Models/Environment/GothicChapel/Source/SM_Ivy_Cards_07.json",
+      "category": "COL_05_Ivy",
+      "position": {
+        "x": 4.381442070007324,
+        "y": 2.1001994609832764,
+        "z": -2.8240416049957275
+      },
+      "backdrop": false,
+      "foliage": true
+    },
+    {
+      "name": "SM_Ivy_Cards_08",
+      "path": "Assets/Art/Models/Environment/GothicChapel/Source/SM_Ivy_Cards_08.json",
+      "category": "COL_05_Ivy",
+      "position": {
+        "x": 4.436429977416992,
+        "y": 1.4475711584091187,
+        "z": -3.5091381072998047
+      },
+      "backdrop": false,
+      "foliage": true
+    },
+    {
+      "name": "SM_Ivy_Cards_09",
+      "path": "Assets/Art/Models/Environment/GothicChapel/Source/SM_Ivy_Cards_09.json",
+      "category": "COL_05_Ivy",
+      "position": {
+        "x": 3.7441678047180176,
+        "y": 0.8842846751213074,
+        "z": -4.4925360679626465
+      },
+      "backdrop": false,
+      "foliage": true
+    },
+    {
+      "name": "SM_Ivy_Cards_01",
+      "path": "Assets/Art/Models/Environment/GothicChapel/Source/SM_Ivy_Cards_01.json",
+      "category": "COL_05_Ivy",
+      "position": {
+        "x": -3.4218103885650635,
+        "y": 1.6882587671279907,
+        "z": -0.4125283360481262
+      },
+      "backdrop": false,
+      "foliage": true
+    },
+    {
+      "name": "SM_Ivy_Cards_02",
+      "path": "Assets/Art/Models/Environment/GothicChapel/Source/SM_Ivy_Cards_02.json",
+      "category": "COL_05_Ivy",
+      "position": {
+        "x": -1.3004980087280273,
+        "y": 2.3694963455200195,
+        "z": 0.061836227774620056
+      },
+      "backdrop": false,
+      "foliage": true
+    },
+    {
+      "name": "SM_Ivy_Cards_03",
+      "path": "Assets/Art/Models/Environment/GothicChapel/Source/SM_Ivy_Cards_03.json",
+      "category": "COL_05_Ivy",
+      "position": {
+        "x": 1.5948224067687988,
+        "y": 2.356851577758789,
+        "z": -0.750791609287262
+      },
+      "backdrop": false,
+      "foliage": true
+    },
+    {
+      "name": "SM_Ivy_Cards_04",
+      "path": "Assets/Art/Models/Environment/GothicChapel/Source/SM_Ivy_Cards_04.json",
+      "category": "COL_05_Ivy",
+      "position": {
+        "x": 3.2081925868988037,
+        "y": 1.718003749847412,
+        "z": 0.13031305372714996
+      },
+      "backdrop": false,
+      "foliage": true
+    },
+    {
+      "name": "SM_Banner_WindowWall",
+      "path": "Assets/Art/Models/Environment/GothicChapel/Source/SM_Banner_WindowWall.json",
+      "category": "COL_06_Banners",
+      "position": {
+        "x": 4.229907035827637,
+        "y": 2.118759870529175,
+        "z": -0.4195641577243805
+      },
+      "backdrop": false,
+      "foliage": false
+    },
+    {
+      "name": "SM_Banner_ArcadeWall",
+      "path": "Assets/Art/Models/Environment/GothicChapel/Source/SM_Banner_ArcadeWall.json",
+      "category": "COL_06_Banners",
+      "position": {
+        "x": -2.879633903503418,
+        "y": 1.8999998569488525,
+        "z": -0.47871822118759155
+      },
+      "backdrop": false,
+      "foliage": false
+    },
+    {
+      "name": "SM_Banner_ForegroundPillar",
+      "path": "Assets/Art/Models/Environment/GothicChapel/Source/SM_Banner_ForegroundPillar.json",
+      "category": "COL_06_Banners",
+      "position": {
+        "x": -1.4899815320968628,
+        "y": 1.7649648189544678,
+        "z": -5.825316905975342
+      },
+      "backdrop": false,
+      "foliage": false
+    },
+    {
+      "name": "SM_Banner_HangingRod",
+      "path": "Assets/Art/Models/Environment/GothicChapel/Source/SM_Banner_HangingRod.json",
+      "category": "COL_06_Banners",
+      "position": {
+        "x": -1.556661605834961,
+        "y": 2.3838977813720703,
+        "z": -5.836977005004883
+      },
+      "backdrop": false,
+      "foliage": false
+    },
+    {
+      "name": "SM_Backdrop_05_Sky",
+      "path": "Assets/Art/Models/Environment/GothicChapel/Source/SM_Backdrop_05_Sky.json",
+      "category": "COL_07_Background_Layers",
+      "position": {
+        "x": 97.32585906982422,
+        "y": -33.565185546875,
+        "z": 88.18390655517578
+      },
+      "backdrop": true,
+      "foliage": false
+    },
+    {
+      "name": "SM_Backdrop_04_Mountains",
+      "path": "Assets/Art/Models/Environment/GothicChapel/Source/SM_Backdrop_04_Mountains.json",
+      "category": "COL_07_Background_Layers",
+      "position": {
+        "x": 68.3913345336914,
+        "y": 5.857635021209717,
+        "z": 61.390220642089844
+      },
+      "backdrop": true,
+      "foliage": false
+    },
+    {
+      "name": "SM_Backdrop_03_CastleLeft",
+      "path": "Assets/Art/Models/Environment/GothicChapel/Source/SM_Backdrop_03_CastleLeft.json",
+      "category": "COL_07_Background_Layers",
+      "position": {
+        "x": 32.72865676879883,
+        "y": 5.058023452758789,
+        "z": 50.97508239746094
+      },
+      "backdrop": true,
+      "foliage": false
+    },
+    {
+      "name": "SM_Backdrop_03_CastleRight",
+      "path": "Assets/Art/Models/Environment/GothicChapel/Source/SM_Backdrop_03_CastleRight.json",
+      "category": "COL_07_Background_Layers",
+      "position": {
+        "x": 65.47293853759766,
+        "y": 3.2180306911468506,
+        "z": 19.781661987304688
+      },
+      "backdrop": true,
+      "foliage": false
+    },
+    {
+      "name": "SM_Backdrop_02_ForestLeft",
+      "path": "Assets/Art/Models/Environment/GothicChapel/Source/SM_Backdrop_02_ForestLeft.json",
+      "category": "COL_07_Background_Layers",
+      "position": {
+        "x": 18.839941024780273,
+        "y": -0.9467785358428955,
+        "z": 21.15732192993164
+      },
+      "backdrop": true,
+      "foliage": false
+    },
+    {
+      "name": "SM_Backdrop_02_ForestRight",
+      "path": "Assets/Art/Models/Environment/GothicChapel/Source/SM_Backdrop_02_ForestRight.json",
+      "category": "COL_07_Background_Layers",
+      "position": {
+        "x": 36.77827835083008,
+        "y": -2.1297242641448975,
+        "z": 4.9855546951293945
+      },
+      "backdrop": true,
+      "foliage": false
+    },
+    {
+      "name": "SM_Backdrop_01_BranchesLeft",
+      "path": "Assets/Art/Models/Environment/GothicChapel/Source/SM_Backdrop_01_BranchesLeft.json",
+      "category": "COL_07_Background_Layers",
+      "position": {
+        "x": 2.488677501678467,
+        "y": 2.473559617996216,
+        "z": 13.363760948181152
+      },
+      "backdrop": true,
+      "foliage": false
+    }
+  ],
+  "camera": {
+    "name": "CAM_Main",
+    "position": {
+      "x": -5.0117926597595215,
+      "y": 2.246199369430542,
+      "z": -6.581854820251465
+    },
+    "forward": {
+      "x": 0.7106781005859375,
+      "y": -0.2486901581287384,
+      "z": 0.6580955982208252
+    },
+    "up": {
+      "x": 0.18247133493423462,
+      "y": 0.9685831069946289,
+      "z": 0.16897046566009521
+    },
+    "verticalFov": 46.98916982187167,
+    "near": 0.00800000037997961,
+    "far": 800.0,
+    "aspect": 1.6563146997929608
+  }
+}

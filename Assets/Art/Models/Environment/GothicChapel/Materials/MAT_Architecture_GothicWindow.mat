@@ -1,0 +1,56 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: MAT_Architecture_GothicWindow
+  m_Shader: {fileID: 4800000, guid: 2775a1ed34b99408eab9c8a4d3d90566, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 1
+  m_DoubleSidedGI: 1
+  m_CustomRenderQueue: 2000
+  stringTagMap:
+    RenderType: Opaque
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _BaseMap:
+        m_Texture: {fileID: 2800000, guid: 56a920cdc0d6f45ba8001d5c7cc1c779, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _BumpMap:
+        m_Texture: {fileID: 2800000, guid: 3a798e8418cb54c829f9d00a871d1be7, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MaskMap:
+        m_Texture: {fileID: 2800000, guid: 02661d830bda544b792d81557906443a, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _AtmosphereBlend: 0
+    - _BakeEmission: 0
+    - _BumpScale: 1
+    - _Cull: 0
+    - _Cutoff: 0
+    - _ExcludeFromGI: 0
+    - _Metallic: 1
+    - _Smoothness: 1
+    - _Unlit: 0
+    - _VertexTone: 0
+    - _WindSpeed: 1
+    - _WindStrength: 0
+    m_Colors:
+    - _AtmosphereColor: {r: 0.18999997, g: 0.25999996, b: 0.32999998, a: 1}
+    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
+  m_BuildTextureStacks: []

@@ -1,0 +1,4 @@
+Assets/Scenes/CharacterValidation.unity
+Root=PF_GC_GothicChapel
+Layer=9
+Existing roots preserved=3

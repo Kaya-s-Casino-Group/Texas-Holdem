@@ -1,0 +1,6 @@
+PASS: 3 banners, fixed top masks, GPU-rendered wave motion; shared shadow/depth/normal deformation.
+PASS: banner Meta is independent of animation time.
+PASS: 15 flames share one mesh and GPU-instancing-enabled material.
+PASS: GPU DrawMeshInstanced rendered 2 instances in one draw: 4840 / 4698 nonzero pixels.
+PASS: time variation ratio=0.361079813306382.
+Shader errors: 0.

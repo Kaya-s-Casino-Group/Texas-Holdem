@@ -1,0 +1,599 @@
+{
+    "pipeline": "Assets/Settings/MainURP.asset",
+    "scene": "Assets/Scenes/CharacterValidation.unity",
+    "meshes": [
+        {
+            "name": "SM_Architecture_ArcadeWall",
+            "vertices": 27817,
+            "triangles": 18181,
+            "uv1Count": 27817,
+            "overlapSamples": 0,
+            "coveredSamples": 63373,
+            "degenerateUVTriangles": 0,
+            "lightmapped": true,
+            "inBounds": true,
+            "bounds": {
+                "x": 7.841553688049316,
+                "y": 3.1339111328125,
+                "z": 3.262817621231079
+            }
+        },
+        {
+            "name": "SM_Architecture_GothicWindow",
+            "vertices": 22940,
+            "triangles": 14946,
+            "uv1Count": 22940,
+            "overlapSamples": 0,
+            "coveredSamples": 68809,
+            "degenerateUVTriangles": 0,
+            "lightmapped": true,
+            "inBounds": true,
+            "bounds": {
+                "x": 2.375140905380249,
+                "y": 3.318281888961792,
+                "z": 5.907052040100098
+            }
+        },
+        {
+            "name": "SM_Architecture_ForegroundPillar",
+            "vertices": 12312,
+            "triangles": 9594,
+            "uv1Count": 12312,
+            "overlapSamples": 0,
+            "coveredSamples": 104808,
+            "degenerateUVTriangles": 0,
+            "lightmapped": true,
+            "inBounds": true,
+            "bounds": {
+                "x": 2.634920120239258,
+                "y": 2.9464070796966554,
+                "z": 2.2544479370117189
+            }
+        },
+        {
+            "name": "SM_Floor_StoneTiles_01",
+            "vertices": 1982,
+            "triangles": 1143,
+            "uv1Count": 1982,
+            "overlapSamples": 0,
+            "coveredSamples": 115191,
+            "degenerateUVTriangles": 0,
+            "lightmapped": true,
+            "inBounds": true,
+            "bounds": {
+                "x": 8.814946174621582,
+                "y": 0.46464231610298159,
+                "z": 5.963152885437012
+            }
+        },
+        {
+            "name": "SM_Floor_StoneTiles_02",
+            "vertices": 1981,
+            "triangles": 1143,
+            "uv1Count": 1981,
+            "overlapSamples": 0,
+            "coveredSamples": 114879,
+            "degenerateUVTriangles": 0,
+            "lightmapped": true,
+            "inBounds": true,
+            "bounds": {
+                "x": 8.814947128295899,
+                "y": 0.46464186906814577,
+                "z": 5.963152885437012
+            }
+        },
+        {
+            "name": "SM_Floor_StoneTiles_03",
+            "vertices": 1981,
+            "triangles": 1143,
+            "uv1Count": 1981,
+            "overlapSamples": 0,
+            "coveredSamples": 114883,
+            "degenerateUVTriangles": 0,
+            "lightmapped": true,
+            "inBounds": true,
+            "bounds": {
+                "x": 8.814946174621582,
+                "y": 0.46464186906814577,
+                "z": 5.963152885437012
+            }
+        },
+        {
+            "name": "SM_Floor_StoneTiles_04",
+            "vertices": 1981,
+            "triangles": 1143,
+            "uv1Count": 1981,
+            "overlapSamples": 0,
+            "coveredSamples": 114895,
+            "degenerateUVTriangles": 0,
+            "lightmapped": true,
+            "inBounds": true,
+            "bounds": {
+                "x": 8.814947128295899,
+                "y": 0.46464186906814577,
+                "z": 5.9631524085998539
+            }
+        },
+        {
+            "name": "SM_Prop_ReligiousStatue",
+            "vertices": 2092,
+            "triangles": 1104,
+            "uv1Count": 2092,
+            "overlapSamples": 0,
+            "coveredSamples": 99741,
+            "degenerateUVTriangles": 0,
+            "lightmapped": true,
+            "inBounds": true,
+            "bounds": {
+                "x": 0.6425638198852539,
+                "y": 1.9662449359893799,
+                "z": 0.5963922142982483
+            }
+        },
+        {
+            "name": "SM_Prop_GoldenCrucifix",
+            "vertices": 1060,
+            "triangles": 612,
+            "uv1Count": 1060,
+            "overlapSamples": 0,
+            "coveredSamples": 116450,
+            "degenerateUVTriangles": 0,
+            "lightmapped": true,
+            "inBounds": true,
+            "bounds": {
+                "x": 0.21496295928955079,
+                "y": 0.4176708459854126,
+                "z": 0.1544814109802246
+            }
+        },
+        {
+            "name": "SM_Prop_WoodenBench",
+            "vertices": 1739,
+            "triangles": 906,
+            "uv1Count": 1739,
+            "overlapSamples": 0,
+            "coveredSamples": 116112,
+            "degenerateUVTriangles": 0,
+            "lightmapped": true,
+            "inBounds": true,
+            "bounds": {
+                "x": 1.4682015180587769,
+                "y": 1.148873209953308,
+                "z": 1.2149007320404053
+            }
+        },
+        {
+            "name": "SM_Prop_StoneAltar",
+            "vertices": 4792,
+            "triangles": 2826,
+            "uv1Count": 4792,
+            "overlapSamples": 0,
+            "coveredSamples": 108185,
+            "degenerateUVTriangles": 0,
+            "lightmapped": true,
+            "inBounds": true,
+            "bounds": {
+                "x": 1.3427906036376954,
+                "y": 1.0435763597488404,
+                "z": 2.101247787475586
+            }
+        },
+        {
+            "name": "SM_Candles_StatueLeft",
+            "vertices": 1141,
+            "triangles": 641,
+            "uv1Count": 1141,
+            "overlapSamples": 0,
+            "coveredSamples": 118242,
+            "degenerateUVTriangles": 0,
+            "lightmapped": true,
+            "inBounds": true,
+            "bounds": {
+                "x": 0.35232946276664736,
+                "y": 0.3485051691532135,
+                "z": 0.2247568964958191
+            }
+        },
+        {
+            "name": "SM_Candles_NearPillar",
+            "vertices": 793,
+            "triangles": 480,
+            "uv1Count": 793,
+            "overlapSamples": 0,
+            "coveredSamples": 126243,
+            "degenerateUVTriangles": 0,
+            "lightmapped": true,
+            "inBounds": true,
+            "bounds": {
+                "x": 0.3707486391067505,
+                "y": 0.14802494645118714,
+                "z": 0.2709770202636719
+            }
+        },
+        {
+            "name": "SM_Candles_StatueRight",
+            "vertices": 841,
+            "triangles": 486,
+            "uv1Count": 841,
+            "overlapSamples": 0,
+            "coveredSamples": 127234,
+            "degenerateUVTriangles": 0,
+            "lightmapped": true,
+            "inBounds": true,
+            "bounds": {
+                "x": 0.30079692602157595,
+                "y": 0.23529484868049622,
+                "z": 0.23201227188110352
+            }
+        },
+        {
+            "name": "SM_Candles_WindowTray",
+            "vertices": 1084,
+            "triangles": 685,
+            "uv1Count": 1084,
+            "overlapSamples": 0,
+            "coveredSamples": 131273,
+            "degenerateUVTriangles": 0,
+            "lightmapped": true,
+            "inBounds": true,
+            "bounds": {
+                "x": 0.3044118881225586,
+                "y": 0.3218432366847992,
+                "z": 0.3712630271911621
+            }
+        },
+        {
+            "name": "SM_Candle_HolderMounted",
+            "vertices": 713,
+            "triangles": 494,
+            "uv1Count": 713,
+            "overlapSamples": 0,
+            "coveredSamples": 106842,
+            "degenerateUVTriangles": 0,
+            "lightmapped": true,
+            "inBounds": true,
+            "bounds": {
+                "x": 0.08441662788391113,
+                "y": 0.18563151359558106,
+                "z": 0.08759832382202149
+            }
+        },
+        {
+            "name": "SM_Holder_Brass",
+            "vertices": 1140,
+            "triangles": 709,
+            "uv1Count": 1140,
+            "overlapSamples": 0,
+            "coveredSamples": 121484,
+            "degenerateUVTriangles": 0,
+            "lightmapped": true,
+            "inBounds": true,
+            "bounds": {
+                "x": 0.18228363990783692,
+                "y": 0.48264196515083315,
+                "z": 0.18040168285369874
+            }
+        },
+        {
+            "name": "SM_Ivy_Cards_05",
+            "vertices": 2428,
+            "triangles": 834,
+            "uv1Count": 2428,
+            "overlapSamples": 0,
+            "coveredSamples": 28095,
+            "degenerateUVTriangles": 0,
+            "lightmapped": true,
+            "inBounds": true,
+            "bounds": {
+                "x": 0.13875174522399903,
+                "y": 2.2086400985717775,
+                "z": 0.27596205472946169
+            }
+        },
+        {
+            "name": "SM_Ivy_Cards_06",
+            "vertices": 2108,
+            "triangles": 724,
+            "uv1Count": 2108,
+            "overlapSamples": 0,
+            "coveredSamples": 79477,
+            "degenerateUVTriangles": 0,
+            "lightmapped": true,
+            "inBounds": true,
+            "bounds": {
+                "x": 0.17973613739013673,
+                "y": 1.913709282875061,
+                "z": 0.2869681715965271
+            }
+        },
+        {
+            "name": "SM_Ivy_Cards_07",
+            "vertices": 1976,
+            "triangles": 678,
+            "uv1Count": 1976,
+            "overlapSamples": 0,
+            "coveredSamples": 42624,
+            "degenerateUVTriangles": 0,
+            "lightmapped": true,
+            "inBounds": true,
+            "bounds": {
+                "x": 0.12426185607910156,
+                "y": 1.8435391187667847,
+                "z": 0.2939581871032715
+            }
+        },
+        {
+            "name": "SM_Ivy_Cards_08",
+            "vertices": 1980,
+            "triangles": 680,
+            "uv1Count": 1980,
+            "overlapSamples": 0,
+            "coveredSamples": 36132,
+            "degenerateUVTriangles": 0,
+            "lightmapped": true,
+            "inBounds": true,
+            "bounds": {
+                "x": 0.10819578170776367,
+                "y": 1.8083775043487549,
+                "z": 0.28653955459594729
+            }
+        },
+        {
+            "name": "SM_Ivy_Cards_09",
+            "vertices": 944,
+            "triangles": 322,
+            "uv1Count": 944,
+            "overlapSamples": 0,
+            "coveredSamples": 88359,
+            "degenerateUVTriangles": 0,
+            "lightmapped": true,
+            "inBounds": true,
+            "bounds": {
+                "x": 2.001209020614624,
+                "y": 1.1257250308990479,
+                "z": 0.7080831527709961
+            }
+        },
+        {
+            "name": "SM_Ivy_Cards_01",
+            "vertices": 1592,
+            "triangles": 546,
+            "uv1Count": 1592,
+            "overlapSamples": 0,
+            "coveredSamples": 48565,
+            "degenerateUVTriangles": 0,
+            "lightmapped": true,
+            "inBounds": true,
+            "bounds": {
+                "x": 0.3991389274597168,
+                "y": 2.086423397064209,
+                "z": 1.124976396560669
+            }
+        },
+        {
+            "name": "SM_Ivy_Cards_02",
+            "vertices": 636,
+            "triangles": 218,
+            "uv1Count": 636,
+            "overlapSamples": 0,
+            "coveredSamples": 107481,
+            "degenerateUVTriangles": 0,
+            "lightmapped": true,
+            "inBounds": true,
+            "bounds": {
+                "x": 0.37481093406677248,
+                "y": 0.8461121320724487,
+                "z": 0.2282530665397644
+            }
+        },
+        {
+            "name": "SM_Ivy_Cards_03",
+            "vertices": 888,
+            "triangles": 304,
+            "uv1Count": 888,
+            "overlapSamples": 0,
+            "coveredSamples": 71701,
+            "degenerateUVTriangles": 0,
+            "lightmapped": true,
+            "inBounds": true,
+            "bounds": {
+                "x": 0.39965498447418215,
+                "y": 1.1943804025650025,
+                "z": 0.8193767070770264
+            }
+        },
+        {
+            "name": "SM_Ivy_Cards_04",
+            "vertices": 1400,
+            "triangles": 480,
+            "uv1Count": 1400,
+            "overlapSamples": 0,
+            "coveredSamples": 96235,
+            "degenerateUVTriangles": 0,
+            "lightmapped": true,
+            "inBounds": true,
+            "bounds": {
+                "x": 0.39055705070495608,
+                "y": 1.8432374000549317,
+                "z": 0.7923493385314941
+            }
+        },
+        {
+            "name": "SM_Banner_WindowWall",
+            "vertices": 514,
+            "triangles": 256,
+            "uv1Count": 514,
+            "overlapSamples": 0,
+            "coveredSamples": 69406,
+            "degenerateUVTriangles": 0,
+            "lightmapped": true,
+            "inBounds": true,
+            "bounds": {
+                "x": 0.1020822525024414,
+                "y": 1.129404902458191,
+                "z": 0.3138311505317688
+            }
+        },
+        {
+            "name": "SM_Banner_ArcadeWall",
+            "vertices": 520,
+            "triangles": 256,
+            "uv1Count": 520,
+            "overlapSamples": 0,
+            "coveredSamples": 73147,
+            "degenerateUVTriangles": 0,
+            "lightmapped": true,
+            "inBounds": true,
+            "bounds": {
+                "x": 0.34400010108947756,
+                "y": 1.159999966621399,
+                "z": 0.039999037981033328
+            }
+        },
+        {
+            "name": "SM_Banner_ForegroundPillar",
+            "vertices": 772,
+            "triangles": 384,
+            "uv1Count": 772,
+            "overlapSamples": 0,
+            "coveredSamples": 87251,
+            "degenerateUVTriangles": 0,
+            "lightmapped": true,
+            "inBounds": true,
+            "bounds": {
+                "x": 0.20729124546051026,
+                "y": 1.203989028930664,
+                "z": 0.36119651794433596
+            }
+        },
+        {
+            "name": "SM_Banner_HangingRod",
+            "vertices": 48,
+            "triangles": 28,
+            "uv1Count": 48,
+            "overlapSamples": 0,
+            "coveredSamples": 45541,
+            "degenerateUVTriangles": 0,
+            "lightmapped": true,
+            "inBounds": true,
+            "bounds": {
+                "x": 0.02407979965209961,
+                "y": 0.02407979965209961,
+                "z": 0.42139625549316409
+            }
+        },
+        {
+            "name": "SM_Backdrop_05_Sky",
+            "vertices": 4,
+            "triangles": 2,
+            "uv1Count": 4,
+            "overlapSamples": 0,
+            "coveredSamples": 261632,
+            "degenerateUVTriangles": 0,
+            "lightmapped": false,
+            "inBounds": true,
+            "bounds": {
+                "x": 189.93055725097657,
+                "y": 140.66209411621095,
+                "z": 201.0282440185547
+            }
+        },
+        {
+            "name": "SM_Backdrop_04_Mountains",
+            "vertices": 4,
+            "triangles": 2,
+            "uv1Count": 4,
+            "overlapSamples": 0,
+            "coveredSamples": 261632,
+            "degenerateUVTriangles": 0,
+            "lightmapped": false,
+            "inBounds": true,
+            "bounds": {
+                "x": 119.91938781738281,
+                "y": 58.20500183105469,
+                "z": 127.81364440917969
+            }
+        },
+        {
+            "name": "SM_Backdrop_03_CastleLeft",
+            "vertices": 4,
+            "triangles": 2,
+            "uv1Count": 4,
+            "overlapSamples": 0,
+            "coveredSamples": 261632,
+            "degenerateUVTriangles": 0,
+            "lightmapped": false,
+            "inBounds": true,
+            "bounds": {
+                "x": 17.177066802978517,
+                "y": 18.05432891845703,
+                "z": 18.026119232177736
+            }
+        },
+        {
+            "name": "SM_Backdrop_03_CastleRight",
+            "vertices": 4,
+            "triangles": 2,
+            "uv1Count": 4,
+            "overlapSamples": 0,
+            "coveredSamples": 261632,
+            "degenerateUVTriangles": 0,
+            "lightmapped": false,
+            "inBounds": true,
+            "bounds": {
+                "x": 19.652862548828126,
+                "y": 24.04998207092285,
+                "z": 20.525903701782228
+            }
+        },
+        {
+            "name": "SM_Backdrop_02_ForestLeft",
+            "vertices": 4,
+            "triangles": 2,
+            "uv1Count": 4,
+            "overlapSamples": 0,
+            "coveredSamples": 261632,
+            "degenerateUVTriangles": 0,
+            "lightmapped": false,
+            "inBounds": true,
+            "bounds": {
+                "x": 22.19908905029297,
+                "y": 20.614269256591798,
+                "z": 23.37518882751465
+            }
+        },
+        {
+            "name": "SM_Backdrop_02_ForestRight",
+            "vertices": 4,
+            "triangles": 2,
+            "uv1Count": 4,
+            "overlapSamples": 0,
+            "coveredSamples": 261632,
+            "degenerateUVTriangles": 0,
+            "lightmapped": false,
+            "inBounds": true,
+            "bounds": {
+                "x": 25.181846618652345,
+                "y": 21.988555908203126,
+                "z": 26.55642318725586
+            }
+        },
+        {
+            "name": "SM_Backdrop_01_BranchesLeft",
+            "vertices": 4,
+            "triangles": 2,
+            "uv1Count": 4,
+            "overlapSamples": 0,
+            "coveredSamples": 261632,
+            "degenerateUVTriangles": 0,
+            "lightmapped": false,
+            "inBounds": true,
+            "bounds": {
+                "x": 9.604333877563477,
+                "y": 10.846071243286133,
+                "z": 10.057289123535157
+            }
+        }
+    ],
+    "errors": []
+}

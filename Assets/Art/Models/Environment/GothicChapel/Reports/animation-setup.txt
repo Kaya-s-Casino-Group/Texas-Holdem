@@ -1,0 +1,3 @@
+PASS: 3 pinned animated banners; 15 wick-aligned flames; shared instanced material and mesh.
+No Light components added.
+Current scene=Assets/Scenes/CharacterValidation.unity

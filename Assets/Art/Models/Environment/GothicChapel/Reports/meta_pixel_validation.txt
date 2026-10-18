@@ -1,0 +1,4 @@
+PASS: GPU Meta albedo is nonzero and identical across wind times.
+PASS: PaintFill does not change bake albedo or create baked emission.
+PASS: explicit physical emission works.
+PASS: alpha-clipped Meta covers 2048 / 4096 pixels for a half-transparent test texture.
