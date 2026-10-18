@@ -1,17 +1,18 @@
+import {createPlaytest} from './playtest.js';
 import {sections,descriptor,exclusiveChildren,initialize,meta,tr,help} from './schema.js';
 import {parse,serialize,pathOf,atPath,definitions,owner,references,uniqueId,addDefinition,addChild,cloneDefinition,fieldIssues} from './model.js';
 const $=id=>document.getElementById(id);
 const el=(tag,cls,text)=>{const node=document.createElement(tag);if(cls)node.className=cls;if(text!=null)node.textContent=text;return node;};
 const btn=(text,fn,cls='')=>{const b=el('button',cls,text);b.type='button';b.addEventListener('click',()=>Promise.resolve().then(fn).catch(error=>notify(error.message)));return b;};
 let doc,token,section='Encounters',selected=null,revision=0,report=null,reportRevision=-1,checking=false;
-let importing=false;
+let importing=false,playtestMode=false,playtest;
 let timer,noticeTimer,saveTimer,xmlMode=false,sourceDirty=false,lastExport='',draftBlocked=false,loadGeneration=0;
 let undo=[],redo=[],expanded=new Set(),stepBrowser='',validationSequence=0;
 const DRAFT_KEY='battle-content-editor.draft.v1';
 const uiKey=(node,key)=>pathOf(node)+'/@'+key;
 function notify(message){$('notice').textContent=message;$('notice').classList.add('visible');clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>$('notice').classList.remove('visible'),6500);}
 function label(node){return node?.getAttribute('name')||node?.getAttribute('id')||node?.getAttribute('instanceId')||tr(node?.tagName||'');}
-function selectNode(node){selected=owner(node);if(selected===doc.documentElement)section=null;else section=selected.parentElement.tagName;xmlMode=false;render();}
+function selectNode(node){selected=owner(node);if(selected===doc.documentElement)section=null;else section=selected.parentElement.tagName;xmlMode=false;playtestMode=false;render();}
 function snapshot(){return serialize(doc);}
 function dirty(){revision++;reportRevision=-1;clearTimeout(timer);timer=setTimeout(()=>validate().catch(error=>notify(error.message)),850);clearTimeout(saveTimer);saveTimer=setTimeout(()=>saveDraft(false),450);}
 function mutate(fn){const before=snapshot(),selectedPath=selected?pathOf(selected):null;try{fn();if(before===snapshot())return;undo.push({xml:before,path:selectedPath,section});if(undo.length>40)undo.shift();redo=[];dirty();render();}catch(error){doc=parse(before);selected=selectedPath?atPath(doc,selectedPath):null;render();throw error;}}
@@ -28,22 +29,23 @@ async function validate(forExport=false){
  return result.success;
  }catch(error){if(version===revision&&request===validationSequence){report=null;reportRevision=-1;$('connection').textContent='● 校验服务未连接';}throw error;}finally{if(request===validationSequence){checking=false;renderIssues();renderSummary();}}
 }
-function renderSummary(){if(!doc)return;for(const id of ['import','example','new-pack','export'])$(id).disabled=importing;const count=sections.reduce((sum,s)=>sum+definitions(doc,s[0]).length,0);$('pack-summary').textContent=count+' 项配置 · '+(snapshot()===lastExport?'已导出':'有未导出内容');$('undo').disabled=!undo.length;$('redo').disabled=!redo.length;}
+function renderSummary(){if(!doc)return;playtest?.updateConfig();for(const id of ['import','example','new-pack','export'])$(id).disabled=importing;const count=sections.reduce((sum,s)=>sum+definitions(doc,s[0]).length,0);$('pack-summary').textContent=count+' 项配置 · '+(snapshot()===lastExport?'已导出':'有未导出内容');$('undo').disabled=!undo.length;$('redo').disabled=!redo.length;}
 function renderNavigation(){
  const nav=$('navigation');nav.replaceChildren();const query=$('search').value.trim().toLowerCase();let group;
  for(const s of sections){if(s[3]!==group){nav.append(el('div','nav-group',s[3]));group=s[3];}
  const entries=definitions(doc,s[0]),matches=entries.filter(n=>(label(n)+' '+n.getAttribute('id')).toLowerCase().includes(query));
- const b=btn('',()=>{section=s[0];selected=null;xmlMode=false;render();},'section-button'+(section===s[0]?' active':''));b.append(el('span','',s[2]),el('span','count',entries.length));nav.append(b);
+ const b=btn('',()=>{section=s[0];selected=null;xmlMode=false;playtestMode=false;render();},'section-button'+(section===s[0]?' active':''));b.append(el('span','',s[2]),el('span','count',entries.length));nav.append(b);
  if(section===s[0]||query)for(const n of matches){const link=btn(label(n),()=>selectNode(n),'definition-button'+(selected===n?' active':''));link.title=n.getAttribute('id');nav.append(link);}
  }
 }
 function render(){
- if(!doc)return;renderNavigation();renderSummary();renderContext();$('form-tab').classList.toggle('active',!xmlMode);$('xml-tab').classList.toggle('active',xmlMode);$('editor').hidden=xmlMode;$('xml-view').hidden=!xmlMode;
+ if(!doc)return;renderNavigation();renderSummary();renderContext();$('form-tab').classList.toggle('active',!xmlMode&&!playtestMode);$('xml-tab').classList.toggle('active',xmlMode&&!playtestMode);$('playtest-tab').classList.toggle('active',playtestMode);$('editor').hidden=xmlMode||playtestMode;$('xml-view').hidden=!xmlMode||playtestMode;$('playtest-view').hidden=!playtestMode;document.querySelector('.workspace').classList.toggle('playtest-mode',playtestMode);document.querySelector('.page-actions').hidden=playtestMode;document.querySelector('.diagnostics').hidden=playtestMode;
  const definition=selected&&selected!==doc.documentElement;
  $('duplicate').hidden=!definition;$('delete').hidden=!definition;
  $('breadcrumb').textContent=(doc.documentElement.getAttribute('name')||doc.documentElement.getAttribute('id'))+' / '+(section?tr(section):'内容包设置');
  $('title').textContent=selected?label(selected):tr(section);
  $('subtitle').textContent=selected?(selected===doc.documentElement?'设置内容包的编号和版本；可选项留空时使用默认设置':selected.getAttribute('id')):sections.find(s=>s[0]===section)?.[4];
+ if(playtestMode){$('title').textContent='对局试玩';$('subtitle').textContent='使用当前内容包开局，选牌操作并查看规则结算。修改配置后重开生效。';playtest?.render();return;}
  if(xmlMode){if(!sourceDirty)$('xml-source').value=snapshot();renderIssues();return;}
  const editor=$('editor');editor.replaceChildren();
  if(selected)renderNode(selected,editor,0);else{
@@ -156,7 +158,7 @@ function renderIssues(){
 function locate(issue){
  if(reportRevision!==revision)return;const node=atPath(doc,issue.path);
  if(!node||node===doc.documentElement){selected=doc.documentElement;section=null;}else{const top=owner(node);if(top===doc.documentElement){selected=top;section=null;}else if(top.parentElement===doc.documentElement){section=top.tagName;selected=null;}else{selected=top;section=top.parentElement.tagName;}}
- for(let n=node;n&&n!==doc.documentElement;n=n.parentElement)expanded.add(pathOf(n));xmlMode=false;render();
+ for(let n=node;n&&n!==doc.documentElement;n=n.parentElement)expanded.add(pathOf(n));xmlMode=false;playtestMode=false;render();
  const field=issue.field?document.querySelector('[data-field="'+CSS.escape(issue.path+'/@'+issue.field)+'"]'):null;
  const target=field||[...document.querySelectorAll('[data-path]')].find(n=>n.dataset.path===issue.path)||$('editor');for(let parent=target.parentElement;parent;parent=parent.parentElement)if(parent.tagName==='DETAILS')parent.open=true;target.classList.add('highlight');target.scrollIntoView({behavior:'smooth',block:'center'});setTimeout(()=>target.classList.remove('highlight'),3500);target.querySelector('input,select')?.focus({preventScroll:true});
 }
@@ -166,24 +168,26 @@ async function importXml(xml,{confirm=true,pending=null}={}){
  importing=true;renderSummary();notify('正在读取内容包并执行 C# 校验…');
  try {
  const result=await api(xml);if(generation!==loadGeneration)return false;if(revision!==startingRevision){notify('载入期间内容已修改，本次导入未覆盖新修改，请重试。');return false;}
- if(!result.readable){xmlMode=true;sourceDirty=true;$('xml-source').value=xml;render();notify('XML 无法读取，已保留在源码区；原内容包未被覆盖。');$('issues').replaceChildren(...result.diagnostics.map(d=>el('p','issue',d.message+' · 第 '+d.line+' 行，第 '+d.column+' 列')));saveDraft(false);return false;}
+ if(!result.readable){xmlMode=true;playtestMode=false;sourceDirty=true;$('xml-source').value=xml;render();notify('XML 无法读取，已保留在源码区；原内容包未被覆盖。');$('issues').replaceChildren(...result.diagnostics.map(d=>el('p','issue',d.message+' · 第 '+d.line+' 行，第 '+d.column+' 列')));saveDraft(false);return false;}
  const incoming=parse(xml);if(doc)undo.push({xml:snapshot(),path:selected?pathOf(selected):null,section});redo=[];doc=incoming;selected=null;section='Encounters';revision++;report=null;reportRevision=-1;sourceDirty=!!pending;xmlMode=!!pending;if(pending)$('xml-source').value=pending;dirty();render();saveDraft(false);
  // Revalidate formatted text so line/column locations correspond to the displayed/exported XML.
  clearTimeout(timer);await validate();notify(result.success?'内容包已载入。':'内容已载入为草稿，请修复下方规则问题。');return true;
  }finally{importing=false;renderSummary();}
 }
 function bind(){
- $('search').addEventListener('input',renderNavigation);$('pack-settings').onclick=()=>{selected=doc.documentElement;section=null;xmlMode=false;render();};
+ playtest=createPlaytest($('playtest-view'),{getConfig:()=>({xml:snapshot(),sourceDirty,importing,encounters:definitions(doc,'Encounters').map(node=>({id:node.getAttribute('id')||'',name:label(node)}))}),getToken:()=>token});
+ $('playtest-tab').onclick=()=>{playtestMode=true;render();};
+ $('search').addEventListener('input',renderNavigation);$('pack-settings').onclick=()=>{selected=doc.documentElement;section=null;xmlMode=false;playtestMode=false;render();};
  $('save').onclick=()=>saveDraft(true);$('validate').onclick=()=>validate().catch(e=>notify(e.message));$('export').onclick=()=>validate(true).catch(e=>notify(e.message));
  $('undo').onclick=()=>navigateHistory(undo,redo);$('redo').onclick=()=>navigateHistory(redo,undo);
  $('duplicate').onclick=()=>mutate(()=>{selected=cloneDefinition(doc,selected);});$('delete').onclick=()=>deleteDefinition().catch(e=>notify(e.message));
  $('import').onclick=()=>$('xml-file').click();$('xml-file').onchange=async e=>{try{const file=e.target.files[0];if(file){if(file.size>4*1024*1024)throw new Error('文件超过 4 MiB，请检查内容包。');await importXml(await file.text());}}catch(error){notify(error.message);}finally{e.target.value='';}};
  $('new-pack').onclick=()=>importXml('<BattleContent schemaVersion="1" id="new-content" version="1" name="新内容包"/>').catch(e=>notify(e.message));
  $('example').onclick=async()=>{try{await importXml(await(await fetch('/api/example')).text());}catch(e){notify(e.message);}};
- $('form-tab').onclick=()=>{xmlMode=false;render();};$('xml-tab').onclick=()=>{xmlMode=true;render();};
- $('xml-source').addEventListener('input',()=>{sourceDirty=true;clearTimeout(saveTimer);saveTimer=setTimeout(()=>saveDraft(false),500);});
+ $('form-tab').onclick=()=>{xmlMode=false;playtestMode=false;render();};$('xml-tab').onclick=()=>{xmlMode=true;playtestMode=false;render();};
+ $('xml-source').addEventListener('input',()=>{sourceDirty=true;playtest?.updateConfig();clearTimeout(saveTimer);saveTimer=setTimeout(()=>saveDraft(false),500);});
  $('apply-xml').onclick=()=>importXml($('xml-source').value,{confirm:false}).catch(e=>notify(e.message));
- $('reset-xml').onclick=async()=>{if(!sourceDirty||await confirmDialog('放弃源码区修改','恢复为当前表单内容，未应用的 XML 文本会被丢弃。')){sourceDirty=false;$('xml-source').value=snapshot();saveDraft(false);}};
+ $('reset-xml').onclick=async()=>{if(!sourceDirty||await confirmDialog('放弃源码区修改','恢复为当前表单内容，未应用的 XML 文本会被丢弃。')){sourceDirty=false;$('xml-source').value=snapshot();playtest?.updateConfig();saveDraft(false);}};
  $('raw-download').onclick=()=>download($('xml-source').value,safeName()+'.draft.xml','application/xml');
  $('backup').onclick=()=>download(JSON.stringify({schema:1,xml:snapshot(),pendingXml:sourceDirty?$('xml-source').value:null,savedAt:new Date().toISOString()},null,2),safeName()+'.draft.json','application/json');
  $('backup-file').onchange=async e=>{try{const file=e.target.files[0];if(file){if(file.size>12*1024*1024)throw new Error('草稿文件过大。');const data=JSON.parse(await file.text());if(data.schema!==1||typeof data.xml!=='string'||(data.pendingXml!=null&&typeof data.pendingXml!=='string'))throw new Error('不支持的草稿格式。');await importXml(data.xml,{pending:data.pendingXml});}}catch(error){notify(error.message);}finally{e.target.value='';}};

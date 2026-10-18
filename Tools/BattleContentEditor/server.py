@@ -5,10 +5,12 @@ import json
 import os
 from pathlib import Path
 import secrets
+import select
 import shutil
 import subprocess
 import tempfile
 import threading
+import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlsplit
 
@@ -16,6 +18,7 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent.parent
 MODULES = ('Core', 'Abilities', 'Combat', 'Scoring', 'Holdem', 'Draw', 'Runs', 'Progression', 'Encounters', 'Composition')
 MAX_BODY = 4 * 1024 * 1024  # UTF-8 transport limit; reader additionally limits characters.
+MAX_PLAYTEST_BODY = 8 * 1024 * 1024  # JSON escaping adds overhead to XML.
 
 
 def build(output):
@@ -37,6 +40,10 @@ def build(output):
     subprocess.run([compiler, '-langversion:7.2', '-warnaserror', '-r:System.Web.Extensions',
                     *['-r:' + str(output / ('PokerEngine.' + module + '.dll')) for module in MODULES],
                     '-out:' + str(bridge), str(HERE / 'CompilerBridge.cs')], check=True)
+    subprocess.run([compiler, '-langversion:7.2', '-warnaserror', '-r:System.Web.Extensions',
+                    *['-r:' + str(output / ('PokerEngine.' + module + '.dll')) for module in MODULES],
+                    '-out:' + str(output / 'PlaytestBridge.exe'),
+                    *map(str, sorted(HERE.glob('Playtest*.cs')))], check=True)
     return bridge
 
 
@@ -45,6 +52,9 @@ class Compiler:
         self.bridge = bridge
         self.runtime = os.environ.get('POKER_MONO', 'mono')
         self.slots = threading.BoundedSemaphore(2)
+        self.playtest_lock = threading.Lock()
+        self.playtest_process = None
+        self.playtest_stderr = None
 
     def call(self, xml=None):
         if not self.slots.acquire(timeout=1):
@@ -58,12 +68,65 @@ class Compiler:
         finally:
             self.slots.release()
 
+    def _stop_playtest(self):
+        process = self.playtest_process
+        self.playtest_process = None
+        if process is not None:
+            if process.poll() is None:
+                process.kill()
+            process.wait(timeout=5)
+            process.stdin.close()
+            process.stdout.close()
+        if self.playtest_stderr is not None:
+            self.playtest_stderr.close()
+            self.playtest_stderr = None
+
+    def close(self):
+        with self.playtest_lock:
+            self._stop_playtest()
+
+    def playtest(self, request):
+        # A single request stream serializes mutations, including across HTTP threads.
+        if not self.playtest_lock.acquire(timeout=2):
+            raise RuntimeError('试玩正在结算，请稍后再试。')
+        try:
+            if self.playtest_process is None or self.playtest_process.poll() is not None:
+                self._stop_playtest()
+                self.playtest_stderr = tempfile.TemporaryFile()
+                self.playtest_process = subprocess.Popen(
+                    [self.runtime, str(self.bridge.parent / 'PlaytestBridge.exe')],
+                    stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=self.playtest_stderr)
+            process = self.playtest_process
+            data = (json.dumps(request, ensure_ascii=False, allow_nan=False) + '\n').encode('utf-8')
+            process.stdin.write(data)
+            process.stdin.flush()
+            deadline = time.monotonic() + 25
+            chunks = bytearray()
+            while True:
+                remaining = deadline - time.monotonic()
+                if remaining <= 0 or not select.select([process.stdout], [], [], remaining)[0]:
+                    raise RuntimeError('试玩结算超时，试玩服务已重置，请重新开局。')
+                chunk = os.read(process.stdout.fileno(), 65536)
+                if not chunk:
+                    raise RuntimeError('试玩服务已停止，请重新开局。')
+                chunks.extend(chunk)
+                if len(chunks) > 16 * 1024 * 1024:
+                    raise RuntimeError('试玩结果过大，请减少配置中的连锁效果后重新开局。')
+                if chunks.endswith(b'\n'):
+                    return json.loads(chunks.decode('utf-8-sig'))
+        except (RuntimeError, OSError, ValueError):
+            self._stop_playtest()
+            raise
+        finally:
+            self.playtest_lock.release()
+
 
 def make_server(compiler, port=18765):
     token = secrets.token_urlsafe(32)
     metadata = compiler.call()
     files = {'/': ('index.html', 'text/html'), '/app.js': ('app.js', 'text/javascript'),
              '/schema.js': ('schema.js', 'text/javascript'), '/model.js': ('model.js', 'text/javascript'),
+             '/playtest.js': ('playtest.js', 'text/javascript'), '/playtest.css': ('playtest.css', 'text/css'),
              '/style.css': ('style.css', 'text/css')}
 
     class Handler(BaseHTTPRequestHandler):
@@ -99,27 +162,41 @@ def make_server(compiler, port=18765):
             origin = 'http://127.0.0.1:' + str(self.server.server_port)
             if not self.valid_host() or self.headers.get('Origin', origin) != origin or not secrets.compare_digest(self.headers.get('X-Editor-Token', ''), token):
                 self.reply(403, {'error': '请求来源无效，请刷新编辑器页面。'}); return
-            if self.path != '/api/validate':
+            if self.path not in ('/api/validate', '/api/playtest'):
                 self.reply(404, {'error': '未知接口。'}); return
             try:
                 length = int(self.headers.get('Content-Length', '0'))
-                if not 0 < length <= MAX_BODY:
-                    self.reply(413, {'error': 'XML 为空或超过传输大小限制。'}); return
-                if self.headers.get('Content-Type', '').split(';')[0] != 'application/xml':
-                    self.reply(415, {'error': '需要 application/xml。'}); return
+                playtest = self.path == '/api/playtest'
+                limit = MAX_PLAYTEST_BODY if playtest else MAX_BODY
+                content_type = 'application/json' if playtest else 'application/xml'
+                if not 0 < length <= limit:
+                    self.reply(413, {'error': '请求为空或超过传输大小限制。'}); return
+                if self.headers.get('Content-Type', '').split(';')[0] != content_type:
+                    self.reply(415, {'error': '需要 ' + content_type + '。'}); return
                 self.connection.settimeout(30)
-                xml = self.rfile.read(length).decode('utf-8')
-                self.reply(200, compiler.call(xml))
+                body = self.rfile.read(length).decode('utf-8')
+                if playtest:
+                    request = json.loads(body)
+                    if not isinstance(request, dict):
+                        self.reply(400, {'error': '试玩请求必须是 JSON 对象。'}); return
+                    self.reply(200, compiler.playtest(request))
+                else:
+                    self.reply(200, compiler.call(body))
             except (ValueError, UnicodeError):
-                self.reply(400, {'error': '请求长度或 UTF-8 编码无效。'})
+                self.reply(400, {'error': '请求长度、JSON 或 UTF-8 编码无效。'})
             except (RuntimeError, subprocess.TimeoutExpired, OSError) as error:
-                self.reply(503, {'error': '校验服务不可用。' + str(error)})
+                self.reply(503, {'error': '本机规则服务不可用。' + str(error)})
 
         def log_message(self, fmt, *args):
             # Paths/status only; never log submitted XML.
             pass
 
-    return ThreadingHTTPServer(('127.0.0.1', port), Handler)
+    class EditorServer(ThreadingHTTPServer):
+        def server_close(self):
+            super().server_close()
+            compiler.close()
+
+    return EditorServer(('127.0.0.1', port), Handler)
 
 
 def main():
