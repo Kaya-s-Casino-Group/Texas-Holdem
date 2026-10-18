@@ -1,0 +1,5 @@
+# Keep the one-click sync launchers usable after cross-platform checkouts.
+/sync-battle-toolkit.cmd text eol=crlf whitespace=cr-at-eol
+/sync-battle-toolkit.command text eol=lf
+/Tools/BattleToolkitSync/*.sh text eol=lf
+/Tools/BattleToolkitSync/*.ps1 text eol=crlf whitespace=cr-at-eol

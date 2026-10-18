@@ -14,3 +14,5 @@ git submodule update --init --recursive
 Unity 通过 `External/BattleToolkit/Engine` 本地包引用规则与共享 XML。当前场景内容在 `External/BattleToolkit/Engine/Content/SingleBattleDemoNew.xml`。主工程固定子模块提交，更新引擎或 XML 时先提交/推送小仓库，再提交主工程中的子模块版本；旧 SO 和表现层仍由主工程维护。更多说明见 [独立工具文档](External/BattleToolkit/README.md)。
 
 日常协作见 [两个仓库的协作流程](External/BattleToolkit/COLLABORATION.md)：策划在小仓库交付 XML；纯规则、工具改动也在小仓库提交；Unity 集成方选择通过 CI 的 SHA，验证后在本仓库提交子模块版本与必要的场景适配。拉取主工程后执行 `git submodule update --init --recursive`，即可同步主工程采用的规则与配置。
+
+主动接入小仓库新版本时，可双击根目录 `sync-battle-toolkit.cmd`（Windows）或 `sync-battle-toolkit.command`（macOS）：检查两边工作区、选择四项 CI 均通过的版本并再次确认后更新；不覆盖本地改动，不自动提交。用法和前置条件见 [一键同步说明](Tools/BattleToolkitSync/README.md)。
