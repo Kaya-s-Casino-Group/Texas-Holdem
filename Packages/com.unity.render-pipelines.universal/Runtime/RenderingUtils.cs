@@ -215,7 +215,7 @@ namespace UnityEngine.Rendering.Universal
             // We y-flip if
             // 1) we are blitting from render texture to back buffer(UV starts at bottom) and
             // 2) renderTexture starts UV at top
-            bool yflip = isRenderToBackBufferTarget && cameraData.targetTexture == null && SystemInfo.graphicsUVStartsAtTop;
+            bool yflip = isRenderToBackBufferTarget && cameraData.targetTexture == null && cameraData.stackOutputTexture == null && SystemInfo.graphicsUVStartsAtTop;
             Vector4 scaleBias = yflip ? new Vector4(viewportScale.x, -viewportScale.y, 0, viewportScale.y) : new Vector4(viewportScale.x, viewportScale.y, 0, 0);
             CoreUtils.SetRenderTarget(cmd, destination, loadAction, storeAction, ClearFlag.None, Color.clear);
             if (isRenderToBackBufferTarget)
@@ -562,7 +562,8 @@ namespace UnityEngine.Rendering.Universal
             // Overlay cameras need to output to the target described in the base camera while doing camera stack.
             ref CameraData cameraData = ref renderingData.cameraData;
 
-            RenderTargetIdentifier cameraTarget = (cameraData.targetTexture != null) ? new RenderTargetIdentifier(cameraData.targetTexture) : BuiltinRenderTextureType.CameraTarget;
+            var outputTexture = cameraData.stackOutputTexture != null ? cameraData.stackOutputTexture : cameraData.targetTexture;
+            RenderTargetIdentifier cameraTarget = outputTexture != null ? new RenderTargetIdentifier(outputTexture) : BuiltinRenderTextureType.CameraTarget;
 #if ENABLE_VR && ENABLE_XR_MODULE
             if (cameraData.xr.enabled)
             {

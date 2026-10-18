@@ -24,10 +24,11 @@ namespace RetroRendering.Tests
             Assert.Less(data.rendererFeatures.IndexOf(fog), data.rendererFeatures.IndexOf(light));
             Assert.Less(data.rendererFeatures.IndexOf(light), data.rendererFeatures.FindIndex(x => x is RetroPostProcessFeature));
             Assert.IsTrue(data.lowResolution.enabled);
-            Assert.AreEqual(540, data.lowResolution.maximumHeight);
+            // Height is an artist-controlled renderer setting; fog must not require a fixed cap.
+            Assert.Greater(data.lowResolution.maximumHeight, 0);
             Assert.AreEqual(RenderingMode.Deferred, data.renderingMode);
             var ui = AssetDatabase.LoadAssetAtPath<UniversalRendererData>("Assets/Settings/UIRenderer.asset");
-            Assert.IsEmpty(ui.rendererFeatures);
+            Assert.IsFalse(ui.rendererFeatures.Any(feature => feature is HeightFogFeature || feature is VolumetricLightFeature));
         }
 
         [Test]

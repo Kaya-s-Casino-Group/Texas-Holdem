@@ -290,8 +290,10 @@ namespace CardPresentation
         {
             var canvas = GetComponent<Canvas>();
             if (canvas == null || canvas.renderMode == RenderMode.WorldSpace) return;
-            // Overlay HUDs always draw after camera canvases, regardless of their sorting order.
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            // Keep a bound camera canvas in the camera's draw so final-stack effects include it.
+            // Standalone prefabs without a rendering camera retain the overlay fallback.
+            if (canvas.renderMode != RenderMode.ScreenSpaceCamera || canvas.worldCamera == null)
+                canvas.renderMode = RenderMode.ScreenSpaceOverlay;
             int layer = canvas.sortingLayerID, order = 500;
             foreach (var other in FindObjectsOfType<Canvas>())
             {

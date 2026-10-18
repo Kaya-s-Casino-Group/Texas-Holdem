@@ -912,6 +912,15 @@ namespace UnityEngine.Rendering.Universal
                 baseCameraData.stackAnyPostProcessingEnabled = anyPostProcessingEnabled;
                 baseCameraData.stackLastCameraOutputToHDR = finalOutputHDR;
 
+                // Let only the final camera's renderer opt into whole-stack output processing.
+                baseCameraData.isFinalStackCamera = !isStackedRendering;
+                if (!xrPass.enabled && !finalOutputHDR)
+                {
+                    var outputRenderer = isStackedRendering
+                        ? cameraStack[lastActiveOverlayCameraIndex].GetUniversalAdditionalCameraData().scriptableRenderer
+                        : baseCameraData.renderer;
+                    outputRenderer.PrepareCameraStackOutput(ref baseCameraData);
+                }
                 RenderSingleCamera(context, ref baseCameraData);
                 using (new ProfilingScope(null, Profiling.Pipeline.endCameraRendering))
                 {
@@ -960,6 +969,7 @@ namespace UnityEngine.Rendering.Universal
                             overlayCameraData.stackLastCameraOutputToHDR = finalOutputHDR;
                             overlayCameraData.hasNativeOverlayAfter = nativeOverlayTail && !nativeOverlay;
                             if (nativeOverlay) overlayCameraData.SetNativeOverlayResolution();
+                            overlayCameraData.isFinalStackCamera = i == lastActiveOverlayCameraIndex;
 
                             xrLayout.ReconfigurePass(overlayCameraData.xr, currCamera);
 

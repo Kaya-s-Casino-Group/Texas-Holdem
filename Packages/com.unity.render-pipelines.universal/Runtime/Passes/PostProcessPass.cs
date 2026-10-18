@@ -613,7 +613,7 @@ namespace UnityEngine.Rendering.Universal
                     else
                     {
                         // Get RTHandle alias to use RTHandle apis
-                        RenderTargetIdentifier cameraTarget = cameraData.targetTexture != null ? new RenderTargetIdentifier(cameraData.targetTexture) : cameraTargetID;
+                        RenderTargetIdentifier cameraTarget = RenderingUtils.GetCameraTargetIdentifier(ref renderingData);
                         RTHandleStaticHelpers.SetRTHandleStaticWrapper(cameraTarget);
                         var cameraTargetHandle = RTHandleStaticHelpers.s_RTHandleWrapper;
 

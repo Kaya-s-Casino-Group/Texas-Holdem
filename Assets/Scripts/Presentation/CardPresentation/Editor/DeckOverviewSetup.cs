@@ -239,7 +239,9 @@ namespace CardPresentation.Editor
             Undo.RecordObject(presenter, "绑定对局牌组总览");
             Canvas.ForceUpdateCanvases(); presenter.Configure(host.Match, presenter.GetComponent<DeckOverviewView>(), host.DeckZone.Id, ids);
             var canvas = presenter.GetComponent<Canvas>(); Undo.RecordObject(canvas, "绑定总览 UI Camera");
-            canvas.worldCamera = uiCamera; PrefabUtility.RecordPrefabInstancePropertyModifications(canvas);
+            canvas.worldCamera = uiCamera;
+            if (uiCamera != null) { canvas.renderMode = RenderMode.ScreenSpaceCamera; canvas.planeDistance = 1; }
+            PrefabUtility.RecordPrefabInstancePropertyModifications(canvas);
             if (uiCamera != null)
                 CardHoverPresenterSetup.Register(presenter,uiCamera.GetComponent<RetroRendering.UICameraStack>()?.SceneCamera);
             var pile = scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<DrawPilePresenter>(true))

@@ -49,7 +49,7 @@ namespace UnityEngine.Rendering.Universal
         #endif
 
         const int k_FinalBlitPassQueueOffset = (int)RenderPassEvent.BeforeUpscaling - (int)RenderPassEvent.AfterRendering + 1;
-        const int k_AfterFinalBlitPassQueueOffset = k_FinalBlitPassQueueOffset + 1;
+        const int k_AfterFinalBlitPassQueueOffset = (int)RenderPassEvent.AfterUpscaling - (int)RenderPassEvent.AfterRendering + 2;
 
         static readonly List<ShaderTagId> k_DepthNormalsOnly = new List<ShaderTagId> { new ShaderTagId("DepthNormalsOnly") };
 
@@ -138,6 +138,7 @@ namespace UnityEngine.Rendering.Universal
 
         ForwardLights m_ForwardLights;
         DeferredLights m_DeferredLights;
+        RTHandle m_NativeOverlayDepth;
         readonly LowResolutionSettings m_LowResolution;
         public CameraRenderTargetInfo lastCameraRenderTargetInfo { get; private set; }
 
@@ -373,6 +374,7 @@ namespace UnityEngine.Rendering.Universal
             m_FinalBlitPass?.Dispose();
             m_DrawOffscreenUIPass?.Dispose();
             m_DrawOverlayUIPass?.Dispose();
+            m_NativeOverlayDepth?.Release();
 
             m_XRTargetHandleAlias?.Release();
 
@@ -748,6 +750,7 @@ namespace UnityEngine.Rendering.Universal
             // Embedded pixel-rendering extension: also needed at native sizes below the height cap.
             // Avoid requesting Color input, which would create an unused opaque-color copy.
             createColorTexture |= cameraData.customRenderResolution;
+            createColorTexture |= cameraData.stackOutputTexture != null;
             createColorTexture |= renderPassInputs.requiresColorTexture;
             createColorTexture |= renderPassInputs.requiresColorTextureCreated;
             createColorTexture &= !isPreviewCamera;
@@ -847,6 +850,19 @@ namespace UnityEngine.Rendering.Universal
                 else if (m_XRTargetHandleAlias.nameID != target)
                     RTHandleStaticHelpers.SetRTHandleUserManagedWrapper(ref m_XRTargetHandleAlias,target);
                 m_ActiveCameraColorAttachment = m_ActiveCameraDepthAttachment = m_XRTargetHandleAlias;
+                if (cameraData.stackOutputTexture != null)
+                {
+                    // A sampled color texture must not also be its own depth attachment.
+                    var nativeDepth = cameraTargetDescriptor;
+                    nativeDepth.width = cameraData.stackOutputTexture.width;
+                    nativeDepth.height = cameraData.stackOutputTexture.height;
+                    nativeDepth.graphicsFormat = GraphicsFormat.None;
+                    nativeDepth.depthStencilFormat = k_DepthStencilFormat;
+                    nativeDepth.msaaSamples = 1; nativeDepth.bindMS = false;
+                    nativeDepth.useMipMap = nativeDepth.autoGenerateMips = nativeDepth.useDynamicScale = false;
+                    RenderingUtils.ReAllocateIfNeeded(ref m_NativeOverlayDepth,nativeDepth,FilterMode.Point,TextureWrapMode.Clamp,name:"_NativeOverlayDepth");
+                    m_ActiveCameraDepthAttachment = m_NativeOverlayDepth;
+                }
                 m_RenderOpaqueForwardPass.m_IsActiveTargetBackBuffer = true;
                 m_RenderTransparentForwardPass.m_IsActiveTargetBackBuffer = true;
                 createColorTexture = createDepthTexture = false;

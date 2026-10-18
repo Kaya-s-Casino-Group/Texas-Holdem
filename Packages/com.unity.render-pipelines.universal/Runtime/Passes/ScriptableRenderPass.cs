@@ -152,6 +152,12 @@ namespace UnityEngine.Rendering.Universal
         /// Runs even when output and internal dimensions match. Native overlay UI is rendered later.
         /// </summary>
         BeforeUpscaling = 1001,
+
+        /// <summary>Native output resolution, after final presentation and before overlay UI.</summary>
+        AfterUpscaling = 1003,
+
+        /// <summary>After native camera overlays and overlay canvases, before display presentation.</summary>
+        AfterRenderingUI = 1006,
     }
 
     internal static class RenderPassEventsEnumValues

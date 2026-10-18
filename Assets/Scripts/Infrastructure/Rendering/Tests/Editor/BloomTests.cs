@@ -22,7 +22,7 @@ namespace RetroRendering.Tests
             Assert.AreEqual("Assets/GameAssets/Rendering/Shaders/Bloom.shader", AssetDatabase.GetAssetPath(bloom.BloomShader));
             Assert.Less(data.rendererFeatures.FindIndex(x => x is VolumetricLightFeature), data.rendererFeatures.IndexOf(bloom));
             Assert.Less(data.rendererFeatures.IndexOf(bloom), data.rendererFeatures.FindIndex(x => x is RetroPostProcessFeature));
-            Assert.IsEmpty(AssetDatabase.LoadAssetAtPath<UniversalRendererData>("Assets/Settings/UIRenderer.asset").rendererFeatures);
+            Assert.IsFalse(AssetDatabase.LoadAssetAtPath<UniversalRendererData>("Assets/Settings/UIRenderer.asset").rendererFeatures.OfType<BloomFeature>().Any());
         }
 
         [Test]

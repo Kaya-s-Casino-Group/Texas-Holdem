@@ -3,6 +3,12 @@ using UnityEngine.Scripting.APIUpdating;
 
 namespace UnityEngine.Rendering.Universal
 {
+    /// <summary>Opt-in output processing owned by the final camera's Renderer Feature.</summary>
+    public interface ICameraStackOutputFeature
+    {
+        RenderTexture PrepareStackOutput(in CameraData baseCameraData);
+    }
+
     /// <summary>
     /// You can add a <c>ScriptableRendererFeature</c> to the <c>ScriptableRenderer</c>. Use this scriptable renderer feature to inject render passes into the renderer.
     /// </summary>

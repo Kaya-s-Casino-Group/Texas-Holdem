@@ -24,6 +24,30 @@ MonoBehaviour:
     clamp: 65472
     tint: {r: 1, g: 1, b: 1, a: 1}
   bloomShader: {fileID: 4800000, guid: 056b7623703864814b1e6c55f216c02d, type: 3}
+--- !u!114 &-6821295790437552466
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2e3546e1d91ca44f4b2284d0c4cdcf7a, type: 3}
+  m_Name: Depth Normal Outline
+  m_EditorClassIdentifier: 
+  m_Active: 0
+  settings:
+    applyToSceneView: 0
+    applyToRenderTextures: 1
+    excludedLayers:
+      serializedVersion: 2
+      m_Bits: 256
+    width: 1
+    color: {r: 0, g: 0, b: 0, a: 1}
+    depthThreshold: 0.076
+    normalThreshold: 0.597
+  outlineShader: {fileID: 4800000, guid: f386307505d2d42819100cfec2745703, type: 3}
 --- !u!114 &-6502474241548791235
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -98,9 +122,10 @@ MonoBehaviour:
   - {fileID: 41553810914614333}
   - {fileID: 7827378729397276015}
   - {fileID: -6502474241548791235}
+  - {fileID: -6821295790437552466}
   - {fileID: -8149700247589552751}
   - {fileID: -6135896016876051283}
-  m_RendererFeatureMap: 3d1ca18af8a093006f4d2cb07b6fa06c3d525bff2092c2a591fd82c4cd72e68ead645eff14ebd8aa
+  m_RendererFeatureMap: 3d1ca18af8a093006f4d2cb07b6fa06c3d525bff2092c2a5ae2e1a8f9ee355a191fd82c4cd72e68ead645eff14ebd8aa
   m_UseNativeRenderPass: 0
   postProcessData: {fileID: 0}
   xrSystemData: {fileID: 11400000, guid: 60e1133243b97e347b653163a8c01b64, type: 2}

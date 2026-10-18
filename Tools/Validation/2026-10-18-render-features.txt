@@ -1,0 +1,12 @@
+RenderFeature 提交验证 — 2026-10-18
+
+范围：CRT、深度/法线描边、嵌入式 URP 最终栈输出、Renderer 配置、UI Camera 接入及测试工具。
+排除：角色 Renderer/资源、MainURP 的角色注册及阴影质量设置、其他玩法与工具改动。
+SingleBattleDemoNew 仅收录两处 Canvas 相机绘制配置；其他场景改动保留本地。
+
+Unity EditMode：Retro540Tests 10/10，BloomTests 3/3，HeightFogTests 3/3，合计 16 项通过。
+CRT GPU：横屏/竖屏/非整数放大/原生尺寸、零强度回退、颜色方向与 alpha、扫描线、UI 和最后相机执行均通过。
+描边 GPU：1/2/4 px 在 1x、2x、3x、2.5x 输出下通过。
+GPU 运行时截图与报告：Library/CRTValidation、Library/DepthNormalOutlineValidation（本地验证产物，不提交）。
+
+限制：CRT 面向普通非 XR、SDR 相机栈；曲率变形尚未调整 EventSystem 指针坐标映射。

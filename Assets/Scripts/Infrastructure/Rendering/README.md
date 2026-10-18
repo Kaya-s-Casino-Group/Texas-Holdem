@@ -172,3 +172,32 @@ FoxStatue 的完整闭环报告在 `Library/FoxStatueValidation`。
 整数与半帧 GPU 解码、末帧夹取、实际裂痕渲染均通过。保存后重新打开再次导出，也保留了
 mesh / 材质 / Prefab GUID、已加载 mesh 实例、材质裂痕值和实例播放进度；实际 GPU 片元读回
 与新复制 mesh 一致。使用 `Assets/Art/Models/Creatures/FoxStatue/VAT/FoxStatue_Collapse_VAT.prefab`。
+
+
+## 老电视 / CRT（最终相机栈输出）
+
+CRT 已独立为 `CRTFeature` / `CRT.shader`，安装在 `Assets/Settings/UIRenderer.asset`，不属于场景的复古调色 Shader。
+最终相机使用的 Renderer 决定整条相机栈是否启用 CRT；当前安装在 UI Renderer，所以没有 UI 相机的场景不会自动执行 CRT。
+当前强度 0.35、曲率 0.025、扫描周期 4 个输出像素，Scene View 默认关闭。复古后处理原来的调色、暗角、色差和场景 Bloom 保持独立。
+
+执行顺序：低分辨率场景与调色 → Point 放大 → 单侧细描边 → 原生 UI 相机与 Overlay Canvas → CRT → 屏幕。
+显像管曲率、扫描线、RGB 荧光栅格与屏幕边缘柔化统一作用于场景、描边和 UI，扫描纹理按输出像素生成。
+定制 URP 通过 `ICameraStackOutputFeature` 在栈开始前查询最后一台有效相机的 Renderer，分配原生尺寸 RGBA16F 颜色目标。
+Base 和所有 Overlay 共享这个颜色目标；原生 UI 使用独立深度目标，避免颜色采样读到深度。
+最终相机在 `AfterRenderingUI` 处理已完成的合成画面，随后上屏。不修改 Camera.targetTexture、不读取 backbuffer，原先的输出纹理与色彩编码语义保留。
+仅支持普通非 XR / SDR 相机栈；HDR 显示输出跳过。每条栈只由最后相机的 Feature 处理一次。
+关闭 Feature、关闭启用开关或总强度为 0 时走原有直接输出路径。开启时增加原生颜色纹理与原生 UI 深度纹理，以及一次最终全屏绘制。
+曲率会改变 UI 的视觉位置；当前没有修改 EventSystem 的指针坐标映射。
+
+`工具/渲染/老电视 CRT/安装到最终 UI Renderer` 安装或复用独立 Feature。
+`工具/渲染/老电视 CRT/验证 CRT` 检查横屏、竖屏、非整数放大和原生尺寸、零强度回退、颜色/方向/alpha、边框、扫描线、UI 接受 CRT 及最终 UI 相机执行。
+`工具/渲染/老电视 CRT/捕获当前 CRT 对照` 输出当前主相机完整 Camera Stack 的开关对比到 `Library/CRTValidation/`，不保存当前场景。
+
+
+## 屏幕像素描边
+
+`DepthNormalOutlineFeature` 使用场景深度和法线生成单侧边缘，Point 放大后再按输出像素宽度合成。
+支持 0..4 像素宽度、颜色、深度/法线阈值和排除层；当前安装到 MainDeferredRenderer，默认关闭。
+默认排除位为 layer 8；各场景可按自身层定义调整，不依赖角色资产或角色 Renderer。
+Overlay 相机跳过描边，描边在原生 UI 之前合成；CRT 在最终 UI 之后处理整幅画面。
+`工具/渲染/描边/验证屏幕像素宽度` 检查 1/2/4 像素宽度在 1x/2x/3x/2.5x 输出中的稳定性。

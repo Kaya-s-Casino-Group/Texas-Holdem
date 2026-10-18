@@ -491,6 +491,21 @@ namespace UnityEngine.Rendering.Universal
             }
         }
 
+        internal void PrepareCameraStackOutput(ref CameraData cameraData)
+        {
+            cameraData.stackOutputTexture = null;
+            cameraData.stackOutputFeature = null;
+            foreach (var feature in rendererFeatures)
+            {
+                if (feature == null || !feature.isActive || !(feature is ICameraStackOutputFeature output)) continue;
+                var texture = output.PrepareStackOutput(in cameraData);
+                if (texture == null) continue;
+                cameraData.stackOutputTexture = texture;
+                cameraData.stackOutputFeature = output;
+                break;
+            }
+        }
+
         /// <summary>
         /// Returns a list of renderer features added to this renderer.
         /// <seealso cref="ScriptableRendererFeature"/>

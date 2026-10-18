@@ -360,6 +360,16 @@ namespace UnityEngine.Rendering.Universal
         internal bool customRenderResolution;
         internal bool nativeResolutionOverlay;
         internal bool hasNativeOverlayAfter;
+        /// <summary>Readable native-resolution target containing the entire camera stack.</summary>
+        public RenderTexture stackOutputTexture { get; internal set; }
+        public ICameraStackOutputFeature stackOutputFeature { get; internal set; }
+        public bool isFinalStackCamera { get; internal set; }
+        /// <summary>Restore physical output after the final stack output feature has presented.</summary>
+        public void CompleteStackOutput()
+        {
+            stackOutputTexture = null;
+            stackOutputFeature = null;
+        }
 
         internal void SetNativeOverlayResolution()
         {
@@ -479,6 +489,7 @@ namespace UnityEngine.Rendering.Universal
         {
             get
             {
+                if (stackOutputTexture != null) return false;
 #if ENABLE_VR && ENABLE_XR_MODULE
                 // For some XR platforms we need to encode in SRGB but can't use a _SRGB format texture, only required for 8bit per channel 32 bit formats.
                 if (xr.enabled)

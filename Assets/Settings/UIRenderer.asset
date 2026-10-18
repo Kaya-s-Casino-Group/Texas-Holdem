@@ -11,12 +11,13 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: de640fe3d0db1804a85f9fc8f5cadab6, type: 3}
   m_Name: UIRenderer
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   debugShaders:
     debugReplacementPS: {fileID: 4800000, guid: cf852408f2e174538bcd9b7fda1c5ae7, type: 3}
     hdrDebugViewPS: {fileID: 4800000, guid: 573620ae32aec764abd4d728906d2587, type: 3}
-  m_RendererFeatures: []
-  m_RendererFeatureMap: 
+  m_RendererFeatures:
+  - {fileID: 5679836869298345858}
+  m_RendererFeatureMap: 82d7b1208ad5d24e
   m_UseNativeRenderPass: 0
   postProcessData: {fileID: 0}
   xrSystemData: {fileID: 11400000, guid: 60e1133243b97e347b653163a8c01b64, type: 2}
@@ -63,3 +64,27 @@ MonoBehaviour:
   m_CopyDepthMode: 1
   m_AccurateGbufferNormals: 0
   m_IntermediateTextureMode: 0
+--- !u!114 &5679836869298345858
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 77054196577f4416bb0afee5e1eef0c1, type: 3}
+  m_Name: "\u8001\u7535\u89C6 CRT\uFF08\u6700\u7EC8\u8F93\u51FA\uFF09"
+  m_EditorClassIdentifier:
+  m_Active: 1
+  settings:
+    applyToRenderTextures: 1
+    applyToSceneView: 0
+    crtEnabled: 1
+    crtIntensity: 0.35
+    crtCurvature: 0.025
+    crtScanlinePitch: 4
+    crtScanlineStrength: 0.3
+    crtMaskStrength: 0.2
+    crtEdgeSoftness: 0.015
+  crtShader: {fileID: 4800000, guid: 2886598f191d44a55a18ca37588aceda, type: 3}
