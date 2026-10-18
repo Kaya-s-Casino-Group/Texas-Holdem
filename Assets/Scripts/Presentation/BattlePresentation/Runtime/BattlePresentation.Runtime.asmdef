@@ -1,0 +1,6 @@
+{
+  "name": "BattlePresentation.Runtime",
+  "rootNamespace": "BattlePresentation",
+  "references": [],
+  "noEngineReferences": true
+}

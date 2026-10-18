@@ -1,0 +1,24 @@
+{
+  "name": "Poker.BattlePresentation.Shared.Tests",
+  "references": [
+    "Poker.BattlePresentation.Shared",
+    "BattlePresentation.Runtime",
+    "PokerEngine.Core",
+    "PokerEngine.Combat",
+    "PokerEngine.Composition",
+    "PokerEngine.Scoring",
+    "PokerEngine.Abilities",
+    "PokerEngine.Encounters"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "overrideReferences": true,
+  "precompiledReferences": [
+    "nunit.framework.dll"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ],
+  "autoReferenced": false
+}

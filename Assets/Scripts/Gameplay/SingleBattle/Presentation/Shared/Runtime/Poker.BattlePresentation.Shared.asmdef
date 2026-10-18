@@ -1,0 +1,6 @@
+{
+  "name": "Poker.BattlePresentation.Shared",
+  "rootNamespace": "Poker.BattlePresentation",
+  "references": ["BattlePresentation.Runtime", "PokerEngine.Core", "PokerEngine.Abilities", "PokerEngine.Scoring", "PokerEngine.Combat", "PokerEngine.Composition", "PokerEngine.Encounters"],
+  "noEngineReferences": true
+}

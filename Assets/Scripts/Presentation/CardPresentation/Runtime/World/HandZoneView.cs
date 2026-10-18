@@ -29,7 +29,7 @@ namespace CardPresentation
         public Vector3 DeckLocalPosition => deckLocalPosition;
         public Transform DeckAnchor => deckAnchor;
         public Vector3 DeckWorldPosition => deckAnchor != null ? deckAnchor.position : transform.TransformPoint(deckLocalPosition * CardScale);
-        public override bool IsTransitioning => departing.Count > 0 || base.IsTransitioning;
+        public override bool IsTransitioning => selectionAction?.Operation.keepWaiting == true || departing.Count > 0 || base.IsTransitioning;
 
         protected override void ValidatePresentationSettings()
         {
@@ -154,6 +154,7 @@ namespace CardPresentation
             }
             public override void AfterCommit()
             {
+                hand.ReconcileSelectionAction();
                 hand.TrackDiscard(discardOperation, discards);
                 var committed = hand.ordered;
                 hand.nextDealTime = animate && committed.Length > 0 ? queue : hand.AnimationTime;
@@ -211,15 +212,15 @@ namespace CardPresentation
 
         public override void CompleteTransitions()
         {
-            ClearDepartures(); base.CompleteTransitions(); nextDealTime = AnimationTime;
+            CancelSelectionAction(); ClearDepartures(); base.CompleteTransitions(); nextDealTime = AnimationTime;
         }
         protected override void OnMotionAdvanced(float deltaTime)
         {
-            AdvanceDepartures(deltaTime); ConsumeDealSounds();
+            AdvanceSelectionAction(deltaTime); AdvanceDepartures(deltaTime); ConsumeDealSounds();
         }
         public override void Clear()
         {
-            ClearDepartures(); base.Clear(); nextDealTime = 0; StopCardAudio();
+            CancelSelectionAction(); ClearDepartures(); base.Clear(); nextDealTime = 0; StopCardAudio();
         }
         protected override void OnDisable() { CancelDiscardBatches(); base.OnDisable(); StopCardAudio(); }
         protected override void OnDestroy() { base.OnDestroy(); ReleaseCardAudio(); }

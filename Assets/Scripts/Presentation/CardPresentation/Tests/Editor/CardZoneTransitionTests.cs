@@ -56,6 +56,74 @@ namespace CardPresentation.Tests
             }
         }
 
+        [Test] public void AcceptedSelectionEmitsRealIntermediateMarkerWithoutChangingHandData()
+        {
+            using (var f = new Fixture())
+            {
+                var data = Data(Card("a"), Card("b")); f.Zone.Present(data, false);
+                int markers = 0, finished = 0;
+                var action = f.Zone.PresentSelectionAction(new[] { "a" }, key => { Assert.AreEqual("ReadyToAttack", key); ++markers; });
+                action.Finished += _ => ++finished;
+                f.Zone.AdvanceMotion(.09f);
+                Assert.AreEqual(1, markers); Assert.AreEqual(CardActionViewStatus.Pending, action.Status);
+                Assert.AreSame(data, f.Zone.Data); Assert.AreEqual(2, f.Zone.Views.Count);
+                Assert.Greater(f.Zone.Views[0].SelectionActionOffset.magnitude, 0);
+                f.Zone.AdvanceMotion(.2f);
+                Assert.AreEqual(CardActionViewStatus.Completed, action.Status);
+                Assert.AreEqual(1, markers); Assert.AreEqual(1, finished);
+                Assert.AreSame(data, f.Zone.Data);
+            }
+        }
+
+        [Test] public void SelectionActionCancellationUsesLatestLayoutAndInvalidatesLateMarker()
+        {
+            using (var f = new Fixture())
+            {
+                f.Zone.Present(Data(Card("a"), Card("b")), false);
+                var a = f.Zone.Views[0]; int markers = 0;
+                var action = f.Zone.PresentSelectionAction(new[] { "a" }, _ => ++markers);
+                f.Zone.AdvanceMotion(.01f);
+                f.Zone.Present(Data(Card("b"), Card("a")), false);
+                var latestPosition = a.transform.localPosition;
+                Assert.IsTrue(action.Cancel()); f.Zone.AdvanceMotion(1);
+                Assert.AreEqual(CardActionViewStatus.Cancelled, action.Status);
+                Assert.AreEqual(0, markers); Assert.AreEqual(Vector3.zero, a.SelectionActionOffset);
+                Near(latestPosition, a.DisplayPose.Position);
+                Assert.AreEqual("a", f.Zone.Data.Cards[1].ViewId);
+            }
+        }
+
+        [Test] public void TransferAfterReadyCompletesPreparationWithoutCancellingAcceptedAction()
+        {
+            using (var f = new Fixture())
+            {
+                f.Zone.Present(Data(Card("a"), Card("b")), false);
+                int markers = 0;
+                var action = f.Zone.PresentSelectionAction(new[] { "a" }, _ => ++markers);
+                f.Zone.AdvanceMotion(.09f); Assert.AreEqual(1, markers);
+                Assert.AreEqual(CardActionViewStatus.Pending, action.Status);
+                f.Zone.PresentActionCommitted(CardViewActionKind.Play, Data(Card("b")), new[] { "a" }, () => { });
+                Assert.AreEqual(CardActionViewStatus.Completed, action.Status);
+                f.Zone.AdvanceMotion(1); Assert.AreEqual(1, markers);
+                Assert.AreEqual(1, f.Zone.Data.Cards.Count);
+            }
+        }
+
+        [Test] public void SelectionActionSyncClearsOnlyTemporaryOffsetAndCompletesOnlyOnce()
+        {
+            using (var f = new Fixture())
+            {
+                f.Zone.Present(Data(Card("a", selected: true)), false);
+                var a = f.Zone.Views[0]; var selectedOffset = a.InteractionOffset; int finished = 0;
+                var action = f.Zone.PresentSelectionAction(new[] { "a" }, _ => { });
+                action.Finished += _ => ++finished;
+                f.Zone.AdvanceMotion(.01f); f.Zone.CompleteTransitions(); f.Zone.CompleteTransitions();
+                Assert.AreEqual(CardActionViewStatus.Cancelled, action.Status);
+                Assert.AreEqual(1, finished); Near(selectedOffset, a.InteractionOffset);
+                Assert.IsTrue(a.Data.Interaction.IsSelected);
+            }
+        }
+
         [Test] public void DiscardActionCompletesAfterItsLastDepartureIndependentlyOfReflow()
         {
             using (var f = new Fixture())

@@ -1,0 +1,10 @@
+{
+  "name": "BattlePresentation.Tests.Editor",
+  "rootNamespace": "BattlePresentation.Tests",
+  "references": ["BattlePresentation.Runtime"],
+  "includePlatforms": ["Editor"],
+  "overrideReferences": true,
+  "precompiledReferences": ["nunit.framework.dll"],
+  "optionalUnityReferences": ["TestAssemblies"],
+  "autoReferenced": false
+}

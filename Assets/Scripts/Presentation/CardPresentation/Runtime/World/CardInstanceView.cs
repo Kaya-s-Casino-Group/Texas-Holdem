@@ -33,7 +33,7 @@ namespace CardPresentation
         private readonly object liftTweenId = new object();
         private const float SelectionOvershootScale = 1.35f;
         public float PresentationScale { get; private set; } = 1;
-        public Vector3 InteractionOffset => (interactionOffset + selectionDeniedOffset) * PresentationScale;
+        public Vector3 InteractionOffset => (interactionOffset + selectionDeniedOffset + selectionActionOffset) * PresentationScale;
         public bool IsLifting => liftTween != null && liftTween.IsActive();
         public bool IsTransitioning => IsTransferring || (transition != null && transition.IsAnimating);
         public bool IsEntering => IsTransferring || (transition != null && transition.IsEntering);
@@ -109,6 +109,7 @@ namespace CardPresentation
         {
             // Preserve the displayed lift and sway, including selection interrupted midway through its rise.
             KillLift(); KillHoverScale(); KillSwayTween(); CancelSelectionDenied();
+            ConsumeSelectionActionOffset();
             transition.Exit(destination, delay, settings, swayAngle);
         }
 

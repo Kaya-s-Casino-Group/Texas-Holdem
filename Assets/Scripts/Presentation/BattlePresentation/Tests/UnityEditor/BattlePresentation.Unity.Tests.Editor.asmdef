@@ -1,0 +1,10 @@
+{
+  "name": "BattlePresentation.Unity.Tests.Editor",
+  "rootNamespace": "BattlePresentation.Unity.Tests",
+  "references": ["BattlePresentation.Runtime", "BattlePresentation.Unity", "Unity.TextMeshPro", "Unity.ugui"],
+  "includePlatforms": ["Editor"],
+  "overrideReferences": true,
+  "precompiledReferences": ["nunit.framework.dll"],
+  "optionalUnityReferences": ["TestAssemblies"],
+  "autoReferenced": false
+}
