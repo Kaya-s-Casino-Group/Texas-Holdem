@@ -6,7 +6,7 @@ LightingSettings:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: ForestRuins_LightingSettings
+  m_Name: LS_CharacterValidation
   serializedVersion: 6
   m_GIWorkflowMode: 1
   m_EnableBakedLightmaps: 1
@@ -17,8 +17,8 @@ LightingSettings:
   m_IndirectOutputScale: 1
   m_UsingShadowmask: 1
   m_BakeBackend: 2
-  m_LightmapMaxSize: 512
-  m_BakeResolution: 44
+  m_LightmapMaxSize: 1024
+  m_BakeResolution: 40
   m_Padding: 2
   m_LightmapCompression: 3
   m_AO: 0

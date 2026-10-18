@@ -15,7 +15,7 @@ Unity 2022.3 / URP 14。运行项目不需要 Python：优化后的 UV1 已保�
 
 ## 场景文件
 
-- `Assets/Scenes/ForestRuins/ForestRuins_LightingSettings.lighting`
-- `Assets/Scenes/SingleBattleDemo/SingleBattleDemo_LightingSettings.lighting`
+- `Assets/Settings/Lighting/LS_ForestRuins.lighting`
+- `Assets/Settings/Lighting/LS_SingleBattleDemo.lighting`
 
 每个场景的 LightingData、光照贴图与方向贴图保存在同名文件夹中，独立烘焙。场景配置和已有烘焙结果都需要提交 Git；Library 中的中间报告无需提交。

@@ -67,15 +67,14 @@ namespace ForestRuins.Editor
                 PrefabUtility.RecordPrefabInstancePropertyModifications(r);
                 PrefabUtility.RecordPrefabInstancePropertyModifications(r.gameObject);
             }
-            string parent=Path.GetDirectoryName(scene.path).Replace('\\','/');
-            string folder=parent+"/"+scene.name;
-            if(!AssetDatabase.IsValidFolder(folder)) AssetDatabase.CreateFolder(parent,scene.name);
-            string path=folder+"/"+scene.name+"_LightingSettings.lighting";
+            const string folder="Assets/Settings/Lighting";
+            if(!AssetDatabase.IsValidFolder(folder)) AssetDatabase.CreateFolder("Assets/Settings","Lighting");
+            string path=folder+"/LS_"+scene.name+".lighting";
             var settings=AssetDatabase.LoadAssetAtPath<LightingSettings>(path);
             if(!settings)
             {
                 settings=Lightmapping.lightingSettings ? UnityEngine.Object.Instantiate(Lightmapping.lightingSettings) : new LightingSettings();
-                settings.name=scene.name+"_LightingSettings";AssetDatabase.CreateAsset(settings,path);
+                settings.name="LS_"+scene.name;AssetDatabase.CreateAsset(settings,path);
             }
             Undo.RecordObject(settings,"Set compact forest atlas");settings.lightmapMaxSize=512;settings.lightmapResolution=44;
             EditorUtility.SetDirty(settings);Lightmapping.lightingSettings=settings;
