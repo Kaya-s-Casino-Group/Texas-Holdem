@@ -4,7 +4,7 @@
 
 生命战单位直接持有 Health/MaxHealth/Block，不依赖 ResourceState；玩家行动能量属于玩家玩法状态，筹码留在使用筹码的玩法中。公共战斗单位及最小牌型生命战见 [Combat README](Runtime/Combat/README.md)。主线 [卡牌战斗（SingleBattle）](../../Gameplay/SingleBattle/README.md) 通过 Composition.BattleSession 驱动 CardDuelEngine 组合卡牌计分与阵营战斗；[分数挑战（DrawBattle）](../../Gameplay/DrawBattle/README.md) 使用 DrawEngine，现有 Draw/Run 仍按原分数目标推进。完整主线 Run 场景及结果账本尚未接入。
 
-XML 战斗内容入口：`BattleContentXmlReader` / `BattleContentCompiler` / `BattleContentFactory` 提供带来源位置的安全读取、统一校验、不可变类型化目录与独立 BattleSession 组装。配置边界、字段、触发与示例见 [XML 内容说明](Runtime/Composition/Content/README.md)。现有 SO 与场景入口继续保留，只有调用新入口时才消费 XML。
+XML 战斗内容入口：`BattleContentXmlReader` / `BattleContentCompiler` / `BattleContentFactory` 提供带来源位置的安全读取、统一校验、不可变类型化目录与独立 BattleSession 组装。配置边界、字段、触发与示例见 [XML 内容说明](Runtime/Composition/Content/README.md)。现有 SO 与场景入口继续保留，只有调用新入口时才消费 XML。 外部中文配置工具见 [战斗内容工坊](../../../../Tools/BattleContentEditor/README.md)：支持十类表单、引用选择、XML 导入导出、草稿和现有 C# 编译器校验，不依赖 Unity 启动。
 
 ## 模块与依赖
 

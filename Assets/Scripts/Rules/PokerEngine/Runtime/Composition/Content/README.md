@@ -97,4 +97,4 @@ Conditions 是 AND 列表，支持 FactAtLeast、OwnerHealthAtMost、OwnerHasSta
 
 编译结果提供 SchemaVersion、RulesContractVersion、包 Id/Version 和 SHA-256 Fingerprint。指纹忽略注释、排版空白、属性顺序、name/explanation，以及根章节和独立定义排列顺序；保留效果、阵容、牌组、构筑等子项的语义顺序。缺省字段与显式默认值、等值数字的不同写法仍可能产生不同指纹，本期不承诺完全语义归一化。它用于内容包身份，不能替代已有对局快照/绑定指纹；未改动旧存档 schema 或旧绑定算法。
 
-需要新增机制时，先扩展规则类型、编译白名单、校验和测试，再更新内容契约；不能靠配置一个未实现名称获得新行为。旧 SO 继续保留，现有 Unity 宿主仍走原入口。HTML 编辑器、XSD/表单元数据生成、批量文件交换、固定场景命令脚本/断言和快照迁移均不在这一阶段实现。
+需要新增机制时，先扩展规则类型、编译白名单、校验和测试，再更新内容契约；不能靠配置一个未实现名称获得新行为。旧 SO 继续保留，现有 Unity 宿主仍走原入口。外部 HTML 配置工具已在 [Tools/BattleContentEditor](../../../../../../../Tools/BattleContentEditor/README.md) 独立提供，通过宿主调用本编译器，规则包不依赖 HTML 或 HTTP。XSD/表单元数据生成、批量文件交换、固定场景命令脚本/断言和快照迁移仍未实现。
