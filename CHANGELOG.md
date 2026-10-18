@@ -4,6 +4,12 @@
 
 ## [Unreleased]
 
+### 2026-10-18 — 补充双仓库协作与修正配置工具测试等待
+
+- 在 BattleToolkit 增加完整日常协作说明，主工程 README 提供入口，明确 XML/纯规则/工具在小仓库提交、Unity 接入方在主工程固定通过验收的子模块提交。
+- 补充策划导出覆盖、草稿与文件的区别、先子仓后主仓、detached HEAD 开发分支、团队同步、回退及冲突处理。
+- 小仓库修正首轮 Windows 浏览器 CI 的校验等待竞态；规则源码、共享 XML 和工具产品逻辑不变。本机配置浏览器 23 项回归通过。
+
 ### 2026-10-18 — 拆分独立规则工具仓库并通过 submodule 集成
 
 - 将十个纯 C# 模块、共享 XML、纯规则测试及网页配置试玩工具迁至私有 BattleToolkit 仓库；Unity 通过 `External/BattleToolkit` 子模块和 `com.kaya.battle-engine` 本地 UPM 包固定引用。
