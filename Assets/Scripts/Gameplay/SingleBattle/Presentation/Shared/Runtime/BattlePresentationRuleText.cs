@@ -95,7 +95,7 @@ namespace Poker.BattlePresentation
             if (changed != null)
             {
                 var status = changed.StatusAfter ?? changed.StatusBefore;
-                string reason = changed.Reason == CombatStatusChangeReason.Expired ? "到期" :
+                string reason = changed.Reason == CombatStatusChangeReason.Cleansed ? "净化" : changed.Reason == CombatStatusChangeReason.Expired ? "到期" :
                     changed.Reason == CombatStatusChangeReason.Refreshed ? "刷新" : changed.StatusAfter == null ? "耗尽" : "消耗";
                 string owner = status.Target.Kind == EntityKind.Participant ? Participant(state, new ParticipantId(status.Target.Id)) : status.Target.Id;
                 return owner + "：" + StatusName(status.DefinitionId, catalog) + " " + reason +
