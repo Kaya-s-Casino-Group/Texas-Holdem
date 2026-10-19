@@ -52,7 +52,7 @@ Material:
     m_Floats:
     - _BumpScale: 1
     - _CrackDepth: 0.0107
-    - _CrackProgress: 0.723
+    - _CrackProgress: 0
     - _CrackScale: 1.2
     - _CrackWidth: 0.235
     - _InteriorMetallic: 0

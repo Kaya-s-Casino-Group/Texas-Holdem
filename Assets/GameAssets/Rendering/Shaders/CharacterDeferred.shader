@@ -84,11 +84,25 @@ Shader "Rendering/Character Deferred Outline"
             #include "CharacterDeferredPasses.hlsl"
             ENDHLSL
         }
-        // Thin world-space inverted hull; independent of the screen-space outline feature.
+        // CharacterOutlineFeature draws every original silhouette before the expanded hulls.
+        Pass
+        {
+            Name "OutlineMask"
+            Tags { "LightMode"="CharacterOutlineMask" }
+            ZWrite Off
+            ColorMask R
+            HLSLPROGRAM
+            #pragma target 4.5
+            #pragma vertex CharacterVertex
+            #pragma fragment CharacterOutlineMaskFragment
+            #pragma multi_compile_instancing
+            #include "CharacterDeferredPasses.hlsl"
+            ENDHLSL
+        }
         Pass
         {
             Name "Outline"
-            Tags { "LightMode"="SRPDefaultUnlit" }
+            Tags { "LightMode"="CharacterOutline" }
             Cull Front
             Blend SrcAlpha OneMinusSrcAlpha
             ZWrite Off

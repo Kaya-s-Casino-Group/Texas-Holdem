@@ -75,6 +75,13 @@ half4 CharacterDepthNormals(CharacterVaryings input) : SV_Target
     return half4(PackNormal(CharacterNormalWS(input)), 0);
 }
 
+// Shared visible silhouette of all characters, rendered without normal expansion.
+TEXTURE2D_X(_CharacterHullSilhouette);
+half4 CharacterOutlineMaskFragment(CharacterVaryings input) : SV_Target
+{
+    return 1;
+}
+
 struct OutlineVaryings
 {
     float4 positionCS : SV_POSITION;
@@ -95,7 +102,10 @@ OutlineVaryings CharacterOutlineVertex(CharacterAttributes input)
 half4 CharacterOutlineFragment(OutlineVaryings input) : SV_Target
 {
     UNITY_SETUP_INSTANCE_ID(input);
+    UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
     clip(_OutlineWidth - 1e-7);
+    float2 uv = UnityStereoTransformScreenSpaceTex(GetNormalizedScreenSpaceUV(input.positionCS));
+    clip(0.5 - SAMPLE_TEXTURE2D_X(_CharacterHullSilhouette, sampler_PointClamp, uv).r);
     return _OutlineColor;
 }
 #endif
