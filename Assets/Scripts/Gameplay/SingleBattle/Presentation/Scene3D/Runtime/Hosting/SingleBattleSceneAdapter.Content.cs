@@ -6,15 +6,11 @@ using UnityEngine;
 
 namespace Poker.SingleBattle
 {
-    public enum BattleConfigurationSource { LegacyProfiles, XmlContent }
-
     public sealed partial class SingleBattleSceneAdapter
     {
         [Header("规则内容入口（修改后重新开战生效）")]
-        [SerializeField] private BattleConfigurationSource configurationSource;
         [SerializeField, InspectorName("XML 内容包")] private TextAsset contentXml;
         [SerializeField, InspectorName("编成 ID")] private string encounterId = "single-battle-new";
-        public bool UsesXmlContent => configurationSource == BattleConfigurationSource.XmlContent;
         public TextAsset ContentXml => contentXml;
         public string ContentEncounterId => encounterId;
         public IReadOnlyList<BattleDiagnostic> ContentDiagnostics { get; private set; } = Array.Empty<BattleDiagnostic>();
@@ -23,7 +19,7 @@ namespace Poker.SingleBattle
         public void ConfigureContent(TextAsset xml, string encounter)
         {
             if (busy) throw new InvalidOperationException("Wait for presentation before replacing next battle's content.");
-            contentXml = xml; encounterId = encounter; configurationSource = BattleConfigurationSource.XmlContent;
+            contentXml = xml; encounterId = encounter;
             ContentDiagnostics = Array.Empty<BattleDiagnostic>();
         }
 
@@ -53,7 +49,7 @@ namespace Poker.SingleBattle
             var content = ReadContent();
             var encounter = ReadContentEncounter(content);
             var assembly = BattleContentFactory.Create(content, new BattleSetupRequest(encounterId,
-                battleId ?? BattleSessionFactory.CreateBattleId(), random ?? HmacDeckShuffler.CreateRandomState()));
+                battleId ?? "battle/" + Guid.NewGuid().ToString("N"), random ?? HmacDeckShuffler.CreateRandomState()));
             ContentDiagnostics = Array.AsReadOnly(ContentDiagnostics.Concat(assembly.Diagnostics).ToArray());
             if (!assembly.Success) throw ContentFailure();
             ValidateContentRoster(encounter, assembly.Session);

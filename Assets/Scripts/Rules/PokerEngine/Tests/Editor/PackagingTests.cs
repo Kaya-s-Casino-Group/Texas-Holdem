@@ -18,34 +18,28 @@ namespace PokerEngine.Tests
         {
             const string root = "Poker.Battle2DValidation.Runtime";
             var declared = CompilationDependencies(root, AssembliesType.Player);
-            Assert.That(declared.Keys, Does.Contain("Poker.BattleConfiguration.Runtime"));
+            Assert.That(declared.Keys, Does.Not.Contain("Poker.BattleConfiguration.Runtime"));
+            Assert.That(declared.Keys, Does.Contain("BattlePresentation.Unity"));
             AssertForbiddenDependencies(declared, IsScene3DDependency);
             AssertForbiddenDependencies(CompiledDependencies(root), IsScene3DDependency);
         }
 
         [Test]
-        public void BattleConfigurationContainsAssetsAndCannotDependOnScenePresentations()
+        public void BattleScenesHaveNoLegacyProfileAssembliesAssetsOrSerializedFields()
         {
-            const string root = "Poker.BattleConfiguration.Runtime";
-            bool Forbidden(string name) => IsScene3DDependency(name) || name.StartsWith("Poker.Battle2DValidation") ||
-                name.StartsWith("Poker.Rendering.") || name.StartsWith("CardArt.") ||
-                name == "Unity.TextMeshPro" || name == "Unity.ugui";
-            AssertForbiddenDependencies(CompilationDependencies(root, AssembliesType.Player), Forbidden);
-            AssertForbiddenDependencies(CompiledDependencies(root), Forbidden);
-            var configuration = LoadAssembly(root);
-            foreach (string name in new[] { "BattleRulesProfile", "PlayerBattleProfile", "EnemyBattleProfile", "ScoreDamageProfile" })
+            foreach (string root in new[] { "Poker.SingleBattle.Runtime", "Poker.Battle2DValidation.Runtime", "Poker.BattleHosting.Runtime" })
             {
-                var profile = configuration.GetType("Poker.SingleBattle." + name, throwOnError: true);
-                Assert.That(typeof(UnityEngine.ScriptableObject).IsAssignableFrom(profile), Is.True, name);
+                AssertForbiddenDependencies(CompilationDependencies(root, AssembliesType.Player), name => name.StartsWith("Poker.BattleConfiguration"));
+                AssertForbiddenDependencies(CompiledDependencies(root), name => name.StartsWith("Poker.BattleConfiguration"));
             }
-            Assert.That(configuration.GetTypes().Where(typeof(UnityEngine.MonoBehaviour).IsAssignableFrom), Is.Empty);
-            foreach (var field in configuration.GetTypes().SelectMany(type => type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)))
-            foreach (var type in FieldTypes(field.FieldType))
-                Assert.That(typeof(UnityEngine.Component).IsAssignableFrom(type) || type == typeof(UnityEngine.GameObject) ||
-                    type == typeof(UnityEngine.SceneManagement.Scene), Is.False,
-                    field.DeclaringType.FullName + "." + field.Name + " stores a scene object: " + type.FullName);
-
-            AssertForbiddenDependencies(CompilationDependencies("Poker.BattleConfiguration.Editor", AssembliesType.Editor), Forbidden);
+            Assert.That(Directory.Exists("Assets/Scripts/Gameplay/SingleBattle/Configuration"), Is.False);
+            Assert.That(Directory.Exists("Assets/GameAssets/SingleBattle/Configuration"), Is.False);
+            var scene = LoadAssembly("Poker.SingleBattle.Runtime");
+            foreach (string type in new[] { "SingleBattleSceneAdapter", "PlayerBattleActor", "EnemyBattleActor" })
+                foreach (var field in scene.GetType("Poker.SingleBattle." + type).GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
+                    Assert.That(field.Name, Is.Not.EqualTo("profile").And.Not.EqualTo("rulesProfile").And.Not.EqualTo("configurationSource"));
+            foreach (var path in Directory.GetFiles("Assets/Scenes", "*.unity"))
+                Assert.That(File.ReadAllText(path), Does.Not.Contain("  rulesProfile:").And.Not.Contain("  configurationSource:"), path);
         }
 
         [Test]
@@ -78,7 +72,7 @@ namespace PokerEngine.Tests
             var scene = LoadAssembly("Poker.SingleBattle.Runtime");
             var minimal = LoadAssembly("Poker.Battle2DValidation.Runtime");
             var sceneHost = scene.GetType("Poker.SingleBattle.SingleBattleSceneAdapter", throwOnError: true);
-            var minimalHost = minimal.GetType("Poker.Battle2DValidation.Battle2DHost", throwOnError: true);
+            var minimalHost = minimal.GetType("Poker.Battle2DValidation.Battle2DSceneAdapter", throwOnError: true);
             var minimalView = minimal.GetType("Poker.Battle2DValidation.Battle2DView", throwOnError: true);
             Assert.That(typeof(IBattleSessionPresentation).IsAssignableFrom(sceneHost), Is.True);
             var frontend = LoadAssembly("BattlePresentation.Runtime").GetType("BattlePresentation.IBattlePresentationFrontend", throwOnError: true);
@@ -89,7 +83,10 @@ namespace PokerEngine.Tests
             Assert.That(adapterContract.IsAssignableFrom(sceneHost), Is.True);
             Assert.That(hostBase.IsAssignableFrom(sceneHost), Is.False, "Scene projection no longer owns a lifecycle.");
             Assert.That(sceneHost.GetProperty("SceneHost")?.PropertyType, Is.EqualTo(genericHost));
-            foreach (var host in new[] { genericHost, minimalHost })
+            Assert.That(adapterContract.IsAssignableFrom(minimalHost), Is.True);
+            Assert.That(hostBase.IsAssignableFrom(minimalHost), Is.False);
+            Assert.That(minimalHost.GetProperty("SceneHost")?.PropertyType, Is.EqualTo(genericHost));
+            foreach (var host in new[] { genericHost })
             {
                 Assert.That(host.BaseType, Is.EqualTo(hostBase), host.FullName);
                 Assert.That(host.GetProperty("Lifecycle")?.PropertyType, Is.EqualTo(typeof(BattleHost)), host.FullName);

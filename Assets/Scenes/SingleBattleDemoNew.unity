@@ -751,7 +751,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dad9f709f4fa54521886b7d5b4574da3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  configurationSource: 1
   contentXml: {fileID: 4900000, guid: 2e1406ff6b4f4cd68955b4ca6884b110, type: 3}
   encounterId: single-battle-new
   match: {fileID: 151945504}
@@ -762,7 +761,6 @@ MonoBehaviour:
   - {fileID: 1126122755}
   enemyActors:
   - {fileID: 273413156}
-  rulesProfile: {fileID: 0}
   sceneHost: {fileID: 151945509}
   presentationDirector: {fileID: 151945507}
 --- !u!114 &151945507
@@ -3625,7 +3623,6 @@ MonoBehaviour:
   battle: {fileID: 151945506}
   visual: {fileID: 1237585821}
   presentation: {fileID: 1237585822}
-  profile: {fileID: 0}
 --- !u!1 &278159045
 GameObject:
   m_ObjectHideFlags: 0
@@ -8122,7 +8119,6 @@ MonoBehaviour:
   battle: {fileID: 151945506}
   visual: {fileID: 691192565}
   presentation: {fileID: 118586659}
-  profile: {fileID: 0}
 --- !u!1 &1136878124
 GameObject:
   m_ObjectHideFlags: 0

@@ -4,7 +4,7 @@
 
 | 目录 | 内容 |
 | --- | --- |
-| `SingleBattle/Configuration/Profiles` | 2D / 3D 共用规则与角色配置 |
+| `SingleBattle/Content` | 原有示例场景的 XML 规则与编成（保留原数值） |
 | `SingleBattle/Presentation/Scene3D` | 3D 盾牌与 Shader |
 | `SingleBattle/Presentation/Minimal2D/Art` | 最简 2D 卡牌与矩形角色资源 |
 | `CardArt` | 卡牌预制件、配置、Shader 与通用贴图 |

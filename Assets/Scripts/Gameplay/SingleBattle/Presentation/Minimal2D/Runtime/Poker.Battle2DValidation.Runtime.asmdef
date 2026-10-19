@@ -7,12 +7,12 @@
     "PokerEngine.Combat",
     "PokerEngine.Composition",
     "PokerEngine.Encounters",
-    "Poker.BattleConfiguration.Runtime",
     "CardArt.Runtime",
     "Unity.TextMeshPro",
     "Unity.ugui",
     "Poker.BattleHosting.Runtime",
     "BattlePresentation.Runtime",
-    "Poker.BattlePresentation.Shared"
+    "Poker.BattlePresentation.Shared",
+    "BattlePresentation.Unity"
   ]
 }

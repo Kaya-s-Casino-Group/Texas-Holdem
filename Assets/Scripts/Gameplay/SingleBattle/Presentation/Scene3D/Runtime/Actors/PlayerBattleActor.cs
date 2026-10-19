@@ -10,12 +10,7 @@ namespace Poker.SingleBattle
     /// <summary>Player-only input/energy access. Submits requests to the battle owner, never resolves damage itself.</summary>
     public sealed class PlayerBattleActor : BattleActor, ICardMatchCommands, ICardScoreSource
     {
-        [SerializeField, InspectorName("玩家配置")] private PlayerBattleProfile profile;
-        public PlayerBattleProfile Profile => profile;
-        public void ConfigureProfile(PlayerBattleProfile configuration) => profile = configuration != null ? configuration : throw new ArgumentNullException(nameof(configuration));
-        public BattlePlayerSetup CreateSetup(ParticipantId id, IEnumerable<DeckEntry> deck = null, int? initialHealth = null) =>
-            profile != null ? profile.BuildSetup(id, deck, initialHealth) : throw new InvalidOperationException("Bind a player profile first.");
-        public BattlePlayerRules Rules => IsBound ? Battle.PresentedState.Duel.Player(ParticipantId).Rules : profile?.BuildRules();
+        public BattlePlayerRules Rules => IsBound ? Battle.PresentedState.Duel.Player(ParticipantId).Rules : null;
         protected override bool OwnsParticipant(CardDuelState state, ParticipantId id) => Battle.OwnsPlayer(this, id);
         public PlayerTurnState Turn => IsBound ? Battle.PresentedState.Duel.Player(ParticipantId).Energy : null;
         public bool CanInteract => isActiveAndEnabled && IsBound && IsAlive && Battle.Player == this && Battle.CanReceivePlayerInput;

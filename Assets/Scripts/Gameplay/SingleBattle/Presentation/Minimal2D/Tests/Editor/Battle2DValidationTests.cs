@@ -5,7 +5,8 @@ using CardArt;
 using global::BattlePresentation;
 using NUnit.Framework;
 using Poker.Battle2DValidation.Editor;
-using Poker.SingleBattle;
+using Poker.BattleHosting;
+using global::BattlePresentation.Unity;
 using PokerEngine;
 using RetroRendering;
 using TMPro;
@@ -48,16 +49,83 @@ namespace Poker.Battle2DValidation.Tests
             return session;
         }
 
+        [Test] public void XmlSourceUsesTheSharedEncounterAndMatchesHeadlessCommands()
+        {
+            using (var f = new Fixture())
+            {
+                var source = (XmlBattleSessionSource)f.Host.SceneHost.SessionSource;
+                Assert.AreEqual(Battle2DTimelineSetup.ContentPath, AssetDatabase.GetAssetPath(source.ContentXml));
+                Assert.AreEqual("single-battle-new", source.EncounterId);
+                var session = source.Build("xml-2d", HmacDeckShuffler.FromSeed(new byte[32]));
+                var baseline = source.Build("xml-2d", HmacDeckShuffler.FromSeed(new byte[32]));
+                baseline.Execute(baseline.State.Revision, Player, CardDuelAction.Start);
+                f.Host.SceneHost.AttachSession(session); f.Host.Playback.Start(false);
+                SameState(baseline.State, session.State);
+                Assert.AreEqual(800, session.State.Duel.Combat.Get(Player).MaxHealth);
+                Assert.AreEqual(1200, session.State.Duel.Combat.Get(Enemy).MaxHealth);
+                foreach (var action in new[] { CardDuelAction.Play, CardDuelAction.Discard, CardDuelAction.EndTurn })
+                {
+                    var cards = action == CardDuelAction.EndTurn ? Array.Empty<CardInstanceId>() : baseline.State.Zone(CardZoneKinds.Hand, Player).Cards.Take(1).ToArray();
+                    foreach (var id in cards) f.View.ToggleSelection(id.Value);
+                    Assert.IsTrue(baseline.Execute(baseline.State.Revision, Player, action, cards).Accepted);
+                    var result = action == CardDuelAction.Play ? f.Host.PlaySelected() : action == CardDuelAction.Discard ? f.Host.DiscardSelected() : f.Host.EndTurn();
+                    Assert.IsTrue(result.Accepted); SameState(baseline.State, session.State);
+                    Battle2DDisplayAssertions.Match(session.State, f.View.PresentedState);
+                }
+                var before = session.State; source.Configure(source.ContentXml, "missing-encounter");
+                Assert.Throws<InvalidOperationException>(() => f.Host.SceneHost.RestartBattle());
+                Assert.AreSame(before, f.Host.AuthorityState);
+            }
+        }
+
+        [Test] public void SceneRecipeOwnsSignalsAndReconfigurationPreservesAuthoredChanges()
+        {
+            using (var f = new Fixture())
+            {
+                var director = f.View.SceneDirector;
+                var play = director.Timeline.Single(g => g.ruleAction == "Play");
+                var attack = play.nodes.Single(n => n.id == "attack");
+                Assert.AreEqual("ReadyToAttack", attack.after.Single().marker);
+                Assert.AreEqual("Impact", play.checkpoint.Single().marker);
+                Assert.IsInstanceOf<Battle2DCardTimelineAction>(play.nodes.Single(n => n.id == "cards").action);
+                Assert.IsInstanceOf<TransformTimelineAction>(attack.action);
+                Assert.IsFalse(typeof(BaseBattleHost).IsAssignableFrom(typeof(Battle2DSceneAdapter)));
+                Assert.IsNull(typeof(Battle2DView).GetMethod("BuildPlan", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance));
+                Assert.IsFalse(typeof(Battle2DSceneAdapter).Assembly.GetReferencedAssemblies().Any(a => a.Name == "Poker.BattleConfiguration.Runtime"));
+                attack.after = new[] { new SceneActionDependency { actionId = "cards", kind = DependencyKind.Completed } };
+                int actions = f.View.GetComponentsInChildren<PresentationActionBehaviour>().Length;
+                Battle2DTimelineSetup.ConfigureTimeline(f.View, director);
+                Assert.AreEqual(DependencyKind.Completed, director.Timeline.Single(g => g.ruleAction == "Play").nodes.Single(n => n.id == "attack").after.Single().kind);
+                Assert.AreEqual(actions, f.View.GetComponentsInChildren<PresentationActionBehaviour>().Length);
+            }
+        }
+
+        [Test] public void CardActionCancellationReleasesOnlyItsOffsetAndUsesTheLatestSlot()
+        {
+            using (var f = new Fixture())
+            {
+                var card = f.View.Cards[0]; var owner = new object();
+                Assert.IsTrue(card.TryOwnAction(owner)); Assert.IsFalse(card.TryOwnAction(new object()));
+                card.SetActionOffset(owner, Vector3.up * .7f);
+                var nextSlot = new Vector3(3, 4, 0); card.Place(nextSlot, 1);
+                card.ShowSelection(true, false);
+                Assert.Less(Vector3.Distance(nextSlot + Vector3.up * .86f, card.transform.localPosition), .00001f);
+                card.ReleaseAction(owner);
+                Assert.Less(Vector3.Distance(nextSlot + Vector3.up * .16f, card.transform.localPosition), .00001f);
+                card.ShowSelection(false, false); Assert.AreEqual(nextSlot, card.transform.localPosition);
+            }
+        }
+
         [Test] public void SharedLifecycleSynchronizesAndRestartsWithReadyButtons()
         {
             using (var f = new Fixture())
             {
                 var session = f.Host.Session; var committed = session.State;
-                f.Host.SynchronizeBattle(); Assert.AreSame(committed, f.Host.AuthorityState);
-                f.Host.RestartBattle();
+                f.Host.SceneHost.SynchronizeBattle(); Assert.AreSame(committed, f.Host.AuthorityState);
+                f.Host.SceneHost.RestartBattle();
                 Assert.AreNotSame(session, f.Host.Session); Assert.AreSame(committed, session.State);
-                Assert.AreSame(f.Host.Session, f.Host.Lifecycle.Session);
-                Assert.AreSame(f.Host.Playback, f.Host.Lifecycle.Playback);
+                Assert.AreSame(f.Host.Session, f.Host.SceneHost.Lifecycle.Session);
+                Assert.AreSame(f.Host.Playback, f.Host.SceneHost.Lifecycle.Playback);
                 Assert.IsTrue(f.Host.Session.State.HasStarted); Assert.IsFalse(f.View.IsPresenting);
                 Assert.IsTrue(f.Host.CanEndTurn); Assert.IsTrue(f.View.EndTurnButton.interactable);
             }
@@ -66,14 +134,13 @@ namespace Poker.Battle2DValidation.Tests
         private sealed class Fixture : IDisposable
         {
             public readonly Scene Scene = EditorSceneManager.NewPreviewScene();
-            public readonly Battle2DHost Host;
+            public readonly Battle2DSceneAdapter Host;
             public readonly Battle2DView View;
             public readonly EventSystem Events;
             public readonly GameObject Prefab;
             private readonly Transform cardRoot;
             private readonly TMP_Text status, details, log;
             private readonly Button play, discard, endTurn, restart;
-            private readonly ScriptableObject[] profiles;
 
             public Fixture(BattleSession session = null)
             {
@@ -87,13 +154,10 @@ namespace Poker.Battle2DValidation.Tests
                 endTurn = Button("End turn", canvas.transform); restart = Button("Restart", canvas.transform);
                 Events = New("Events", root.transform).AddComponent<EventSystem>();
                 View = root.AddComponent<Battle2DView>(); ConfigureView();
-                var rules = ScriptableObject.CreateInstance<BattleRulesProfile>();
-                var player = ScriptableObject.CreateInstance<PlayerBattleProfile>();
-                var enemy = ScriptableObject.CreateInstance<EnemyBattleProfile>();
-                var damage = ScriptableObject.CreateInstance<ScoreDamageProfile>();
-                player.ConfigureDamage(damage); profiles = new ScriptableObject[] { rules, player, enemy, damage };
-                Host = root.AddComponent<Battle2DHost>(); Host.Configure(rules, player, enemy, View);
-                Host.AttachSession(session ?? Create());
+                View.ConfigureActors(New("Player", root.transform).transform, New("Enemy", root.transform).transform);
+                var lifecycle = Battle2DTimelineSetup.ConfigureBattle(View);
+                Host = (Battle2DSceneAdapter)lifecycle.SceneAdapter;
+                Host.SceneHost.AttachSession(session ?? Create());
             }
 
             private GameObject New(string name, Transform parent = null, params Type[] components)
@@ -119,7 +183,6 @@ namespace Poker.Battle2DValidation.Tests
             public void Dispose()
             {
                 EditorSceneManager.ClosePreviewScene(Scene);
-                foreach (var profile in profiles) Object.DestroyImmediate(profile);
             }
         }
 
@@ -147,7 +210,7 @@ namespace Poker.Battle2DValidation.Tests
             using (var f = new Fixture())
             {
                 var session = f.Host.Session;
-                Assert.AreSame(session, f.Host.Playback.Session); Assert.AreSame(f.Host.PresentationBridge, f.Host.Playback.Presentation);
+                Assert.AreSame(session, f.Host.Playback.Session); Assert.AreSame(f.Host, f.Host.Playback.Presentation);
                 Battle2DDisplayAssertions.Match(session.State, f.View.PresentedState); Assert.IsFalse(((IBattlePresentationFrontend)f.View).IsPresenting);
                 CollectionAssert.AreEqual(session.State.Zone(CardZoneKinds.Hand, Player).Cards.Select(id => id.Value), f.View.Cards.Select(card => card.Id));
                 Assert.IsFalse(f.View.PlayButton.interactable); Assert.IsFalse(f.View.DiscardButton.interactable);
@@ -220,7 +283,7 @@ namespace Poker.Battle2DValidation.Tests
                 Assert.IsFalse(f.View.EndTurnButton.interactable);
 
                 var next = Create(); var before = next.State;
-                f.Host.AttachSession(next);
+                f.Host.SceneHost.AttachSession(next);
                 Assert.AreSame(before, next.State);
                 Assert.AreSame(next, f.Host.Playback.Session);
                 Battle2DDisplayAssertions.Match(before, f.View.PresentedState);

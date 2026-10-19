@@ -24,7 +24,7 @@ namespace Poker.Battle2DValidation.Tests
         private const string ScreenshotPath = Folder + "/game-screen.png";
         private const string RunMenu = "工具/卡牌战斗/2D验证/验证运行时输入与表现";
         private const string RenderingMenu = "工具/卡牌战斗/2D验证/记录当前渲染配置";
-        private static Battle2DHost host;
+        private static Battle2DSceneAdapter host;
         private static Battle2DValidationTick driver;
         private static EventSystem events;
         private static Camera camera;
@@ -42,7 +42,7 @@ namespace Poker.Battle2DValidation.Tests
         {
             if (!Application.isPlaying || EditorApplication.isPaused || IsRunning)
                 throw new InvalidOperationException("请在未暂停的 Play 状态下运行，并等待上一次验证结束。");
-            var candidate = Object.FindObjectsOfType<Battle2DHost>().Single(item => item.isActiveAndEnabled &&
+            var candidate = Object.FindObjectsOfType<Battle2DSceneAdapter>().Single(item => item.isActiveAndEnabled &&
                 item.gameObject.scene.path == Battle2DValidationSetup.ScenePath);
             if (candidate.View.IsPresenting) throw new InvalidOperationException("请等待当前 2D 表现播放完成。");
             host = candidate;
@@ -84,7 +84,7 @@ namespace Poker.Battle2DValidation.Tests
                         camera = Object.FindObjectsOfType<Camera>().Single(item => item.isActiveAndEnabled && item.gameObject.scene == host.gameObject.scene && item.GetComponent<PhysicsRaycaster>() != null);
                         Assert.IsTrue(camera.orthographic);
                         Assert.IsNotNull(host.View.PlayerActor); Assert.IsNotNull(host.View.EnemyActor);
-                        host.StartBattle();
+                        host.SceneHost.StartBattle();
                         playerHome = host.View.PlayerActor.localPosition; enemyHome = host.View.EnemyActor.localPosition;
                         report.playerHome = playerHome; report.enemyHome = enemyHome; report.initialRevision = host.Session.State.Revision;
                         AssertRenderingConfiguration(); report.pipeline = ReadPipeline(camera);

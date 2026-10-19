@@ -3,7 +3,6 @@
   "rootNamespace": "Poker.Battle2DValidation.Editor",
   "references": [
     "Poker.Battle2DValidation.Runtime",
-    "Poker.BattleConfiguration.Runtime",
     "CardArt.Runtime",
     "CardArt.Editor",
     "Poker.Rendering.Forward2D.Runtime",
@@ -12,7 +11,10 @@
     "Unity.TextMeshPro",
     "Unity.ugui",
     "Unity.InputSystem",
-    "Poker.BattleHosting.Runtime"
+    "Poker.BattleHosting.Runtime",
+    "BattlePresentation.Runtime",
+    "BattlePresentation.Unity",
+    "PokerEngine.Composition"
   ],
   "includePlatforms": [
     "Editor"

@@ -10,6 +10,8 @@ namespace Poker.Battle2DValidation
     {
         private Battle2DView owner;
         private Vector3 slot;
+        private Vector3 actionOffset;
+        private object actionOwner;
         public string Id { get; private set; }
         public CardView Surface { get; private set; }
         public bool IsSelected { get; private set; }
@@ -23,14 +25,24 @@ namespace Poker.Battle2DValidation
         {
             slot = position; transform.localRotation = Quaternion.Euler(-90, 0, 0);
             transform.localScale = Vector3.one * scale;
-            transform.localPosition = slot;
+            ApplyPosition();
         }
         public void ShowSelection(bool selected, bool disabled)
         {
             IsSelected = selected;
             Surface.PresentArtwork(disabled ? new[] { "disabled" } : selected ? new[] { "selected" } : Array.Empty<string>(), Color.white);
-            transform.localPosition = slot + (selected ? Vector3.up * .16f : Vector3.zero);
+            ApplyPosition();
         }
+        private void ApplyPosition() => transform.localPosition = slot + actionOffset + (IsSelected ? Vector3.up * .16f : Vector3.zero);
+        public bool TryOwnAction(object owner)
+        {
+            if (actionOwner != null && !ReferenceEquals(actionOwner, owner)) return false;
+            actionOwner = owner; return true;
+        }
+        public void SetActionOffset(object owner, Vector3 offset)
+        { if (ReferenceEquals(actionOwner, owner)) { actionOffset = offset; ApplyPosition(); } }
+        public void ReleaseAction(object owner)
+        { if (ReferenceEquals(actionOwner, owner)) { actionOwner = null; actionOffset = Vector3.zero; ApplyPosition(); } }
         public void OnPointerClick(PointerEventData eventData)
         {
             if (eventData.button == PointerEventData.InputButton.Left) owner.ToggleSelection(Id);

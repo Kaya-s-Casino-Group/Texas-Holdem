@@ -73,9 +73,9 @@ Host 只管理创建、接入、开局、重开和同步，不引用牌区、Act
 - `SingleBattleSceneAdapter`：现有牌区、角色、盾牌、输入、HUD 的绑定与投影。
 - 原有 `ScenePresentationDirector` 和候选反馈组件：保留时间线及美术配置。
 
-这个具体适配器同时实现了会话来源接口，以保留原来的 XML／Legacy Profiles 编成与阵容校验。Host 的 Source 和 Adapter 均指向它；它自己不再继承 BaseBattleHost，也不再持有独立 BattleHost。其 `StartBattle / RestartBattle / AttachSession / SynchronizeBattle` 暂保留为兼容转发，既有按钮无需重新绑线。新代码直接调用 `adapter.SceneHost`。
+这个具体适配器同时实现了会话来源接口，负责 XML 编译组装与阵容校验；旧 SO 来源已删除。Host 的 Source 和 Adapter 均指向它；它自己不再继承 BaseBattleHost，也不再持有独立 BattleHost。其 `StartBattle / RestartBattle / AttachSession / SynchronizeBattle` 暂保留为兼容转发，既有按钮无需重新绑线。新代码直接调用 `adapter.SceneHost`。
 
-旧的独立 Minimal2D 验证宿主仍继承 BaseBattleHost，作为已有验证实现保留；本次最小预制体使用的是新的 BattleSceneHost，不依赖该验证模块。
+Minimal2D 已迁到相同入口：`BattleSceneHost + XmlBattleSessionSource + Battle2DSceneAdapter + ScenePresentationDirector`。旧 `Battle2DHost` 和 Demo SO 规则绑定已清理，卡牌与矩形动作由场景时间线配置。最小预制体仍独立于具体 2D/3D 模块。
 
 ## 验证
 

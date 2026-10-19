@@ -62,7 +62,6 @@ namespace Poker.SingleBattle.Tests
             Assert.NotNull(cameraTarget);
             yield return Idle(host);
             Assert.IsNull(host.PresentationDirector.LastError);
-            Assert.IsTrue(host.UsesXmlContent);
             Assert.AreEqual(8, host.Actions.Hand.Cards.Count);
             Assert.AreSame(host.AuthorityState, host.State);
             Assert.IsTrue(host.CanEndTurn);

@@ -71,27 +71,6 @@ namespace Poker.SingleBattle.Tests
                 return asset;
             }
 
-            public void ConfigureLegacy()
-            {
-                var rules = ScriptableObject.CreateInstance<BattleRulesProfile>();
-                var damage = ScriptableObject.CreateInstance<ScoreDamageProfile>();
-                owned.Add(rules); owned.Add(damage);
-                Host.ConfigureRules(rules);
-                foreach (var actor in Players)
-                {
-                    var profile = ScriptableObject.CreateInstance<PlayerBattleProfile>();
-                    owned.Add(profile);
-                    profile.ConfigureDamage(damage);
-                    actor.ConfigureProfile(profile);
-                }
-                foreach (var actor in Enemies)
-                {
-                    var profile = ScriptableObject.CreateInstance<EnemyBattleProfile>();
-                    owned.Add(profile);
-                    actor.ConfigureProfile(profile);
-                }
-            }
-
             public CardSelectionRequest SelectOne()
             {
                 foreach (var card in Hand.Cards) Hand.SetInteraction(card.Id, default);
@@ -142,8 +121,63 @@ namespace Poker.SingleBattle.Tests
 
         private static string Explain(IEnumerable<BattleDiagnostic> diagnostics) => string.Join("\n", diagnostics.Select(item => item.Code + ": " + item.Message));
 
+        [TestCase("SingleBattleDemo", "single-battle", 800, 1200, 240, 20, true)]
+        [TestCase("ForestRuins", "single-battle", 800, 1200, 240, 20, true)]
+        [TestCase("TeamBattleDemo", "demo-battle", 40, 75, 7, 445, false)]
+        public void MigratedScenesKeepTheirAuthoredRosterAndRules(string name, string encounter, int health, int enemyHealth, int damage, int rounds, bool unlimited)
+        {
+            var active = SceneManager.GetActiveScene();
+            string path = "Assets/Scenes/" + name + ".unity";
+            var scene = SceneManager.GetSceneByPath(path); bool opened = !scene.IsValid() || !scene.isLoaded;
+            if (opened) scene = EditorSceneManager.OpenScene(path, OpenSceneMode.Additive);
+            try
+            {
+                var adapter = scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<SingleBattleSceneAdapter>(true)).Single();
+                Assert.That(adapter.ContentEncounterId, Is.EqualTo(encounter));
+                Assert.That(adapter.ContentXml, Is.SameAs(AssetDatabase.LoadAssetAtPath<TextAsset>(Editor.SingleBattleSetup.SceneBattleContentPath)));
+                var session = adapter.BuildConfiguredSession("migration", HmacDeckShuffler.FromSeed(new byte[32]));
+                var state = session.State; var player = state.Duel.Players.Single(); var enemy = state.Duel.Enemies.Single();
+                Assert.That(state.HasStarted, Is.False); Assert.That(adapter.Session, Is.Null);
+                Assert.That(state.Duel.Combat.Get(player.Id).Health, Is.EqualTo(health));
+                Assert.That(state.Duel.Combat.Get(enemy.Id).Health, Is.EqualTo(enemyHealth));
+                Assert.That(session.Engine.Duel.Definition.RoundLimit, Is.EqualTo(rounds));
+                Assert.That(player.Rules.UnlimitedDiscards, Is.EqualTo(unlimited));
+                Assert.That(player.Rules.HandSize, Is.EqualTo(8)); Assert.That(player.Rules.MaxEnergy, Is.EqualTo(3));
+                Assert.That(player.Rules.PlayEnergyCost, Is.EqualTo(1)); Assert.That(player.Rules.DiscardEnergyCost, Is.EqualTo(1));
+                Assert.That(player.Rules.DamagePolicy, Is.InstanceOf<EqualScoreDamageRule>());
+                Assert.That(session.Execute(state.Revision, player.Id, CardDuelAction.Start).Accepted, Is.True);
+                var before = session.State;
+                var preview = session.Engine.Duel.PreviewEnemyAction(before.Duel, enemy.Id);
+                Assert.That(preview.Hits.Single().SettledDamage, Is.EqualTo(damage));
+                var discarded = before.Zone(CardZoneKinds.Hand, player.Id).Cards.Take(1).ToArray();
+                Assert.That(session.Execute(before.Revision, player.Id, CardDuelAction.Discard, discarded).Accepted, Is.True);
+                Assert.That(session.State.Duel.Combat.Get(player.Id).Block, Is.EqualTo(unlimited ? 8 : 0));
+                Assert.That(session.State.Zone(CardZoneKinds.Hand, player.Id).Cards.Count, Is.EqualTo(8));
+                Assert.That(session.Execute(session.State.Revision, player.Id, CardDuelAction.EndTurn).Accepted, Is.True);
+                Assert.That(session.State.Duel.Combat.Get(player.Id).Health, Is.EqualTo(health - damage + (unlimited ? 8 : 0)));
+                Assert.That(session.State.Duel.Combat.Get(player.Id).Block, Is.Zero);
+                Assert.That(SceneManager.GetActiveScene(), Is.EqualTo(active));
+                foreach (var root in scene.GetRootGameObjects())
+                    foreach (var transform in root.GetComponentsInChildren<Transform>(true))
+                        Assert.That(GameObjectUtility.GetMonoBehavioursWithMissingScriptCount(transform.gameObject), Is.Zero, transform.name);
+            }
+            finally { if (opened) EditorSceneManager.CloseScene(scene, true); }
+        }
+
         [Test]
-        public void DemoNewSceneBindsXmlContentAndBuildsWithoutAnyLegacyProfiles()
+        public void GeneratedTeamEncounterBuildsIndependentTwoVersusThreeSlots()
+        {
+            var compiled = BattleContentCompiler.CompileXml(AssetDatabase.LoadAssetAtPath<TextAsset>(Editor.SingleBattleSetup.SceneBattleContentPath).text);
+            Assert.That(compiled.Success, Is.True, Explain(compiled.Diagnostics));
+            var built = BattleContentFactory.Create(compiled.Content, new BattleSetupRequest("team-battle", "team", HmacDeckShuffler.FromSeed(new byte[32])));
+            Assert.That(built.Success, Is.True, Explain(built.Diagnostics));
+            Assert.That(built.Session.State.Duel.Players.Count, Is.EqualTo(2));
+            Assert.That(built.Session.State.Duel.Enemies.Count, Is.EqualTo(3));
+            Assert.That(built.Session.State.Table.Cards.Count, Is.EqualTo(104));
+        }
+
+        [Test]
+        public void DemoNewSceneBindsXmlContentAndBuildsFromXmlOnly()
         {
             var active = SceneManager.GetActiveScene();
             const string path = "Assets/Scenes/SingleBattleDemoNew.unity";
@@ -153,13 +187,9 @@ namespace Poker.SingleBattle.Tests
             try
             {
                 var host = scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<SingleBattleSceneAdapter>(true)).Single();
-                Assert.That(host.UsesXmlContent, Is.True);
                 Assert.That(host.ContentXml, Is.SameAs(AssetDatabase.LoadAssetAtPath<TextAsset>(
                     "Packages/com.kaya.battle-engine/Content/SingleBattleDemoNew.xml")));
                 Assert.That(host.ContentEncounterId, Is.EqualTo("single-battle-new"));
-                Assert.That(host.RulesProfile, Is.Null);
-                Assert.That(host.Players.All(actor => actor.Profile == null), Is.True);
-                Assert.That(host.Enemies.All(actor => actor.Profile == null), Is.True);
                 var built = host.BuildConfiguredSession("scene-validation", HmacDeckShuffler.FromSeed(new byte[32]));
                 Assert.That(built.State.HasStarted, Is.False);
                 Assert.That(built.State.Duel.Players.Count, Is.EqualTo(host.Players.Count));
@@ -176,18 +206,14 @@ namespace Poker.SingleBattle.Tests
         }
 
         [Test]
-        public void XmlBuildCreatesAnUndealtSessionWithoutLegacyProfilesOrPublishingIt()
+        public void XmlBuildCreatesAnUndealtSessionWithoutPublishingIt()
         {
             using (var f = new Fixture())
             {
                 var xml = f.Content(Xml());
                 f.Host.ConfigureContent(xml, "fight");
-                Assert.That(f.Host.UsesXmlContent, Is.True);
                 Assert.That(f.Host.ContentXml, Is.SameAs(xml));
                 Assert.That(f.Host.ContentEncounterId, Is.EqualTo("fight"));
-                Assert.That(f.Host.RulesProfile, Is.Null);
-                Assert.That(f.Players[0].Profile, Is.Null);
-                Assert.That(f.Enemies[0].Profile, Is.Null);
 
                 var session = f.Host.BuildConfiguredSession("xml-built", HmacDeckShuffler.FromSeed(new byte[32]));
                 Assert.That(session.State.HasStarted, Is.False);
@@ -271,7 +297,7 @@ namespace Poker.SingleBattle.Tests
         [TestCase("unknown-encounter")]
         [TestCase("malformed-xml")]
         [TestCase("invalid-rules")]
-        public void InvalidXmlRestartKeepsTheExistingAuthorityAndNeverFallsBackToLegacyProfiles(string failure)
+        public void InvalidXmlRestartKeepsTheExistingAuthorityWithoutReplacingTheSession(string failure)
         {
             using (var f = new Fixture())
             {
@@ -282,13 +308,11 @@ namespace Poker.SingleBattle.Tests
                 var playback = f.Host.Playback;
                 var mirror = f.Match.State;
                 var hand = f.HandView.Data;
-                f.ConfigureLegacy();
                 var xml = failure == "missing-xml" ? null : f.Content(failure == "malformed-xml" ? "<BattleContent>" :
                     failure == "invalid-rules" ? Xml().Replace("handSize=\"8\"", "handSize=\"0\"") : Xml());
                 f.Host.ConfigureContent(xml, failure == "empty-encounter" ? "" : failure == "unknown-encounter" ? "missing" : "fight");
 
                 Assert.Throws<InvalidOperationException>(() => f.Host.RestartBattle());
-                Assert.That(f.Host.UsesXmlContent, Is.True);
                 Assert.That(f.Host.ContentDiagnostics.Any(item => item.Severity == BattleDiagnosticSeverity.Error), Is.True, Explain(f.Host.ContentDiagnostics));
                 Assert.That(f.Host.Session, Is.SameAs(session));
                 Assert.That(f.Host.AuthorityState, Is.SameAs(authority));
@@ -304,11 +328,10 @@ namespace Poker.SingleBattle.Tests
         }
 
         [Test]
-        public void InvalidXmlCannotStartEvenWhenAllLegacyProfilesArePresent()
+        public void InvalidXmlCannotStartAnUnconfiguredScene()
         {
             using (var f = new Fixture())
             {
-                f.ConfigureLegacy();
                 f.Host.ConfigureContent(f.Content("<BattleContent>"), "fight");
                 Assert.Throws<InvalidOperationException>(() => f.Host.StartBattle());
                 Assert.That(f.Host.Session, Is.Null);
@@ -380,17 +403,14 @@ namespace Poker.SingleBattle.Tests
         }
 
         [Test]
-        public void ConfiguringLegacyRulesExplicitlySelectsTheLegacySourceAgain()
+        public void MissingXmlCannotStartAndValidXmlRecoversWithoutRecreatingSceneObjects()
         {
             using (var f = new Fixture())
             {
-                f.Host.ConfigureContent(f.Content("<BattleContent>"), "missing");
-                f.ConfigureLegacy();
-                Assert.That(f.Host.UsesXmlContent, Is.False);
-                f.Host.StartBattle();
-                Assert.That(f.Host.State.HasStarted, Is.True);
-                Assert.That(f.Host.Player.ParticipantId.Value, Is.EqualTo("player"));
-                Assert.That(f.Host.Player.Unit.Health, Is.EqualTo(f.Host.Player.Profile.BuildCombatant().MaxHealth));
+                Assert.Throws<InvalidOperationException>(() => f.Host.StartBattle());
+                Assert.That(f.Host.Session, Is.Null);
+                f.Host.ConfigureContent(f.Content(Xml()), "fight"); f.Host.StartBattle();
+                Assert.That(f.Host.Player.Unit.Health, Is.EqualTo(123));
             }
         }
     }

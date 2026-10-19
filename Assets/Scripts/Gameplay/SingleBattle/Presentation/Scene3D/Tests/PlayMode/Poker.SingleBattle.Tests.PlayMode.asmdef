@@ -4,7 +4,6 @@
     "Poker.SingleBattle.Runtime",
     "CardArt.Runtime",
     "CardPresentation.Runtime",
-    "Poker.BattleConfiguration.Runtime",
     "Poker.BattleHosting.Runtime",
     "BattlePresentation.Runtime",
     "BattlePresentation.Unity",

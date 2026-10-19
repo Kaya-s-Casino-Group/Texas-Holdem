@@ -1,8 +1,8 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using global::BattlePresentation;
+using global::BattlePresentation.Unity;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -10,6 +10,7 @@ using UnityEngine.UI;
 namespace Poker.Battle2DValidation
 {
     /// <summary>A rule-independent frontend. The same display store and director drive cards, actors and UI.</summary>
+    [DisallowMultipleComponent, RequireComponent(typeof(ScenePresentationDirector))]
     public sealed class Battle2DView : MonoBehaviour, IBattlePresentationFrontend, IInteractionFeedback
     {
         [SerializeField] private GameObject cardPrefab;
@@ -17,12 +18,11 @@ namespace Poker.Battle2DValidation
         [SerializeField] private Transform playerActor, enemyActor;
         [SerializeField] private TMP_Text status, details, log;
         [SerializeField] private Button play, discard, endTurn, restart;
-        private Vector3 playerHome, enemyHome;
-        private DisplayStore store;
-        private PresentationDirector director;
+        private IDisplayReader store;
+        [SerializeField] private ScenePresentationDirector director;
+        public ScenePresentationDirector SceneDirector => director != null ? director : GetComponent<ScenePresentationDirector>();
         private InteractionSession interaction;
         private PresentationScope feedbackScope;
-        private readonly DictionaryTargetResolver targets = new DictionaryTargetResolver();
         private BattleDisplaySnapshot settledState;
         private readonly List<string> selected = new List<string>();
         private readonly List<Battle2DCard> cards = new List<Battle2DCard>();
@@ -51,6 +51,13 @@ namespace Poker.Battle2DValidation
         public Button RestartButton => restart;
         public string LogText => log != null ? log.text : "";
 
+        public void ConfigureDirector(ScenePresentationDirector frontend)
+        {
+            if (frontend == null || frontend.gameObject != gameObject)
+                throw new ArgumentException("The 2D view requires its co-located scene director.");
+            if (store != null && director != frontend) throw new InvalidOperationException("Cannot replace an initialized display store.");
+            director = frontend; EnsurePresentation();
+        }
         public void Configure(GameObject prefab, Transform root, TMP_Text statusText, TMP_Text detailText, TMP_Text logText,
             Button playButton, Button discardButton, Button endTurnButton, Button restartButton)
         {
@@ -65,20 +72,17 @@ namespace Poker.Battle2DValidation
         }
         public void ConfigureActors(Transform player, Transform enemy)
         {
-            playerActor = player; enemyActor = enemy; RememberActorHomes();
-            targets.Bind("player", playerActor); targets.Bind("enemy", enemyActor);
+            playerActor = player; enemyActor = enemy;
         }
-        private void Awake() { RememberActorHomes(); EnsurePresentation(); }
-        private void Update() => director?.Tick();
+        private void Awake() => EnsurePresentation();
         private void EnsurePresentation()
         {
             if (store != null) return;
-            store = new DisplayStore();
+            director = SceneDirector;
+            if (director == null) throw new InvalidOperationException("Bind a ScenePresentationDirector first.");
+            store = director.Display;
             ResetInteraction();
             store.Changed += OnDisplayChanged;
-            director = new PresentationDirector(store, targets, BuildPlan);
-            targets.Bind("player", playerActor); targets.Bind("enemy", enemyActor);
-            targets.Bind("cards", this);
         }
         private void ResetInteraction()
         {
@@ -98,16 +102,6 @@ namespace Poker.Battle2DValidation
                 { AddLog(entry.Value); pendingLogs.Remove(entry.Key); }
             }
             Render(); DisplayChanged?.Invoke();
-        }
-        private void RememberActorHomes()
-        {
-            if (playerActor != null) playerHome = playerActor.localPosition;
-            if (enemyActor != null) enemyHome = enemyActor.localPosition;
-        }
-        private void ResetActors()
-        {
-            if (playerActor != null) playerActor.localPosition = playerHome;
-            if (enemyActor != null) enemyActor.localPosition = enemyHome;
         }
         public void BindCommands(Action<string> select, Action playAction, Action discardAction, Action endAction, Action restartAction)
         {
@@ -152,7 +146,7 @@ namespace Poker.Battle2DValidation
             // Initialize starts a new session generation, even when a host reuses the battle id.
             ResetInteraction(); ClearCards(); history.Clear(); pendingLogs.Clear(); logBatchId = null;
             director.Initialize(snapshot ?? throw new ArgumentNullException(nameof(snapshot)));
-            ResetActors(); Render();
+            Render();
         }
         public IPresentationOperation Present(PresentationBatch batch, PlaybackMode mode)
         {
@@ -167,7 +161,7 @@ namespace Poker.Battle2DValidation
             void Finish(PresentationStatus value)
             {
                 if (finished || epoch != playbackEpoch || value == PresentationStatus.Pending) return;
-                finished = true; settledState = null; ResetActors(); Render(); PresentationFinished?.Invoke();
+                finished = true; settledState = null; Render(); PresentationFinished?.Invoke();
             }
             operation.Finished += Finish;
             Finish(operation.Status);
@@ -180,71 +174,9 @@ namespace Poker.Battle2DValidation
             EnsurePresentation(); ++playbackEpoch; settledState = null;
             CloseInteraction();
             if (snapshot.Cursor.BatchId != logBatchId) { pendingLogs.Clear(); logBatchId = null; }
-            director.Synchronize(snapshot); ResetActors(); Render(); PresentationFinished?.Invoke();
+            director.Synchronize(snapshot); Render(); PresentationFinished?.Invoke();
         }
 
-        private ActionPlan BuildPlan(ActionContext context)
-        {
-            var fact = context.Data;
-            string action = Value(fact, "action");
-            if (fact.SemanticKey != "ActionStarted") return ActionPlan.Empty;
-            if (action == "Play")
-            {
-                return new ActionPlan(new[]
-                {
-                    new ActionNode("cards", Motion("cards.submit", true, false, "ReadyToAttack"), targetKey: "cards"),
-                    new ActionNode("actor", Motion("actor.attack", false, false, "Impact"),
-                        new[] { ActionDependency.Marker("cards", "ReadyToAttack") }, targetKey: "player")
-                }, new[] { ActionDependency.Marker("actor", "Impact") });
-            }
-            if (action == "Discard")
-                return new ActionPlan(new[] { new ActionNode("cards", Motion("cards.discard", true, true, "Released"), targetKey: "cards") });
-            if (action == "EnemyAction" && Value(fact, "skipped") != "true" && Value(fact, "skipped") != "True")
-                return new ActionPlan(new[] { new ActionNode("actor", Motion("enemy.attack", false, false, "Impact"), targetKey: "enemy") },
-                    new[] { ActionDependency.Marker("actor", "Impact") });
-            return ActionPlan.Empty;
-        }
-        private IPresentationAction Motion(string key, bool moveCards, bool discardCards, string marker)
-        {
-            return new DelegatePresentationAction(new ActionDescriptor(key, new[] { marker }), (context, markers) =>
-            {
-                Coroutine running = null;
-                var actor = moveCards ? null : context.Target as Transform;
-                var moving = moveCards ? cards.Where(card => context.Data.CardIds.Contains(card.Id)).ToArray() : Array.Empty<Battle2DCard>();
-                var starts = moving.Select(card => card.transform.localPosition).ToArray();
-                var actorStart = actor != null ? actor.localPosition : Vector3.zero;
-                var operation = new PresentationOperation(() =>
-                {
-                    if (running != null) StopCoroutine(running);
-                    if (actor != null) actor.localPosition = actorStart;
-                });
-                if (moving.Length == 0 && actor == null)
-                { markers.Emit(marker); operation.TryComplete(); return operation; }
-                running = StartCoroutine(Move());
-                return operation;
-
-                IEnumerator Move()
-                {
-                    bool emitted = false; float elapsed = 0;
-                    while (elapsed < .18f && operation.Status == PresentationStatus.Pending)
-                    {
-                        elapsed += Time.deltaTime;
-                        float t = Mathf.Clamp01(elapsed / .18f);
-                        for (int index = 0; index < moving.Length; index++)
-                            if (moving[index] != null)
-                                moving[index].transform.localPosition = starts[index] + Vector3.up * (discardCards ? -.7f : .7f) * t;
-                        if (actor != null) actor.localPosition = actorStart + Vector3.right *
-                            (actor == playerActor ? .6f : -.6f) * (1 - Mathf.Abs(2 * t - 1));
-                        if (!emitted && t >= .5f) { emitted = true; markers.Emit(marker); }
-                        yield return null;
-                    }
-                    if (actor != null) actor.localPosition = actorStart;
-                    if (operation.Status != PresentationStatus.Pending) yield break;
-                    if (!emitted) markers.Emit(marker);
-                    running = null; operation.TryComplete();
-                }
-            }, _ => ResetActors());
-        }
         private static string Value(BattleDisplayChange change, string key) => change.Values.TryGetValue(key, out var value) ? value : "";
         private void PrepareLogs(PresentationBatch batch)
         {

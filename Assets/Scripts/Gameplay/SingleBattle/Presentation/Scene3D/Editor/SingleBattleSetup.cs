@@ -16,6 +16,7 @@ namespace Poker.SingleBattle.Editor
     public static class SingleBattleSetup
     {
         public const string ScenePath = "Assets/Scenes/SingleBattleDemo.unity";
+        public const string SceneBattleContentPath = "Assets/GameAssets/SingleBattle/Content/SceneBattles.xml";
         private static readonly Color Ink = new Color32(25, 30, 35, 238);
         private static readonly Color Paper = new Color32(238, 232, 213, 255);
         private static TMP_FontAsset font;
@@ -32,7 +33,7 @@ namespace Poker.SingleBattle.Editor
             var overview = roots.SelectMany(root => root.GetComponentsInChildren<DeckOverviewPresenter>(true)).FirstOrDefault(item => item.Match == match);
             var pile = roots.SelectMany(root => root.GetComponentsInChildren<DrawPilePresenter>(true)).FirstOrDefault(item => item.Source == actions.Hand);
             host.Configure(match, actions, overview, pile);
-            if (host.RulesProfile == null) host.ConfigureRules(AssetDatabase.LoadAssetAtPath<BattleRulesProfile>("Assets/GameAssets/SingleBattle/Configuration/Profiles/SingleBattleRules.asset"));
+            if (host.ContentXml == null) host.ConfigureContent(AssetDatabase.LoadAssetAtPath<TextAsset>(SceneBattleContentPath), "single-battle");
             PrepareRuntimeCardZones(scene, host);
             ConnectActors(scene, host);
             var oldHud = roots.SelectMany(root => root.GetComponentsInChildren<SingleBattleHud>(true)).SingleOrDefault();
@@ -129,8 +130,6 @@ namespace Poker.SingleBattle.Editor
             }
             var enemy = enemyRoot.GetComponent<EnemyBattleActor>() ?? enemyRoot.gameObject.AddComponent<EnemyBattleActor>();
             player.Configure(host, playerModel); enemy.Configure(host, enemyModel);
-            if (player.Profile == null) player.ConfigureProfile(AssetDatabase.LoadAssetAtPath<PlayerBattleProfile>("Assets/GameAssets/SingleBattle/Configuration/Profiles/SingleBattlePlayer.asset"));
-            if (enemy.Profile == null) enemy.ConfigureProfile(AssetDatabase.LoadAssetAtPath<EnemyBattleProfile>("Assets/GameAssets/SingleBattle/Configuration/Profiles/SingleBattleEnemy.asset"));
             ConnectPresentation(player, playerModel); ConnectPresentation(enemy, enemyModel);
             host.ConfigureActors(player, enemy);
             EditorUtility.SetDirty(player); EditorUtility.SetDirty(enemy);

@@ -512,7 +512,8 @@ MonoBehaviour:
   - {fileID: 1126122755}
   enemyActors:
   - {fileID: 273413156}
-  rulesProfile: {fileID: 11400000, guid: 0934379744314850b951ed15bc8a3dc2, type: 2}
+  contentXml: {fileID: 4900000, guid: 8820afb0c9c64d2cb2e95ecc791cda87, type: 3}
+  encounterId: single-battle
 --- !u!1 &178915799
 GameObject:
   m_ObjectHideFlags: 0
@@ -1558,7 +1559,6 @@ MonoBehaviour:
   battle: {fileID: 151945506}
   visual: {fileID: 1237585821}
   presentation: {fileID: 1237585822}
-  profile: {fileID: 11400000, guid: 1619aac64daf4568a78111ce4837e566, type: 2}
 --- !u!1 &278159045
 GameObject:
   m_ObjectHideFlags: 0
@@ -5246,7 +5246,6 @@ MonoBehaviour:
   battle: {fileID: 151945506}
   visual: {fileID: 691192565}
   presentation: {fileID: 691192566}
-  profile: {fileID: 11400000, guid: 848a853019a94e8a9aad76632ad82c26, type: 2}
 --- !u!1 &1138408339
 GameObject:
   m_ObjectHideFlags: 0

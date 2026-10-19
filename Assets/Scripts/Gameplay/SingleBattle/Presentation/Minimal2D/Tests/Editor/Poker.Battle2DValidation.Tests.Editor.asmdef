@@ -4,7 +4,6 @@
   "references": [
     "Poker.Battle2DValidation.Runtime",
     "Poker.Battle2DValidation.Editor",
-    "Poker.BattleConfiguration.Runtime",
     "PokerEngine.Core",
     "PokerEngine.Combat",
     "PokerEngine.Scoring",
@@ -18,7 +17,8 @@
     "Unity.RenderPipelines.Universal.Runtime",
     "Poker.BattleHosting.Runtime",
     "BattlePresentation.Runtime",
-    "Poker.BattlePresentation.Shared"
+    "Poker.BattlePresentation.Shared",
+    "BattlePresentation.Unity"
   ],
   "includePlatforms": [
     "Editor"

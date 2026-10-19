@@ -20,7 +20,6 @@ namespace Poker.SingleBattle.Tests
             var report = new Report();
             try
             {
-                Assert.That(host.UsesXmlContent, Is.True);
                 Assert.That(host.State, Is.Not.Null);
                 host.SnapToState();
                 var hand = host.Actions.Hand;

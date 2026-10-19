@@ -38,15 +38,6 @@ namespace Poker.SingleBattle
             actions.Hand.StopSession(); match.StopMatch();
             playerActor = player; Bind(); bridge?.Synchronize(AuthorityState); Publish(); return true;
         }
-        [SerializeField, InspectorName("公共战局规则")] private BattleRulesProfile rulesProfile;
-        public BattleRulesProfile RulesProfile => rulesProfile;
-        public void ConfigureRules(BattleRulesProfile configuration)
-        {
-            if (busy) throw new InvalidOperationException("Wait for presentation before replacing next battle's rules.");
-            rulesProfile = configuration != null ? configuration : throw new ArgumentNullException(nameof(configuration));
-            configurationSource = BattleConfigurationSource.LegacyProfiles;
-            ContentDiagnostics = Array.Empty<BattleDiagnostic>();
-        }
         /// <summary>The snapshot currently shown by actors and HUD. It may lag behind AuthorityState during playback.</summary>
         public CardDuelState PresentedState { get; private set; }
         /// <summary>Compatibility accessor for existing scene/UI observers. Commands use Session and AuthorityState.</summary>
@@ -109,12 +100,7 @@ namespace Poker.SingleBattle
         public BattleSession BuildConfiguredSession(string battleId = null, RandomState random = null)
         {
             RequireSceneBindings();
-            if (UsesXmlContent) return BuildContentSession(battleId, random);
-            if (rulesProfile == null) throw new InvalidOperationException("Bind the shared battle rules first.");
-            string id = battleId ?? BattleSessionFactory.CreateBattleId();
-            return BattleSessionFactory.Create(rulesProfile,
-                Players.Select((actor, index) => actor.CreateSetup(new ParticipantId(index == 0 ? "player" : id + "/player/" + index))),
-                Enemies.Select((actor, index) => actor.CreateSetup(new ParticipantId(id + "/enemy/" + index))), id, random);
+            return BuildContentSession(battleId, random);
         }
         private void RequireSceneBindings()
         {
@@ -130,7 +116,7 @@ namespace Poker.SingleBattle
             RequireSceneBindings();
             if (session.State.Duel.Players.Count != Players.Count || session.State.Duel.Enemies.Count != Enemies.Count)
                 throw new ArgumentException("The scene actors must match the session's roster slots.", nameof(session));
-            if (UsesXmlContent) ValidateContentRoster(ReadContentEncounter(), session);
+            ValidateContentRoster(ReadContentEncounter(), session);
         }
         void IBattleSceneAdapter.SessionAttached() => Publish();
         private void Bind()

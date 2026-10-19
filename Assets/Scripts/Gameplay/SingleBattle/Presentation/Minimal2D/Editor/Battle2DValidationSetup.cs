@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using CardArt;
 using CardArt.Editor;
-using Poker.SingleBattle;
 using RetroRendering;
 using TMPro;
 using UnityEditor;
@@ -45,9 +44,6 @@ namespace Poker.Battle2DValidation.Editor
             }
 
             var font = Required<TMP_FontAsset>(FontPath);
-            var rules = Required<BattleRulesProfile>("Assets/GameAssets/SingleBattle/Configuration/Profiles/DemoBattleRules.asset");
-            var player = Required<PlayerBattleProfile>("Assets/GameAssets/SingleBattle/Configuration/Profiles/DemoPlayer.asset");
-            var enemy = Required<EnemyBattleProfile>("Assets/GameAssets/SingleBattle/Configuration/Profiles/DemoEnemy.asset");
             EnsureAssets(); EnsureFolder("Assets/Scenes");
             var prefab = Required<GameObject>(CardPrefabPath);
             var pipeline = Required<UniversalRenderPipelineAsset>(PipelinePath);
@@ -58,7 +54,7 @@ namespace Poker.Battle2DValidation.Editor
             {
                 scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Additive);
                 if (!scene.IsValid() || !scene.isLoaded) throw new InvalidOperationException("无法创建临时验证场景。");
-                BuildScene(scene, prefab, pipeline, rules, player, enemy, font);
+                BuildScene(scene, prefab, pipeline, font);
                 if (!EditorSceneManager.SaveScene(scene, ScenePath))
                     throw new InvalidOperationException("无法保存 2D 验证场景：" + ScenePath);
             }
@@ -194,7 +190,7 @@ namespace Poker.Battle2DValidation.Editor
         }
 
         private static void BuildScene(Scene scene, GameObject prefab, UniversalRenderPipelineAsset pipeline,
-            BattleRulesProfile rules, PlayerBattleProfile player, EnemyBattleProfile enemy, TMP_FontAsset font)
+            TMP_FontAsset font)
         {
             var cameraObject = CreateObject(scene, "2D 正交相机", typeof(Camera), typeof(PhysicsRaycaster));
             cameraObject.tag = "MainCamera";
@@ -240,7 +236,7 @@ namespace Poker.Battle2DValidation.Editor
             var endTurn = Button(canvas.transform, font, "结束回合", 110);
             var restart = Button(canvas.transform, font, "重新开始", 330);
             view.Configure(prefab, cardRoot, status, details, log, play, discard, endTurn, restart);
-            var host = root.AddComponent<Battle2DHost>(); host.Configure(rules, player, enemy, view);
+            Battle2DTimelineSetup.ConfigureBattle(view);
             EditorSceneManager.MarkSceneDirty(scene);
         }
 

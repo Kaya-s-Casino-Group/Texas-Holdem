@@ -1,6 +1,6 @@
 # 共用战局接入（Hosting）
 
-`BattleSceneHost : BaseBattleHost` 是通用的每局入口，通过 `IBattleSessionSource` 与 `IBattleSceneAdapter` 组合来源和场景适配；每个 Battle 一个实例。原 `SingleBattleHost` 已更名为 `SingleBattleSceneAdapter`，只负责当前卡牌场景的输入和显示投影。旧 `Battle2DHost` 作为独立验证实现继续继承基类。
+`BattleSceneHost : BaseBattleHost` 是通用的每局入口，通过 `IBattleSessionSource` 与 `IBattleSceneAdapter` 组合来源和场景适配；每个 Battle 一个实例。原 `SingleBattleHost` 已更名为 `SingleBattleSceneAdapter`，只负责当前卡牌场景的输入和显示投影。2D 验证场景同样通过 `Battle2DSceneAdapter` 与 XML 来源接入通用 Host。
 
 最小预制体与一键工具见 [入口配置教程](../../../../../Tools/BattleSceneHostSetup.md)。
 
@@ -9,8 +9,8 @@
 - `BattleHost`（`PokerEngine.Composition`）：持有 `Session / Playback / AuthorityState`；接收创建未开局会话的委托；统一 `StartBattle / RestartBattle / AttachSession / Synchronize`。
 - `BaseBattleHost`（`Poker.BattleHosting.Runtime`）：提供场景公共入口 `StartBattle / RestartBattle / AttachSession / SynchronizeBattle`，暴露共用会话与命令端口；不引用配置、Actor、牌区或具体表现。
 - `BattleSceneHost`：通过组件组合选择 `IBattleSessionSource` 与 `IBattleSceneAdapter`，统一开局门禁、自动开局及启停同步。不同关卡复用此类，每个 Battle 单独实例化。
-- `IBattleSessionSource`：创建未开局会话；`IBattleSceneAdapter`：校验阵容、绑定输入并实现表现初始化、播放和同步。具体场景适配器不持有另一份生命周期。旧 Minimal2D 的派生宿主继续保留作验证。
-- `BattleSessionFactory`：将配置与阵容 Setup 转成纯规则快照，返回未开局会话。
+- `IBattleSessionSource`：创建未开局会话；`IBattleSceneAdapter`：校验阵容、绑定输入并实现表现初始化、播放和同步。具体场景适配器不持有另一份生命周期。Minimal2D 的旧派生宿主已清理。
+- `XmlBattleSessionSource`：使用 `BattleContentCompiler / BattleContentFactory` 校验 XML 并返回未开局会话。旧 SO 配置工厂已删除。
 - `BattleSessionPlayback`：统一提交命令和派发表现；`BattleSession`：原子推进规则到下一决策点或终局。
 
 ## 生命周期约定

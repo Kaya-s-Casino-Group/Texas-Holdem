@@ -31,7 +31,7 @@ namespace Poker.SingleBattle.Tests
             public readonly CardZonePlayHost Hand;
             public readonly HandZoneView HandView;
             public readonly HandActionPresenter Actions;
-            private readonly List<ScriptableObject> profiles = new List<ScriptableObject>();
+            public readonly BattleTestContent Content;
             public Fixture(bool start = true, int playerCount = 1, int enemyCount = 1)
             {
                 var root = New("Match"); Match = root.AddComponent<CardMatchHost>();
@@ -44,9 +44,6 @@ namespace Poker.SingleBattle.Tests
                     panel.PlayButton.GetComponentInChildren<TMP_Text>(), panel.DiscardButton.GetComponentInChildren<TMP_Text>(), panel.RankSortButton.GetComponentInChildren<TMP_Text>(), panel.SuitSortButton.GetComponentInChildren<TMP_Text>());
                 Actions = ui.GetComponent<HandActionPresenter>() ?? ui.AddComponent<HandActionPresenter>(); Actions.Configure(Hand, panel);
                 Host = root.AddComponent<SingleBattleSceneAdapter>(); Host.Configure(Match, Actions, null, null);
-                var rules = ScriptableObject.CreateInstance<BattleRulesProfile>(); profiles.Add(rules);
-                var damage = ScriptableObject.CreateInstance<ScoreDamageProfile>(); profiles.Add(damage);
-                Host.ConfigureRules(rules);
                 Player = New("Player").AddComponent<PlayerBattleActor>(); Enemy = New("Enemy").AddComponent<EnemyBattleActor>();
                 var visual = New("Enemy Visual").transform; visual.SetParent(Enemy.transform, false);
                 visual.localScale = new Vector3(1, 2, 3); Player.Configure(Host); Enemy.Configure(Host, visual);
@@ -54,9 +51,8 @@ namespace Poker.SingleBattle.Tests
                 var players = new List<PlayerBattleActor> { Player }; var enemies = new List<EnemyBattleActor> { Enemy };
                 for (int i = 1; i < playerCount; i++) { var actor = New("Player " + i).AddComponent<PlayerBattleActor>(); actor.Configure(Host); players.Add(actor); }
                 for (int i = 1; i < enemyCount; i++) { var actor = New("Enemy " + i).AddComponent<EnemyBattleActor>(); actor.Configure(Host); enemies.Add(actor); }
-                foreach (var actor in players) { var profile = ScriptableObject.CreateInstance<PlayerBattleProfile>(); profiles.Add(profile); profile.ConfigureDamage(damage); actor.ConfigureProfile(profile); }
-                foreach (var actor in enemies) { var profile = ScriptableObject.CreateInstance<EnemyBattleProfile>(); profiles.Add(profile); actor.ConfigureProfile(profile); SetProperty(profile, "maxHealth", 75); }
                 Host.ConfigureActors(players, enemies);
+                Content = BattleTestContent.Create(Host, playerCount, enemyCount);
                 Poker.SingleBattle.Editor.BattlePresentationSceneSetup.ConfigureHost(Host, includeFeedback: false);
                 if (start) Host.StartBattle();
             }
@@ -67,21 +63,15 @@ namespace Poker.SingleBattle.Tests
                 Hand.SetInteraction(Hand.Cards[0].Id, new CardInteractionState(isSelected: true));
                 Hand.Publish(); HandView.CompleteTransitions(); Actions.Refresh();
             }
-            private static void SetProperty(ScriptableObject profile, string field, int value)
-            { var serialized = new SerializedObject(profile); serialized.FindProperty(field).intValue = value; serialized.ApplyModifiedPropertiesWithoutUndo(); }
-            public void Set(string field, int value)
-            {
-                if (field == "enemyHealth" || field == "enemyDamage") SetProperty(Enemy.Profile, field == "enemyHealth" ? "maxHealth" : "attackDamage", value);
-                else SetProperty(Player.Profile, field == "playerHealth" ? "maxHealth" : field, value);
-            }
+            public void Set(string field, int value) => Content.Set(field, value);
             public void Dispose()
             {
                 Host.enabled = false; Player.enabled = false; Enemy.enabled = false;
                 Hand.StopSession(); EditorSceneManager.ClosePreviewScene(Scene);
-                foreach (var profile in profiles) UnityEngine.Object.DestroyImmediate(profile);
+                Content.Dispose();
             }
         }
-        [Test] public void SharedLifecycleRestartsFromCurrentProfilesAndSynchronizesWithoutAdvancingRules()
+        [Test] public void SharedLifecycleRestartsFromCurrentXmlAndSynchronizesWithoutAdvancingRules()
         {
             using (var f = new Fixture())
             {
@@ -101,10 +91,10 @@ namespace Poker.SingleBattle.Tests
         {
             using (var f = new Fixture())
             {
-                var reward = ScriptableObject.CreateInstance<PerCardBlockRewardProfile>();
+                // Runtime XML enables the discard reward for this scenario.
                 try
                 {
-                    f.Player.Profile.ConfigureDiscardReward(reward); f.Host.StartBattle(); f.Select();
+                    f.Content.SetReward(8); f.Host.StartBattle(); f.Select();
                     string id = f.Hand.Cards.First(card => card.Interaction.IsSelected).Id;
                     Assert.AreEqual(1, f.Hand.DiscardSelected(false));
                     var batch = f.Player.Shields.Batches.Single(); Assert.AreEqual(8,batch.InitialBlock);
@@ -124,7 +114,7 @@ namespace Poker.SingleBattle.Tests
                     Assert.AreEqual(BattlePresentationKind.BlockHit,probe.Cues.Last().Kind);Assert.Greater(probe.Cues.Last().Effect.HealthLost,0);operation.Complete();
                     f.Host.StartBattle();Assert.AreEqual(0,f.Player.Shields.TotalBlock);
                 }
-                finally { f.Player.Profile.ConfigureDiscardReward(null); UnityEngine.Object.DestroyImmediate(reward); }
+                finally { f.Content.SetReward(null); }
             }
         }
 
@@ -228,67 +218,46 @@ namespace Poker.SingleBattle.Tests
                 }
             }
         }
-        [Test] public void ScoreAssetDrivesBattleAndHoverWithoutMutatingAnExistingSnapshot()
+        [Test] public void XmlScoreDrivesBattleAndHoverWithoutMutatingAnExistingSnapshot()
         {
-            var profile = ScriptableObject.CreateInstance<Poker.Scoring.PokerScoreProfile>();
-            try
+            using (var f = new Fixture(start: false, playerCount: 2))
             {
-                var config = new SerializedObject(profile);
-                var ranks = config.FindProperty("ranks");
-                for (int i = 0; i < ranks.arraySize; i++) ranks.GetArrayElementAtIndex(i).FindPropertyRelative("chips").longValue = 42;
-                config.ApplyModifiedPropertiesWithoutUndo();
-                using (var f = new Fixture(start: false, playerCount: 2))
-                {
-                    var rules = new SerializedObject(f.Host.RulesProfile);
-                    rules.FindProperty("scoring").objectReferenceValue = profile; rules.ApplyModifiedPropertiesWithoutUndo();
-                    f.Host.StartBattle(); f.Select();
-                    var card = f.Hand.Cards[0].Card.Id;
-                    Assert.IsTrue(f.Player.TryGetCardBasePoints(card, out var points)); Assert.AreEqual(42, points);
-                    var otherCard = f.Host.State.Zone(CardZoneKinds.Hand, f.Host.Players[1].ParticipantId).Cards[0];
-                    Assert.IsFalse(f.Player.TryGetCardBasePoints(otherCard, out _));
-                    f.Hand.SetInteraction(card.Value, new CardInteractionState(isHovered: true, isSelected: true));
-                    f.Hand.Publish(); f.HandView.CompleteTransitions();
-                    Assert.IsTrue(f.Hand.TryGetHoveredCard(out var hover)); Assert.AreEqual(42, hover.ChipPoints);
-                    // Asset edits affect the next battle only, including hover queries.
-                    for (int i = 0; i < ranks.arraySize; i++) ranks.GetArrayElementAtIndex(i).FindPropertyRelative("chips").longValue = 99;
-                    config.ApplyModifiedPropertiesWithoutUndo();
-                    Assert.IsTrue(f.Player.TryGetCardBasePoints(card, out points)); Assert.AreEqual(42, points);
-                    Assert.AreEqual(1, f.Hand.PlaySelected(false));
-                    Assert.AreEqual(47, f.Host.State.Duel.Scores.Single().Total);
-                    Assert.AreEqual(75 - 47, f.Enemy.Unit.Health);
-                    f.Host.StartBattle(); card = f.Hand.Cards[0].Card.Id;
-                    Assert.IsTrue(f.Player.TryGetCardBasePoints(card, out points)); Assert.AreEqual(99, points);
-                }
+                f.Content.SetCardPoints(42); f.Host.StartBattle(); f.Select();
+                var card = f.Hand.Cards[0].Card.Id;
+                Assert.IsTrue(f.Player.TryGetCardBasePoints(card, out var points)); Assert.AreEqual(42, points);
+                var other = f.Host.State.Zone(CardZoneKinds.Hand, f.Host.Players[1].ParticipantId).Cards[0];
+                Assert.IsFalse(f.Player.TryGetCardBasePoints(other, out _));
+                f.Hand.SetInteraction(card.Value, new CardInteractionState(isHovered: true, isSelected: true));
+                f.Hand.Publish(); f.HandView.CompleteTransitions();
+                Assert.IsTrue(f.Hand.TryGetHoveredCard(out var hover)); Assert.AreEqual(42, hover.ChipPoints);
+                f.Content.SetCardPoints(99);
+                Assert.IsTrue(f.Player.TryGetCardBasePoints(card, out points)); Assert.AreEqual(42, points);
+                Assert.AreEqual(1, f.Hand.PlaySelected(false));
+                Assert.AreEqual(47, f.Host.State.Duel.Scores.Single().Total); Assert.AreEqual(28, f.Enemy.Unit.Health);
+                f.Host.StartBattle(); card = f.Hand.Cards[0].Card.Id;
+                Assert.IsTrue(f.Player.TryGetCardBasePoints(card, out points)); Assert.AreEqual(99, points);
             }
-            finally { UnityEngine.Object.DestroyImmediate(profile); }
         }
-        [Test] public void DemoRulesReferenceTheIndependentDefaultScoreAsset()
+        [Test] public void SceneXmlScoringPreservesTheDefaultScoreTable()
         {
-            var asset = AssetDatabase.LoadAssetAtPath<Poker.Scoring.PokerScoreProfile>("Assets/GameAssets/PokerScoring/Profiles/DefaultPokerScore.asset");
-            var rules = AssetDatabase.LoadAssetAtPath<BattleRulesProfile>("Assets/GameAssets/SingleBattle/Configuration/Profiles/DemoBattleRules.asset");
-            Assert.IsNotNull(asset); Assert.AreSame(asset, rules.Scoring);
-            var built = rules.BuildScoring(); var defaults = ScoreProfile.Default;
+            var xml = AssetDatabase.LoadAssetAtPath<TextAsset>(Editor.SingleBattleSetup.SceneBattleContentPath);
+            var compiled = BattleContentCompiler.CompileXml(xml.text);
+            Assert.IsTrue(compiled.Success);
+            var built = compiled.Content.ScoringProfiles["single-battle-score"]; var defaults = ScoreProfile.Default;
             foreach (HandCategory category in Enum.GetValues(typeof(HandCategory)))
             {
                 var actual = built.Rule(category); var expected = defaults.Rule(category);
-                Assert.AreEqual(expected.BasePoints, actual.BasePoints);
-                Assert.AreEqual(expected.BaseMultiplier, actual.BaseMultiplier);
-                Assert.AreEqual(expected.PointsPerLevel, actual.PointsPerLevel);
-                Assert.AreEqual(expected.MultiplierPerLevel, actual.MultiplierPerLevel);
+                Assert.AreEqual(expected.BasePoints, actual.BasePoints); Assert.AreEqual(expected.BaseMultiplier, actual.BaseMultiplier);
+                Assert.AreEqual(expected.PointsPerLevel, actual.PointsPerLevel); Assert.AreEqual(expected.MultiplierPerLevel, actual.MultiplierPerLevel);
             }
             foreach (var card in StandardDeck.Cards())
                 Assert.AreEqual(CardScoreRules.GetBasePoints(card), built.CardPoints.GetBasePoints(new CardFace(card.Rank, card.Suit)));
-            var serialized = new SerializedObject(asset);
-            Assert.AreEqual(13, serialized.FindProperty("ranks").arraySize);
-            Assert.AreEqual(10, serialized.FindProperty("hands").arraySize);
         }
         [Test] public void DamagePreviewMatchesRecordedPlayAndNeverPublishesOrChangesTheLiveBattle()
         {
             using (var f = new Fixture(start: false))
             {
-                var profile = (ScoreDamageProfile)f.Player.Profile.Damage;
-                var config = new SerializedObject(profile); config.FindProperty("version").stringValue = "equal.test.1";
-                config.ApplyModifiedPropertiesWithoutUndo(); f.Host.StartBattle(); f.Select();
+                f.Host.StartBattle(); f.Select();
                 int changed = 0, attacks = 0; f.Host.StateChanged += () => changed++; f.Player.ActionPresented += () => attacks++;
                 var state = f.Host.State; var table = f.Match.State; var selected = f.Hand.Cards.Where(card => card.Interaction.IsSelected).Select(card => card.Id).ToArray();
                 var preview = f.Host.PreviewSelectedPlay();
@@ -296,49 +265,41 @@ namespace Poker.SingleBattle.Tests
                 Assert.AreSame(state, f.Host.State); Assert.AreSame(table, f.Match.State); Assert.AreEqual(0, changed); Assert.AreEqual(0, attacks);
                 Assert.IsNull(f.Host.LastPlayResolution);
                 CollectionAssert.AreEqual(selected, f.Hand.Cards.Where(card => card.Interaction.IsSelected).Select(card => card.Id));
-                config.FindProperty("version").stringValue = "equal.test.2"; config.ApplyModifiedPropertiesWithoutUndo();
+                f.Content.Set("pointsPerDamage", 2);
                 Assert.AreEqual(preview.Damage.Requests.Single().Amount, f.Host.PreviewSelectedPlay().Damage.Requests.Single().Amount);
-                Assert.AreEqual("equal.test.1", f.Host.PreviewSelectedPlay().Damage.RuleVersion);
+                Assert.IsInstanceOf<EqualScoreDamageRule>(f.Player.Rules.DamagePolicy);
                 Assert.AreEqual(1, f.Hand.PlaySelected(false));
                 var actual = f.Host.LastPlayResolution;
                 Assert.AreEqual(f.Player.ParticipantId, f.Host.LastPlayedBy);
                 Assert.AreEqual(preview.Score.Total, actual.Score.Total); Assert.AreEqual(preview.Damage.Explanation, actual.Damage.Explanation);
                 Assert.AreEqual(preview.Events.Single().HealthLost, actual.Events.Single().HealthLost); Assert.AreEqual(0, attacks, "Instant synchronization does not replay attack cues.");
                 f.Host.StartBattle(); Assert.IsNull(f.Host.LastPlayResolution); f.Select();
-                Assert.AreEqual("equal.test.2", f.Host.PreviewSelectedPlay().Damage.RuleVersion);
+                Assert.IsInstanceOf<ScoreDamagePolicy>(f.Player.Rules.DamagePolicy);
             }
         }
-        [Test] public void DamageConfigurationIsIndependentAndRejectsInvalidSetup()
+        [Test] public void InvalidXmlDamageConfigurationCannotReplaceAnExistingSession()
         {
-            var rules = ScriptableObject.CreateInstance<PlayerBattleProfile>();
-            var damage = ScriptableObject.CreateInstance<ScoreDamageProfile>();
-            try
+            using (var f = new Fixture())
             {
-                Assert.Throws<InvalidOperationException>(() => rules.BuildRules()); rules.ConfigureDamage(damage);
-                Assert.IsInstanceOf<EqualScoreDamageRule>(rules.BuildRules().DamagePolicy);
-                var serialized = new SerializedObject(damage); serialized.FindProperty("version").stringValue = "";
-                serialized.ApplyModifiedPropertiesWithoutUndo(); Assert.Throws<ArgumentException>(() => rules.BuildRules());
-                var demo = AssetDatabase.LoadAssetAtPath<PlayerBattleProfile>("Assets/GameAssets/SingleBattle/Configuration/Profiles/DemoPlayer.asset");
-                Assert.AreSame(AssetDatabase.LoadAssetAtPath<ScoreDamageProfile>("Assets/GameAssets/SingleBattle/Configuration/Profiles/DemoScoreDamage.asset"), demo.Damage);
+                var session = f.Host.Session; var state = session.State;
+                f.Content.Set("pointsPerDamage", 0);
+                Assert.Throws<InvalidOperationException>(() => f.Host.StartBattle());
+                Assert.AreSame(session, f.Host.Session); Assert.AreSame(state, f.Host.AuthorityState);
             }
-            finally { UnityEngine.Object.DestroyImmediate(rules); UnityEngine.Object.DestroyImmediate(damage); }
         }
         [Test] public void DiscardPreviewUsesSnapshotAndRecordsOnlyTheCommittedAction()
         {
-            var profile = ScriptableObject.CreateInstance<NoDiscardRewardProfile>();
-            try
-            {
+
                 using (var f = new Fixture(start: false))
                 {
-                    f.Player.Profile.ConfigureDiscardReward(profile); f.Host.StartBattle(); f.Select();
+                    f.Host.StartBattle(); f.Select();
                     var before = f.Host.State; var mirror = f.Match.State; int changes = 0, attacks = 0;
                     f.Host.StateChanged += () => changes++; f.Player.ActionPresented += () => attacks++;
                     var preview = f.Host.PreviewSelectedDiscard();
                     Assert.IsTrue(preview.Accepted); Assert.IsEmpty(preview.DiscardReward.Plan.Effects);
                     Assert.AreSame(before, f.Host.State); Assert.AreSame(mirror, f.Match.State);
                     Assert.AreEqual(0, changes); Assert.AreEqual(0, attacks); Assert.IsNull(f.Host.LastDiscardResolution);
-                    var serialized = new SerializedObject(profile); serialized.FindProperty("version").stringValue = "discard.next.2";
-                    serialized.ApplyModifiedPropertiesWithoutUndo();
+                    f.Content.SetReward(8);
                     Assert.AreEqual("discard.none.1", f.Host.PreviewSelectedDiscard().DiscardReward.Plan.RuleVersion);
                     Assert.AreEqual(1, f.Player.Discard(f.Hand.CaptureSelection(), false));
                     var actual = f.Host.LastDiscardResolution;
@@ -348,15 +309,10 @@ namespace Poker.SingleBattle.Tests
                     Assert.IsNull(f.Host.LastPlayResolution); Assert.IsNull(f.Host.LastScore); Assert.AreEqual(0, attacks);
                     Assert.AreEqual(preview.State.DiscardsRemaining, actual.State.DiscardsRemaining);
                     f.Host.StartBattle(); f.Select(); Assert.IsNull(f.Host.LastDiscardResolution);
-                    Assert.AreEqual("discard.next.2", f.Host.PreviewSelectedDiscard().DiscardReward.Plan.RuleVersion);
-                    f.Player.Profile.ConfigureDiscardReward(null); f.Host.StartBattle(); f.Select();
+                    Assert.AreEqual("discard.block-per-card.1", f.Host.PreviewSelectedDiscard().DiscardReward.Plan.RuleVersion);
+                    f.Content.SetReward(null); f.Host.StartBattle(); f.Select();
                     Assert.AreEqual("discard.none.1", f.Host.PreviewSelectedDiscard().DiscardReward.Plan.RuleVersion);
                 }
-                var demo = AssetDatabase.LoadAssetAtPath<PlayerBattleProfile>("Assets/GameAssets/SingleBattle/Configuration/Profiles/DemoPlayer.asset");
-                Assert.AreSame(AssetDatabase.LoadAssetAtPath<NoDiscardRewardProfile>("Assets/GameAssets/SingleBattle/Configuration/Profiles/DemoDiscardReward.asset"), demo.DiscardReward);
-                Assert.IsInstanceOf<NoDiscardRewardRule>(demo.BuildRules().DiscardReward);
-            }
-            finally { UnityEngine.Object.DestroyImmediate(profile); }
         }
         [Test] public void DerivedActorsBindDistinctSlotsAndOnlyPlayerOwnsCardCommands()
         {
@@ -399,6 +355,9 @@ namespace Poker.SingleBattle.Tests
         {
             using (var f = new Fixture(start: false))
             {
+                var encounter = f.Content.Document.Root.Element("Encounters").Element("Encounter");
+                encounter.Element("Player").SetAttributeValue("id", "external/player");
+                encounter.Element("Enemy").SetAttributeValue("id", "external/enemy"); f.Content.Apply();
                 var playerId = new ParticipantId("external/player"); var enemyId = new ParticipantId("external/enemy");
                 var engine = new CardDuelEngine(new BattleRules("external.test", 8));
                 var rules = new BattlePlayerRules(damagePolicy: new ScoreDamagePolicy(5));
@@ -499,11 +458,11 @@ namespace Poker.SingleBattle.Tests
                 f.Player.enabled = true; f.Enemy.enabled = false; Assert.That(f.Player.CanInteract, Is.False);
             }
         }
-        [Test] public void DeathFeedbackAndRestartResetVisualAndRebindNewEncounterIdentity()
+        [Test] public void DeathFeedbackAndRestartResetVisualAndRetainAuthoredParticipantIdentityInANewBattle()
         {
             using (var f = new Fixture())
             {
-                f.Set("enemyHealth", 1); f.Host.StartBattle(); var oldId = f.Enemy.ParticipantId; var rest = f.Enemy.Visual.localScale;
+                f.Set("enemyHealth", 1); f.Host.StartBattle(); var oldId = f.Enemy.ParticipantId; var oldBattle = f.Host.State.Table.MatchId; var rest = f.Enemy.Visual.localScale;
                 var rootPosition = f.Enemy.transform.position; var rootRotation = f.Enemy.transform.rotation; var rootScale = f.Enemy.transform.localScale;
                 int deaths = 0; f.Enemy.DeathPresented += effect => deaths++;
                 f.Select(); f.Hand.PlaySelected(false);
@@ -512,7 +471,7 @@ namespace Poker.SingleBattle.Tests
                 Assert.That(f.Enemy.transform.localScale, Is.EqualTo(rootScale));
                 Assert.That(f.Player.CanInteract, Is.False); Assert.That(f.Enemy.ReadIntent(), Is.Null);
                 f.Set("enemyHealth", 75); f.Host.StartBattle();
-                Assert.That(f.Enemy.ParticipantId, Is.Not.EqualTo(oldId)); Assert.That(f.Enemy.Unit.Health, Is.EqualTo(75));
+                Assert.That(f.Enemy.ParticipantId, Is.EqualTo(oldId)); Assert.That(f.Host.State.Table.MatchId, Is.Not.EqualTo(oldBattle)); Assert.That(f.Enemy.Unit.Health, Is.EqualTo(75));
                 Assert.That(f.Enemy.Visual.localScale, Is.EqualTo(rest)); Assert.That(f.Player.Unit.Health, Is.EqualTo(40));
                 Assert.That(f.Player.Turn.Energy, Is.EqualTo(3)); Assert.That(f.Match.Commands, Is.SameAs(f.Player));
             }
@@ -603,10 +562,10 @@ namespace Poker.SingleBattle.Tests
         {
             using (var f = new Fixture(start: false))
             {
-                var reward = ScriptableObject.CreateInstance<PerCardBlockRewardProfile>();
+                // Runtime XML enables the discard reward for this scenario.
                 try
                 {
-                    f.Player.Profile.ConfigureDiscardReward(reward);
+                    f.Content.SetReward(8);
                     f.Set("maxEnergy", 1); f.Set("initialEnergy", 1); f.Host.StartBattle();
                     var player = Probe(f.Player); Probe(f.Enemy);
                     using (var sequence = Sequence(f, action))
@@ -624,7 +583,7 @@ namespace Poker.SingleBattle.Tests
                         Assert.AreSame(authority, f.Host.Session.State);
                     }
                 }
-                finally { f.Player.Profile.ConfigureDiscardReward(null); UnityEngine.Object.DestroyImmediate(reward); }
+                finally { f.Content.SetReward(null); }
             }
         }
 
@@ -760,11 +719,11 @@ namespace Poker.SingleBattle.Tests
         {
             using (var f = new Fixture(start: false))
             {
-                var reward = ScriptableObject.CreateInstance<PerCardBlockRewardProfile>();
+                // Runtime XML enables the discard reward for this scenario.
                 IEnumerator sequence = null;
                 try
                 {
-                    f.Player.Profile.ConfigureDiscardReward(reward);
+                    f.Content.SetReward(8);
                     f.Set("maxEnergy", 1); f.Set("initialEnergy", 1); f.Host.StartBattle();
                     Probe(f.Player); Probe(f.Enemy);
                     sequence = Sequence(f, CardDuelAction.Discard);
@@ -784,7 +743,7 @@ namespace Poker.SingleBattle.Tests
                 finally
                 {
                     (sequence as IDisposable)?.Dispose();
-                    f.Player.Profile.ConfigureDiscardReward(null); UnityEngine.Object.DestroyImmediate(reward);
+                    // The fixture owns and releases all temporary XML assets.
                 }
             }
         }
@@ -810,16 +769,15 @@ namespace Poker.SingleBattle.Tests
                 foreach (var zone in f.Host.State.Table.Zones) CollectionAssert.AreEquivalent(zone.Cards, f.Match.State.GetZone(zone.Id).Cards);
             }
         }
-        [Test] public void ActorProfilesAreIndependentAndCapturedAtBattleCreation()
+        [Test] public void ActorXmlDefinitionsAreIndependentAndCapturedAtBattleCreation()
         {
             using (var f = new Fixture(playerCount: 2, enemyCount: 2))
             {
                 var player = f.Host.Players[1]; var enemy = f.Host.Enemies[1];
-                var p = new SerializedObject(player.Profile); p.FindProperty("maxHealth").intValue = 70;
-                p.FindProperty("initialEnergy").intValue = 6; p.FindProperty("playEnergyCost").intValue = 2;
-                p.FindProperty("handSize").intValue = 5; p.ApplyModifiedPropertiesWithoutUndo();
-                var e = new SerializedObject(enemy.Profile); e.FindProperty("maxHealth").intValue = 120;
-                e.FindProperty("attackDamage").intValue = 11; e.ApplyModifiedPropertiesWithoutUndo();
+                var p = f.Content.Actor(index: 1); p.SetAttributeValue("maxHealth", 70);
+                p.SetAttributeValue("initialEnergy", 6); p.SetAttributeValue("playEnergyCost", 2); p.SetAttributeValue("handSize", 5);
+                var e = f.Content.Actor(enemy: true, index: 1); e.SetAttributeValue("maxHealth", 120); e.SetAttributeValue("damage", 11);
+                f.Content.Apply();
                 Assert.That(player.Turn.Energy, Is.EqualTo(3)); Assert.That(enemy.Unit.Health, Is.EqualTo(75));
                 f.Host.StartBattle(); f.HandView.CompleteTransitions();
                 Assert.That(player.Unit.Health, Is.EqualTo(70)); Assert.That(player.Turn.Energy, Is.EqualTo(6));
@@ -990,6 +948,9 @@ namespace Poker.SingleBattle.Tests
         {
             using (var f = new Fixture(start: false))
             {
+                var encounter = f.Content.Document.Root.Element("Encounters").Element("Encounter");
+                encounter.Element("Player").SetAttributeValue("id", "shield-order/player");
+                encounter.Element("Enemy").SetAttributeValue("id", "shield-order/enemy"); f.Content.Apply();
                 var playerId = new ParticipantId("shield-order/player");
                 var enemyId = new ParticipantId("shield-order/enemy");
                 var engine = new CardDuelEngine(new BattleRules("shield-order.1", 8));

@@ -29,7 +29,7 @@ namespace Poker.SingleBattle.Tests
             Directory.CreateDirectory(Folder);
             File.WriteAllText(Folder + "/status.txt", "Running PlayMode");
             Api.Execute(new ExecutionSettings(new Filter { testMode = TestMode.PlayMode,
-                assemblyNames = new[] { "Poker.SingleBattle.Tests.PlayMode" } }));
+                assemblyNames = new[] { "Poker.SingleBattle.Tests.PlayMode", "Poker.Battle2DValidation.Tests.PlayMode" } }));
         }
         public void RunStarted(ITestAdaptor testsToRun) { }
         public void TestStarted(ITestAdaptor test) { }

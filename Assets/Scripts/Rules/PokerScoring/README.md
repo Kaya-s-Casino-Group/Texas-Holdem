@@ -37,9 +37,9 @@
 - `PokerEngine.Core` 的 PokerHandClassifier 只识别牌型。
 - `PokerEngine.Scoring` 的 ScoreProfile / CardPointProfile 是不可变纯 C# 配置；ScoreEngine 读取配置并输出带步骤的 ScoreResult。
 - `Poker.Scoring.Runtime` 的 PokerScoreProfile 是 Unity 编辑资产。`Build()` 创建独立快照，无场景/角色状态依赖。
-- `BattleRulesProfile` 引用该资产；SingleBattleSceneAdapter 的会话来源在创建 CardDuelEngine 时注入快照，双方 Demo 共用 DemoBattleRules。Host 不存牌型数值。修改配置只影响下一场战局。
+- SingleBattle 的旧战斗 SO 配置已清理，2D/3D 统一从 XML ScoringProfiles 编译计分快照；不再引用 PokerScoreProfile。此 SO 继续服务仍采用 Unity 计分配置的独立模块与工具。
 - Run 可将同一资产的 `Build()` 结果传给现有 `RunFlowAsset.BuildDefinition(scoreProfile)` / RunDefinition；Run 继续持有自己的 HandLevels。Run 编辑器与等级自动带入单局的适配尚未扩展。
-- 单局通过 PlayerBattleProfile 配置每个牌型等级，开战后由该玩家的 BattlePlayerRules.HandLevels 持有快照；候选预览与正式计分读取同一玩家等级。此公共资产仅保存基础值与每级增长公式。Relic 列表仍为空，旧 Draw/Run 链路保持各自等级模型。
+- 单局通过 XML Loadout / HandLevel 配置每个牌型等级，开战后由该玩家的 BattlePlayerRules.HandLevels 持有快照；候选预览与正式计分读取同一玩家等级。此公共资产仅保存基础值与每级增长公式。Relic 列表仍为空，旧 Draw/Run 链路保持各自等级模型。
 - ICardScoreSource 提供只读基础筹码查询，PlayerBattleActor 读取战局快照。手牌和牌库提示优先消费该来源，不在 CardZone 或美术里维护计分配置。不支持该协议的旧宿主沿用默认查询。
 - ScoringCard.BasePoints / PointsPerTrigger 是默认表的便捷查询；使用自定义配置时必须调用 GetBasePoints(profile.CardPoints) / GetPointsPerTrigger(profile.CardPoints)。正式结算已使用后者。
 

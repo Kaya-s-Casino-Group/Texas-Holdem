@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 从既有场景配置迁移，保留数值与玩法；SingleBattleDemoNew 使用独立策划内容包。 -->
+<BattleContent schemaVersion="1" id="scene-battles" name="场景战斗配置" version="scene-battles.xml.1">
+  <ScoringProfiles>
+    <Scoring id="single-battle-score" name="现有场景计分表" version="score.balatro.1">
+      <Hand category="HighCard" points="5" multiplier="1" pointsPerLevel="10" multiplierPerLevel="1" />
+      <Hand category="OnePair" points="10" multiplier="2" pointsPerLevel="15" multiplierPerLevel="1" />
+      <Hand category="TwoPair" points="20" multiplier="2" pointsPerLevel="20" multiplierPerLevel="1" />
+      <Hand category="ThreeOfAKind" points="30" multiplier="3" pointsPerLevel="20" multiplierPerLevel="2" />
+      <Hand category="Straight" points="30" multiplier="4" pointsPerLevel="30" multiplierPerLevel="3" />
+      <Hand category="Flush" points="35" multiplier="4" pointsPerLevel="15" multiplierPerLevel="2" />
+      <Hand category="FullHouse" points="40" multiplier="4" pointsPerLevel="25" multiplierPerLevel="2" />
+      <Hand category="FourOfAKind" points="60" multiplier="7" pointsPerLevel="30" multiplierPerLevel="3" />
+      <Hand category="StraightFlush" points="100" multiplier="8" pointsPerLevel="40" multiplierPerLevel="4" />
+      <Hand category="FiveOfAKind" points="120" multiplier="12" pointsPerLevel="35" multiplierPerLevel="3" />
+      <CardPoints>
+        <Rank rank="Two" points="2" />
+        <Rank rank="Three" points="3" />
+        <Rank rank="Four" points="4" />
+        <Rank rank="Five" points="5" />
+        <Rank rank="Six" points="6" />
+        <Rank rank="Seven" points="7" />
+        <Rank rank="Eight" points="8" />
+        <Rank rank="Nine" points="9" />
+        <Rank rank="Ten" points="10" />
+        <Rank rank="Jack" points="10" />
+        <Rank rank="Queen" points="10" />
+        <Rank rank="King" points="10" />
+        <Rank rank="Ace" points="11" />
+      </CardPoints>
+    </Scoring>
+  </ScoringProfiles>
+  <BattleRules>
+    <Rules id="single" scoringRef="single-battle-score" roundLimit="20" blockExpiry="AfterEnemyPhase" />
+    <Rules id="demo" scoringRef="single-battle-score" roundLimit="445" blockExpiry="Retain" />
+  </BattleRules>
+  <Players>
+    <Player id="hero" attackTarget="LowestHealth" maxHealth="800" maxEnergy="3" initialEnergy="3" playEnergyCost="1" discardEnergyCost="1" handSize="8" discards="0" unlimitedDiscards="true" maxPlayCards="5" maxDiscardCards="5" playRefill="AfterAction" discardRefill="AfterAction" discardBlockPerCard="8" attackMultiplier="1" attackFlat="0" incomingMultiplier="1" incomingFlat="0" />
+    <Player id="demo-hero" maxHealth="40" maxEnergy="3" initialEnergy="3" playEnergyCost="1" discardEnergyCost="1" handSize="8" discards="3" playRefill="NextPlayerTurn" discardRefill="AfterAction" />
+  </Players>
+  <Enemies>
+    <Enemy id="guardian" maxHealth="1200" damage="240" attackMultiplier="1" attackFlat="0" incomingMultiplier="1" incomingFlat="0" />
+    <Enemy id="demo-guardian" maxHealth="75" damage="7" />
+  </Enemies>
+  <Encounters>
+    <Encounter id="single-battle" rulesRef="single">
+      <Player id="player" ref="hero" />
+      <Enemy id="enemy" ref="guardian" />
+    </Encounter>
+    <Encounter id="demo-battle" rulesRef="demo">
+      <Player id="player" ref="demo-hero" />
+      <Enemy id="enemy" ref="demo-guardian" />
+    </Encounter>
+    <Encounter id="team-battle" rulesRef="demo">
+      <Player id="player" ref="demo-hero" />
+      <Player id="player-2" ref="demo-hero" />
+      <Enemy id="enemy" ref="demo-guardian" />
+      <Enemy id="enemy-2" ref="demo-guardian" />
+      <Enemy id="enemy-3" ref="demo-guardian" />
+    </Encounter>
+  </Encounters>
+</BattleContent>

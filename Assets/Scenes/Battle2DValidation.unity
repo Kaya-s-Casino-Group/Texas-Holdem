@@ -727,6 +727,9 @@ GameObject:
   - component: {fileID: 475349753}
   - component: {fileID: 475349752}
   - component: {fileID: 475349751}
+  - component: {fileID: 475349756}
+  - component: {fileID: 475349755}
+  - component: {fileID: 475349754}
   m_Layer: 0
   m_Name: "2D \u5361\u724C\u6218\u6597"
   m_TagString: Untagged
@@ -746,9 +749,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b735209aa27643af97978bac06669798, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rules: {fileID: 11400000, guid: 62cac3ad4ef84ec5bf166c38deef433e, type: 2}
-  player: {fileID: 11400000, guid: f7a583984ab242f88ca2f8b8b2a57d61, type: 2}
-  enemy: {fileID: 11400000, guid: bf97fba0c49a4af0a8eb7d74e16c5ead, type: 2}
   view: {fileID: 475349752}
 --- !u!114 &475349752
 MonoBehaviour:
@@ -773,6 +773,7 @@ MonoBehaviour:
   discard: {fileID: 195949157}
   endTurn: {fileID: 1815483688}
   restart: {fileID: 40095573}
+  director: {fileID: 475349754}
 --- !u!4 &475349753
 Transform:
   m_ObjectHideFlags: 0
@@ -789,8 +790,211 @@ Transform:
   - {fileID: 1265596922}
   - {fileID: 185236577}
   - {fileID: 765327015}
+  - {fileID: 1954734225}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &475349754
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 475349750}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a8e0afbf57404560b3c67421b27604c2, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  targets:
+  - key: cards
+    target: {fileID: 475349752}
+  - key: player
+    target: {fileID: 185236577}
+  - key: enemy
+    target: {fileID: 765327015}
+  timeline:
+  - semanticKey: ActionStarted
+    ruleAction: Play
+    filter:
+      effectPresence: 0
+      effectKind:
+      targetId:
+      targetTeam:
+      targetRelation: 0
+      actorId:
+      actorTeam:
+      actorRelation: 0
+      healthLost: 0
+      blockAbsorbed: 0
+      healthChange: 0
+      blockChange: 0
+      isDeath: 0
+      skipped: 0
+    replaceDefault: 0
+    nodes:
+    - id: cards
+      action: {fileID: 1954734228}
+      targetKey: cards
+      blocking: 1
+      filter:
+        effectPresence: 0
+        effectKind:
+        targetId:
+        targetTeam:
+        targetRelation: 0
+        actorId:
+        actorTeam:
+        actorRelation: 0
+        healthLost: 0
+        blockAbsorbed: 0
+        healthChange: 0
+        blockChange: 0
+        isDeath: 0
+        skipped: 0
+      after: []
+    - id: attack
+      action: {fileID: 1954734227}
+      targetKey: player
+      blocking: 1
+      filter:
+        effectPresence: 0
+        effectKind:
+        targetId:
+        targetTeam:
+        targetRelation: 0
+        actorId:
+        actorTeam:
+        actorRelation: 0
+        healthLost: 0
+        blockAbsorbed: 0
+        healthChange: 0
+        blockChange: 0
+        isDeath: 0
+        skipped: 0
+      after:
+      - actionId: cards
+        kind: 1
+        marker: ReadyToAttack
+    explicitCheckpoint: 1
+    checkpoint:
+    - actionId: attack
+      kind: 1
+      marker: Impact
+  - semanticKey: ActionStarted
+    ruleAction: Discard
+    filter:
+      effectPresence: 0
+      effectKind:
+      targetId:
+      targetTeam:
+      targetRelation: 0
+      actorId:
+      actorTeam:
+      actorRelation: 0
+      healthLost: 0
+      blockAbsorbed: 0
+      healthChange: 0
+      blockChange: 0
+      isDeath: 0
+      skipped: 0
+    replaceDefault: 0
+    nodes:
+    - id: cards
+      action: {fileID: 1954734226}
+      targetKey: cards
+      blocking: 1
+      filter:
+        effectPresence: 0
+        effectKind:
+        targetId:
+        targetTeam:
+        targetRelation: 0
+        actorId:
+        actorTeam:
+        actorRelation: 0
+        healthLost: 0
+        blockAbsorbed: 0
+        healthChange: 0
+        blockChange: 0
+        isDeath: 0
+        skipped: 0
+      after: []
+    explicitCheckpoint: 0
+    checkpoint: []
+  - semanticKey: ActionStarted
+    ruleAction: EnemyAction
+    filter:
+      effectPresence: 0
+      effectKind:
+      targetId:
+      targetTeam:
+      targetRelation: 0
+      actorId:
+      actorTeam:
+      actorRelation: 0
+      healthLost: 0
+      blockAbsorbed: 0
+      healthChange: 0
+      blockChange: 0
+      isDeath: 0
+      skipped: 2
+    replaceDefault: 0
+    nodes:
+    - id: attack
+      action: {fileID: 1954734224}
+      targetKey: enemy
+      blocking: 1
+      filter:
+        effectPresence: 0
+        effectKind:
+        targetId:
+        targetTeam:
+        targetRelation: 0
+        actorId:
+        actorTeam:
+        actorRelation: 0
+        healthLost: 0
+        blockAbsorbed: 0
+        healthChange: 0
+        blockChange: 0
+        isDeath: 0
+        skipped: 0
+      after: []
+    explicitCheckpoint: 1
+    checkpoint:
+    - actionId: attack
+      kind: 2
+      marker:
+--- !u!114 &475349755
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 475349750}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b50013fe284c41538f3dbf667059efd, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  contentXml: {fileID: 4900000, guid: 2e1406ff6b4f4cd68955b4ca6884b110, type: 3}
+  encounterId: single-battle-new
+--- !u!114 &475349756
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 475349750}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6ab54d6d4843747e79e935259b53e152, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  sessionSource: {fileID: 475349755}
+  sceneAdapter: {fileID: 475349751}
+  autoStart: 1
+  animateOpening: 1
 --- !u!1 &527165913
 GameObject:
   m_ObjectHideFlags: 0
@@ -2319,6 +2523,123 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Asset: {fileID: 2138692392}
   m_ActionId: 3c7022bf-7922-4f7c-a998-c437916075ad
+--- !u!1 &1954734223
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1954734225}
+  - component: {fileID: 1954734228}
+  - component: {fileID: 1954734226}
+  - component: {fileID: 1954734227}
+  - component: {fileID: 1954734224}
+  m_Layer: 0
+  m_Name: Presentation Timeline
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1954734224
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1954734223}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cad1c2590b4249adb075457c5541bb63, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  target: {fileID: 0}
+  steps:
+  - localOffset: {x: -0.6, y: -0, z: -0}
+    localEuler: {x: 0, y: 0, z: 0}
+    scaleMultiplier: {x: 1, y: 1, z: 1}
+    duration: 0.09
+    marker: Impact
+  - localOffset: {x: 0, y: 0, z: 0}
+    localEuler: {x: 0, y: 0, z: 0}
+    scaleMultiplier: {x: 1, y: 1, z: 1}
+    duration: 0.09
+    marker:
+  restoreOnComplete: 1
+--- !u!4 &1954734225
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1954734223}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 475349753}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1954734226
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1954734223}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 92a6410f29f0841a3b56f19381a56276, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  offset: {x: 0, y: -0.7, z: 0}
+  seconds: 0.18
+  signalProgress: 0.5
+  signal: Released
+--- !u!114 &1954734227
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1954734223}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cad1c2590b4249adb075457c5541bb63, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  target: {fileID: 0}
+  steps:
+  - localOffset: {x: 0.6, y: 0, z: 0}
+    localEuler: {x: 0, y: 0, z: 0}
+    scaleMultiplier: {x: 1, y: 1, z: 1}
+    duration: 0.09
+    marker: Impact
+  - localOffset: {x: 0, y: 0, z: 0}
+    localEuler: {x: 0, y: 0, z: 0}
+    scaleMultiplier: {x: 1, y: 1, z: 1}
+    duration: 0.09
+    marker:
+  restoreOnComplete: 1
+--- !u!114 &1954734228
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1954734223}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 92a6410f29f0841a3b56f19381a56276, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  offset: {x: 0, y: 0.7, z: 0}
+  seconds: 0.18
+  signalProgress: 0.5
+  signal: ReadyToAttack
 --- !u!114 &1961651003
 MonoBehaviour:
   m_ObjectHideFlags: 0

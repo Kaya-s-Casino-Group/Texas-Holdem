@@ -9,7 +9,6 @@ SingleBattle 是主线卡牌战斗，支持 1v1 与多对多；DrawBattle 是独
 | 目录 | 职责 | 程序集 |
 | --- | --- | --- |
 | [Hosting](Hosting/README.md) | 每局通用入口、服务接口、最小预制体与编辑器工具 | `Poker.BattleHosting.Runtime` |
-| [Configuration](Configuration/README.md) | 共享规则与角色配置、配置工厂、默认资产 | `Poker.BattleConfiguration.Runtime` / `.Editor` |
 | [Presentation/Shared](Presentation/Shared/Runtime) | Bridge、公开数据投影、候选查询及不依赖场景对象的 Unity 适配器 | `Poker.BattlePresentation.Shared` / `.Unity` |
 | [../../Presentation/BattlePresentation](../../Presentation/BattlePresentation/README.md) | 无规则依赖的显示存储、动作调度、交互会话及可选 Unity 组件 | `BattlePresentation.Runtime` / `.Unity` |
 | [Presentation/Scene3D](Presentation/Scene3D/README.md) | 现有场景适配器、Actor、VAT、盾牌、HUD 与接入工具 | `Poker.SingleBattle.Runtime` / `.Editor` / `.Tests.*` |
@@ -22,11 +21,10 @@ SingleBattle 是主线卡牌战斗，支持 1v1 与多对多；DrawBattle 是独
 ## 依赖边界
 
 ```text
-Scene3D ─────┐
-            ├── Configuration ──→ PokerEngine + Poker.Scoring
-Minimal2D ───┘
+Scene3D ──→ XML 内容编译与编成 ──→ PokerEngine
+Minimal2D ──→ XML Session Source ──→ PokerEngine
 
-BattleSceneHost / 旧 Battle2DHost ──继承──→ BaseBattleHost
+BattleSceneHost ──继承──→ BaseBattleHost
                           │ 持有
                           ↓
                       BattleHost
@@ -41,11 +39,11 @@ BattleSceneHost / 旧 Battle2DHost ──继承──→ BaseBattleHost
                           ↓ 中性快照与有序事实
               IBattlePresentationFrontend
                   ↙                ↘
-   ScenePresentationDirector      Battle2DView
+   ScenePresentationDirector ← Battle2DView
                   └── DisplayStore + PresentationDirector ──┘
 ```
 
-`Configuration` 保留 ScriptableObject 到纯规则快照的兼容入口，不持有 Host、场景对象、动画或美术资源。旧配置资产归在 `Assets/GameAssets/SingleBattle/Configuration/Profiles`。`SingleBattleDemoNew` 改为消费 `Configuration/Content/SingleBattleDemoNew.xml`，直接复用规则层 `BattleContentCompiler / BattleContentFactory`；配置修改在下一场开战生效。
+旧战斗 SO 配置层与资产已清理。两个前端均通过 `BattleContentCompiler / BattleContentFactory` 读取 XML 并生成不可变会话。`SingleBattleDemoNew` / `Battle2DValidation` 使用规则包的 `SingleBattleDemoNew.xml`；其他原有场景使用 `Assets/GameAssets/SingleBattle/Content/SceneBattles.xml`，保留原数值。配置修改只在下一场开战生效。
 
 `BattleSession` 原子完成规则推进，同时记录带中间状态的有序 `Timeline`。`BattleSessionPlayback` 通过 `PokerEngine.Composition` 中保留的 `IBattleSessionPresentation` 提交整批结果；共享 Bridge 按观察者过滤并转换为 `BattleDisplaySnapshot / BattleDisplayChange`。两种前端再使用同一套 `DisplayStore / PresentationDirector / InteractionSession`，普通动作不接收规则命令或规则对象。两层入口都保留 `Initialize / Present / Synchronize / IsPresenting` 语义，播放时长、信号与取消不会改变已提交规则结果。
 
@@ -62,23 +60,22 @@ BattleSceneHost / 旧 Battle2DHost ──继承──→ BaseBattleHost
 | 共用入口 | 职责 |
 | --- | --- |
 | `BattleHost.StartBattle / RestartBattle / AttachSession / Synchronize`（Composition） | 创建、接入、重开和同步会话；持有唯一 Session 与 Playback |
-| `BaseBattleHost`（Hosting） | 通用入口与旧验证宿主的 MonoBehaviour 基类，转发公共生命周期并调用场景扩展点 |
-| `BattleSessionFactory.Create`（Configuration） | 从规则配置与显式阵容 Setup 构建引擎、初始状态和未开局 Session；允许传入战局 ID 与随机状态 |
+| `BaseBattleHost`（Hosting） | 通用入口的 MonoBehaviour 基类，转发公共生命周期并调用场景扩展点 |
+| `BattleContentCompiler / BattleContentFactory`（Composition） | 校验 XML 并按编成创建未开局 Session；可指定战局 ID 与随机状态 |
 | `BattleSessionPlayback.Start / Submit`（Composition） | 统一开局和当前版本命令提交；读取表现门禁，交给 Session 原子结算，再派发表现 |
 | `BattleSessionPlayback.CanAct / CanPlay / CanDiscard` | 共用行动阶段、牌区、费用、张数和弃牌预算查询 |
 | `BattleSessionPlayback.PreviewPlay / PreviewDiscard` | 对当前权威快照只读验算，不提交状态或驱动表现 |
 
-`SingleBattleSceneAdapter` 从场景 Actor 收集阵容，校验输入来源、切换观察玩家、绑定 CardMatch/Hand；`SingleBattleSceneAdapter.Presentation.cs` 将显示游标交回 CardMatch 适配入口，动作顺序来自场景时间线。`Battle2DHost` 从 Inspector 配置收集阵容，把本地选牌和按钮转换为相同命令；`Battle2DView` 仅消费中性显示、候选和动作协议。两种前端均通过共享 Bridge 接入，不维护命令版本号，也不自行推进敌人回合。
+`SingleBattleSceneAdapter` 从场景 Actor 收集阵容，校验输入来源、切换观察玩家、绑定 CardMatch/Hand；`SingleBattleSceneAdapter.Presentation.cs` 将显示游标交回 CardMatch 适配入口，动作顺序来自场景时间线。`Battle2DSceneAdapter` 将本地选牌和按钮转换为相同命令，会话由独立的 XML 来源创建；`Battle2DView` 仅消费中性显示、候选和动作协议。两种前端均通过共享 Bridge 接入，不维护命令版本号，也不自行推进敌人回合。
 
-3D 场景适配器的 `BuildConfiguredSession` 依据显式配置来源选择旧工厂或 XML 编译组装入口；XML 编成拥有属性、牌组、牌型、状态和遗物，场景 Actor 仅对应阵容席位。新场景及 HUD 文字反馈用法见 [Scene3D 说明](Presentation/Scene3D/README.md)。
+3D 场景适配器的 `BuildConfiguredSession` 调用唯一的 XML 编译组装入口；XML 编成拥有属性、牌组、牌型、状态和遗物，场景 Actor 仅对应阵容席位。新场景及 HUD 文字反馈用法见 [Scene3D 说明](Presentation/Scene3D/README.md)。
 
-`BattleSceneHost` 与旧 `Battle2DHost` 继承 `BaseBattleHost`，当前卡牌场景通过 `SingleBattleSceneAdapter` 接入通用 Host。基类组合普通 C# `BattleHost`，由它先建立未开局 Session，再绑定表现，最后调用 `Playback.Start`。`RestartBattle` 重新读取当前配置创建新会话；`SynchronizeBattle` 取消旧动作和预选作用域，并显示权威快照，不执行规则。3D 保留开局发牌动画，2D 保留即时开局；`AttachSession` 只接入已有状态，不自动重新开局。参与者 ID、阵容顺序与自定义牌堆/初始生命仍由输入配置确定。场景适配器通过共享 `BattleInteractionQueries` 生成 `CandidatePresentationModel`，`InteractionSession` 校验选择版本并管理切换、清空和提交；UI 不自行调用规则预览。3D 的输入按钮仍可使用轻量规则资格查询，正式提交仍由 Session 校验。
+`BattleSceneHost` 继承 `BaseBattleHost`，两种场景分别通过 `SingleBattleSceneAdapter` 和 `Battle2DSceneAdapter` 接入通用 Host。基类组合普通 C# `BattleHost`，由它先建立未开局 Session，再绑定表现，最后调用 `Playback.Start`。`RestartBattle` 重新读取当前配置创建新会话；`SynchronizeBattle` 取消旧动作和预选作用域，并显示权威快照，不执行规则。3D 保留开局发牌动画，2D 默认开局节点无动作时即时公开显示快照；`AttachSession` 只接入已有状态，不自动重新开局。参与者 ID、阵容顺序与自定义牌堆/初始生命仍由输入配置确定。场景适配器通过共享 `BattleInteractionQueries` 生成 `CandidatePresentationModel`，`InteractionSession` 校验选择版本并管理切换、清空和提交；UI 不自行调用规则预览。3D 的输入按钮仍可使用轻量规则资格查询，正式提交仍由 Session 校验。
 
 ## 工具与场景
 
 - **工具 > 卡牌战斗 > Battle入口**：添加、定位或迁移通用入口，以及新增同场景独立 Battle。
-- **工具 > 卡牌战斗 > 数值配置**：编辑当前 3D 场景适配器绑定的共享配置；运行时只读。
-- **工具 > 卡牌战斗 > 默认配置**：打开公共配置资产。
+- **工具 > 卡牌战斗 > 数值配置**：定位当前 XML 与编成，校验后用内容编辑工具修改。
 - **工具 > 卡牌战斗 > 场景接入 / 示例场景 / 验算**：现有 3D 工具。
 - **工具 > 卡牌战斗 > 2D验证**：创建、打开与验证最简 2D 场景。
 - **工具 > 测试面板**：规则、表现与打包边界回归。
