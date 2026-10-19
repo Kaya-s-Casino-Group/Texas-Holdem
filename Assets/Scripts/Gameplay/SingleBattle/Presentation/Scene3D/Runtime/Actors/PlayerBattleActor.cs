@@ -14,7 +14,7 @@ namespace Poker.SingleBattle
         protected override bool OwnsParticipant(CardDuelState state, ParticipantId id) => Battle.OwnsPlayer(this, id);
         public PlayerTurnState Turn => IsBound ? Battle.PresentedState.Duel.Player(ParticipantId).Energy : null;
         public bool CanInteract => isActiveAndEnabled && IsBound && IsAlive && Battle.Player == this && Battle.CanReceivePlayerInput;
-        public bool CanEndTurn => CanInteract;
+        public bool CanEndTurn => CanInteract && (!Rules.Flow.ManualDraw || Battle.AuthorityState.FlowFor(ParticipantId).Window != BattlePlayerWindow.ForcedDiscard);
         private bool CanSubmit(CardSelectionRequest request, bool discard)
         {
             if (!CanInteract || request == null) return false;

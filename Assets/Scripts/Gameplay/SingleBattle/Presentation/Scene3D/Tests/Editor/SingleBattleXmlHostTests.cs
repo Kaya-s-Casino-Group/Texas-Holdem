@@ -271,6 +271,28 @@ namespace Poker.SingleBattle.Tests
         }
 
         [Test]
+        public void StandardXmlDrawAndDefenseCommandsDriveTheSceneHand()
+        {
+            using (var f = new Fixture())
+            {
+                f.Host.ConfigureContent(AssetDatabase.LoadAssetAtPath<TextAsset>("Packages/com.kaya.battle-engine/Content/StandardSingleBattle.xml"), "standard-single-battle");
+                f.Host.StartBattle(); f.HandView.CompleteTransitions();
+                Assert.That(f.Hand.Cards, Is.Empty);
+                Assert.That(f.Host.DrawCards(5, false), Is.True); f.HandView.CompleteTransitions();
+                Assert.That(f.Hand.Cards.Count, Is.EqualTo(5));
+                Assert.That(f.Host.State.FlowFor(f.Host.Player.ParticipantId).Window, Is.EqualTo(BattlePlayerWindow.Action));
+                var discarded = f.SelectOne();
+                Assert.That(f.Host.Player.Discard(discarded, false), Is.EqualTo(1)); f.HandView.CompleteTransitions();
+                Assert.That(f.Host.State.Duel.CompletedRounds, Is.EqualTo(1));
+                Assert.That(f.Hand.Cards.Count, Is.EqualTo(4));
+                Assert.That(f.Host.State.FlowFor(f.Host.Player.ParticipantId).Window, Is.EqualTo(BattlePlayerWindow.Draw));
+                Assert.That(f.Host.SkipDraw(false), Is.True);
+                Assert.That(f.Hand.Cards.Count, Is.EqualTo(4));
+                Assert.That(f.Host.State, Is.SameAs(f.Host.AuthorityState));
+            }
+        }
+
+        [Test]
         public void ConfiguringNewXmlOnlyChangesTheNextBattle()
         {
             using (var f = new Fixture())

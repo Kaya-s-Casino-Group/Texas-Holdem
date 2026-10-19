@@ -32,7 +32,7 @@ namespace Poker.SingleBattle
             !actions.Hand.Presentation.IsPresenting;
         public bool SelectPlayer(PlayerBattleActor player)
         {
-            if (!CanSwitchPlayer || !Players.Contains(player) || !State.Duel.CanAct(player.ParticipantId)) return false;
+            if (!CanSwitchPlayer || !Players.Contains(player) || !State.Duel.HasPlayerWindow(player.ParticipantId)) return false;
             if (player == playerActor) return true;
             // Stop only this observer's sessions. Authoritative cards, HP and round are untouched.
             actions.Hand.StopSession(); match.StopMatch();
@@ -124,7 +124,7 @@ namespace Poker.SingleBattle
             actions.Hand.StopSession();
             match.StartExternalMatch(playerActor, State.Table, State.Table.Cards.Select(card => Style(card)));
             var deck = PlayerZone(CardZoneKinds.Deck).Id; var discard = PlayerZone(CardZoneKinds.Discard).Id;
-            actions.Hand.BindBattleHand(match, PlayerZone(CardZoneKinds.Hand).Id, deck, discard, playerActor.Rules.MaxSelection);
+            actions.Hand.BindBattleHand(match, PlayerZone(CardZoneKinds.Hand).Id, deck, discard, playerActor.Rules.Flow.ManualDraw ? 512 : playerActor.Rules.MaxSelection);
             // Rebinding an observer also restores the selected ordering for an already dealt hand.
             actions.Hand.RequestSortAfterLanding(actions.Hand.SortOrder);
             if (overview != null) { overview.BindArtwork(actions.Hand.CardPrefab); overview.Configure(match, overview.View, deck, State.Table.Zones.Where(zone => zone.ControllerId == playerActor.ParticipantId).SelectMany(zone => zone.Cards)); overview.Close(false); }
@@ -143,7 +143,7 @@ namespace Poker.SingleBattle
         {
             if (actor != playerActor || !playerActor.CanEndTurn) return false;
             Interaction.BeginCommit();
-            var result = Playback.Submit(actor.ParticipantId, CardDuelAction.EndTurn, animate: animate);
+            var result = Playback.Submit(actor.ParticipantId, State.Duel.Player(actor.ParticipantId).Rules.Flow.ManualDraw && State.FlowFor(actor.ParticipantId).Window == BattlePlayerWindow.Ending ? CardDuelAction.FinishTurn : CardDuelAction.EndTurn, animate: animate);
             if (!result.Accepted) { candidateKey = null; RefreshCandidate(); }
             return result.Accepted;
         }
@@ -165,9 +165,9 @@ namespace Poker.SingleBattle
         }
         private void Publish()
         {
-            if (CanSwitchPlayer && !State.Duel.CanAct(playerActor.ParticipantId))
+            if (CanSwitchPlayer && !State.Duel.HasPlayerWindow(playerActor.ParticipantId))
             {
-                var next = Players.FirstOrDefault(player => State.Duel.CanAct(player.ParticipantId));
+                var next = Players.FirstOrDefault(player => State.Duel.HasPlayerWindow(player.ParticipantId));
                 if (next != null && SelectPlayer(next)) return;
             }
             StateChanged?.Invoke(); actions?.Refresh();

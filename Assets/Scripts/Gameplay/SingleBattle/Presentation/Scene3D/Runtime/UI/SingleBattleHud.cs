@@ -148,6 +148,7 @@ namespace Poker.SingleBattle
         private void LateUpdate()
         {
             UpdateEnemyIntentBillboards();
+            RefreshTurnFlow();
             RefreshRuleFeedback();
             if (host != null && endTurn != null) endTurn.interactable = host.CanEndTurn;
             if (switchPlayer != null) switchPlayer.interactable = host.CanSwitchPlayer && host.Display != null && host.Display.Units.Count(unit => unit.Team == "player" && ResourceValue(host.Display, unit.Id, "canAct") == 1) > 1;

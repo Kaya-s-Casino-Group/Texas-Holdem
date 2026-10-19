@@ -22,7 +22,7 @@ namespace Poker.BattlePresentation
             {
                 resources.Add(new ResourceDisplayData(p.Id.Value, "discards", state.RemainingDiscardBudgetFor(p.Id) ?? -1));
                 resources.Add(new ResourceDisplayData(p.Id.Value, "maxSelection", p.Rules.MaxSelection));
-                resources.Add(new ResourceDisplayData(p.Id.Value, "canAct", state.HasStarted && duel.CanAct(p.Id) ? 1 : 0));
+                resources.Add(new ResourceDisplayData(p.Id.Value, "canAct", state.HasStarted && duel.HasPlayerWindow(p.Id) ? 1 : 0));
                 resources.Add(new ResourceDisplayData(p.Id.Value, "playCost", engine.Duel.QueryActionCost(duel, p.Id, ScoredDuelActionKind.ScoredHand).Cost));
                 resources.Add(new ResourceDisplayData(p.Id.Value, "discardCost", engine.Duel.QueryActionCost(duel, p.Id, ScoredDuelActionKind.Discard).Cost));
             }
