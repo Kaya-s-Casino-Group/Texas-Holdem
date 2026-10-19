@@ -162,7 +162,7 @@ presenter.RemoveSource(otherZoneSource);
 
 ## 固化牌区与 Play 验证
 
-进入实际玩法场景的 Play，通过 Game 视图悬停与左键选择；玩法创建牌组与四区，并绑定场景的 View / 输入宿主。牌区验证窗口只观察当前牌局，旧 Bake / Play Card Zone / Preview Mouse Interaction 菜单已移除。
+进入实际玩法场景的 Play，通过 Game 视图悬停与左键选择；玩法创建牌组与四区，并绑定场景的 View / 输入宿主。牌区验证窗口在 Play 中只观察当前牌局；编辑模式可通过通用表现接口预览临时展示数据，旧 Bake / Play Card Zone / Preview Mouse Interaction 菜单已移除。
 
 卡牌顺序、身份、定义和效果由玩法权威提供；场景保存表现资源、输入引用与宿主配置。CardZoneView 序列化布局、摆动、相机和外观，HandZoneView 补充上浮、发牌/弃牌与音效参数。临时卡面使用 DontSave；关闭验证工具不影响实战输入或动画。
 
@@ -219,4 +219,4 @@ CardHoverPresenter 仍拥有唯一提示实例，新增独立 DOTween 显隐倍�
 
 DrawPilePresenter 持有 DeckSummary Prefab 和唯一局部实例；通过 DeckOverviewPresenter.ReadData 消费同一只读牌组投影，缓存按 Match State 更新，完整页面关闭时也可读取。不创建另一份逻辑牌堆，统计表不写入卡牌交互且不抢占悬停来源，只有点击打开的完整页沿用 ICardHoverScope。悬停统计表、点击完整页和返回关闭的意图独立，切换只改变本地展示状态。
 
-实战场景可将 CardMatchHost 配置为 Runtime Managed（编辑器 API ConfigureRuntimeManaged），并用 CardZonePlayHost.ConfigureRuntimeBinding 保留宿主引用、清空验证用牌区 ID。此模式不从 initialZones 自动启动，未绑定时为无牌无区的展示占位；只接受 StartExternalMatch 提供的权威状态，拒绝编辑器固化、预览出牌和本地重开。牌区验证工具已统一为实战观察与表现参数调整，不再维护编辑器牌区或卡牌快照。SingleBattleDemo 使用此模式；旧快照 API 仅保留给旧资源迁移与隔离测试。
+实战场景可将 CardMatchHost 配置为 Runtime Managed（编辑器 API ConfigureRuntimeManaged），并用 CardZonePlayHost.ConfigureRuntimeBinding 保留宿主引用、清空验证用牌区 ID。此模式不从 initialZones 自动启动，未绑定时为无牌无区的展示占位；只接受 StartExternalMatch 提供的权威状态，拒绝编辑器固化、预览出牌和本地重开。牌区验证工具在 Play 中观察实战与调整表现参数；编辑模式的临时表现预览不维护规则牌组、不固化卡牌快照。SingleBattleDemo 使用此模式；旧快照 API 仅保留给旧资源迁移与隔离测试。

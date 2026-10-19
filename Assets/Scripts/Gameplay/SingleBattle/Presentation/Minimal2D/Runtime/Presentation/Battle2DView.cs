@@ -215,9 +215,12 @@ namespace Poker.Battle2DValidation
                 card.ShowSelection(selected.Contains(card.Id), data != null && !string.IsNullOrEmpty(data.DisabledReason));
             }
         }
+        public CardZoneDisplayData PresentedCardZone { get; private set; }
         public void PresentCardZone(CardZoneDisplayData hand)
         {
-            if (hand == null || cardRoot == null) return;
+            PresentedCardZone = hand;
+            if (hand == null) { foreach (var card in cards) if (card != null) Remove(card.gameObject); cards.Clear(); return; }
+            if (cardRoot == null) return;
             var displayedCards = hand.Cards.Where(card => !card.Hidden && !string.IsNullOrEmpty(card.CardId)).ToArray();
             foreach (var old in cards.Where(card => displayedCards.All(item => item.CardId != card.Id)).ToArray())
             { cards.Remove(old); Remove(old.gameObject); }
@@ -225,7 +228,9 @@ namespace Poker.Battle2DValidation
             {
                 var existing = cards.FirstOrDefault(card => card.Id == data.CardId);
                 if (existing != null) { existing.Surface.SetCard(data.ArtKey); continue; }
-                var instance = Instantiate(cardPrefab, cardRoot); instance.name = "Card " + data.ViewId;
+                var instance = Instantiate(cardPrefab, cardRoot);
+                if (!Application.isPlaying) instance.hideFlags = HideFlags.DontSave;
+                instance.name = "Card " + data.ViewId;
                 var card = instance.AddComponent<Battle2DCard>(); card.Bind(this, data.CardId, data.ArtKey); cards.Add(card);
             }
             var order = displayedCards.Select(item => item.CardId).ToList();

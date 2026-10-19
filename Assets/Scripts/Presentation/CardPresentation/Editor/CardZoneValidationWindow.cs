@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using CardArt;
+using BattlePresentation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +12,7 @@ using UnityEngine.SceneManagement;
 
 namespace CardPresentation.Editor
 {
-    /// <summary>Observes a live gameplay table and edits presentation settings only. Never owns cards or zones.</summary>
+    /// <summary>Inspects any card presentation provider and previews display-only capabilities in EditMode.</summary>
     public sealed partial class CardZoneValidationWindow : EditorWindow
     {
         private readonly ToolWindowChrome windowChrome = new ToolWindowChrome();
@@ -49,26 +50,33 @@ namespace CardPresentation.Editor
         public bool HasLiveBattle => Application.isPlaying && !ChangingMode && Host != null && Host.IsRunning &&
             Host.Match != null && Host.Match.Commands != null;
         public IReadOnlyList<CardZoneCardState> CurrentCards => HasLiveBattle ? Host.Cards : Array.Empty<CardZoneCardState>();
-        private bool CanEdit => target != null && !ChangingMode && (!Application.isPlaying ||
+        private bool CanEdit => preview == null && target != null && !ChangingMode && (!Application.isPlaying ||
             (HasLiveBattle && Host.Match.Commands.CanInteract && !target.IsTransitioning));
         private int CurrentCapacity => target != null ? target.CardCapacity ?? 0 : 0;
 
         [MenuItem("工具/卡牌表现/实战牌区验证")]
+        [MenuItem("工具/卡牌表现/通用牌区验证")]
         public static void Open()
         {
-            var window = GetWindow<CardZoneValidationWindow>("实战牌区验证");
-            window.minSize = new Vector2(360, 300); window.Show();
+            var window = GetWindow<CardZoneValidationWindow>("通用牌区验证");
+            window.minSize = new Vector2(520, 420); window.page = 4; window.Show();
         }
         [MenuItem("工具/卡牌表现/牌区动画调试")]
         public static void OpenAnimationLab()
         {
-            Open(); var window = GetWindow<CardZoneValidationWindow>(); window.page = 1; window.stylePage = 1;
+            Open(); var window = GetWindow<CardZoneValidationWindow>(); window.page = 4;
         }
         private void OnEnable()
         {
-            minSize = new Vector2(360, 300); titleContent = new GUIContent("实战牌区验证");
+            minSize = new Vector2(520, 420); titleContent = new GUIContent("通用牌区验证");
             if (target == null) target = RestoreTarget() ?? ResolveTarget(Selection.activeGameObject) ?? FindTarget();
-            page = Mathf.Clamp(page, 0, 3); ReadSettings();
+            if (frontend == null) frontend = RestorePresentation() ?? ResolvePresentation(Selection.activeGameObject) ?? (target != null ? ResolvePresentation(target.gameObject) : null);
+            if (frontend == null) frontend = SceneManager.GetActiveScene().GetRootGameObjects()
+                .SelectMany(root => root.GetComponentsInChildren<MonoBehaviour>(true)).FirstOrDefault(item => item is ICardZonePresentation);
+            if (frontend != null) target = frontend.GetComponent<CardZoneView>();
+            page = Mathf.Clamp(page, 0, 4); ReadSettings();
+            UnityEditor.SceneManagement.EditorSceneManager.sceneSaving += OnSceneSaving;
+            AssemblyReloadEvents.beforeAssemblyReload += StopPreview;
             Selection.selectionChanged += OnSelectionChanged;
             Undo.undoRedoPerformed += OnUndo;
             EditorApplication.playModeStateChanged += OnPlayMode;
@@ -76,24 +84,31 @@ namespace CardPresentation.Editor
         }
         private void OnDisable()
         {
+            StopPreview(); ReleaseFrontendEditor();
+            UnityEditor.SceneManagement.EditorSceneManager.sceneSaving -= OnSceneSaving;
+            AssemblyReloadEvents.beforeAssemblyReload -= StopPreview;
             windowChrome.Release(); Selection.selectionChanged -= OnSelectionChanged;
             Undo.undoRedoPerformed -= OnUndo; EditorApplication.playModeStateChanged -= OnPlayMode;
             EditorApplication.update -= Observe;
         }
         private void OnLostFocus() => windowChrome.Release();
-        private void OnUndo() { ReadSettings(); Repaint(); }
+        private void OnUndo() { StopPreview(); ReadSettings(); Repaint(); }
         private void OnHierarchyChange() => Repaint();
         private void Observe()
         {
+            AdvanceEditorPreview();
             if (EditorApplication.timeSinceStartup - lastRepaint < .1) return;
             lastRepaint = EditorApplication.timeSinceStartup; Repaint();
         }
         private void OnPlayMode(PlayModeStateChange state)
         {
+            if (state == PlayModeStateChange.ExitingEditMode || state == PlayModeStateChange.ExitingPlayMode) StopPreview();
             if (state == PlayModeStateChange.ExitingEditMode) RememberTarget();
             if (state == PlayModeStateChange.EnteredPlayMode || state == PlayModeStateChange.EnteredEditMode)
             {
                 if (target == null) target = RestoreTarget() ?? FindTarget();
+                if (frontend == null) frontend = RestorePresentation() ?? ResolvePresentation(target != null ? target.gameObject : Selection.activeGameObject);
+                if (frontend != null) target = frontend.GetComponent<CardZoneView>();
                 inspectedCardId = null; ReadSettings();
             }
             Repaint();
@@ -165,8 +180,10 @@ namespace CardPresentation.Editor
         }
         private void Frame()
         {
-            if (target == null) return;
-            Selection.activeGameObject = target.gameObject;
+            var selected = frontend != null ? frontend.gameObject : target != null ? target.gameObject : null;
+            if (selected == null) return;
+            Selection.activeGameObject = selected;
+            if (target == null) { SceneView.lastActiveSceneView?.FrameSelected(); return; }
             var sceneView = SceneView.lastActiveSceneView ?? GetWindow<SceneView>();
             sceneView.Frame(new Bounds(target.transform.position, new Vector3(layout.Size.x, .1f, layout.Size.y)), false);
         }
@@ -187,26 +204,28 @@ namespace CardPresentation.Editor
             try
             {
                 EditorGUIUtility.labelWidth = Mathf.Min(150, position.width * .4f);
-                EditorGUILayout.LabelField("实战牌区验证", EditorStyles.boldLabel); DrawTargetSelector();
+                EditorGUILayout.LabelField("通用牌区验证", EditorStyles.boldLabel); DrawTargetSelector();
                 using (new EditorGUILayout.HorizontalScope())
                 {
-                    using (new EditorGUI.DisabledScope(target == null)) if (GUILayout.Button("定位牌区")) Frame();
+                    using (new EditorGUI.DisabledScope(target == null && frontend == null)) if (GUILayout.Button("定位牌区")) Frame();
                     if (GUILayout.Button("读取表现参数")) ReadSettings();
                 }
-                if (!HasLiveBattle) EditorGUILayout.HelpBox("进入实际牌局的 Play 后读取卡牌。编辑模式只调整表现参数；出牌、弃牌和排序请使用 Game 内的 UI。", MessageType.Info);
-                DrawPrefabExport();
-                page = GUILayout.Toolbar(page, new[] { "实战卡牌", "表现参数", "视觉诊断", "出牌路径" });
+                EditorGUILayout.HelpBox(Application.isPlaying ? "Play 中观察实际展示数据；通过 Game 内 UI 提交规则操作。" : "表现预览使用临时展示数据，可在 Scene / Game 视图观察。停止或退出预览时恢复原展示。", MessageType.Info);
+                if (target != null) DrawPrefabExport();
+                page = GUILayout.Toolbar(page, new[] { "展示数据", "表现参数", "视觉诊断", "出牌路径", "表现预览" });
                 using (var area = new EditorGUILayout.ScrollViewScope(scroll))
                 {
                     scroll = area.scrollPosition;
-                    if (page == 0) DrawLiveCards();
+                    if (page == 0) { DrawDisplaySnapshot(); DrawLiveCards(); }
                     else if (page == 1)
                     {
                         if (Application.isPlaying && !CanEdit) EditorGUILayout.HelpBox("等待实战动画结束且允许交互时调整参数。", MessageType.Info);
-                        using (new EditorGUI.DisabledScope(!CanEdit)) DrawStylePage();
+                        if (target != null) { using (new EditorGUI.DisabledScope(!CanEdit)) DrawStylePage(); }
+                        DrawFrontendSettings();
                     }
-                    else if (page == 2) DrawDiagnostics();
-                    else DrawTransferPage();
+                    else if (page == 2) { DrawCapabilityDiagnostics(); DrawDiagnostics(); }
+                    else if (page == 3) DrawTransferPage();
+                    else DrawPresentationPreview();
                 }
                 if (!string.IsNullOrEmpty(error)) EditorGUILayout.HelpBox(error, MessageType.Error);
                 else if (!string.IsNullOrEmpty(status)) EditorGUILayout.LabelField(status, EditorStyles.wordWrappedMiniLabel);

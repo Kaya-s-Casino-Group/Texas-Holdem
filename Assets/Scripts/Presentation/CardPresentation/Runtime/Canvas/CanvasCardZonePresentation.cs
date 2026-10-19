@@ -10,7 +10,7 @@ namespace CardPresentation
 {
     /// <summary>Canvas implementation. Owns RectTransforms only; no HandZoneView or battle commands.</summary>
     [DisallowMultipleComponent, RequireComponent(typeof(RectTransform))]
-    public sealed class CanvasCardZonePresentation : CardZonePresentationBehaviour
+    public sealed class CanvasCardZonePresentation : CardZonePresentationBehaviour, ICardZonePresentationPreview
     {
         [SerializeField] private CardUIGraphic cardTemplate;
         [SerializeField] private Vector2 cardSize = new Vector2(128, 192);
@@ -63,7 +63,9 @@ namespace CardPresentation
         }
         private CardUIGraphic Create(CardDisplayData data)
         {
-            var card = Instantiate(cardTemplate, transform); card.name = "Card " + data.ViewId;
+            var card = Instantiate(cardTemplate, transform);
+            if (!Application.isPlaying) card.gameObject.hideFlags = HideFlags.DontSave;
+            card.name = "Card " + data.ViewId;
             var rect = card.rectTransform; rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(.5f, .5f);
             rect.localRotation = Quaternion.identity; rect.localScale = Vector3.one; rect.sizeDelta = cardSize;
             card.gameObject.SetActive(true); cards.Add(data.ViewId, card); return card;
@@ -178,6 +180,19 @@ namespace CardPresentation
             if (cardTemplate == null) throw new InvalidOperationException("Bind a Canvas card template.");
             for (int i = 0; i < snapshot.Cards.Count; i++)
             { var data = snapshot.Cards[i]; var card = Create(data); Present(card, data); card.rectTransform.anchoredPosition = Slot(i, snapshot.Cards.Count, data); }
+        }
+        public IDisposable PreservePreviewState()
+        {
+            var snapshot = Current;
+            var restoration = new PresentationScope("card-preview-restore");
+            restoration.Own(() => { if (this != null) Synchronize(snapshot); });
+            return restoration;
+        }
+        public void AdvancePreview(float deltaTime)
+        {
+            if (Application.isPlaying) throw new InvalidOperationException("Preview clock is EditMode only.");
+            AdvanceCustomPreview(deltaTime);
+            AdvanceMotion(deltaTime);
         }
         private void Update() => AdvanceMotion(Time.unscaledDeltaTime);
         private void OnDisable() { var run = active; if (run != null) { run.Operation.Cancel(); Release(run); } CancelPresentationActions(); }

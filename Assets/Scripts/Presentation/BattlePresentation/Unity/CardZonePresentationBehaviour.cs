@@ -65,6 +65,10 @@ namespace BattlePresentation.Unity
             }
             catch (Exception error) { owned?.Dispose(); return PresentationOperation.Failed("CardActionFailed", error.Message); }
         }
+        protected void AdvanceCustomPreview(float deltaTime)
+        {
+            foreach (var clock in Custom.OfType<ICardZonePresentationPreviewClock>()) clock.AdvancePreview(deltaTime);
+        }
         protected abstract IPresentationOperation PlayBuiltIn(CardZonePresentationRequest request, IMarkerSink markers);
         public abstract void Synchronize(CardZoneDisplayData snapshot);
         private sealed class ScopedMarkers : IMarkerSink

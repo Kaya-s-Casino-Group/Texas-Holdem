@@ -112,6 +112,33 @@ namespace Poker.Battle2DValidation.Tests
             }
         }
 
+        private sealed class PreviewMarkers : IMarkerSink
+        {
+            public readonly List<string> Values = new List<string>();
+            public bool Emit(string marker) { Values.Add(marker); return true; }
+        }
+        [Test] public void EditorClockPreparesCardsWithoutChangingBattleAndSynchronizeRestoresThem()
+        {
+            using (var f = new Fixture())
+            using (var scope = new PresentationScope("editor-clock"))
+            {
+                var frontend = f.View.GetComponent<Battle2DCardZonePresentation>();
+                var original = frontend.Current; var authority = f.Host.AuthorityState;
+                var card = f.View.Cards[0]; var position = card.transform.localPosition;
+                frontend.AdvancePreview(0); var signals = new PreviewMarkers();
+                var op = frontend.Play(new CardZonePresentationRequest(CardZoneActions.Prepare, "prepare", scope,
+                    original, original, new[] { card.Id }), signals);
+                Assert.AreEqual(PresentationStatus.Pending, op.Status);
+                frontend.AdvancePreview(.1f); Assert.Contains("Prepared", signals.Values);
+                Assert.Greater(card.transform.localPosition.y, position.y);
+                frontend.Synchronize(original);
+                Assert.AreEqual(PresentationStatus.Cancelled, op.Status);
+                Assert.AreEqual(position, card.transform.localPosition); Assert.AreSame(authority, f.Host.AuthorityState);
+                frontend.Synchronize(null); Assert.IsEmpty(f.View.Cards); Assert.IsNull(frontend.Current);
+                frontend.Synchronize(original);
+            }
+        }
+
         [Test] public void CardActionCancellationReleasesOnlyItsOffsetAndUsesTheLatestSlot()
         {
             using (var f = new Fixture())

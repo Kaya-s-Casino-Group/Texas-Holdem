@@ -10,7 +10,7 @@ namespace CardPresentation
 {
     /// <summary>World-space implementation of the render-independent card-zone capability contract.</summary>
     [DisallowMultipleComponent, RequireComponent(typeof(HandZoneView))]
-    public sealed class WorldCardZonePresentation : CardZonePresentationBehaviour, ICardZonePresentationPump
+    public sealed class WorldCardZonePresentation : CardZonePresentationBehaviour, ICardZonePresentationPump, ICardZonePresentationPreview
     {
         private HandZoneView hand;
         private HandZoneView Hand => this == null ? null : hand != null ? hand : (hand = GetComponent<HandZoneView>());
@@ -125,6 +125,23 @@ namespace CardPresentation
             if (Hand == null) return;
             Hand.CompleteTransitions();
             if (snapshot == null) Hand.Clear(); else Hand.Present(Project(snapshot), false);
+        }
+        public IDisposable PreservePreviewState()
+        {
+            var data = Hand.Data;
+            var restoration = new PresentationScope("world-preview-restore");
+            restoration.Own(() => {
+                Synchronize(null);
+                if (Hand != null && data != null) Hand.Present(data, false);
+            });
+            return restoration;
+        }
+        public void AdvancePreview(float deltaTime)
+        {
+            if (Application.isPlaying) throw new InvalidOperationException("Preview clock is EditMode only.");
+            AdvanceCustomPreview(deltaTime);
+            if (Hand != null) Hand.AdvanceMotion(deltaTime);
+            Tick();
         }
         private void Update() => Tick();
         private void OnDisable() { CancelRuns(); CancelPresentationActions(); }

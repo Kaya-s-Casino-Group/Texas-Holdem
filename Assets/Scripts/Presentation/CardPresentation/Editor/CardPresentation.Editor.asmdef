@@ -14,7 +14,9 @@
     "RetroRendering.Runtime",
     "CardArt.Editor",
     "Unity.InputSystem",
-    "CardMatch.Runtime"
+    "CardMatch.Runtime",
+    "BattlePresentation.Runtime",
+    "BattlePresentation.Unity"
   ],
   "includePlatforms": [
     "Editor"

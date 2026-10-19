@@ -54,6 +54,14 @@ namespace BattlePresentation
         }
     }
 
+    /// <summary>Optional manual clock for editor previews. Does not submit rules or own display data.</summary>
+    public interface ICardZonePresentationPreviewClock { void AdvancePreview(float deltaTime); }
+    public interface ICardZonePresentationPreview : ICardZonePresentationPreviewClock
+    {
+        // Disposing cancels preview work and restores all renderer-owned state, including non-DTO artwork settings.
+        IDisposable PreservePreviewState();
+    }
+
     public interface ICardZonePresentationPump { void Tick(); }
 
     public interface ICardZonePresentation
