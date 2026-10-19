@@ -55,14 +55,18 @@ Material:
     - _CrackProgress: 0.723
     - _CrackScale: 1.2
     - _CrackWidth: 0.235
+    - _InteriorMetallic: 0
+    - _InteriorSmoothness: 0.08
     - _Metallic: 1
     - _Smoothness: 1
+    - _UseSurfaceMask: 0
     - _VATEnabled: 0
     - _VATFrameCount: 110
     - _VATProgress: 0
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _CrackColor: {r: 0.035, g: 0.025, b: 0.02, a: 1}
+    - _InteriorColor: {r: 0.33199996, g: 0.35799998, b: 0.38099998, a: 1}
     - _VATPositionMin: {r: 0, g: 0, b: 0, a: 0}
     - _VATPositionRange: {r: 1, g: 1, b: 1, a: 0}
     - _VATTextureSize: {r: 64, g: 128, b: 0.015625, a: 0.0078125}

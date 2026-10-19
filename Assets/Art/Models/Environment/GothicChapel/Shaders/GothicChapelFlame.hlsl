@@ -12,6 +12,7 @@ float _Sway;
 float _SwaySpeed;
 float _BakeIntensity;
 float _AnimationTime;
+float _FlickerOverride;
 CBUFFER_END
 struct FlameAttributes {float4 positionOS:POSITION;float2 uv:TEXCOORD0;float2 uv1:TEXCOORD1;UNITY_VERTEX_INPUT_INSTANCE_ID};
 struct FlameVaryings {float4 positionCS:SV_POSITION;float2 uv:TEXCOORD0;float2 clock:TEXCOORD1;UNITY_VERTEX_OUTPUT_STEREO};
@@ -21,6 +22,7 @@ float FlameTime(){return _AnimationTime>=0?_AnimationTime:_Time.y;}
 float FlameSeed(){return dot(TransformObjectToWorld(float3(0,0,0)),float3(13.13,7.71,19.19));}
 float FlameFlicker(float t,float seed)
 {
+    if (_FlickerOverride>=0) return _FlickerOverride;
     float n=.64*FlameNoise(t*_FlickerSpeed+seed)+.36*FlameNoise(t*_FlickerSpeed*2.31+seed*3.7);
     return max(.15,1+(n-.5)*2*_FlickerAmount);
 }

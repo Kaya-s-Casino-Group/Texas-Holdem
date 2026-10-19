@@ -11,6 +11,7 @@ Shader "Gothic Chapel/Candle Flame"
   _SwaySpeed("Sway Speed",Range(.1,12))=4
   _BakeIntensity("Static Bake Emission",Range(0,20))=0
   [HideInInspector] _AnimationTime("Animation Test Time (-1 = Live)",Float)=-1
+  [HideInInspector] _FlickerOverride("Synchronized Light Flicker (-1 = Shader)",Float)=-1
  }
  SubShader
  {
