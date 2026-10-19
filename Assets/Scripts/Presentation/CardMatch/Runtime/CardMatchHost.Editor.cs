@@ -17,7 +17,7 @@ namespace CardInteraction
             StopMatch(); runtimeManaged = true; matchId = null; initialRevision = 0; initialZones.Clear();
             runtimeSeed = null; runtimeSeedPresentation = null;
         }
-        public void ConfigureInitial(IEnumerable<CardMatchZoneSnapshot> zones, string identity = null)
+        public void ConfigureInitial(IEnumerable<CardMatchZoneData> zones, string identity = null)
         {
             RequireLocalCommands();
             if (Application.isPlaying) throw new InvalidOperationException("Initial match configuration is editor-only.");
@@ -27,14 +27,14 @@ namespace CardInteraction
                 snapshots.Select(zone => zone.Zone), checked(initialRevision + 1));
             SaveInitial(state, snapshots.SelectMany(zone => zone.Cards).ToDictionary(card => card.Id, card => card.Copy(clearHover: true)));
         }
-        private void SaveInitial(CardTableState state, IReadOnlyDictionary<string, CardZoneCardState> styles)
+        private void SaveInitial(CardTableState state, IReadOnlyDictionary<string, CardMatchCardState> styles)
         {
-            var snapshots = state.Zones.Select(zone => new CardMatchZoneSnapshot(zone, zone.Cards.Select(id => styles[id.Value]))).ToList();
+            var snapshots = state.Zones.Select(zone => new CardMatchZoneData(zone, zone.Cards.Select(id => styles[id.Value]))).ToList();
             initialZones = snapshots; matchId = state.MatchId.Value; initialRevision = state.Revision;
             runtimeSeed = null; runtimeSeedPresentation = null;
             StopMatch();
         }
-        public CardMatchUpdate PrepareDebugEdit(IEnumerable<CardMatchZoneSnapshot> zones, bool preview)
+        public CardMatchUpdate PrepareDebugEdit(IEnumerable<CardMatchZoneData> zones, bool preview)
         {
             RequireLocalCommands();
             var snapshots = Guard.Copy(zones, nameof(zones));
@@ -54,7 +54,7 @@ namespace CardInteraction
             var found = scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<CardMatchHost>(true)).FirstOrDefault();
             if (found != null) return found;
             var root = new GameObject("Card Match"); SceneManager.MoveGameObjectToScene(root, scene);
-            var match = root.AddComponent<CardMatchHost>(); match.ConfigureInitial(Array.Empty<CardMatchZoneSnapshot>()); return match;
+            var match = root.AddComponent<CardMatchHost>(); match.ConfigureInitial(Array.Empty<CardMatchZoneData>()); return match;
         }
     }
 }

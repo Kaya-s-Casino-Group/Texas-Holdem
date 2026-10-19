@@ -215,14 +215,9 @@ namespace Poker.Battle2DValidation
                 card.ShowSelection(selected.Contains(card.Id), data != null && !string.IsNullOrEmpty(data.DisabledReason));
             }
         }
-        private void Render()
+        public void PresentCardZone(CardZoneDisplayData hand)
         {
-            var snapshot = PresentedState;
-            if (snapshot == null || cardRoot == null) return;
-            var hand = Hand;
-            if (hand == null) return;
-            var player = snapshot.Unit(snapshot.ObserverId);
-            if (player == null) return;
+            if (hand == null || cardRoot == null) return;
             var displayedCards = hand.Cards.Where(card => !card.Hidden && !string.IsNullOrEmpty(card.CardId)).ToArray();
             foreach (var old in cards.Where(card => displayedCards.All(item => item.CardId != card.Id)).ToArray())
             { cards.Remove(old); Remove(old.gameObject); }
@@ -247,6 +242,16 @@ namespace Poker.Battle2DValidation
                     -.15f + ((rows - 1) * .5f - row) * (height + .18f), 0), scale);
             }
             ReconcileSelection();
+        }
+        private void Render()
+        {
+            var snapshot = PresentedState;
+            if (snapshot == null || cardRoot == null) return;
+            var hand = Hand;
+            if (hand == null) return;
+            var player = snapshot.Unit(snapshot.ObserverId);
+            if (player == null) return;
+            PresentCardZone(hand);
             string outcome = snapshot.Phase == "won" ? "战斗胜利" : snapshot.Phase == "lost" ? "战斗失败" : snapshot.Phase == "enemy" ? "敌人行动" : "玩家行动";
             status.text = outcome + "     回合 " + (snapshot.IsFinished ? snapshot.CompletedRounds : snapshot.CompletedRounds + 1);
             status.color = snapshot.Phase == "won" ? new Color(.4f, 1, .6f) : snapshot.Phase == "lost" ? new Color(1, .45f, .4f) : Color.white;

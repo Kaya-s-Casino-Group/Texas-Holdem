@@ -453,6 +453,7 @@ GameObject:
   - component: {fileID: 151945505}
   - component: {fileID: 151945504}
   - component: {fileID: 151945506}
+  - component: {fileID: 2000000001}
   m_Layer: 0
   m_Name: Card Match
   m_TagString: Untagged
@@ -473,7 +474,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   matchId: 
-  artBindings: {fileID: 11400000, guid: 9b6ce29f9270f4acb9bb028eb5671951, type: 2}
   runtimeManaged: 1
   initialRevision: 0
   initialZones: []
@@ -1749,6 +1749,7 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
+  - component: {fileID: 91000000000000000}
   - component: {fileID: 339605499}
   - component: {fileID: 339605498}
   - component: {fileID: 339605501}
@@ -9210,6 +9211,33 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2978344136780926286, guid: 74a767610ac764a3e85845daf25c1f99, type: 3}
   m_PrefabInstance: {fileID: 348400876}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &2000000001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 151945503}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 06424abeffd547f4bf23725f26d1d0c3, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  artBindings: {fileID: 11400000, guid: 9b6ce29f9270f4acb9bb028eb5671951, type: 2}
+  initialZones: []
+--- !u!114 &91000000000000000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 339605497}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: df7764fac83a54abfb92c08e0645970f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  customActions: []
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

@@ -45,7 +45,7 @@ flowchart LR
 
 1. **开战**：Initialize 显示未发牌快照。`BattleStarted`、`PhaseStarted` 分别驱动开战/阶段 UI；首个可见帧的 `Revealed` 放行对应事实。`CardsDealt` 发布真实牌表并等待实际发牌/理牌过渡。
 2. **预选**：交互层只读预测。Candidate 保留 Closed/Empty/Invalid/Valid/Committing、选牌身份、筹码、decimal 倍率、牌型和独立的 CanPlay/CanDiscard。场景 UI 不直接查询规则引擎。
-3. **出牌开始**：`ActionStarted / Play / skipped=False` 配置 `cards → ReadyToAttack → attack → Impact`。`ui-play` 也在 `cards.ReadyToAttack` 后显示。准备动作只叠加临时偏移，真实 CardList 等移牌事实才变化。攻击 `Impact` 满足本事实 checkpoint，角色可以继续收招。
+3. **出牌开始**：`ActionStarted / Play / skipped=False` 配置 `cards → Prepared → attack → Impact`。`ui-play` 也在 `cards.Prepared` 后显示。准备动作只叠加临时偏移，真实 CardList 等移牌事实才变化。攻击 `Impact` 满足本事实 checkpoint，角色可以继续收招。
 4. **出牌数据**：随后按规则事实顺序显示判型、费用、状态、遗物等。`HandEvaluated / Play` 和 `ActionCostSettled / Play` 配有独立 UI 动作，checkpoint 使用各自动作的 `Revealed`。具体事实以实际结算结果为准，不在表现层补造规则步骤。
 5. **效果**：`EffectSettled` 按实际扣血、吸收格挡、格挡增减筛选 Hit/BlockHit/GainBlock/ClearBlock；`effect.Revealed` 表示目标真正开始反应。死亡节点在实际 `isDeath=True` 时加入，等反应完成再开始；没有前置反应的死亡有独立配方。同一 Actor 按自身忙碌状态排队，不同 Actor 可以重叠。
 6. **镜头与 UI**：敌方实际受伤或吸收格挡时，`camera-impact` 在 `effect.Revealed` 后播放两段轻微旋转并复位；相应浮字同时开始。该配方 checkpoint 同时等待 `effect.Revealed` 与 `camera-impact.Completed`，避免连续效果抢占同一镜头变换通道。基础 HUD 数值在 checkpoint 发布快照时更新，浮字是独立动作。玩家/敌人的浮字分别使用左/右模板。治疗只匹配实际回血，不显示满血治疗的 `+0`。

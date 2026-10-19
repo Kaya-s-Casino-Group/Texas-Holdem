@@ -1,3 +1,4 @@
+using CardInteraction;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -67,7 +68,7 @@ namespace Poker.SingleBattle
                 if (pendingPresentation != null) RecordAllShields(pendingPresentation);
                 PresentedState = state;
                 foreach (var actor in Actors) if (actor != null) actor.CancelPresentation();
-                if (actions != null && actions.Hand != null) actions.Hand.GetComponent<HandZoneView>().CompleteTransitions();
+                if (actions != null && actions.Hand != null) actions.Hand.Presentation.Synchronize(actions.Hand.Presentation.Current);
             };
             return presentationDirector;
         }
@@ -80,7 +81,7 @@ namespace Poker.SingleBattle
             var limits = state.Duel.Player(state.Duel.PlayerId).Rules;
             Message = "出牌 1–" + limits.MaxPlayCards + " 张 · 弃牌 1–" + limits.MaxDiscardCards + " 张 · 能量用尽或手动结束回合";
             BindActors(); Bind();
-            presentationDirector.Bind("cards", actions.Hand.GetComponent<HandZoneView>());
+            presentationDirector.Bind("cards", actions.Hand.Presentation);
             foreach (var actor in Actors) presentationDirector.Bind(actor.ParticipantId.Value, actor);
         }
         void IBattleSessionPresentation.Initialize(CardDuelState state) { EnsureBridgeAndDirector(); bridge.Initialize(state); }
@@ -105,7 +106,7 @@ namespace Poker.SingleBattle
                         if (revealed.RuleEvent != null) feedback.AddRange(BattlePresentationRuleText.Events(new[] { revealed.RuleEvent }, revealed.State.Duel, Engine.Duel.Definition.StatusCatalog));
                 }
                 foreach (var actor in Actors) actor.SynchronizeDisplay(update.Current.Unit(actor.ParticipantId.Value), true);
-                actions.Hand.GetComponent<HandZoneView>().CompleteTransitions();
+                actions.Hand.Presentation.Synchronize(actions.Hand.Presentation.Current);
                 Project(false); Publish(); return;
             }
             if (presentationDirector.TryGetChange(update.Current.Cursor, out var fact))
@@ -191,10 +192,8 @@ namespace Poker.SingleBattle
             var styles = State.Table.Cards.Select(card => Style(card, old.TryGetValue(card.Id, out var before) &&
                 PlayerZone(CardZoneKinds.Hand).Cards.Contains(card.Id) ? before.Interaction : default)).ToArray();
             var update = match.PrepareExternalProjection(playerActor, new CardTableState(State.Table.MatchId, State.Table.Cards, zones, State.Revision), styles);
-            var view = actions.Hand.GetComponent<HandZoneView>();
-            if (discarded != null && discarded.Any(id => view.Data.Cards.Any(c => c.ViewId == id))) view.PresentActionCommitted(CardViewActionKind.Discard, update.Project(actions.Hand.Zone.Id), discarded, () => match.Commit(update), animate);
-            else view.PresentCommitted(update.Project(actions.Hand.Zone.Id), () => match.Commit(update), animate);
-            match.Notify(update, view.Data); overview?.Refresh(); drawPile?.Refresh();
+            actions.Hand.PresentProjection(update, discarded, animate);
+            overview?.Refresh(); drawPile?.Refresh();
             if (PlayerZone(CardZoneKinds.Hand).Cards.Any(id => !old.ContainsKey(id))) actions.Hand.RequestSortAfterLanding(actions.Hand.SortOrder);
         }
         public void RefreshCandidate()

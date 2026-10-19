@@ -19,6 +19,7 @@
     "Poker.BattleHosting.Runtime",
     "BattlePresentation.Runtime",
     "Poker.BattlePresentation.Shared",
-    "BattlePresentation.Unity"
+    "BattlePresentation.Unity",
+    "CardMatch.Runtime"
   ]
 }

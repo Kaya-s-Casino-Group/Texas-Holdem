@@ -9,7 +9,8 @@
     "CardInteraction.Runtime",
     "CardPresentation.Runtime",
     "Unity.TextMeshPro",
-    "Unity.ugui"
+    "Unity.ugui",
+    "CardMatch.Runtime"
   ],
   "includePlatforms": [
     "Editor"

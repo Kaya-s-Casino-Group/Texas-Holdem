@@ -1,0 +1,3 @@
+<linker>
+  <assembly fullname="CardMatch.Runtime" preserve="all" />
+</linker>

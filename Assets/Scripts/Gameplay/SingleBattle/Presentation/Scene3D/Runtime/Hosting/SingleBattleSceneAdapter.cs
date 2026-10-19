@@ -28,8 +28,8 @@ namespace Poker.SingleBattle
         public CardZone PlayerZone(string kind) => State.Zone(kind, playerActor.ParticipantId);
         public int PlayerDiscards => State.DiscardsFor(playerActor.ParticipantId);
         public bool CanSwitchPlayer => State != null && ReferenceEquals(State, AuthorityState) && State.HasStarted && !IsPresenting && !State.Duel.IsFinished &&
-            State.Duel.Phase == ScoredDuelPhase.AwaitingPlayerHand && actions != null &&
-            !actions.Hand.GetComponent<HandZoneView>().IsTransitioning;
+            State.Duel.Phase == ScoredDuelPhase.AwaitingPlayerHand && actions != null && actions.Hand != null &&
+            !actions.Hand.Presentation.IsPresenting;
         public bool SelectPlayer(PlayerBattleActor player)
         {
             if (!CanSwitchPlayer || !Players.Contains(player) || !State.Duel.CanAct(player.ParticipantId)) return false;
@@ -46,7 +46,7 @@ namespace Poker.SingleBattle
         public HandActionPresenter Actions => actions;
         public PlayerBattleActor Player => playerActor != null ? playerActor : playerActors.FirstOrDefault();
         public EnemyBattleActor Enemy => Enemies.FirstOrDefault(actor => actor != null && actor.IsAlive) ?? Enemies.FirstOrDefault();
-        public bool IsPresenting => busy || presentationDirector != null && presentationDirector.IsPresenting || actions != null && actions.Hand != null && actions.Hand.GetComponent<HandZoneView>().IsTransitioning;
+        public bool IsPresenting => busy || presentationDirector != null && presentationDirector.IsPresenting || actions != null && actions.Hand != null && actions.Hand.Presentation.IsPresenting;
         bool IBattleSessionPresentation.IsPresenting => IsPresenting;
         public string Message { get; private set; } = "选择 1–5 张牌组成牌型";
         public ScoreResult LastScore { get; private set; }
@@ -64,7 +64,7 @@ namespace Poker.SingleBattle
         internal bool CanReceivePlayerInput => isActiveAndEnabled && SceneHost.isActiveAndEnabled && State != null && ReferenceEquals(State, AuthorityState) && match != null && match.IsRunning &&
             playerActor != null && ReferenceEquals(match.Commands, playerActor) && Playback != null && Playback.CanAct(playerActor.ParticipantId) &&
             Enemies.All(actor => actor != null && actor.IsBound && (!actor.IsAlive || actor.isActiveAndEnabled)) &&
-            actions != null && actions.Hand.IsRunning && !actions.Hand.GetComponent<HandZoneView>().IsTransitioning;
+            actions != null && actions.Hand != null && actions.Hand.IsRunning && !actions.Hand.Presentation.IsPresenting;
         public bool CanEndTurn => playerActor != null && playerActor.CanEndTurn;
 
         public void Configure(CardMatchHost owner, HandActionPresenter panel, DeckOverviewPresenter deckOverview, DrawPilePresenter pile)
@@ -124,12 +124,10 @@ namespace Poker.SingleBattle
             actions.Hand.StopSession();
             match.StartExternalMatch(playerActor, State.Table, State.Table.Cards.Select(card => Style(card)));
             var deck = PlayerZone(CardZoneKinds.Deck).Id; var discard = PlayerZone(CardZoneKinds.Discard).Id;
-            actions.Hand.Bind(match, PlayerZone(CardZoneKinds.Hand).Id, deck, discard, actions.Hand.GetComponent<HandZoneView>().FacingCamera);
-            actions.Hand.BeginSession();
-            actions.Hand.GetComponent<HandZoneView>().SetMaxSelectedCards(playerActor.Rules.MaxSelection);
+            actions.Hand.BindBattleHand(match, PlayerZone(CardZoneKinds.Hand).Id, deck, discard, playerActor.Rules.MaxSelection);
             // Rebinding an observer also restores the selected ordering for an already dealt hand.
             actions.Hand.RequestSortAfterLanding(actions.Hand.SortOrder);
-            if (overview != null) { overview.BindArtwork(actions.Hand.GetComponent<HandZoneView>().CardPrefab); overview.Configure(match, overview.View, deck, State.Table.Zones.Where(zone => zone.ControllerId == playerActor.ParticipantId).SelectMany(zone => zone.Cards)); overview.Close(false); }
+            if (overview != null) { overview.BindArtwork(actions.Hand.CardPrefab); overview.Configure(match, overview.View, deck, State.Table.Zones.Where(zone => zone.ControllerId == playerActor.ParticipantId).SelectMany(zone => zone.Cards)); overview.Close(false); }
             if (drawPile != null) { drawPile.Configure(actions.Hand, drawPile.View); if (overview != null) drawPile.BindOverview(overview); }
         }
         private CardZoneCardState Style(CardInstance card, CardInteractionState interaction = default) =>

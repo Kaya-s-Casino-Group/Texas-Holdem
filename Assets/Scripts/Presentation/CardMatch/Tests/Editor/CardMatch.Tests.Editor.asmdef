@@ -1,0 +1,7 @@
+{
+  "name": "CardMatch.Tests.Editor",
+  "references": ["CardMatch.Runtime", "PokerEngine.Core"],
+  "includePlatforms": ["Editor"],
+  "optionalUnityReferences": ["TestAssemblies"],
+  "autoReferenced": false
+}

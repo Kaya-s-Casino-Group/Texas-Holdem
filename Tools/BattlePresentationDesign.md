@@ -269,7 +269,7 @@ Finished 是终态通知，不是唯一状态来源。Play 可能同步返回一
 
 调度在单一执行上下文内排队处理；Unity 适配由主线程接收外部回调。同一次 Play 内先收到的 Marker 先于随后终态进入队列，但不在 Play 返回前递归启动后继。同步抛异常或返回空操作转为 Failed，并丢弃该次尚未消费的标记；合法的立即完成则依次处理已记录标记和终态。异步失败可能发生在后继已启动之后，此时取消整个关联组并同步，不能假装尚未发生过画面效果。
 
-既有 `BattlePresentationOperation`、`CardActionViewOperation` 的完成机制由适配器包装。公共操作不是 `CustomYieldInstruction`；Unity 层可提供协程等待适配。旧 `ICardActionView` 的 `commitData` 仅用于本地镜像提交，迁移后由显示仓库驱动的适配器提供，不能传入战斗命令。
+既有 `BattlePresentationOperation`、`CardActionViewOperation` 的完成机制由适配器包装。公共操作不是 `CustomYieldInstruction`；Unity 层可提供协程等待适配。牌区统一使用 `ICardZonePresentation` 接收展示快照；本地镜像由适配器在表现接受后提交，不向表现接口传入规则命令。
 
 复用旧 Presenter 指复用视觉实现与完成机制，不是在中性上下文中暗藏 CombatEvent。迁移时为这些组件分离只接收显示 DTO 的新动作入口；需要保留的旧规则参数入口作为旧场景兼容适配。仅包装旧接口但仍让新动作读取规则对象，不能算完成解耦。
 
@@ -315,7 +315,7 @@ public interface IInteractionFeedback
 ### 出牌示例
 
 ```text
-牌区     提交动画 ── ReadyToAttack ───────── Completed
+牌区     提交动画 ── Prepared ───────── Completed
                          │
 玩家                     └─ 攻击 ── Impact ── 收招 ── Completed
                                        │
@@ -327,8 +327,8 @@ public interface IInteractionFeedback
 
 | 动作 | 启动条件 | 数据与效果 |
 | --- | --- | --- |
-| `cards.submit` | 出牌表现组进入 | 只使用本次固定选牌，输出 ReadyToAttack |
-| `actor.attack` | cards.submit 的 ReadyToAttack | 输出 Impact，攻击收尾可以继续 |
+| `cards.submit` | 出牌表现组进入 | 只使用本次固定选牌，输出 Prepared |
+| `actor.attack` | cards.submit 的 Prepared | 输出 Impact，攻击收尾可以继续 |
 | 命中显示检查点 | Impact 且前序事实检查点完成 | 应用对应效果的显示变化，再发布快照 |
 | `target.hit` | 命中显示检查点已应用 | 使用该次命中的结果 |
 | `camera.shake`、`impact.fx` | 同一命中点及配方指定的数据前置条件 | 纯表现动作，可并行 |
@@ -531,7 +531,7 @@ Synchronize 则停止整个旧依赖计划，直接替换指定快照，不遍�
 | [SingleBattleHost](../Assets/Scripts/Gameplay/SingleBattle/Presentation/Scene3D/Runtime/Hosting/SingleBattleHost.cs) | 同时持有输入、场景和演出；公开 IsPresenting 与接口口径不同 | Host 保留装配输入；统一播放门禁 |
 | [BattleActor](../Assets/Scripts/Gameplay/SingleBattle/Presentation/Scene3D/Runtime/Actors/BattleActor.cs) | 将少数效果映射成 Cue；治疗等通常只有同步；状态事件不在 Events 内 | 通过适配器消费明确动作与效果，不再靠伤害猜动作 |
 | [IBattleActorPresentation](../Assets/Scripts/Gameplay/SingleBattle/Presentation/Scene3D/Runtime/Presentation/IBattleActorPresentation.cs) | 现有完成取消契约可复用，但属于 Unity 场景局部协议 | 包装为公共动作，不强迫其他前端实现旧协议 |
-| [CardMatchHost](../Assets/Scripts/Presentation/CardInteraction/Runtime/Binding/CardMatchHost.cs) | 已是受外部权威控制的展示镜像 | 迁移为统一显示仓库的牌桌投影，不新增第二个可写业务真相 |
+| [CardMatchHost](../Assets/Scripts/Presentation/CardMatch/Runtime/CardMatchHost.cs) | 已是受外部权威控制的展示镜像 | 迁移为统一显示仓库的牌桌投影，不新增第二个可写业务真相 |
 | [CardZoneViewData](../Assets/Scripts/Presentation/CardPresentation/Runtime/Contracts/CardZoneViewData.cs) | 已有可见性过滤和稳定显示身份；仍引用规则及 Unity 类型 | 保留为末端兼容 DTO，中性显示模型由适配器转换 |
 | [HandCandidatePresenter](../Assets/Scripts/Gameplay/SingleBattle/Presentation/Scene3D/Runtime/UI/HandCandidatePresenter.cs) | 轮询选牌并直接查询引擎，只有标签与数字更新 | 改为订阅统一候选模型，交互控制器管理生命周期 |
 | [SingleBattleHud](../Assets/Scripts/Gameplay/SingleBattle/Presentation/Scene3D/Runtime/UI/SingleBattleHud.cs) | 直接读规则结构并查询费用，结果界面由 busy 控制 | 改为显示模型绑定，终局配方纳入完成管理 |
@@ -575,7 +575,7 @@ Synchronize 则停止整个旧依赖计划，直接替换指定快照，不遍�
 ### 步骤四 建立动作导演与适配器
 
 - 实现动作组、Signal 依赖、AllOf、阻塞判定、代次失效和通道租约。
-- 包装 ICardActionView 与 IBattleActorPresentation 的真实完成操作；首版可显式映射旧 Completed 到语义标记。
+- 使用 ICardZonePresentation 与 IBattleActorPresentation 的真实完成操作及声明的节点信号。
 - 把卡牌提交、发牌、Actor、盾牌、HUD 结果显示分别接成动作或持久数据绑定。
 - 提供镜头和命名场景对象的绑定入口；只有已配置能力才执行，默认配方不凭空改变场景美术。
 

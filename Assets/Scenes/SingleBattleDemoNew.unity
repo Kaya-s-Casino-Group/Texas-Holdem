@@ -699,6 +699,7 @@ GameObject:
   - component: {fileID: 151945507}
   - component: {fileID: 151945508}
   - component: {fileID: 151945509}
+  - component: {fileID: 2000000001}
   m_Layer: 0
   m_Name: Card Match
   m_TagString: Untagged
@@ -719,7 +720,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   matchId: 
-  artBindings: {fileID: 11400000, guid: 9b6ce29f9270f4acb9bb028eb5671951, type: 2}
   runtimeManaged: 1
   initialRevision: 0
   initialZones: []
@@ -777,7 +777,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   targets:
   - key: cards
-    target: {fileID: 339605498}
+    target: {fileID: 91000000000000000}
   - key: player
     target: {fileID: 1126122755}
   - key: enemy
@@ -850,7 +850,7 @@ MonoBehaviour:
       after:
       - actionId: cards
         kind: 1
-        marker: ReadyToAttack
+        marker: Prepared
     explicitCheckpoint: 1
     checkpoint:
     - actionId: attack
@@ -1984,7 +1984,7 @@ MonoBehaviour:
       after:
       - actionId: cards
         kind: 1
-        marker: ReadyToAttack
+        marker: Prepared
     explicitCheckpoint: 0
     checkpoint: []
   - semanticKey: EffectSettled
@@ -4140,6 +4140,7 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
+  - component: {fileID: 91000000000000000}
   - component: {fileID: 339605499}
   - component: {fileID: 339605498}
   - component: {fileID: 339605501}
@@ -8616,10 +8617,17 @@ MonoBehaviour:
   m_GameObject: {fileID: 1227861330}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 60331b1e452a4797933594fb6ac574fe, type: 3}
+  m_Script: {fileID: 11500000, guid: 9f8b03fabc23c4a7496d4568c08bbc81, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  source: {fileID: 339605498}
+  source: {fileID: 91000000000000000}
+  actionKey: cards.settle
+  zoneId: 
+  observeProjection: 1
+  markers:
+  - Settled
+  channels: []
+  parameters: []
 --- !u!1 &1237585820
 GameObject:
   m_ObjectHideFlags: 0
@@ -11163,10 +11171,18 @@ MonoBehaviour:
   m_GameObject: {fileID: 1786954791}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 37d8842748bb48fa91c7e80a5a052c40, type: 3}
+  m_Script: {fileID: 11500000, guid: 9f8b03fabc23c4a7496d4568c08bbc81, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  source: {fileID: 339605498}
+  source: {fileID: 91000000000000000}
+  actionKey: cards.prepare
+  zoneId: 
+  observeProjection: 0
+  markers:
+  - Prepared
+  channels:
+  - cards.preparation
+  parameters: []
 --- !u!1 &1842535860
 GameObject:
   m_ObjectHideFlags: 0
@@ -13326,6 +13342,33 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2978344136780926286, guid: 74a767610ac764a3e85845daf25c1f99, type: 3}
   m_PrefabInstance: {fileID: 348400876}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &2000000001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 151945503}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 06424abeffd547f4bf23725f26d1d0c3, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  artBindings: {fileID: 11400000, guid: 9b6ce29f9270f4acb9bb028eb5671951, type: 2}
+  initialZones: []
+--- !u!114 &91000000000000000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 339605497}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: df7764fac83a54abfb92c08e0645970f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  customActions: []
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

@@ -62,7 +62,7 @@ namespace CardPresentation.Tests
             {
                 var data = Data(Card("a"), Card("b")); f.Zone.Present(data, false);
                 int markers = 0, finished = 0;
-                var action = f.Zone.PresentSelectionAction(new[] { "a" }, key => { Assert.AreEqual("ReadyToAttack", key); ++markers; });
+                var action = f.Zone.PresentSelectionAction(new[] { "a" }, key => { Assert.AreEqual("Prepared", key); ++markers; });
                 action.Finished += _ => ++finished;
                 f.Zone.AdvanceMotion(.09f);
                 Assert.AreEqual(1, markers); Assert.AreEqual(CardActionViewStatus.Pending, action.Status);
@@ -102,7 +102,7 @@ namespace CardPresentation.Tests
                 var action = f.Zone.PresentSelectionAction(new[] { "a" }, _ => ++markers);
                 f.Zone.AdvanceMotion(.09f); Assert.AreEqual(1, markers);
                 Assert.AreEqual(CardActionViewStatus.Pending, action.Status);
-                f.Zone.PresentActionCommitted(CardViewActionKind.Play, Data(Card("b")), new[] { "a" }, () => { });
+                f.Zone.PresentCommitted(Data(Card("b")), () => { });
                 Assert.AreEqual(CardActionViewStatus.Completed, action.Status);
                 f.Zone.AdvanceMotion(1); Assert.AreEqual(1, markers);
                 Assert.AreEqual(1, f.Zone.Data.Cards.Count);
@@ -132,7 +132,7 @@ namespace CardPresentation.Tests
                 var settings = f.Zone.TransitionSettings; settings.ReflowSeconds = 5; f.Zone.SetTransitionSettings(settings);
                 f.Zone.SetDiscardSettings(new CardZoneDiscardSettings { FlightSeconds = .1f, Interval = .2f });
                 int commits = 0;
-                var operation = ((ICardActionView)f.Zone).PresentActionCommitted(CardViewActionKind.Discard,
+                var operation = f.Zone.PresentDiscardCommitted(
                     Data(Card("c")), new[] { "a", "b" }, () => commits++, true);
                 Assert.AreEqual(1, commits); Assert.IsTrue(operation.keepWaiting);
                 f.Zone.AdvanceMotion(.15f); Assert.IsTrue(operation.keepWaiting);
@@ -149,7 +149,7 @@ namespace CardPresentation.Tests
             using (var f = new Fixture())
             {
                 f.Zone.Present(Data(Card("a")), false);
-                var operation = f.Zone.PresentActionCommitted(CardViewActionKind.Discard, Data(), new[] { "a" }, () => { });
+                var operation = f.Zone.PresentDiscardCommitted( Data(), new[] { "a" }, () => { });
                 if (interruption == 0) f.Zone.Clear();
                 else if (interruption == 1) f.Zone.enabled = false;
                 else f.Zone.Present(Data(Card("a")), false);
@@ -157,13 +157,13 @@ namespace CardPresentation.Tests
                 f.Zone.AdvanceMotion(5); Assert.IsFalse(operation.Complete());
             }
         }
-        [TestCase(CardViewActionKind.Play)] [TestCase(CardViewActionKind.Discard)]
-        public void ImmediateCardActionsUseTheSameCompletedContract(CardViewActionKind action)
+        [Test]
+        public void ImmediateRendererDiscardCompletesAfterCommit()
         {
             using (var f = new Fixture())
             {
                 f.Zone.Present(Data(Card("a")), false); int commits = 0;
-                var operation = f.Zone.PresentActionCommitted(action, Data(), new[] { "a" }, () => commits++, false);
+                var operation = f.Zone.PresentDiscardCommitted( Data(), new[] { "a" }, () => commits++, false);
                 Assert.AreEqual(1, commits); Assert.AreEqual(CardActionViewStatus.Completed, operation.Status);
                 Assert.IsEmpty(f.Zone.Views); Assert.IsEmpty(f.Zone.DepartingViews);
             }

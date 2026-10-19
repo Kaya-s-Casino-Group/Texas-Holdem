@@ -14,7 +14,8 @@
     "PokerEngine.Combat",
     "PokerEngine.Composition",
     "PokerEngine.Encounters",
-    "Poker.BattlePresentation.Shared.Unity"
+    "Poker.BattlePresentation.Shared.Unity",
+    "CardMatch.Runtime"
   ],
   "optionalUnityReferences": [
     "TestAssemblies"

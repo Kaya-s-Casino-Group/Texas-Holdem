@@ -9,7 +9,7 @@ namespace CardPresentation
 {
     /// <summary>Hand-specific deal/discard flights, selection lift and audio on the shared zone renderer.</summary>
     [AddComponentMenu("Cards/Hand Zone View")]
-    public partial class HandZoneView : CardZoneView, ICardActionView
+    public partial class HandZoneView : CardZoneView
     {
         [SerializeField] private Vector3 raisedOffset = new Vector3(0, 0, 0.02f);
         // Retained only for old scene/prefab serialization and API compatibility; hover no longer translates.
@@ -46,24 +46,6 @@ namespace CardPresentation
 
         public void Present(CardZoneViewData data, bool animate, IEnumerable<string> discardedIds) =>
             ApplyPresentation(data, () => new HandPresentationUpdate(this, data, animate, discardedIds));
-
-        /// <summary>One completion boundary for play and discard, independent of retained-card reflow.</summary>
-        public virtual CardActionViewOperation PresentActionCommitted(CardViewActionKind action, CardZoneViewData data,
-            IEnumerable<string> cardIds, Action commitData, bool animate = true)
-        {
-            if (action == CardViewActionKind.Discard) return PresentDiscardCommitted(data, cardIds, commitData, animate);
-            if (action != CardViewActionKind.Play) throw new ArgumentOutOfRangeException(nameof(action));
-            var operation = new CardActionViewOperation();
-            try
-            {
-                ValidateDepartures(data, cardIds);
-                // Direct play currently removes cards immediately. Future play animation completes this same contract.
-                PresentCommitted(data, commitData, animate);
-                operation.Complete();
-            }
-            catch (Exception error) { operation.Fail(error); throw; }
-            return operation;
-        }
 
         /// <summary>Completes when this batch has left the View, independently of retained-card reflow.</summary>
         public CardActionViewOperation PresentDiscardCommitted(CardZoneViewData data, IEnumerable<string> discardedIds, Action commitData, bool animate = true)

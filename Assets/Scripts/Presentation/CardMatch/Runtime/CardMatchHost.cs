@@ -1,61 +1,39 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using CardPresentation;
+using CardPresentation; // Shared interaction value type; lives in CardMatch.Runtime, not the view assembly.
 using PokerEngine;
 using UnityEngine;
 
 namespace CardInteraction
 {
-    [Serializable]
-    public sealed class CardMatchZoneSnapshot
-    {
-        [SerializeField] private string id, kind, controllerId;
-        [SerializeField] private List<CardZoneCardState> cards = new List<CardZoneCardState>();
-        public CardZone Zone => new CardZone(new ZoneId(id), kind, string.IsNullOrEmpty(controllerId) ?
-            (ParticipantId?)null : new ParticipantId(controllerId), cards.Select(card => card.Card.Id));
-        public IReadOnlyList<CardZoneCardState> Cards => cards.AsReadOnly();
-        public CardMatchZoneSnapshot(CardZone zone, IEnumerable<CardZoneCardState> states)
-        {
-            if (zone == null || states == null) throw new ArgumentNullException();
-            cards = states.Select(card => card != null ? card.Copy() : throw new ArgumentException("Missing card projection.")).ToList();
-            if (!zone.Cards.SequenceEqual(cards.Select(card => card.Card.Id))) throw new ArgumentException("Zone and card order disagree.");
-            id = zone.Id.Value; kind = zone.Kind; controllerId = zone.ControllerId?.Value;
-        }
-    }
-
     public sealed class CardMatchUpdate
     {
         internal CardMatchHost Host;
         internal CardTableSession Session;
-        internal Dictionary<string, CardZoneCardState> Presentation;
+        internal Dictionary<string, CardMatchCardState> Presentation;
         internal bool Preview;
         internal ICardMatchCommands Authority;
         public CardTableChange Change { get; internal set; }
-        public CardZoneViewData Project(ZoneId zone) => new CardZoneViewData(zone,
-            Change.After.GetZone(zone).Cards.Select(id => Presentation[id.Value].Project()));
+        public CardMatchHost Owner => Host;
+        public bool IsPreview => Preview;
+        public CardMatchZoneData Snapshot(ZoneId zone) => new CardMatchZoneData(Change.After.GetZone(zone),
+            Change.After.GetZone(zone).Cards.Select(id => Presentation[id.Value]));
     }
 
-    /// <summary>Owns the observer table, artwork and local interaction, never scene zone bindings or animation.
-    /// With Commands attached this is a gameplay-owned presentation mirror; otherwise it runs a standalone table.</summary>
+    /// <summary>Shared observer table and local interaction for any frontend. No artwork, view or animation dependencies.
+    /// With Commands attached this mirrors gameplay authority; otherwise it runs a standalone table.</summary>
     [DisallowMultipleComponent, DefaultExecutionOrder(-200)]
     public sealed partial class CardMatchHost : MonoBehaviour
     {
         [SerializeField] private string matchId;
-        [SerializeField, InspectorName("卡牌状态美术映射")] private CardStateArtBindings artBindings;
         [SerializeField] private bool runtimeManaged;
         [SerializeField] private long initialRevision;
-        [SerializeField] private List<CardMatchZoneSnapshot> initialZones = new List<CardMatchZoneSnapshot>();
+        [SerializeField] private List<CardMatchZoneData> initialZones = new List<CardMatchZoneData>();
         private CardTableSession session;
-        private Dictionary<string, CardZoneCardState> presentation;
+        private Dictionary<string, CardMatchCardState> presentation;
         private CardTableState runtimeSeed;
-        private Dictionary<string, CardZoneCardState> runtimeSeedPresentation;
-        public CardStateArtBindings ArtBindings => artBindings;
-        public void ConfigureArtBindings(CardStateArtBindings bindings)
-        {
-            if(IsRunning) throw new InvalidOperationException("请在绑定战局前配置状态美术映射。");
-            artBindings=bindings;
-        }
+        private Dictionary<string, CardMatchCardState> runtimeSeedPresentation;
         public bool IsRunning { get; private set; }
         public bool IsRuntimeManaged => runtimeManaged;
         public ICardMatchCommands Commands { get; private set; }
@@ -63,20 +41,23 @@ namespace CardInteraction
             Array.Empty<CardInstance>(), Array.Empty<CardZone>()) : BuildInitial());
         public CardTableState State => IsRunning ? session.State : InitialState;
         public event Action Restarted;
-        public event Action<CardTableChange, IReadOnlyList<CardZoneViewData>> Changed;
+        public event Action Stopped;
+        public event Action<CardTableChange, IReadOnlyList<object>> Changed;
+        public event Action<ZoneId, object> InteractionChanged;
+        public event Action<CardMatchUpdate> Committed;
 
         private CardTableState BuildInitial() => new CardTableState(new MatchId(Guard.Text(matchId, nameof(matchId))),
             initialZones.SelectMany(zone => zone.Cards).Select(card => card.Card), initialZones.Select(zone => zone.Zone), initialRevision);
         public void StartMatch() { if (!IsRunning) RestartMatch(); }
         /// <summary>Start/restore a gameplay-owned table with this observer's presentation, without editor APIs.</summary>
-        public void StartMatch(CardTableState state, IEnumerable<CardZoneCardState> observerCards)
+        public void StartMatch(CardTableState state, IEnumerable<CardMatchCardState> observerCards)
         {
             RequireLocalCommands();
             var next = BuildObserverPresentation(state, observerCards);
             runtimeSeed = state; runtimeSeedPresentation = next;
             RestartMatch();
         }
-        private Dictionary<string, CardZoneCardState> BuildObserverPresentation(CardTableState state, IEnumerable<CardZoneCardState> observerCards)
+        private Dictionary<string, CardMatchCardState> BuildObserverPresentation(CardTableState state, IEnumerable<CardMatchCardState> observerCards)
         {
             if (state == null || observerCards == null) throw new ArgumentNullException();
             state.Validate();
@@ -87,7 +68,7 @@ namespace CardInteraction
             var styles = cards.ToDictionary(card => card.Id, card => card);
             return state.Cards.ToDictionary(card => card.Id.Value, card => {
                 var style = styles[card.Id.Value];
-                return new CardZoneCardState(card, style.ArtId, style.FaceUp, style.Tint, style.Interaction.WithHovered(false), artBindings != null ? artBindings : style.ArtBindings);
+                return new CardMatchCardState(card, style.Visible, style.Interaction.WithHovered(false));
             }, StringComparer.Ordinal);
         }
         public void RestartMatch()
@@ -100,8 +81,13 @@ namespace CardInteraction
             var seed = InitialState; var next = InitialPresentation();
             session = new CardTableSession(seed); presentation = next; IsRunning = true; Restarted?.Invoke();
         }
-        public void StopMatch() { IsRunning = false; session = null; presentation = null; Commands = null; }
-        public void StartExternalMatch(ICardMatchCommands authority, CardTableState state, IEnumerable<CardZoneCardState> observerCards)
+        public void StopMatch()
+        {
+            bool wasRunning = IsRunning;
+            IsRunning = false; session = null; presentation = null; Commands = null;
+            if (wasRunning) Stopped?.Invoke();
+        }
+        public void StartExternalMatch(ICardMatchCommands authority, CardTableState state, IEnumerable<CardMatchCardState> observerCards)
         {
             if (authority == null) throw new ArgumentNullException(nameof(authority));
             if (Commands != null && !ReferenceEquals(Commands, authority)) throw new InvalidOperationException("Another gameplay authority owns this mirror.");
@@ -117,7 +103,7 @@ namespace CardInteraction
             External(authority, () => Wrap(RunningSession.PreparePlay(hand, played, selected, capacity), session, false, clearTransferredInput: true));
         public CardMatchUpdate PrepareExternalDiscard(ICardMatchCommands authority, ZoneId hand, ZoneId discard, IEnumerable<CardInstanceId> selected) =>
             External(authority, () => Wrap(RunningSession.PrepareDiscard(hand, discard, selected), session, false, clearTransferredInput: true));
-        public CardMatchUpdate PrepareExternalProjection(ICardMatchCommands authority, CardTableState state, IEnumerable<CardZoneCardState> styles) =>
+        public CardMatchUpdate PrepareExternalProjection(ICardMatchCommands authority, CardTableState state, IEnumerable<CardMatchCardState> styles) =>
             External(authority, () => Wrap(RunningSession.PrepareZones(state.Zones, state.Cards), session, false, styles));
         private CardMatchUpdate External(ICardMatchCommands authority, Func<CardMatchUpdate> prepare)
         {
@@ -126,7 +112,7 @@ namespace CardInteraction
         }
         public bool ContainsZone(ZoneId id) => (runtimeSeed != null || !string.IsNullOrEmpty(matchId)) && State.Zones.Any(zone => zone.Id == id);
         public CardZone GetZone(ZoneId id, bool initial = false) => (initial ? InitialState : State).GetZone(id);
-        public CardZoneViewData Project(ZoneId zone) => new CardZoneViewData(zone, GetCards(zone).Select(card => card.Project()));
+        public CardMatchZoneData Snapshot(ZoneId zone) => new CardMatchZoneData(GetZone(zone), ReadCards(zone));
         public CardSelectionRequest CaptureSelection(ZoneId zone)
         {
             var state = RunningSession.State;
@@ -134,7 +120,7 @@ namespace CardInteraction
             return new CardSelectionRequest(state.MatchId, source.Id, source.ControllerId,
                 source.Cards.Where(id => presentation[id.Value].Interaction.IsSelected));
         }
-        public IReadOnlyList<CardZoneCardState> GetCards(ZoneId id, bool initial = false)
+        public IReadOnlyList<CardMatchCardState> ReadCards(ZoneId id, bool initial = false)
         {
             if (initial || !IsRunning)
             {
@@ -143,12 +129,22 @@ namespace CardInteraction
             }
             return Array.AsReadOnly(session.State.GetZone(id).Cards.Select(card => presentation[card.Value]).ToArray());
         }
-        public void SetInteraction(CardInstanceId id, CardInteractionState interaction)
+        public void SetInteraction(CardInstanceId id, CardInteractionState interaction, bool notify = true)
         {
             if (!IsRunning) throw new InvalidOperationException("Start the match before changing local input.");
-            session.State.GetCard(id); presentation[id.Value].SetInteraction(interaction);
+            session.State.GetCard(id);
+            var card = presentation[id.Value];
+            if (card.Interaction.IsHovered == interaction.IsHovered && card.Interaction.IsSelected == interaction.IsSelected) return;
+            card.SetInteraction(interaction);
+            if (notify) foreach (var zone in State.Zones.Where(zone => zone.Cards.Contains(id))) NotifyInteraction(zone.Id);
         }
-        private Dictionary<string, CardZoneCardState> InitialPresentation() => runtimeSeedPresentation != null ?
+        /// <summary>A frontend may batch local input and notify after presenting its own view.</summary>
+        public void NotifyInteraction(ZoneId zone, object presentedConsumer = null)
+        {
+            if (!IsRunning) throw new InvalidOperationException("Start the match before notifying input.");
+            State.GetZone(zone); InteractionChanged?.Invoke(zone, presentedConsumer);
+        }
+        private Dictionary<string, CardMatchCardState> InitialPresentation() => runtimeSeedPresentation != null ?
             runtimeSeedPresentation.ToDictionary(pair => pair.Key, pair => pair.Value.Copy(clearHover: true), StringComparer.Ordinal) :
             initialZones.SelectMany(zone => zone.Cards).ToDictionary(card => card.Id, card => card.Copy(clearHover: true), StringComparer.Ordinal);
 
@@ -163,7 +159,7 @@ namespace CardInteraction
         public CardMatchUpdate PrepareReorder(ZoneId zone, IEnumerable<CardInstanceId> order) =>
             Wrap(LocalSession.PrepareReorder(zone, order), session, false);
         private CardMatchUpdate Wrap(CardTableChange change, CardTableSession owner, bool preview,
-            IEnumerable<CardZoneCardState> updates = null, bool clearTransferredInput = false)
+            IEnumerable<CardMatchCardState> updates = null, bool clearTransferredInput = false)
         {
             var styles = preview ? InitialPresentation() : presentation.ToDictionary(pair => pair.Key, pair => pair.Value.Copy(), StringComparer.Ordinal);
             if (updates != null) foreach (var card in updates) styles[card.Id] = card.Copy();
@@ -172,7 +168,7 @@ namespace CardInteraction
             foreach (var card in change.After.Cards)
             {
                 var style = styles[card.Id.Value];
-                styles[card.Id.Value] = new CardZoneCardState(card, style.ArtId, style.FaceUp, style.Tint, style.Interaction, artBindings != null ? artBindings : style.ArtBindings);
+                styles[card.Id.Value] = new CardMatchCardState(card, style.Visible, style.Interaction);
             }
             if (clearTransferredInput) foreach (var id in change.Transferred) styles[id.Value].SetInteraction(default);
             return new CardMatchUpdate { Host = this, Session = owner, Change = change, Presentation = styles, Preview = preview };
@@ -196,9 +192,10 @@ namespace CardInteraction
                 if (!IsRunning || session != update.Session) throw new InvalidOperationException("The match session changed.");
                 session.Commit(update.Change); presentation = update.Presentation;
             }
+            Committed?.Invoke(update);
         }
         /// <summary>Already-applied snapshots suppress only their consuming views, not every observer of a zone.</summary>
-        public void Notify(CardMatchUpdate update, params CardZoneViewData[] presented) =>
+        public void Notify(CardMatchUpdate update, params object[] presented) =>
             Changed?.Invoke(update.Change, Array.AsReadOnly(presented));
         public CardMatchUpdate PreparePresentationReorder(ZoneId zone, IEnumerable<CardInstanceId> order)
         {

@@ -8,6 +8,8 @@
     "PokerEngine.Scoring",
     "Unity.ugui",
     "Unity.InputSystem",
-    "UIFoundation.Runtime"
+    "UIFoundation.Runtime",
+    "CardMatch.Runtime",
+    "BattlePresentation.Runtime"
   ]
 }

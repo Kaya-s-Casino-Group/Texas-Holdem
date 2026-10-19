@@ -20,7 +20,7 @@ new ActionPlan(
     new[] {
         new ActionNode("cards", prepareCards),
         new ActionNode("attack", attack,
-            new[] { ActionDependency.Marker("cards", "ReadyToAttack") })
+            new[] { ActionDependency.Marker("cards", "Prepared") })
     },
     new[] { ActionDependency.Marker("attack", "Impact") });
 ```
@@ -52,9 +52,9 @@ Scopes own cleanup. `PresentationChannels.Acquire` explicitly transfers an exclu
 - `SceneCandidateFeedback` routes candidate state and pattern keys to arbitrary `IInteractionFeedback` components. Empty routes have no visual side effects.
 - `CandidateTransformFeedback` acts on a dedicated neutral child layer, smoothly retargets from its current pose, and releases toward zero position, identity rotation and unit scale. A new candidate can explicitly take over a layer from an exiting candidate; it cannot steal a running battle action's channel. The base layout belongs on the layer's parent.
 
-The existing `HandZoneView.PresentSelectionAction` is a card-library adapter. It emits `ReadyToAttack` during the real preparation tween without changing `Data.Cards`. The later `CardsMoved` fact performs actual displayed-zone changes. Cancel removes only its temporary offset and leaves current layout, ordering and selection intact.
+The existing `HandZoneView.PresentSelectionAction` is a card-library adapter. It emits `Prepared` during the real preparation tween without changing `Data.Cards`. The later `CardsMoved` fact performs actual displayed-zone changes. Cancel removes only its temporary offset and leaves current layout, ordering and selection intact.
 
-For the existing Scene3D objects, add `BattleActorTimelineAction` or `HandPreparationTimelineAction` to a scene object and drag that component into a `ScenePresentationDirector` recipe node's `action` field. Configure the actor and action kind, or the hand source, in the Inspector or through `Configure`. An omitted actor resolves the bound visual child back to its actor, using the fact's actor/effect target identity; an omitted hand uses the `cards` binding. These adapters consume only projected DTOs, wait on actual operations, and emit `Impact`/`Revealed` or `ReadyToAttack`. Cancellation stops only the operation they started. All Unity timeline actions derive from `PresentationActionBehaviour`. The Scene3D host no longer constructs a default recipe: authored scene groups carry the complete sequence. `HandSettleTimelineAction` waits for the actual card motion, and `UiFeedbackTimelineAction` creates scoped UI feedback from neutral DTOs. The scene setup menu migrates legacy empty groups and serializes component references and dependencies.
+For the existing Scene3D objects, add `BattleActorTimelineAction` or `CardZoneTimelineAction` to a scene object and drag that component into a `ScenePresentationDirector` recipe node's `action` field. Configure the actor and action kind, or the hand source, in the Inspector or through `Configure`. An omitted actor resolves the bound visual child back to its actor, using the fact's actor/effect target identity; an omitted hand uses the `cards` binding. These adapters consume only projected DTOs, wait on actual operations, and emit `Impact`/`Revealed` or `Prepared`. Cancellation stops only the operation they started. All Unity timeline actions derive from `PresentationActionBehaviour`. The Scene3D host no longer constructs a default recipe: authored scene groups carry the complete sequence. `CardZoneTimelineAction` waits for the actual card motion, and `UiFeedbackTimelineAction` creates scoped UI feedback from neutral DTOs. Scene configuration serializes component references and dependencies. Card actions bind an `ICardZonePresentation` provider and an action key; use `cards.settle` with Observe Projection to wait for checkpoint-driven projection.
 
 ## Verification
 

@@ -724,6 +724,7 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
+  - component: {fileID: 91000000000000000}
   - component: {fileID: 475349753}
   - component: {fileID: 475349752}
   - component: {fileID: 475349751}
@@ -807,7 +808,7 @@ MonoBehaviour:
   m_EditorClassIdentifier:
   targets:
   - key: cards
-    target: {fileID: 475349752}
+    target: {fileID: 91000000000000000}
   - key: player
     target: {fileID: 185236577}
   - key: enemy
@@ -874,7 +875,7 @@ MonoBehaviour:
       after:
       - actionId: cards
         kind: 1
-        marker: ReadyToAttack
+        marker: Prepared
     explicitCheckpoint: 1
     checkpoint:
     - actionId: attack
@@ -2592,13 +2593,18 @@ MonoBehaviour:
   m_GameObject: {fileID: 1954734223}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 92a6410f29f0841a3b56f19381a56276, type: 3}
+  m_Script: {fileID: 11500000, guid: 9f8b03fabc23c4a7496d4568c08bbc81, type: 3}
   m_Name:
   m_EditorClassIdentifier:
-  offset: {x: 0, y: -0.7, z: 0}
-  seconds: 0.18
-  signalProgress: 0.5
-  signal: Released
+  source: {fileID: 91000000000000000}
+  actionKey: cards.prepare-discard
+  zoneId: 
+  observeProjection: 0
+  markers:
+  - Released
+  channels:
+  - cards.preparation
+  parameters: []
 --- !u!114 &1954734227
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2633,13 +2639,18 @@ MonoBehaviour:
   m_GameObject: {fileID: 1954734223}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 92a6410f29f0841a3b56f19381a56276, type: 3}
+  m_Script: {fileID: 11500000, guid: 9f8b03fabc23c4a7496d4568c08bbc81, type: 3}
   m_Name:
   m_EditorClassIdentifier:
-  offset: {x: 0, y: 0.7, z: 0}
-  seconds: 0.18
-  signalProgress: 0.5
-  signal: ReadyToAttack
+  source: {fileID: 91000000000000000}
+  actionKey: cards.prepare
+  zoneId: 
+  observeProjection: 0
+  markers:
+  - Prepared
+  channels:
+  - cards.preparation
+  parameters: []
 --- !u!114 &1961651003
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3365,6 +3376,23 @@ MonoBehaviour:
     m_DeviceRequirements:
     - m_ControlPath: <XRController>
       m_Flags: 0
+--- !u!114 &91000000000000000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 475349750}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 92a6410f29f0841a3b56f19381a56276, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  customActions: []
+  prepareOffset: {x: 0, y: 0.7, z: 0}
+  discardOffset: {x: 0, y: -0.7, z: 0}
+  seconds: 0.18
+  signalProgress: 0.5
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

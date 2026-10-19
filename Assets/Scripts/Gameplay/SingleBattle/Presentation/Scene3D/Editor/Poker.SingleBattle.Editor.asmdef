@@ -16,7 +16,8 @@
     "CardArt.Runtime",
     "Poker.BattleHosting.Runtime",
     "BattlePresentation.Runtime",
-    "BattlePresentation.Unity"
+    "BattlePresentation.Unity",
+    "CardMatch.Runtime"
   ],
   "includePlatforms": [
     "Editor"

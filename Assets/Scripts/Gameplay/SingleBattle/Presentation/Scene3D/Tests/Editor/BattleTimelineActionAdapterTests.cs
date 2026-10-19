@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using CardPresentation;
 using global::BattlePresentation;
+using global::BattlePresentation.Unity;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -67,19 +68,20 @@ namespace Poker.SingleBattle.Tests
                 var snapshot = Snapshot(zone: new CardZoneDisplayData("deal", "unit", "hand", new[] {
                     new CardDisplayData("visual-card", "rule-card", "Q", "hearts_q") }));
                 var targets = new DictionaryTargetResolver(); targets.Bind("cards", hand);
-                var action = root.AddComponent<HandPreparationTimelineAction>();
+                var frontend = root.AddComponent<WorldCardZonePresentation>();
+                var action = root.AddComponent<CardZoneTimelineAction>(); action.Configure(frontend, CardZoneActions.Prepare);
                 var scope = new PresentationScope("cards"); var markers = new Markers();
                 var operation = action.Play(Context(snapshot, targets, scope, new[] { "rule-card" }), markers);
                 Assert.AreEqual(PresentationStatus.Pending, operation.Status);
                 hand.AdvanceMotion(.09f);
-                CollectionAssert.AreEqual(new[] { "ReadyToAttack" }, markers.Values);
+                CollectionAssert.AreEqual(new[] { "Prepared" }, markers.Values);
                 Assert.AreEqual(PresentationStatus.Pending, operation.Status, "The real midpoint starts dependencies before preparation finishes.");
                 Assert.AreSame(data, hand.Data);
                 scope.Dispose(); hand.AdvanceMotion(1);
                 Assert.AreEqual(PresentationStatus.Cancelled, operation.Status);
                 Assert.AreEqual(Vector3.zero, hand.Views[0].SelectionActionOffset);
                 Assert.AreEqual(baseline, hand.Views[0].InteractionOffset);
-                CollectionAssert.AreEqual(new[] { "ReadyToAttack" }, markers.Values);
+                CollectionAssert.AreEqual(new[] { "Prepared" }, markers.Values);
                 Assert.AreSame(data, hand.Data);
             }
             finally { EditorSceneManager.ClosePreviewScene(scene); }

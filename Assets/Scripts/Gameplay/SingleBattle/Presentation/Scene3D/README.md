@@ -175,8 +175,8 @@ XML Player / Enemy 的 `attackTarget` 支持 `FirstLiving / LowestHealth / Highe
 - `timeline`：每组按 `semanticKey`、可选 `ruleAction` 和 `filter` 匹配。filter 支持效果类型、目标 ID/阵营/与观察者或行动者的关系、行动者筛选、实际伤害/格挡消耗、格挡增减、死亡及跳过条件；所有条件必须同时满足。同一事实的匹配组按配置顺序合并，`replaceDefault` 表示替换此前累计计划，Host 不再提供默认计划。
 - `nodes`：填写唯一 id、派生 `PresentationActionBehaviour` 的组件、targetKey、blocking、after 依赖；节点也能配置 filter。依赖只引用同一事实最终计划内实际存在的节点，不能引用已过滤掉的节点或上一事实的节点。
 - `explicitCheckpoint` 开启后用 checkpoint 依赖指定整条显示快照的公开点；空数组表示立刻公开。未指定且没有继承 checkpoint 时，等所有阻塞节点完成。节点的 Started / Marker / Completed 可交叉编排，多条件按 AllOf 满足。
-- 当前出牌配置是 `cards.ReadyToAttack → attack`，`attack.Impact` 放行下一事实；真实效果通过筛选进入受击/格挡动作，在 `effect.Revealed` 后启动伤害浮字和目标镜头反馈。UI 提示自身也发 `Revealed`，可用于控制显示快照公开时点；HUD 的血量、能量等读取公开后的快照。
-- `HandPreparationTimelineAction`、`HandSettleTimelineAction`、`BattleActorTimelineAction` 是现有牌区/角色协议适配器；`TransformTimelineAction` 是通用分段变换；`UiFeedbackTimelineAction` 是通用文字淡入、上浮、淡出。全部派生基础表现组件，规则对象不传入这些动作。每次 UI 调用独立克隆模板，取消只释放自己的临时物体。
+- 当前出牌配置是 `cards.Prepared → attack`，`attack.Impact` 放行下一事实；真实效果通过筛选进入受击/格挡动作，在 `effect.Revealed` 后启动伤害浮字和目标镜头反馈。UI 提示自身也发 `Revealed`，可用于控制显示快照公开时点；HUD 的血量、能量等读取公开后的快照。
+- `CardZoneTimelineAction`、`CardZoneTimelineAction`、`BattleActorTimelineAction` 是现有牌区/角色协议适配器；`TransformTimelineAction` 是通用分段变换；`UiFeedbackTimelineAction` 是通用文字淡入、上浮、淡出。全部派生基础表现组件，规则对象不传入这些动作。每次 UI 调用独立克隆模板，取消只释放自己的临时物体。
 - UI 模板、颜色、时长、位移和文本 token 可配置；例如 `{pattern}`、`{score}`、`{cost}`、`{damage}`、`{block}`、`{heal}`、`{before:target.health}`、`{after:target.health}`。数值来自本次事实快照，不能从实时权威层补查。
 - `SceneCandidateFeedback.routes` 继续按候选状态或 patternKey 路由 `IInteractionFeedback`；它与已提交的时间线分离，提交/取消时释放自己的偏移，不改规则或 CardList。
 
@@ -202,7 +202,7 @@ XML Player / Enemy 的 `attackTarget` 支持 `FirstLiving / LowestHealth / Highe
 
 表现组件通过可选 `IBattlePresentationAudio` 调用音效，不把音频资源/声源放入 BattleActor 或规则层。每种动作使用独立声源，允许不同动作的尾音重叠；空 Clip 静默跳过，Snap/恢复不播放音效。音效不参与表现操作的完成判定，动画仍按实际结束推进流程；音效错误不阻断动作，取消、重开或禁用会停止声音及延迟播放。当前不接入全局音频管理器或自动加载占位音频，后续可替换音效实现。
 
-当前出牌默认计划为：ActionStarted 中卡牌准备发出 `ReadyToAttack` → 玩家攻击在前冲节点发出 `Impact` → 依 Timeline 顺序揭示判型与效果等事实；受击/护盾效果开始时发出 `Revealed` 并发布相应生命/格挡，后续费用、CardsMoved/CardsDealt 事实分别更新能量、移牌与补牌。攻击收招可以和受击重叠；死亡依赖该单位效果动作完成，同一 Actor 的动作串行，多个目标可并行反应。敌人使用 PrepareAttack → Attack/Impact，受控制跳过的行动不播放攻击。整批事实及阻塞动作、手牌实际过渡全部结束后才释放输入；BattleEnded 在规则实际结束位置出现，不制造下一玩家阶段。观察事件不承担等待职责。
+当前出牌默认计划为：ActionStarted 中卡牌准备发出 `Prepared` → 玩家攻击在前冲节点发出 `Impact` → 依 Timeline 顺序揭示判型与效果等事实；受击/护盾效果开始时发出 `Revealed` 并发布相应生命/格挡，后续费用、CardsMoved/CardsDealt 事实分别更新能量、移牌与补牌。攻击收招可以和受击重叠；死亡依赖该单位效果动作完成，同一 Actor 的动作串行，多个目标可并行反应。敌人使用 PrepareAttack → Attack/Impact，受控制跳过的行动不播放攻击。整批事实及阻塞动作、手牌实际过渡全部结束后才释放输入；BattleEnded 在规则实际结束位置出现，不制造下一玩家阶段。观察事件不承担等待职责。
 
 **动画等待只发生在表现层。**BattleSession 在返回玩家命令前已结算到下一玩家决策点或终局，包括敌人队列、收牌和补牌；Bridge 把整批有序事实交给 Director。3D 层只控制显示检查点、输入释放与终局界面，不能延后或重复规则结算。播放失败、取消、`SnapToState` 或禁用宿主都会使旧作用域失效，取消演出、补齐表现专用盾牌来源记录并同步最终快照；重新启用不会再执行敌人命令。`Instant` 验证整批后一次发布最终快照，只做同步，不调用普通 Play、不发送中途 marker，也不播放音效。不会用任意超时提前结束动画，协议实现必须报告完成或失败。
 
@@ -228,7 +228,7 @@ XML Player / Enemy 的 `attackTarget` 支持 `FirstLiving / LowestHealth / Highe
 
 ## 出牌表现入口
 
-当前 SingleBattle 使用统一的 `ICardMatchCommands` 提交出牌，不依赖 `PlayedZoneView`、出牌区 `CardZonePlayHost` 或 `CardZoneTransferPresenter`。按钮通过 `CardZonePlayHost.PlaySelected(animate)` 捕获 `CardSelectionRequest`，将对局、玩家、牌区与卡牌 ID 交给 `PlayerBattleActor` 校验。规则接受后，ActionStarted 调用 `HandZoneView.PresentSelectionAction`，只在现有卡牌上添加准备偏移并发出 `ReadyToAttack`，此时不改变 `Data.Cards`；对应 CardsMoved 事实发布时才提交手牌成员变化，剩余手牌继续使用原理牌动画。计分、伤害、能量、补牌与规则层 Played → Discard 的收集顺序保留。
+当前 SingleBattle 使用统一的 `ICardMatchCommands` 提交出牌，不依赖 `PlayedZoneView`、出牌区 `CardZonePlayHost` 或 `CardZoneTransferPresenter`。按钮通过 `CardZonePlayHost.PlaySelected(animate)` 捕获 `CardSelectionRequest`，将对局、玩家、牌区与卡牌 ID 交给 `PlayerBattleActor` 校验。规则接受后，ActionStarted 调用 `HandZoneView.PresentSelectionAction`，只在现有卡牌上添加准备偏移并发出 `Prepared`，此时不改变 `Data.Cards`；对应 CardsMoved 事实发布时才提交手牌成员变化，剩余手牌继续使用原理牌动画。计分、伤害、能量、补牌与规则层 Played → Discard 的收集顺序保留。
 
 当前 `SingleBattleDemoNew` 已移除旧出牌区对象与飞行组件。其他旧单战场景可用 `工具 > 卡牌战斗 > 场景接入 > 移除旧出牌区表现` 清理并保存；操作支持 Undo。新配置流程也会清理这些旧绑定。旧 DrawBattle / 卡牌跨区示例仍使用原有通用转移组件，不影响当前战斗入口。新增出牌表现应接入相应事实的动作组和 marker，不必重新引入目标牌区或修改规则移牌。
 
@@ -260,8 +260,8 @@ XML Player / Enemy 的 `attackTarget` 支持 `FirstLiving / LowestHealth / Highe
 
 ### 卡牌动作 View 与 Actor 的统一交接协议
 
-提交准备使用 `HandZoneView.PresentSelectionAction` 返回 `CardActionViewOperation`，并在真实动作中发送 `ReadyToAttack`；这是不修改牌区成员的临时贡献。正式成员变化由 CardsMoved/CardsDealt 的显示检查点触发：出牌使用 `PresentCommitted`，弃牌离场继续使用 `ICardActionView.PresentActionCommitted(Discard, ...)`。旧 Play/Discard 调用协议继续为其他调用方保留。完成状态为 Pending / Completed / Cancelled / Failed；单个句柄只允许一次终态，View 不引用 Actor，也不修改战斗结算。
+提交准备由 `CardZoneTimelineAction` 调用 `ICardZonePresentation` 的 cards.prepare，真实动作发送 Prepared。CardsMoved/CardsDealt 显示检查点通过 CardZonePlayHost.PresentProjection 调用同一接口，表现接受后提交镜像。原生 HandZoneView 动画仅作为 World 实现内部能力；旧提交协议和专用时间线动作已移除。完成状态为 Pending / Completed / Cancelled / Failed，取消只清理对应作用域，View 不引用 Actor 或修改战斗结算。
 
-Director 用 `ReadyToAttack` 连接出牌准备和角色攻击，用 `Impact` 连接攻击与后续规则事实；弃牌默认等待准备动作 Completed 后进入收益效果。卡牌成员变化与补牌只跟随事实显示游标，动作结束不直接改写 cardlist。准备偏移拥有独立作用域，取消只释放自己的贡献；跨过准备信号后可与后续卡牌转移衔接，不能恢复过时位置或卡牌列表。任一动作取消或失败进入恢复同步，不当成成功继续播旧动作。扩展卡牌、镜头或场景物体演出应实现中性动作协议并配置依赖，无需恢复旧逐步协程路径。
+Director 用 `Prepared` 连接出牌准备和角色攻击，用 `Impact` 连接攻击与后续规则事实；弃牌默认等待准备动作 Completed 后进入收益效果。卡牌成员变化与补牌只跟随事实显示游标，动作结束不直接改写 cardlist。准备偏移拥有独立作用域，取消只释放自己的贡献；跨过准备信号后可与后续卡牌转移衔接，不能恢复过时位置或卡牌列表。任一动作取消或失败进入恢复同步，不当成成功继续播旧动作。扩展卡牌、镜头或场景物体演出应实现中性动作协议并配置依赖，无需恢复旧逐步协程路径。
 
 当前场景完整配置教程见 [BattlePresentationTimelineConfiguration.md](../../../../../../Tools/BattlePresentationTimelineConfiguration.md)，包含信号顺序、效果/目标筛选、基础 HUD 检查点及 UI 动画模板。

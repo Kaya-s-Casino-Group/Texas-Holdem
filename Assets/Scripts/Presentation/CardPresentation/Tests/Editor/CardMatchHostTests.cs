@@ -14,6 +14,13 @@ using Object = UnityEngine.Object;
 
 namespace CardPresentation.Tests
 {
+    public sealed class NeutralCardZoneObserver : MonoBehaviour, ICardMatchZoneView
+    {
+        public CardMatchZoneData Snapshot;
+        public void Present(CardMatchZoneData snapshot) => Snapshot = snapshot;
+        public void Clear() => Snapshot = null;
+    }
+
     [TestFixture]
     public sealed class CardMatchHostTests
     {
@@ -138,6 +145,28 @@ namespace CardPresentation.Tests
                 CollectionAssert.AreEqual(new[] { id }, copied.Cards);
                 Assert.Throws<ArgumentException>(() => new CardSelectionRequest(request.MatchId, request.ZoneId, null, new[] { id, id }));
                 Assert.Throws<ArgumentException>(() => new CardSelectionRequest(default, request.ZoneId, null, new[] { id }));
+            }
+        }
+
+        [Test] public void ExistingWorldHandAndNeutralRectFrontendUseTheSameHostAndInput()
+        {
+            using (var f = new Fixture())
+            {
+                var root = new GameObject("Neutral Canvas frontend", typeof(RectTransform));
+                SceneManager.MoveGameObjectToScene(root, f.Scene);
+                var observer = root.AddComponent<NeutralCardZoneObserver>();
+                root.AddComponent<CardMatchZoneBinding>().Configure(f.Match, f.Left.Zone.Id, observer);
+                f.Left.DrawCards(1, false);
+                var id = f.Left.Cards.Single().Card.Id;
+                Assert.AreEqual(id, observer.Snapshot.Cards.Single().Card.Id);
+                var state = f.Match.State;
+                f.Left.SetInteraction(id.Value, new CardInteractionState(isSelected: true)); f.Left.Publish();
+                Assert.IsTrue(observer.Snapshot.Cards.Single().Interaction.IsSelected);
+                f.Match.SetInteraction(id, default);
+                Assert.IsFalse(f.Left.GetComponent<HandZoneView>().Data.Cards.Single().Interaction.IsSelected);
+                Assert.IsFalse(observer.Snapshot.Cards.Single().Interaction.IsSelected);
+                Assert.AreSame(state, f.Match.State, "Shared local selection cannot change rule/table state.");
+                root.SetActive(false); Assert.IsTrue(f.Left.IsRunning);
             }
         }
 

@@ -51,12 +51,13 @@ namespace CardInteraction
                 if (mouse == null) mouse = gameObject.AddComponent<CardZoneMouseInput>();
                 mouse.Bind(view, this, inputCamera); mouse.StateChanged += Publish;
             }
-            attached = true; match.Restarted += OnMatchRestarted; match.Changed += OnMatchChanged;
+            attached = true; match.Restarted += OnMatchRestarted; match.Changed += OnMatchChanged; match.InteractionChanged += OnInteractionChanged;
         }
         public void StopSession()
         {
+            StopProjection();
             pendingSort = false;
-            if (match != null) { match.Restarted -= OnMatchRestarted; match.Changed -= OnMatchChanged; }
+            if (match != null) { match.Restarted -= OnMatchRestarted; match.Changed -= OnMatchChanged; match.InteractionChanged -= OnInteractionChanged; }
             if (mouse != null) { mouse.StateChanged -= Publish; mouse.Unbind(); }
             attached = false;
         }
@@ -66,13 +67,16 @@ namespace CardInteraction
             pendingSort = false; GetComponent<CardZoneTransferPresenter>()?.CompleteTransfers();
             view.Clear(); view.Present(Project(), false);
         }
-        private void OnMatchChanged(CardTableChange change, IReadOnlyList<CardZoneViewData> presented)
+        private void OnMatchChanged(CardTableChange change, IReadOnlyList<object> presented)
         {
             if (!IsRunning || presented.Any(data => ReferenceEquals(data, view.Data))) return;
             var before = change.Before.Zones.FirstOrDefault(zone => zone.Id.Value == zoneId);
             var after = change.After.GetZone(new ZoneId(zoneId));
-            if (!ReferenceEquals(before, after) || after.Cards.Any(id => !ReferenceEquals(change.Before.GetCard(id), change.After.GetCard(id)))) Publish();
+            if (!ReferenceEquals(before, after) || after.Cards.Any(id => !ReferenceEquals(change.Before.GetCard(id), change.After.GetCard(id))))
+                view.Present(Project()); // A table notification must not echo back as a local input event.
         }
+        private void OnInteractionChanged(ZoneId zone, object presented)
+        { if (zone.Value == zoneId && IsRunning && view != null && !ReferenceEquals(presented, view)) view.Present(Project()); }
         private CardZoneViewData Project() => match.Project(Zone.Id);
         public CardSelectionRequest CaptureSelection()
         {
@@ -107,9 +111,13 @@ namespace CardInteraction
             if (state.IsSelected && !card.Interaction.IsSelected && GetComponent<HandZoneView>() is HandZoneView hand &&
                 Cards.Count(item => item.Interaction.IsSelected) >= hand.MaxSelectedCards)
             { hand.PlaySelectionDenied(viewId); return; }
-            match.SetInteraction(card.Card.Id, state);
+            match.SetInteraction(card.Card.Id, state, notify: false);
         }
-        public void Publish() { if (IsRunning && view != null) view.Present(Project()); }
+        public void Publish()
+        {
+            if (!IsRunning || view == null) return;
+            view.Present(Project()); match.NotifyInteraction(Zone.Id, view);
+        }
         // A gameplay host may bind and deal before this component's first OnEnable.
         // Keep that live session, its draw animation and its queued post-landing sort.
         private void OnEnable() { if (Application.isPlaying && !IsRunning) BeginSession(); }

@@ -100,7 +100,7 @@ namespace Poker.SingleBattle.Tests
             {
                 var context = Context("ActionStarted", "Play"); var plan = Plan(fixture.Director, context); Validate(plan);
                 var attack = plan.Nodes.Single(node => node.Id == "attack");
-                Assert.AreEqual("ReadyToAttack", attack.Dependencies.Single().MarkerKey);
+                Assert.AreEqual("Prepared", attack.Dependencies.Single().MarkerKey);
                 Assert.AreEqual("Impact", plan.Checkpoint.Single().MarkerKey);
                 var configuredAttack = fixture.Director.Timeline.Where(group => group.Matches(context)).SelectMany(group => group.nodes).Single(node => node.id == "attack");
                 configuredAttack.after = new[] { new SceneActionDependency { actionId = "cards", kind = DependencyKind.Completed } };

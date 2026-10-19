@@ -37,7 +37,7 @@ XML → XmlBattleSessionSource → BattleSceneHost → BattleSession
 `Battle2DView` 实现中性的 `IBattlePresentationFrontend`：
 
 - `Initialize` 初始化 `DisplayStore`，取消旧播放及反馈，清空日志。
-- `Present` 将有序批次交给公共 Director。出牌配方的卡牌移动发出 `ReadyToAttack`，启动玩家矩形动作；矩形的 `Impact` 推进展示检查点，收招继续运行。弃牌向下移动，敌人真正行动时矩形向前再归位；敌人动作完成后推进检查点，避免多个敌人同时占用同一矩形；整次准备或攻击约 0.18 秒。眩晕跳过窗口不播放攻击。
+- `Present` 将有序批次交给公共 Director。出牌配方的卡牌移动发出 `Prepared`，启动玩家矩形动作；矩形的 `Impact` 推进展示检查点，收招继续运行。弃牌向下移动，敌人真正行动时矩形向前再归位；敌人动作完成后推进检查点，避免多个敌人同时占用同一矩形；整次准备或攻击约 0.18 秒。眩晕跳过窗口不播放攻击。
 - `Synchronize` 取消 Director 的当前作用域并显示指定快照，清除选择，由各动作的取消/同步协议恢复矩形；不执行规则。播放中禁用 View 会追上已提交的最终展示快照。
 - `IsPresenting` 由公共 Director 统一提供；它会等待阻塞动作及收招全部完成。编辑模式或 Instant 模式原子发布最终展示快照，不伪造动画信号。
 - 由 `ScenePresentationDirector.Update` 统一 Tick，View 不再另建 Director 或生成 BuildPlan。卡牌、矩形和 UI 读取同一个显示游标，动作上下文固定为所属事实的数据。
@@ -53,11 +53,11 @@ XML → XmlBattleSessionSource → BattleSceneHost → BattleSession
 
 | 规则事实 | 当前配方 | 显示检查点 |
 | --- | --- | --- |
-| ActionStarted / Play | cards → `ReadyToAttack` → attack | attack 的 `Impact` |
+| ActionStarted / Play | cards → `Prepared` → attack | attack 的 `Impact` |
 | ActionStarted / Discard | cards 向下准备，发出 `Released` | cards 完成 |
 | ActionStarted / EnemyAction | 非 skipped 时 enemy attack | attack 完成（共用矩形的多个敌人依次收招） |
 
-`cards` 绑定 Battle2DView，`player / enemy` 绑定矩形 Transform。卡牌使用 `Battle2DCardTimelineAction`，位移、时长、信号名及信号进度可配置；矩形使用公共 `TransformTimelineAction`，前冲段发出 Impact，第二段回位。所有动作派生 `PresentationActionBehaviour`。例如把 attack.after 从 Marker/ReadyToAttack 改成 Completed/cards，即可改成牌区完全准备结束才攻击，无需改 C#。
+`cards` 绑定 Battle2DCardZonePresentation，`player / enemy` 绑定矩形 Transform。卡牌使用 `CardZoneTimelineAction` 调用统一能力接口，平面实现的准备位移、时长及信号进度可配置；矩形使用公共 `TransformTimelineAction`，前冲段发出 Impact，第二段回位。所有动作派生 `PresentationActionBehaviour`。例如把 attack.after 从 Marker/Prepared 改成 Completed/cards，即可改成牌区完全准备结束才攻击，无需改 C#。
 
 规则其余节点继续有序经过同一 Director；没有配置动作的事实立即公开显示快照，HUD 和日志随显示游标更新。可以继续为开战、阶段、效果、移牌和终局添加动作组，使用公共的效果/目标筛选与 checkpoint。当前只有一组敌人矩形，显示和输入仍是最简验证布局。
 

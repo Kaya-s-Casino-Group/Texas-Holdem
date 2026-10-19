@@ -25,7 +25,7 @@ namespace CardPresentation
         }
 
         /// <summary>
-        /// Prepare accepted cards without changing their displayed zone membership. ReadyToAttack is an actual
+        /// Prepare accepted cards without changing their displayed zone membership. Prepared is an actual
         /// tween milestone; the visual offset persists until the later CardsMoved fact or synchronization.
         /// </summary>
         public CardActionViewOperation PresentSelectionAction(IEnumerable<string> viewIds, Action<string> marker, bool animate = true)
@@ -44,7 +44,7 @@ namespace CardPresentation
             selectionAction = batch;
             if (!animate || !isActiveAndEnabled || ids.Length == 0)
             {
-                try { marker?.Invoke("ReadyToAttack"); batch.Ready = true; batch.Operation.Complete(); }
+                try { marker?.Invoke("Prepared"); batch.Ready = true; batch.Operation.Complete(); }
                 catch (Exception error) { ReleaseSelectionAction(batch); batch.Operation.Fail(error); }
                 return batch.Operation;
             }
@@ -77,7 +77,7 @@ namespace CardPresentation
         private void EmitReady(SelectionAction batch, Action<string> marker)
         {
             batch.Ready = true;
-            try { marker?.Invoke("ReadyToAttack"); }
+            try { marker?.Invoke("Prepared"); }
             catch (Exception error) { ReleaseSelectionAction(batch); batch.Operation.Fail(error); }
         }
 
@@ -107,7 +107,7 @@ namespace CardPresentation
         {
             var batch = selectionAction;
             if (batch == null || !batch.Views.Any(view => view == null || !TryGetView(view.ViewId, out var current) || current != view)) return;
-            // After ReadyToAttack, the following fact can transfer/remove these instances while the lift settles.
+            // After Prepared, the following fact can transfer/remove these instances while the lift settles.
             // That handoff completes preparation; it is not an interrupted or failed rule action.
             if (batch.Ready) batch.Operation.Complete(); else batch.Operation.Cancel();
             ReleaseSelectionAction(batch);

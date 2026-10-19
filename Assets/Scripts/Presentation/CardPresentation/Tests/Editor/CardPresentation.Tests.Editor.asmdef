@@ -14,7 +14,10 @@
     "Unity.RenderPipelines.Universal.Runtime",
     "Unity.RenderPipelines.Core.Runtime",
     "Unity.InputSystem",
-    "UIFoundation.Runtime"
+    "UIFoundation.Runtime",
+    "CardMatch.Runtime",
+    "BattlePresentation.Runtime",
+    "BattlePresentation.Unity"
   ],
   "includePlatforms": [
     "Editor"

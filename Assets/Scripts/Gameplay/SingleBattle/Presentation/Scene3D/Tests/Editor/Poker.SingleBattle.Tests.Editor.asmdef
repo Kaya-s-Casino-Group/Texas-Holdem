@@ -20,7 +20,8 @@
     "BattlePresentation.Runtime",
     "BattlePresentation.Unity",
     "Poker.BattlePresentation.Shared",
-    "UIFoundation.Runtime"
+    "UIFoundation.Runtime",
+    "CardMatch.Runtime"
   ],
   "includePlatforms": [
     "Editor"

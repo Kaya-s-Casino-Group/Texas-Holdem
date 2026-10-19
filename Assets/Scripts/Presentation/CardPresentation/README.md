@@ -447,6 +447,6 @@ HandZoneView 默认最多选中 5 张，由 `SetMaxSelectedCards` 调整；此�
 
 ## 卡牌动作完成接口
 
-`HandZoneView` 实现 `ICardActionView`，通过 `PresentActionCommitted(Play / Discard, ...)` 返回本次动作的 `CardActionViewOperation`。出牌当前立即移除并完成；弃牌在本批全部飞出后完成，剩余手牌理牌不影响此句柄。即时表现直接返回 Completed；清空、恢复或禁用取消未完成弃牌，迟到完成不改变终态。
+战斗对外统一使用 `ICardZonePresentation`，经 `CardZoneTimelineAction` 调用 World/Canvas/平面牌区实现。操作返回 `IPresentationOperation`，信号使用 `Prepared / Released / AllArrived / Settled`，先后关系由场景时间线配置。规则检查点的牌表投影同样通过该接口，View 不持有 Actor 或规则命令。
 
-View 不引用 Actor。战斗宿主等待卡牌动作 Completed，再调用 Actor 表现协议并等待其完成；Cancelled / Failed 进入恢复同步，不启动后续 Actor 动画。未来出牌动画继续使用相同接口，由实际播放结束时完成句柄。
+`CardActionViewOperation` 仅用于底层原生抬升和弃牌动画的完成追踪，不再作为战斗调用协议。具体约定见 `Tools/CardZonePresentationContract.md`。

@@ -51,8 +51,9 @@ namespace Poker.Battle2DValidation.Editor
             if (director.HasConfiguredTimeline) return;
             var root = new GameObject("Presentation Timeline"); root.transform.SetParent(view.transform, false);
             Undo.RegisterCreatedObjectUndo(root, "Create 2D timeline");
-            var play = root.AddComponent<Battle2DCardTimelineAction>(); play.Configure(Vector3.up * .7f, .18f, "ReadyToAttack");
-            var discard = root.AddComponent<Battle2DCardTimelineAction>(); discard.Configure(Vector3.down * .7f, .18f, "Released");
+            var frontend = view.GetComponent<Battle2DCardZonePresentation>() ?? Undo.AddComponent<Battle2DCardZonePresentation>(view.gameObject);
+            var play = root.AddComponent<CardZoneTimelineAction>(); play.Configure(frontend, CardZoneActions.Prepare);
+            var discard = root.AddComponent<CardZoneTimelineAction>(); discard.Configure(frontend, Battle2DCardZonePresentation.PrepareDiscard);
             var player = root.AddComponent<TransformTimelineAction>(); player.Configure(null, Attack(.6f));
             var enemy = root.AddComponent<TransformTimelineAction>(); enemy.Configure(null, Attack(-.6f));
             director.ConfigureTimeline(new[]
@@ -60,7 +61,7 @@ namespace Poker.Battle2DValidation.Editor
                 new SceneTimelineGroup { semanticKey = "ActionStarted", ruleAction = "Play", explicitCheckpoint = true,
                     nodes = new[] {
                         new SceneActionNode { id = "cards", action = play, targetKey = "cards" },
-                        new SceneActionNode { id = "attack", action = player, targetKey = "player", after = new[] { Marker("cards", "ReadyToAttack") } } },
+                        new SceneActionNode { id = "attack", action = player, targetKey = "player", after = new[] { Marker("cards", "Prepared") } } },
                     checkpoint = new[] { Marker("attack", "Impact") } },
                 new SceneTimelineGroup { semanticKey = "ActionStarted", ruleAction = "Discard",
                     nodes = new[] { new SceneActionNode { id = "cards", action = discard, targetKey = "cards" } } },
@@ -68,7 +69,7 @@ namespace Poker.Battle2DValidation.Editor
                     explicitCheckpoint = true, nodes = new[] { new SceneActionNode { id = "attack", action = enemy, targetKey = "enemy" } },
                     checkpoint = new[] { new SceneActionDependency { actionId = "attack", kind = DependencyKind.Completed } } }
             }, new[] {
-                new SceneTargetBinding { key = "cards", target = view },
+                new SceneTargetBinding { key = "cards", target = frontend },
                 new SceneTargetBinding { key = "player", target = view.PlayerActor },
                 new SceneTargetBinding { key = "enemy", target = view.EnemyActor }
             });

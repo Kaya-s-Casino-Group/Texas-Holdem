@@ -49,8 +49,8 @@ namespace CardPresentation.Editor
             var scene = SceneManager.GetActiveScene();
             foreach (var root in scene.GetRootGameObjects())
             {
-                foreach(var match in root.GetComponentsInChildren<CardMatchHost>(true)) if(match.ArtBindings==null)
-                { Undo.RecordObject(match,"绑定玩法卡牌状态美术映射"); match.ConfigureArtBindings(CardStateArtBindings.Standard); EditorUtility.SetDirty(match); }
+                foreach(var match in root.GetComponentsInChildren<CardMatchHost>(true)) if(CardMatchPresentationAdapter.For(match).ArtBindings==null)
+                { var projection = CardMatchPresentationAdapter.For(match); Undo.RecordObject(projection,"绑定玩法卡牌状态美术映射"); projection.ConfigureArtBindings(CardStateArtBindings.Standard); EditorUtility.SetDirty(projection); }
                 foreach (var view in root.GetComponentsInChildren<CardView>(true)) if (view.Atlas == skin && view.ArtProfile == null)
                 { Undo.RecordObject(view, "绑定共享卡牌美术"); view.SetArtProfile(profile); EditorUtility.SetDirty(view); }
                 foreach (var graphic in root.GetComponentsInChildren<CardUIGraphic>(true)) if (graphic.ArtProfile == null && (graphic.Atlas == null || graphic.Atlas == skin))

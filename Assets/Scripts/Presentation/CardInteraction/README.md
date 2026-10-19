@@ -9,26 +9,26 @@ Draw 实际玩法接入见 [Draw 战局桥接](../../Gameplay/DrawBattle/README.
 
 ## 代码目录与程序集
 
-运行时代码按职责分组，全部仍归 `CardInteraction.Runtime`，命名空间保持 `CardInteraction`。本模块适配场景牌区与 Canvas 界面；最简战斗 2D 验证可以使用自己的输入适配，无须引用本地牌桌宿主。
+卡牌数据与命令已独立到 [`CardMatch.Runtime`](../CardMatch/README.md)，命名空间保持 `CardInteraction`；本目录的具体牌区适配仍归 `CardInteraction.Runtime`。本模块适配场景牌区与 Canvas 界面；最简战斗 2D 验证可以使用自己的输入适配，无须引用本地牌桌宿主。
 
 | Runtime 子目录 | 职责 |
 | --- | --- |
-| `Commands` | 不可变选牌请求、玩法命令/计分查询接口，以及独立牌桌使用的出牌/弃牌批次准备；正式玩法的规则推进仍由外部引擎负责 |
+| `Commands` | 独立牌桌使用的出牌/弃牌批次准备；不可变选牌请求与玩法命令/计分查询接口已移到 CardMatch.Runtime；正式玩法的规则推进仍由外部引擎负责 |
 | `Input` | 鼠标/指针控制、射线命中、交互数据源与悬停数据源接口 |
-| `Binding` | CardMatchHost、CardZonePlayHost 及其 partial 文件、本地逐牌状态；负责场景绑定与观察者镜像 |
+| `Binding` | CardZonePlayHost、CardMatchPresentationAdapter 及旧牌区美术数据；负责具体视图绑定和美术投影 |
 | `Presenters` | 手牌按钮、悬停提示、抽牌堆和牌库总览的界面桥接 |
 
-`Runtime` 根目录的 asmdef 与 `link.xml` 保持原位。带 `.Editor.cs` 的宿主 partial 文件与运行时主体放在同一 Binding 目录，仍通过 `UNITY_EDITOR` 隔离编辑器代码。场景接入工具和相关测试继续位于 CardPresentation 的 Editor/Tests 程序集；不另建重复工具入口。脚本与原 `.meta` 一起移动，类名、序列化字段、资源路径及运行时依赖方向保持不变。
+`Runtime` 根目录的 asmdef 与 `link.xml` 保持原位。带 `.Editor.cs` 的宿主 partial 文件与各自运行时主体放在同一目录，仍通过 `UNITY_EDITOR` 隔离编辑器代码。旧牌区工具和测试继续位于 CardPresentation 的 Editor/Tests，通用宿主测试位于 CardMatch/Tests。移动脚本保留原 `.meta`；场景中原 Host 的美术字段已迁入同对象的 CardMatchPresentationAdapter。
 
 ## 命令与宿主边界
 
 `ICardMatchCommands` 统一接收不可变的 `CardSelectionRequest`：`MatchId`、`ZoneId`、`ControllerId` 和有序卡牌 ID。请求复制输入，不持有 Host、View、Transform 或飞行路径；出牌和弃牌执行请求里的卡牌，不重新读取当时的 UI 选中集合。玩法接收方检查对局、玩家、源牌区、卡牌归属与现有规则，拒绝跨对局/跨玩家/已移走卡牌的请求。`animate` 只控制既有演出方式，不参与规则结果。
 
-- `CardMatchHost` 管理整桌观察者状态、逐牌美术/可见性/交互、投影和原子提交。`CaptureSelection(zone)` 从当前镜像按本地牌序捕获输入；`Project(zone)` 生成只读展示快照。绑定外部 `Commands` 时，表状态是镜像，权威规则状态由玩法宿主持有；未绑定时保留独立牌桌的本地 Prepare/Commit 路径。
+- `CardMatchHost` 管理整桌观察者状态、可见性、交互和原子提交。`CaptureSelection(zone)` 捕获输入；`Snapshot(zone)` / `ReadCards(zone)` 提供中立数据。美术、颜色和 `CardZoneViewData` 由 `CardMatchPresentationAdapter` 生成；旧 `GetCards` / `Project` 调用是该适配层的扩展方法。绑定外部 `Commands` 时，表状态是镜像，权威规则状态由玩法宿主持有；未绑定时保留独立牌桌的本地 Prepare/Commit 路径。
 - `CardZonePlayHost` 管理单个 View 的绑定、输入生命周期与局部表现。`CaptureSelection()` 委托 Match，`PlaySelected/DiscardSelected` 转发数据请求。它不再把自己或目标 View 作为游戏命令参数。
-- SingleBattle 和 DrawBattle 使用同一命令接口。SingleBattle 在自身绑定的手牌上播放 `ICardActionView`；DrawBattle 使用自身绑定的 `CardZoneTransferPresenter`，保留飞行、落位、计分和补牌顺序。显式 `PlaySelected(destination, route)` 参数仅用于独立牌桌，外部玩法统一使用自己的已绑定表现。
+- SingleBattle 和 DrawBattle 使用同一命令接口。SingleBattle 通过 `ICardZonePresentation` 播放牌区能力，场景时间线统一使用 `CardZoneTimelineAction`；DrawBattle 使用自身绑定的 `CardZoneTransferPresenter`，保留飞行、落位、计分和补牌顺序。显式 `PlaySelected(destination, route)` 参数仅用于独立牌桌，外部玩法统一使用自己的已绑定表现。
 
-`Changed`/`Notify` 只传递 `CardTableChange` 与已应用的 `CardZoneViewData`，不传场景宿主。牌区仅在自己的 `View.Data` 正是已应用快照时跳过重复刷新；另一个观察同一 ZoneId 的 View 仍会更新。这样既保留正在播放的动画，也不把同牌区的其他观察者一并跳过。
+`Changed`/`Notify` 传递 `CardTableChange` 与不透明的已呈现 consumer token。Host 不检查 token 的类型；旧适配器继续使用 `CardZoneViewData` 作 token，通用绑定使用其 View 实例。牌区仅在自己的 `View.Data` 正是已应用快照时跳过重复刷新；另一个观察同一 ZoneId 的 View 仍会更新。这样既保留正在播放的动画，也不把同牌区的其他观察者一并跳过。
 
 ## 状态归属与数据流
 

@@ -1,6 +1,6 @@
 # 当前场景的表现时间线配置
 
-日期：2026-10-18。适用场景：`Assets/Scenes/SingleBattleDemoNew.unity`。架构和恢复约定见 [实施记录](BattlePresentationImplementation.md)，规则与表现的完整设计见 [设计文档](BattlePresentationDesign.md)。
+更新：2026-10-19。适用场景：`Assets/Scenes/SingleBattleDemoNew.unity`。架构和恢复约定见 [实施记录](BattlePresentationImplementation.md)，规则与表现的完整设计见 [设计文档](BattlePresentationDesign.md)。
 
 当前场景的出牌顺序完整保存在 `ScenePresentationDirector.timeline`。`SingleBattleSceneAdapter` 通过通用 Host 的命令端口提交规则命令，桥接不可变数据并同步牌区和基础 HUD；它不再生成 `BuildPlan`，也不调用固定的“牌区→攻击→受击”协程。
 
@@ -29,8 +29,8 @@
 ```mermaid
 flowchart TD
   A[ActionStarted / Play] --> B[cards：牌区准备]
-  B -->|ReadyToAttack| C[attack：玩家攻击]
-  B -->|ReadyToAttack| U[ui-play：出牌提示]
+  B -->|Prepared| C[attack：玩家攻击]
+  B -->|Prepared| U[ui-play：出牌提示]
   C -->|Impact| D[本事实 checkpoint → 发布并推进]
   C --> T[玩家继续收招]
   D --> E[后续真实事实：判型 / 费用 / 状态等]
@@ -103,8 +103,8 @@ checkpoint:
 
 | `id` | `action` 组件 | `targetKey` | `after` |
 | --- | --- | --- | --- |
-| `cards` | `Cards Prepare` / `HandPreparationTimelineAction` | `cards` | 空 |
-| `attack` | `Actor Attack` / `BattleActorTimelineAction` | 空，按事实 `ActorId` 解析 | `cards / Marker / ReadyToAttack` |
+| `cards` | `Cards Prepare` / `CardZoneTimelineAction` | `cards` | 空 |
+| `attack` | `Actor Attack` / `BattleActorTimelineAction` | 空，按事实 `ActorId` 解析 | `cards / Marker / Prepared` |
 
 另一个同样匹配 `ActionStarted / Play / skipped=False` 的组追加：
 
@@ -115,13 +115,15 @@ blocking: true
 after:
   actionId: cards
   kind: Marker
-  marker: ReadyToAttack
+  marker: Prepared
 explicitCheckpoint: false
 ```
 
 因此当前是牌区准备到中途，玩家攻击与“出牌”提示同时开始。要等牌区准备完全结束才攻击，只需把 `attack.after` 改成 `cards / Completed`。要让提示跟随攻击开始，可把 `ui-play.after` 改成 `attack / Started`。
 
-`HandZoneView` 的 `selectionActionOffset / selectionActionSeconds / selectionActionReadyProgress` 控制准备动作。本场景的 ReadyToAttack 来自真实插值进度；修改该参数可以提前或推后攻击启动点。`Actor Attack.kind=Attack` 的 `Impact` 则由当前 Actor Presenter 在实际前冲命中点发出，攻击总时长等参数仍在该 Presenter 上调整。
+`Cards Prepare` 的 `Source` 绑定牌区的 `WorldCardZonePresentation`，`Action Key=cards.prepare`。`Cards Settle` 同样绑定此组件，配置 `Action Key=cards.settle`、`Observe Projection=True`，等待显示检查点已经启动的牌区动画结束。其他 2D/3D 牌区只需更换为实现 `ICardZonePresentation` 的 Source；时间线不直接调用 `HandZoneView`。
+
+`HandZoneView` 的 `selectionActionOffset / selectionActionSeconds / selectionActionReadyProgress` 控制准备动作。本场景的 Prepared 来自真实插值进度；修改该参数可以提前或推后攻击启动点。`Actor Attack.kind=Attack` 的 `Impact` 则由当前 Actor Presenter 在实际前冲命中点发出，攻击总时长等参数仍在该 Presenter 上调整。
 
 ## 5. 效果类型与目标筛选
 
@@ -256,9 +258,9 @@ DisplayStore.Apply
 
 ## 8. 移牌、发牌与完成门禁
 
-`CardsMoved / CardsDealt / DeckRecycled` 配置 `cards-settle / HandSettleTimelineAction`，`explicitCheckpoint=True` 且 checkpoint 为空。先发布真实 CardList，再在下一帧等待该次投影产生的手牌运动完成。
+`CardsMoved / CardsDealt / DeckRecycled` 配置 `cards-settle / CardZoneTimelineAction`，`explicitCheckpoint=True` 且 checkpoint 为空。先发布真实 CardList，再在下一帧等待该次投影产生的手牌运动完成。
 
-`cards-settle` 不决定抽哪些牌，也不移动规则卡牌；它只等待已有 HandZoneView 的真实过渡。手牌准备的临时偏移仍由 `HandPreparationTimelineAction` 管理，取消时只撤销自己的贡献，不恢复过时布局。
+`cards-settle` 不决定抽哪些牌，也不移动规则卡牌；它只等待已有 HandZoneView 的真实过渡。手牌准备的临时偏移仍由 `CardZoneTimelineAction` 管理，取消时只撤销自己的贡献，不恢复过时布局。
 
 当前各主要动作均为 blocking。checkpoint 可以提前推进下一事实，整批输入门禁仍等待所有阻塞尾部完成。把节点设为 `blocking=False` 会允许它在整批完成后继续播放，直到完成或被下一批/同步取消；应只用于不承担输入安全责任的装饰尾部。
 

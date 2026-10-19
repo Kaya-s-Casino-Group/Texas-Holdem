@@ -111,7 +111,7 @@ namespace Poker.Battle2DValidation.Tests
             view.ToggleSelection(card.Id); view.PlayButton.onClick.Invoke();
             var committed = adapter.AuthorityState;
             yield return Idle(view);
-            Assert.AreEqual(.7f, offsetAtAttack, .001f, "Attack must start after full preparation, rather than the earlier ReadyToAttack marker.");
+            Assert.AreEqual(.7f, offsetAtAttack, .001f, "Attack must start after full preparation, rather than the earlier Prepared marker.");
             Assert.AreSame(committed, adapter.AuthorityState); Match(adapter);
         }
     }

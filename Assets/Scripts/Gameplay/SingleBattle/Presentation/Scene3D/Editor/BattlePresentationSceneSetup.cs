@@ -45,8 +45,9 @@ namespace Poker.SingleBattle.Editor
                 .Where(group => group != null && group.nodes != null && group.nodes.Length > 0).ToArray();
             var root = existingRoot != null ? existingRoot : Child(host.transform, ActionRootName);
             var hand = host.Actions.Hand.GetComponent<HandZoneView>();
-            var prepareCards = Action<HandPreparationTimelineAction>(root, "Cards Prepare"); prepareCards.Configure(hand);
-            var settleCards = Action<HandSettleTimelineAction>(root, "Cards Settle"); settleCards.Configure(hand);
+            var frontend = hand.GetComponent<WorldCardZonePresentation>() ?? Undo.AddComponent<WorldCardZonePresentation>(hand.gameObject);
+            var prepareCards = Action<CardZoneTimelineAction>(root, "Cards Prepare"); prepareCards.Configure(frontend, CardZoneActions.Prepare);
+            var settleCards = Action<CardZoneTimelineAction>(root, "Cards Settle"); settleCards.Configure(frontend, CardZoneActions.Settle, observe: true);
             var prepare = Actor(root, "Actor Prepare", BattlePresentationKind.PrepareAttack);
             var attack = Actor(root, "Actor Attack", BattlePresentationKind.Attack);
             var hit = Actor(root, "Actor Hit", BattlePresentationKind.Hit);
@@ -57,7 +58,7 @@ namespace Poker.SingleBattle.Editor
             var groups = new List<SceneTimelineGroup> {
                 Group("ActionStarted", "Play", NotSkipped(), new[] {
                     Node("cards", prepareCards, "cards"),
-                    Node("attack", attack, null, Marker("cards", "ReadyToAttack")) }, Marker("attack", "Impact")),
+                    Node("attack", attack, null, Marker("cards", "Prepared")) }, Marker("attack", "Impact")),
                 Group("ActionStarted", "Discard", NotSkipped(), new[] { Node("cards", prepareCards, "cards") }, Completed("cards")),
                 Group("ActionStarted", "EnemyAction", NotSkipped(), new[] {
                     Node("prepare", prepare), Node("attack", attack, null, Completed("prepare")) }, Marker("attack", "Impact"))
@@ -82,7 +83,7 @@ namespace Poker.SingleBattle.Editor
             var camera = host.gameObject.scene.GetRootGameObjects().SelectMany(o => o.GetComponentsInChildren<Camera>(true))
                 .FirstOrDefault(item => item.CompareTag("MainCamera"));
             var bindings = new List<SceneTargetBinding> {
-                new SceneTargetBinding { key = "cards", target = hand },
+                new SceneTargetBinding { key = "cards", target = frontend },
                 new SceneTargetBinding { key = "player", target = host.Players.FirstOrDefault() },
                 new SceneTargetBinding { key = "enemy", target = host.Enemies.FirstOrDefault() },
                 new SceneTargetBinding { key = "camera", target = camera != null ? camera.transform : null },
@@ -143,7 +144,7 @@ namespace Poker.SingleBattle.Editor
                 AddUi(groups, "StatusChanged", null, null, Ui("UI Status", UiFeedbackKind.Feedback, banner, null, new Color(.8f, .7f, 1)), "ui-status", true);
                 AddUi(groups, "RelicActivated", null, null, Ui("UI Relic", UiFeedbackKind.Feedback, banner, null, gold), "ui-relic", true);
                 AddUi(groups, "ActionStarted", "Play", NotSkipped(), Ui("UI Play", UiFeedbackKind.Action, banner, "出牌", gold, .4f),
-                    "ui-play", false, Marker("cards", "ReadyToAttack"));
+                    "ui-play", false, Marker("cards", "Prepared"));
                 foreach (var team in new[] { "player", "enemy" })
                 {
                     var floatText = team == "player" ? playerEffect : enemyEffect;

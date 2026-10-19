@@ -85,9 +85,9 @@ namespace Poker.Battle2DValidation.Tests
                 var director = f.View.SceneDirector;
                 var play = director.Timeline.Single(g => g.ruleAction == "Play");
                 var attack = play.nodes.Single(n => n.id == "attack");
-                Assert.AreEqual("ReadyToAttack", attack.after.Single().marker);
+                Assert.AreEqual("Prepared", attack.after.Single().marker);
                 Assert.AreEqual("Impact", play.checkpoint.Single().marker);
-                Assert.IsInstanceOf<Battle2DCardTimelineAction>(play.nodes.Single(n => n.id == "cards").action);
+                Assert.IsInstanceOf<global::BattlePresentation.Unity.CardZoneTimelineAction>(play.nodes.Single(n => n.id == "cards").action);
                 Assert.IsInstanceOf<TransformTimelineAction>(attack.action);
                 Assert.IsFalse(typeof(BaseBattleHost).IsAssignableFrom(typeof(Battle2DSceneAdapter)));
                 Assert.IsNull(typeof(Battle2DView).GetMethod("BuildPlan", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance));
@@ -97,6 +97,18 @@ namespace Poker.Battle2DValidation.Tests
                 Battle2DTimelineSetup.ConfigureTimeline(f.View, director);
                 Assert.AreEqual(DependencyKind.Completed, director.Timeline.Single(g => g.ruleAction == "Play").nodes.Single(n => n.id == "attack").after.Single().kind);
                 Assert.AreEqual(actions, f.View.GetComponentsInChildren<PresentationActionBehaviour>().Length);
+            }
+        }
+
+        [Test] public void CardFrontendCanResolveItsViewFromATimelineChild()
+        {
+            using (var f = new Fixture())
+            {
+                var child = new GameObject("Child frontend"); child.transform.SetParent(f.View.transform, false);
+                var frontend = child.AddComponent<Battle2DCardZonePresentation>();
+                Assert.NotNull(frontend.Current);
+                frontend.Synchronize(frontend.Current);
+                Battle2DDisplayAssertions.Match(f.Host.AuthorityState, f.View.PresentedState);
             }
         }
 
