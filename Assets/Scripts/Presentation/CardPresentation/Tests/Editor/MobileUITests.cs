@@ -14,6 +14,33 @@ namespace CardPresentation.Tests
 {
     public sealed class MobileUITests
     {
+        [Test]
+        public void SafeAreaUsesRenderDisplayPixelsWhenScreenMetricsComeFromADifferentOrientation()
+        {
+            var viewport = new Rect(0, 0, 2532, 1170);
+            var portrait = new Vector2(541, 2548);
+            Assert.AreEqual(viewport, ScreenSafeArea.CalculateDisplaySafeRect(viewport, new Rect(Vector2.zero, portrait), portrait, viewport.size, 0));
+            // Preserve proportional device cutouts, then intersect the right half camera viewport.
+            var splitViewport = new Rect(1000, 0, 1000, 1000);
+            var safe = new Rect(50, 100, 900, 1800);
+            Assert.AreEqual(new Rect(1000, 50, 900, 900), ScreenSafeArea.CalculateDisplaySafeRect(
+                splitViewport, safe, new Vector2(1000, 2000), new Vector2(2000, 1000), 0));
+        }
+
+        [Test]
+        public void OffscreenCameraDoesNotApplyDeviceScreenInsets()
+        {
+            var root = new GameObject("Offscreen safe area");
+            var target = new RenderTexture(640, 360, 0);
+            try
+            {
+                var camera = root.AddComponent<Camera>(); camera.targetTexture = target;
+                camera.rect = new Rect(.25f, .25f, .5f, .5f);
+                Assert.AreEqual(camera.pixelRect, ScreenSafeArea.CameraRect(camera));
+            }
+            finally { UnityEngine.Object.DestroyImmediate(root); UnityEngine.Object.DestroyImmediate(target); }
+        }
+
         [Test] public void UIAlwaysUsesInputSystemAndPreservesBindingsWhenDevicesChange()
         {
             var root = new GameObject("Input provider test", typeof(EventSystem), typeof(StandaloneInputModule));

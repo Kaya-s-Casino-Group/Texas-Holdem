@@ -18,11 +18,15 @@ namespace CardPresentation.Tests
     [TestFixture]
     public sealed class CardUICameraTests
     {
-        [Test] public void RendererIsForwardUIOnlyAndDoesNotInheritRetroOrLowResolutionFeatures()
+        [Test] public void RendererKeepsNativeUIAndOnlyAppliesCrtToTheFinalStackOutput()
         {
             var data = AssetDatabase.LoadAssetAtPath<UniversalRendererData>(CardUICameraSetup.RendererPath);
             Assert.IsNotNull(data); Assert.AreEqual(RenderingMode.Forward, data.renderingMode);
-            Assert.IsEmpty(data.rendererFeatures); Assert.IsNull(data.postProcessData);
+            Assert.AreEqual(1, data.rendererFeatures.Count);
+            var crt = data.rendererFeatures.Single() as CRTFeature;
+            Assert.IsNotNull(crt); Assert.IsInstanceOf<ICameraStackOutputFeature>(crt);
+            Assert.IsTrue(crt.isActive); Assert.IsNotNull(crt.CRTShader);
+            Assert.IsNull(data.postProcessData);
             Assert.AreEqual(0, data.opaqueLayerMask.value); Assert.AreEqual(1 << LayerMask.NameToLayer("UI"), data.transparentLayerMask.value);
             Assert.IsFalse(data.lowResolution.enabled); Assert.IsFalse(data.shadowTransparentReceive);
             Assert.AreEqual(DepthPrimingMode.Disabled, data.depthPrimingMode); Assert.AreEqual(IntermediateTextureMode.Auto, data.intermediateTextureMode);
@@ -91,6 +95,10 @@ namespace CardPresentation.Tests
             var stripe = new Texture2D(64,1,TextureFormat.RGBA32,false) { filterMode = FilterMode.Point };
             var pixels = new Texture2D(width,height,TextureFormat.RGBA32,false);
             var previous = RenderTexture.active;
+            var mainData = AssetDatabase.LoadAssetAtPath<UniversalRendererData>("Assets/Settings/MainDeferredRenderer.asset");
+            var uiData = AssetDatabase.LoadAssetAtPath<UniversalRendererData>(CardUICameraSetup.RendererPath);
+            var crt = uiData.rendererFeatures.OfType<CRTFeature>().Single();
+            bool savedCrtEnabled = crt.settings.crtEnabled;
             Camera ui = null;
             // Off-screen preview requests need explicit Canvas geometry emission for the overlay camera.
             void EmitPreviewCanvas(ScriptableRenderContext context, Camera current)
@@ -98,6 +106,9 @@ namespace CardPresentation.Tests
             RenderPipelineManager.beginCameraRendering += EmitPreviewCanvas;
             try
             {
+                // Inspect native UI before the intentional final-screen curvature, scanlines and mask.
+                // Restore the authored CRT setting even if an assertion fails.
+                crt.settings.crtEnabled = false;
                 var cameraRoot = new GameObject("Native UI scene test"); SceneManager.MoveGameObjectToScene(cameraRoot,scene);
                 var camera = cameraRoot.AddComponent<Camera>(); camera.scene = scene; camera.targetTexture = target;
                 camera.clearFlags = CameraClearFlags.SolidColor; camera.backgroundColor = new Color(.2f,.3f,.4f);
@@ -152,7 +163,7 @@ namespace CardPresentation.Tests
                 Assert.AreEqual(new Vector2Int(width,height),info.renderSize); Assert.AreEqual(info.outputSize,info.colorTargetSize);
                 Assert.IsFalse(info.lowResolution); Assert.AreEqual("Native",info.finalFilter);
                 var mainInfo = ((UniversalRenderer)camera.GetUniversalAdditionalCameraData().scriptableRenderer).lastCameraRenderTargetInfo;
-                Assert.AreEqual(LowResolutionSettings.CalculateRenderSize(width,height,540),mainInfo.renderSize);
+                Assert.AreEqual(LowResolutionSettings.CalculateRenderSize(width,height,mainData.lowResolution.maximumHeight),mainInfo.renderSize);
                 RenderTexture.active = target; pixels.ReadPixels(new Rect(0,0,width,height),0,0); pixels.Apply();
                 var line = Enumerable.Range(0,64).Select(index => pixels.GetPixel(width/2-32+index,height/2).r).ToArray();
                 for (int index = 1; index < line.Length; index++) Assert.Greater(Mathf.Abs(line[index]-line[index-1]),.8f,
@@ -165,6 +176,7 @@ namespace CardPresentation.Tests
             }
             finally
             {
+                crt.settings.crtEnabled = savedCrtEnabled;
                 RenderPipelineManager.beginCameraRendering -= EmitPreviewCanvas;
                 RenderTexture.active = previous;
                 foreach (var camera in scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<Camera>(true))) camera.targetTexture = null;

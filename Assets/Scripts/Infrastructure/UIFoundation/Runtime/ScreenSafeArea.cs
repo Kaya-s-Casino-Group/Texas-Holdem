@@ -44,21 +44,34 @@ namespace UIFoundation
             return Rect.MinMaxRect(left+xPad, bottom+yPad, right-xPad, top-yPad);
         }
 
+        /// <summary>Maps device insets to the actual display before intersecting a camera or Canvas viewport.</summary>
+        public static Rect CalculateDisplaySafeRect(Rect viewport, Rect safeArea, Vector2 screenSize, Vector2 displaySize, float padding)
+        {
+            if (screenSize.x > 0 && screenSize.y > 0)
+                safeArea = Rect.MinMaxRect(safeArea.xMin / screenSize.x * displaySize.x, safeArea.yMin / screenSize.y * displaySize.y,
+                    safeArea.xMax / screenSize.x * displaySize.x, safeArea.yMax / screenSize.y * displaySize.y);
+            return CalculateSafeRect(viewport, safeArea, padding);
+        }
+
+        public static Rect CameraRect(Camera camera)
+        {
+            var viewport = camera.pixelRect;
+            // Off-screen textures are independent of device cutouts and system screen metrics.
+            if (camera.targetTexture != null) return viewport;
+            var rect = camera.rect;
+            var display = new Vector2(viewport.width / Mathf.Max(.000001f, rect.width), viewport.height / Mathf.Max(.000001f, rect.height));
+            return CalculateDisplaySafeRect(viewport, Screen.safeArea, new Vector2(Screen.width, Screen.height), display,
+                Application.isMobilePlatform ? MobilePadding : 0);
+        }
+
         public static Rect ScreenRect(Canvas owner)
         {
             var screen = new Rect(0, 0, Screen.width, Screen.height);
             var viewport = owner != null ? owner.pixelRect : screen;
-            var safe = Screen.safeArea;
-            // Device Simulator/editor windows may report a different pixel size from the canvas display.
-            // Normalize the system insets before converting to the actual rendering display's pixels.
-            if (owner != null && screen.width > 0 && screen.height > 0)
-            {
-                var display = owner.renderingDisplaySize;
-                safe = Rect.MinMaxRect(safe.xMin/screen.width*display.x, safe.yMin/screen.height*display.y,
-                    safe.xMax/screen.width*display.x, safe.yMax/screen.height*display.y);
-            }
             bool inset = Application.isMobilePlatform || Screen.safeArea != screen;
-            return CalculateSafeRect(viewport, safe, inset ? MobilePadding * (owner != null ? owner.scaleFactor : 1) : 0);
+            return CalculateDisplaySafeRect(viewport, Screen.safeArea, screen.size,
+                owner != null ? owner.renderingDisplaySize : screen.size,
+                inset ? MobilePadding * (owner != null ? owner.scaleFactor : 1) : 0);
         }
 
         public void Refresh()

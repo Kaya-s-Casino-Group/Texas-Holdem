@@ -268,7 +268,8 @@ namespace CardPresentation.Tests
                 foreach (var corner in corners)
                 {
                     var viewport = f.Camera.WorldToViewportPoint(corner);
-                    Assert.That(viewport.x, Is.InRange(0f, 1f)); Assert.That(viewport.y, Is.InRange(0f, 1f));
+                    string context = $"corner={viewport} screen={Screen.width}x{Screen.height} safe={Screen.safeArea} pixels={f.Camera.pixelRect} rect={((RectTransform)instance.transform).rect} scale={instance.transform.lossyScale}";
+                    Assert.That(viewport.x, Is.InRange(0f, 1f), context); Assert.That(viewport.y, Is.InRange(0f, 1f), context);
                 }
                 f.Camera.enabled = false; f.Presenter.RefreshPresentation(); Assert.IsFalse(f.Presenter.IsVisible);
             }

@@ -195,7 +195,7 @@ namespace CardInteraction
             float yExtent = Mathf.Abs(camera.WorldToViewportPoint(position + camera.transform.up * halfHeight).y - viewport.y);
             float xMargin = xExtent + viewportPadding / Mathf.Max(1, camera.pixelWidth);
             float yMargin = yExtent + viewportPadding / Mathf.Max(1, camera.pixelHeight);
-            var safe = ScreenSafeArea.CalculateSafeRect(camera.pixelRect, Screen.safeArea, Application.isMobilePlatform ? 16 : 0);
+            var safe = ScreenSafeArea.CameraRect(camera);
             float left = (safe.xMin-camera.pixelRect.xMin)/camera.pixelWidth + xMargin;
             float right = (safe.xMax-camera.pixelRect.xMin)/camera.pixelWidth - xMargin;
             float bottom = (safe.yMin-camera.pixelRect.yMin)/camera.pixelHeight + yMargin;

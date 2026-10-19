@@ -1,5 +1,7 @@
 # 战斗 SO 依赖清理与 XML 迁移验证
 
+后续状态：本记录中的 5 项既有失败已完成排查修复，见[完整回归修复记录](2026-10-19-full-regression-fixes.md)。下方保留该阶段的原始结果。
+
 ## 结果
 
 删除 `Assets/Scripts/Gameplay/SingleBattle/Configuration`（17 个 Profile、工厂、2 个专用编辑器、旧工厂测试及 3 个程序集）和 `Assets/GameAssets/SingleBattle/Configuration`（19 个战斗 SO）。对应目录及资源的 `.meta` 同步删除。扫描 Assets 下所有 scene / prefab / asset / asmdef，对已删除 GUID 的引用为 0。

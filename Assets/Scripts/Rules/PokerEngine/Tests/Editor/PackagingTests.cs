@@ -216,6 +216,20 @@ namespace PokerEngine.Tests
             Directory.GetFiles("Assets", "*.asmdef", SearchOption.AllDirectories)
                 .Concat(Directory.GetFiles(EnginePackagePath, "*.asmdef", SearchOption.AllDirectories));
 
+        // Unity does not import dot-prefixed files/directories (including macOS .DS_Store).
+        // Filter by name, never by whether metadata exists: real resources must still fail on missing metadata.
+        private static bool IsImportableContentPath(string relativePath) =>
+            relativePath.Replace('\\', '/').Split('/').All(part => !part.StartsWith(".", StringComparison.Ordinal));
+
+        [TestCase(".DS_Store", false)]
+        [TestCase("Content/.DS_Store", false)]
+        [TestCase(".cache/generated.xml", false)]
+        [TestCase("Content/.hidden/rules.xml", false)]
+        [TestCase("Runtime/Core.cs", true)]
+        [TestCase("Content/MissingMetadata.xml", true)]
+        public void MetadataValidationOnlyExcludesUnityHiddenPaths(string path, bool importable) =>
+            Assert.That(IsImportableContentPath(path), Is.EqualTo(importable));
+
         [Test]
         public void EngineAssetsHaveImportedUniqueMetadata()
         {
@@ -223,7 +237,7 @@ namespace PokerEngine.Tests
             string root = EnginePackagePath;
             var paths = Directory.GetDirectories(root, "*", SearchOption.AllDirectories)
                 .Concat(Directory.GetFiles(root, "*", SearchOption.AllDirectories).Where(p => !p.EndsWith(".meta")));
-            foreach (var path in paths)
+            foreach (var path in paths.Where(p => IsImportableContentPath(p.Substring(root.Length + 1))))
             {
                 Assert.That(File.Exists(path + ".meta"), Is.True, path);
                 string assetPath = "Packages/com.kaya.battle-engine/" + path.Substring(root.Length + 1).Replace('\\', '/');
