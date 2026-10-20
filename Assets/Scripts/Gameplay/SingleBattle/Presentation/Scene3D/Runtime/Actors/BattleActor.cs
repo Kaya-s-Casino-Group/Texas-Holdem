@@ -29,7 +29,7 @@ namespace Poker.SingleBattle
         {
             if (string.IsNullOrEmpty(effectKey) || effect?.Before == null || effect.After == null)
                 throw new ArgumentException("A display shield fact needs an identity and before/after units.");
-            return shieldLedger.Apply(effectKey, checked((int)effect.Before.Block), checked((int)effect.After.Block), cards);
+            return shieldLedger.Apply(effectKey, effect.Before.Block, effect.After.Block, cards);
         }
         /// <summary>Neutral scene adapter. It consumes already-projected facts and never reads the rule session.</summary>
         public BattlePresentationOperation PresentDisplay(BattlePresentationKind kind, EffectDisplayData effect,
@@ -54,8 +54,8 @@ namespace Poker.SingleBattle
             bool blockChanged = Shields.TotalBlock != unit.Block;
             if (reset || identityChanged) ResetPresentation();
             displayUnit = unit;
-            if (identityChanged) shieldLedger.Reset(checked((int)unit.Block));
-            else shieldLedger.Reconcile(checked((int)unit.Block));
+            if (identityChanged) shieldLedger.Reset(unit.Block);
+            else shieldLedger.Reconcile(unit.Block);
             (Presentation as IBattleActorDisplayPresentation)?.SynchronizeDisplay(unit);
             if (reset || first || identityChanged || blockChanged)
                 (Presentation as IShieldPresentation)?.SynchronizeShields(Shields);

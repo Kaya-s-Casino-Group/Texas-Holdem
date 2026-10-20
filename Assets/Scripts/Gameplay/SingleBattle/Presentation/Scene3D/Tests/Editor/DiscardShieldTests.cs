@@ -37,6 +37,23 @@ namespace Poker.SingleBattle.Tests
             ledger.Apply("gain",3,27,Cards(3));Assert.AreEqual(2,ledger.Snapshot.Batches.Count);
             Assert.AreEqual(1,new ShieldBatch("large",int.MaxValue,int.MaxValue-1,Cards(52)).DissolvedCount);
         }
+        [Test] public void Int64ShieldsPreserveFifoAndExactDissolveBoundaries()
+        {
+            var ledger = new ShieldLedger();
+            long initial = (long)int.MaxValue + 10;
+            ledger.Reset(initial);
+            ledger.Apply("gain", initial, long.MaxValue, Cards(52));
+            var hit = ledger.Apply("hit", long.MaxValue, long.MaxValue - initial - 1);
+            Assert.AreEqual(long.MaxValue - initial - 1, hit.TotalBlock);
+            Assert.AreEqual(1, hit.Batches.Count);
+            Assert.AreEqual("gain", hit.Batches[0].Id);
+            Assert.AreEqual(1, hit.Batches[0].DissolvedCount);
+            Assert.AreEqual(1, new ShieldBatch("one", long.MaxValue, long.MaxValue - 1, Cards(52)).DissolvedCount);
+            Assert.AreEqual(52, new ShieldBatch("last", long.MaxValue, 1, Cards(52)).DissolvedCount);
+            Assert.AreEqual(52, new ShieldBatch("all", long.MaxValue, 0, Cards(52)).DissolvedCount);
+            ledger.Reconcile(0);
+            Assert.IsEmpty(ledger.Snapshot.Batches);
+        }
         private static void Resources(out Mesh mesh,out Material material,out CardAtlasData atlas)
         {
             mesh=AssetDatabase.LoadAssetAtPath<Mesh>("Assets/GameAssets/SingleBattle/Presentation/Scene3D/ShieldAssets/ShieldCard.asset");

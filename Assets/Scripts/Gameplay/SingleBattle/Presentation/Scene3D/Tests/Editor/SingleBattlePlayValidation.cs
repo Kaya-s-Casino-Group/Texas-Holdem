@@ -21,7 +21,8 @@ namespace Poker.SingleBattle.Tests
         private static TextAsset originalContent;
         private static string originalEncounter;
         private static BattleTestContent testContent;
-        private static int stage, playerHealth, enemyHealth, enemyDamage, automaticPlays;
+        private static int stage, automaticPlays;
+        private static long playerHealth, enemyHealth, enemyDamage;
         private static int maxEnergy, initialEnergy, playEnergyCost, discardEnergyCost;
         private static long scoreRevision;
         private static double deadline;
@@ -50,7 +51,7 @@ namespace Poker.SingleBattle.Tests
             if (candidate.Players.Count != 1 || candidate.Enemies.Count != 1) throw new InvalidOperationException("此项验证需要 1v1 的 SingleBattleDemo 场景。");
             host = candidate; originalContent = host.ContentXml; originalEncounter = host.ContentEncounterId;
             testContent = new BattleTestContent(host, originalContent.text, originalEncounter);
-            playerHealth = Get("playerHealth"); enemyHealth = Get("enemyHealth"); enemyDamage = Get("enemyDamage");
+            playerHealth = testContent.GetLong("playerHealth"); enemyHealth = testContent.GetLong("enemyHealth"); enemyDamage = testContent.GetLong("enemyDamage");
             maxEnergy = Get("maxEnergy"); initialEnergy = Get("initialEnergy"); playEnergyCost = Get("playEnergyCost"); discardEnergyCost = Get("discardEnergyCost");
             enemyRestScale = host.Enemy.Visual.localScale;
             try

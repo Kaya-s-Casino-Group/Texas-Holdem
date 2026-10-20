@@ -79,7 +79,7 @@ namespace Poker.SingleBattle.Tests
             Select(host, 1); host.RefreshCandidate();
             var cursors = new List<DisplayCursor>();
             host.PresentationDirector.Display.Changed += update => cursors.Add(update.Current.Cursor);
-            int oldEnemy = host.Enemy.Unit.Health;
+            long oldEnemy = host.Enemy.Unit.Health;
             var cameraPosition = cameraTarget.localPosition;
             var cameraRotation = cameraTarget.localRotation;
             Assert.AreEqual(1, host.Player.Play(host.Actions.Hand.CaptureSelection(), true));

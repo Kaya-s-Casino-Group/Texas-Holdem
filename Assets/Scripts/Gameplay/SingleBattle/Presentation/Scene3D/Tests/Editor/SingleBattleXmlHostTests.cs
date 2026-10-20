@@ -92,7 +92,7 @@ namespace Poker.SingleBattle.Tests
             }
         }
 
-        private static string Xml(int players = 1, int enemies = 1, int health = 123, int damage = 13)
+        private static string Xml(int players = 1, int enemies = 1, long health = 123, long damage = 13)
         {
             var hands = string.Concat(Enum.GetValues(typeof(HandCategory)).Cast<HandCategory>().Select(category =>
                 "<Hand category=\"" + category + "\"><Effect id=\"damage/1\" kind=\"Damage\" amount=\"" +
@@ -122,6 +122,66 @@ namespace Poker.SingleBattle.Tests
         }
 
         private static string Explain(IEnumerable<BattleDiagnostic> diagnostics) => string.Join("\n", diagnostics.Select(item => item.Code + ": " + item.Message));
+
+        [Test]
+        public void Int64XmlVitalsAndEffectsReachActorsAndShieldsWithoutNarrowing()
+        {
+            using (var f = new Fixture())
+            {
+                var xml = Xml(health: 6000000000L, damage: 3000000000L)
+                    .Replace("maxHealth=\"1000\"", "maxHealth=\"7000000000\"")
+                    .Replace("discardBlockPerCard=\"6\"", "discardBlockPerCard=\"3000000000\"");
+                f.Host.ConfigureContent(f.Content(xml), "fight");
+                f.Host.StartBattle();
+                Assert.AreEqual(6000000000L, f.Host.Player.Unit.Health);
+                Assert.AreEqual(7000000000L, f.Host.Enemy.Unit.Health);
+                Assert.AreEqual(1, f.Host.Player.Play(f.SelectOne(), false));
+                Assert.AreEqual(4000000000L, f.Host.Enemy.Unit.Health);
+                Assert.AreEqual(1, f.Host.Player.Discard(f.SelectOne(), false));
+                Assert.AreEqual(3000000000L, f.Host.Player.Unit.Block);
+                Assert.AreEqual(3000000000L, f.Host.Player.Shields.TotalBlock);
+                f.HandView.CompleteTransitions();
+                Assert.IsTrue(f.Host.EndTurn(false));
+                Assert.AreEqual(6000000000L, f.Host.Player.Unit.Health);
+                Assert.AreEqual(2999999993L, f.Host.Player.Shields.TotalBlock);
+                f.Host.SynchronizeBattle();
+                Assert.AreEqual(6000000000L, f.Host.Player.DisplayUnit.Health);
+                Assert.AreEqual(4000000000L, f.Host.Enemy.DisplayUnit.Health);
+                Assert.AreEqual(2999999993L, f.Host.Player.Shields.TotalBlock);
+            }
+        }
+
+        [Test]
+        public void AdministratorPatchPublishesThroughPlaybackToActorsAndHandWithoutPlayingCards()
+        {
+            using (var f = new Fixture())
+            {
+                f.Host.ConfigureContent(f.Content(Xml()), "fight");
+                f.Host.StartBattle(); f.HandView.CompleteTransitions();
+                var before = f.Host.AuthorityState;
+                var owner = f.Host.Player.ParticipantId;
+                var kept = before.Zone(CardZoneKinds.Hand, owner).Cards.Take(2).ToArray();
+                var patch = new BattleAdminPatch(
+                    vitals: new[] { new BattleAdminVitals(owner, health: 5000000000L, maxHealth: 6000000000L, block: 3000000000L) },
+                    zones: new[] { new BattleAdminZone(owner, CardZoneKinds.Hand, kept.Select(id => new BattleAdminCard(instanceId: id.Value))) },
+                    gold: new[] { new BattleAdminGold(owner, 9000000000L) }, reason: "Unity 管理员接口同步验证");
+                var result = f.Host.Playback.ApplyAdmin(before.Revision, patch);
+                Assert.IsTrue(result.Accepted, result.Error.ToString());
+                Assert.AreEqual(before.Revision + 1, result.State.Revision);
+                Assert.AreSame(result.State, f.Host.State);
+                Assert.AreSame(result.State, f.Host.AuthorityState);
+                Assert.AreEqual(5000000000L, f.Host.Player.Unit.Health);
+                Assert.AreEqual(5000000000L, f.Host.Player.DisplayUnit.Health);
+                Assert.AreEqual(3000000000L, f.Host.Player.Shields.TotalBlock);
+                Assert.AreEqual(9000000000L, result.State.GoldFor(owner));
+                CollectionAssert.AreEqual(kept, f.Hand.Cards.Select(card => card.Card.Id));
+                Assert.AreEqual(before.Duel.Player(owner).Energy.Energy, result.State.Duel.Player(owner).Energy.Energy);
+                Assert.AreEqual(before.Duel.CompletedRounds, result.State.Duel.CompletedRounds);
+                Assert.AreEqual(before.Duel.Scores.Count, result.State.Duel.Scores.Count);
+                Assert.IsNull(f.Host.LastPlayResolution);
+                Assert.IsNull(f.Host.LastDiscardResolution);
+            }
+        }
 
         [Test]
         public void GeneratedTeamEncounterBuildsIndependentTwoVersusThreeSlots()

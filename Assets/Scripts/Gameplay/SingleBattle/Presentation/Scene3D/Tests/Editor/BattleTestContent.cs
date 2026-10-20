@@ -40,16 +40,17 @@ namespace Poker.SingleBattle.Tests
         }
         private static string AttributeName(string field) => field == "playerHealth" || field == "enemyHealth" ? "maxHealth" :
             field == "enemyDamage" ? "damage" : field == "playRefillTiming" ? "playRefill" : field == "discardRefillTiming" ? "discardRefill" : field;
-        public int Get(string field)
+        public int Get(string field) => checked((int)GetLong(field));
+        public long GetLong(string field)
         {
             string value = (string)Actor(field.StartsWith("enemy", StringComparison.Ordinal)).Attribute(AttributeName(field));
             if (field.EndsWith("RefillTiming", StringComparison.Ordinal)) return (int)Enum.Parse(typeof(CardDuelRefillTiming), value ?? (field == "playRefillTiming" ? "NextPlayerTurn" : "AfterAction"));
             if (value == null) return field == "maxEnergy" || field == "initialEnergy" ? 3 : 1;
-            return int.Parse(value, System.Globalization.CultureInfo.InvariantCulture);
+            return long.Parse(value, System.Globalization.CultureInfo.InvariantCulture);
         }
-        public void Set(string field, int value)
+        public void Set(string field, long value)
         {
-            object serialized = field.EndsWith("RefillTiming", StringComparison.Ordinal) ? ((CardDuelRefillTiming)value).ToString() : (object)value;
+            object serialized = field.EndsWith("RefillTiming", StringComparison.Ordinal) ? ((CardDuelRefillTiming)checked((int)value)).ToString() : (object)value;
             Actor(field.StartsWith("enemy", StringComparison.Ordinal)).SetAttributeValue(AttributeName(field), serialized); Apply();
         }
         public void SetReward(int? amount) { Actor().SetAttributeValue("discardBlockPerCard", amount); Apply(); }

@@ -32,8 +32,8 @@ namespace Poker.SingleBattle.Tests
                 Assert.That(hand.Cards.Count, Is.EqualTo(8));
                 Assert.That(hud.RuleFeedbackText, Does.Contain("当前状态"));
                 report.openingFeedback = hud.RuleFeedbackText;
-                int health = host.Player.Unit.Health;
-                int enemyHealth = host.Enemy.Unit.Health;
+                long health = host.Player.Unit.Health;
+                long enemyHealth = host.Enemy.Unit.Health;
                 SelectOne(hand, view);
                 Assert.That(host.Player.Play(hand.CaptureSelection(), false), Is.EqualTo(1));
                 Assert.That(host.Enemy.Unit.Health, Is.LessThan(enemyHealth));

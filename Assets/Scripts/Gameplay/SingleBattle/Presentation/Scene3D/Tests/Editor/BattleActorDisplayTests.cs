@@ -74,6 +74,26 @@ namespace Poker.SingleBattle.Tests
             }
         }
 
+        [Test] public void NeutralActorSynchronizesInt64HealthAndShieldWithoutNarrowing()
+        {
+            using (var f = new Fixture())
+            {
+                long health = (long)int.MaxValue + 100;
+                var before = new UnitDisplayData("unit", "Unit", "player", health, health, 0, 3, 3);
+                var after = new UnitDisplayData("unit", "Unit", "player", health, health, long.MaxValue, 3, 3);
+                f.Actor.SynchronizeDisplay(before, true);
+                var gain = new EffectDisplayData("GainBlock", "unit", "unit", long.MaxValue, 0, 0, before, after);
+                var shields = f.Actor.RecordDisplayBlock("large/gain", gain, new[] { new ShieldCard("one", "spades_a") });
+                Assert.AreEqual(long.MaxValue, shields.TotalBlock);
+                f.Actor.SynchronizeDisplay(after, true);
+                Assert.AreEqual(health, f.Actor.DisplayUnit.Health);
+                Assert.AreEqual(long.MaxValue, f.Actor.Shields.TotalBlock);
+                var replacement = new UnitDisplayData("other", "Other", "player", health, health, health, 3, 3);
+                f.Actor.SynchronizeDisplay(replacement, true);
+                Assert.AreEqual(health, f.Actor.Shields.TotalBlock);
+            }
+        }
+
         [Test] public void ActualAttackTweenEmitsImpactAtForwardEndpointBeforeCompletionAndNeverAfterCancel()
         {
             using (var f = new Fixture())
