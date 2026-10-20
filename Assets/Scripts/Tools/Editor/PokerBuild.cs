@@ -86,7 +86,6 @@ public static class PokerBuild
         SessionState.EraseString(PendingIOSScene);
         try
         {
-            RigidVATAssetImport.ConfigureAndValidateDataTextures();
             File.WriteAllText(IOSOutput + "/build-status.txt", "Building: " + scene);
             var report = BuildPipeline.BuildPlayer(new[] { scene }, IOSOutput,
                 BuildTarget.iOS, BuildOptions.Development);
@@ -116,7 +115,7 @@ public static class PokerBuild
         PlayerSettings.defaultScreenWidth = 1280;
         PlayerSettings.defaultScreenHeight = 800;
         PlayerSettings.fullScreenMode = FullScreenMode.Windowed;
-        var report = BuildPipeline.BuildPlayer(new[] { "Assets/Scenes/MainScene.unity" }, "Builds/Pocket Poker.app", BuildTarget.StandaloneOSX, BuildOptions.None);
+        var report = BuildPipeline.BuildPlayer(new[] { "Assets/Scenes/BattleDemo.unity" }, "Builds/Pocket Poker.app", BuildTarget.StandaloneOSX, BuildOptions.None);
         if (report.summary.result != BuildResult.Succeeded) throw new System.Exception("Build failed: " + report.summary.result);
         Debug.Log("POKER_BUILD_OK");
     }

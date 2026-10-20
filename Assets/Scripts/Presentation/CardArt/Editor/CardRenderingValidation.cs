@@ -175,7 +175,7 @@ namespace CardArt.Editor
 
         static void CreatePixelPresentation(Camera source)
         {
-            RetroRendering.Editor.Retro540Setup.EnsureFeature();
+
             source.targetTexture = null;
             source.depth = 0;
         }

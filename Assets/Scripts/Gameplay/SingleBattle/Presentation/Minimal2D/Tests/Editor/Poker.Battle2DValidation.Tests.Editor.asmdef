@@ -10,7 +10,6 @@
     "PokerEngine.Composition",
     "PokerEngine.Encounters",
     "CardArt.Runtime",
-    "Poker.Rendering.Forward2D.Runtime",
     "Unity.TextMeshPro",
     "Unity.ugui",
     "Unity.RenderPipelines.Core.Runtime",

@@ -63,8 +63,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0b50013fe284c41538f3dbf667059efd, type: 3}
   m_Name:
   m_EditorClassIdentifier:
-  contentXml: {fileID: 4900000, guid: 2e1406ff6b4f4cd68955b4ca6884b110, type: 3}
-  encounterId: single-battle-new
+  contentXml: {fileID: 4900000, guid: 16f0bf3080ac4be0a7d91fba2197ebb7, type: 3}
+  encounterId: standard-single-battle
 --- !u!114 &998087704204512662
 MonoBehaviour:
   m_ObjectHideFlags: 0

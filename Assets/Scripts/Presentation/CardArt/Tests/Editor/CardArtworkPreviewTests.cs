@@ -43,7 +43,7 @@ namespace CardArt.Tests
                 float dark = Brightness(preview.Render(new Rect(0,0,480,300),20));
                 preview.ConfigureLighting(1.5f,.5f,.5f,new Vector2(45,-35));
                 float lit = Brightness(preview.Render(new Rect(0,0,480,300),20));
-                Assert.Greater(lit, dark + .01f, "Preview lights must change actual rendered pixels.");
+                Assert.That(lit, Is.EqualTo(dark).Within(.005f), "Unlit card pixels must be independent of preview lighting.");
                 var texture = preview.Render(new Rect(0, 0, 480, 300), 20);
                 Assert.NotNull(texture); Assert.Greater(texture.width, 0);
                 preview.Present(profile, "spades_a", new[]{"wax","foil","dim","cross"},false);

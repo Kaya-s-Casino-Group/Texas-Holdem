@@ -121,49 +121,6 @@ namespace Poker.SingleBattle.Tests
 
         private static string Explain(IEnumerable<BattleDiagnostic> diagnostics) => string.Join("\n", diagnostics.Select(item => item.Code + ": " + item.Message));
 
-        [TestCase("SingleBattleDemo", "single-battle", 800, 1200, 240, 20, true)]
-        [TestCase("ForestRuins", "single-battle", 800, 1200, 240, 20, true)]
-        [TestCase("TeamBattleDemo", "demo-battle", 40, 75, 7, 445, false)]
-        public void MigratedScenesKeepTheirAuthoredRosterAndRules(string name, string encounter, int health, int enemyHealth, int damage, int rounds, bool unlimited)
-        {
-            var active = SceneManager.GetActiveScene();
-            string path = "Assets/Scenes/" + name + ".unity";
-            var scene = SceneManager.GetSceneByPath(path); bool opened = !scene.IsValid() || !scene.isLoaded;
-            if (opened) scene = EditorSceneManager.OpenScene(path, OpenSceneMode.Additive);
-            try
-            {
-                var adapter = scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<SingleBattleSceneAdapter>(true)).Single();
-                Assert.That(adapter.ContentEncounterId, Is.EqualTo(encounter));
-                Assert.That(adapter.ContentXml, Is.SameAs(AssetDatabase.LoadAssetAtPath<TextAsset>(Editor.SingleBattleSetup.SceneBattleContentPath)));
-                var session = adapter.BuildConfiguredSession("migration", HmacDeckShuffler.FromSeed(new byte[32]));
-                var state = session.State; var player = state.Duel.Players.Single(); var enemy = state.Duel.Enemies.Single();
-                Assert.That(state.HasStarted, Is.False); Assert.That(adapter.Session, Is.Null);
-                Assert.That(state.Duel.Combat.Get(player.Id).Health, Is.EqualTo(health));
-                Assert.That(state.Duel.Combat.Get(enemy.Id).Health, Is.EqualTo(enemyHealth));
-                Assert.That(session.Engine.Duel.Definition.RoundLimit, Is.EqualTo(rounds));
-                Assert.That(player.Rules.UnlimitedDiscards, Is.EqualTo(unlimited));
-                Assert.That(player.Rules.HandSize, Is.EqualTo(8)); Assert.That(player.Rules.MaxEnergy, Is.EqualTo(3));
-                Assert.That(player.Rules.PlayEnergyCost, Is.EqualTo(1)); Assert.That(player.Rules.DiscardEnergyCost, Is.EqualTo(1));
-                Assert.That(player.Rules.DamagePolicy, Is.InstanceOf<EqualScoreDamageRule>());
-                Assert.That(session.Execute(state.Revision, player.Id, CardDuelAction.Start).Accepted, Is.True);
-                var before = session.State;
-                var preview = session.Engine.Duel.PreviewEnemyAction(before.Duel, enemy.Id);
-                Assert.That(preview.Hits.Single().SettledDamage, Is.EqualTo(damage));
-                var discarded = before.Zone(CardZoneKinds.Hand, player.Id).Cards.Take(1).ToArray();
-                Assert.That(session.Execute(before.Revision, player.Id, CardDuelAction.Discard, discarded).Accepted, Is.True);
-                Assert.That(session.State.Duel.Combat.Get(player.Id).Block, Is.EqualTo(unlimited ? 8 : 0));
-                Assert.That(session.State.Zone(CardZoneKinds.Hand, player.Id).Cards.Count, Is.EqualTo(8));
-                Assert.That(session.Execute(session.State.Revision, player.Id, CardDuelAction.EndTurn).Accepted, Is.True);
-                Assert.That(session.State.Duel.Combat.Get(player.Id).Health, Is.EqualTo(health - damage + (unlimited ? 8 : 0)));
-                Assert.That(session.State.Duel.Combat.Get(player.Id).Block, Is.Zero);
-                Assert.That(SceneManager.GetActiveScene(), Is.EqualTo(active));
-                foreach (var root in scene.GetRootGameObjects())
-                    foreach (var transform in root.GetComponentsInChildren<Transform>(true))
-                        Assert.That(GameObjectUtility.GetMonoBehavioursWithMissingScriptCount(transform.gameObject), Is.Zero, transform.name);
-            }
-            finally { if (opened) EditorSceneManager.CloseScene(scene, true); }
-        }
-
         [Test]
         public void GeneratedTeamEncounterBuildsIndependentTwoVersusThreeSlots()
         {
@@ -177,10 +134,10 @@ namespace Poker.SingleBattle.Tests
         }
 
         [Test]
-        public void DemoNewSceneBindsXmlContentAndBuildsFromXmlOnly()
+        public void BattleDemoBindsCurrentLocalRulesAndBuildsFromXmlOnly()
         {
             var active = SceneManager.GetActiveScene();
-            const string path = "Assets/Scenes/SingleBattleDemoNew.unity";
+            const string path = "Assets/Scenes/BattleDemo.unity";
             var scene = SceneManager.GetSceneByPath(path);
             bool opened = !scene.IsValid() || !scene.isLoaded;
             if (opened) scene = EditorSceneManager.OpenScene(path, OpenSceneMode.Additive);
@@ -188,8 +145,8 @@ namespace Poker.SingleBattle.Tests
             {
                 var host = scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<SingleBattleSceneAdapter>(true)).Single();
                 Assert.That(host.ContentXml, Is.SameAs(AssetDatabase.LoadAssetAtPath<TextAsset>(
-                    "Packages/com.kaya.battle-engine/Content/SingleBattleDemoNew.xml")));
-                Assert.That(host.ContentEncounterId, Is.EqualTo("single-battle-new"));
+                    "Packages/com.kaya.battle-engine/Content/StandardSingleBattle.xml")));
+                Assert.That(host.ContentEncounterId, Is.EqualTo("standard-single-battle"));
                 var built = host.BuildConfiguredSession("scene-validation", HmacDeckShuffler.FromSeed(new byte[32]));
                 Assert.That(built.State.HasStarted, Is.False);
                 Assert.That(built.State.Duel.Players.Count, Is.EqualTo(host.Players.Count));
@@ -277,17 +234,16 @@ namespace Poker.SingleBattle.Tests
             {
                 f.Host.ConfigureContent(AssetDatabase.LoadAssetAtPath<TextAsset>("Packages/com.kaya.battle-engine/Content/StandardSingleBattle.xml"), "standard-single-battle");
                 f.Host.StartBattle(); f.HandView.CompleteTransitions();
-                Assert.That(f.Hand.Cards, Is.Empty);
-                Assert.That(f.Host.DrawCards(5, false), Is.True); f.HandView.CompleteTransitions();
-                Assert.That(f.Hand.Cards.Count, Is.EqualTo(5));
+                Assert.That(f.Hand.Cards.Count, Is.EqualTo(8));
+                Assert.That(f.Host.SkipDraw(false), Is.True); f.HandView.CompleteTransitions();
                 Assert.That(f.Host.State.FlowFor(f.Host.Player.ParticipantId).Window, Is.EqualTo(BattlePlayerWindow.Action));
                 var discarded = f.SelectOne();
                 Assert.That(f.Host.Player.Discard(discarded, false), Is.EqualTo(1)); f.HandView.CompleteTransitions();
                 Assert.That(f.Host.State.Duel.CompletedRounds, Is.EqualTo(1));
-                Assert.That(f.Hand.Cards.Count, Is.EqualTo(4));
+                Assert.That(f.Hand.Cards.Count, Is.EqualTo(7));
                 Assert.That(f.Host.State.FlowFor(f.Host.Player.ParticipantId).Window, Is.EqualTo(BattlePlayerWindow.Draw));
                 Assert.That(f.Host.SkipDraw(false), Is.True);
-                Assert.That(f.Hand.Cards.Count, Is.EqualTo(4));
+                Assert.That(f.Hand.Cards.Count, Is.EqualTo(7));
                 Assert.That(f.Host.State, Is.SameAs(f.Host.AuthorityState));
             }
         }

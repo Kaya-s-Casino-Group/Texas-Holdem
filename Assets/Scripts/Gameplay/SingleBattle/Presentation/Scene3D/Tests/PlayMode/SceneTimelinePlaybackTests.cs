@@ -45,7 +45,7 @@ namespace Poker.SingleBattle.Tests
         [UnityTest]
         public IEnumerator AuthoredSceneUsesTimelineForOpeningSelectionPlayDiscardAndCancellation()
         {
-            yield return EditorSceneManager.LoadSceneAsyncInPlayMode("Assets/Scenes/SingleBattleDemoNew.unity", new LoadSceneParameters(LoadSceneMode.Single));
+            yield return EditorSceneManager.LoadSceneAsyncInPlayMode("Assets/Scenes/BattleDemo.unity", new LoadSceneParameters(LoadSceneMode.Single));
             var host = Object.FindObjectsOfType<SingleBattleSceneAdapter>().Single();
             Assert.AreSame(host.SceneHost, host.GetComponent<BattleSceneHost>());
             Assert.AreSame(host, host.SceneHost.SceneAdapter);
@@ -65,6 +65,8 @@ namespace Poker.SingleBattle.Tests
             Assert.AreEqual(8, host.Actions.Hand.Cards.Count);
             Assert.AreSame(host.AuthorityState, host.State);
             Assert.IsTrue(host.CanEndTurn);
+            Assert.IsTrue(host.SkipDraw());
+            yield return Idle(host);
             var authority = host.AuthorityState;
             Select(host, 1); host.RefreshCandidate();
             Assert.AreEqual(CandidateState.Valid, host.Candidate.State);
@@ -111,16 +113,17 @@ namespace Poker.SingleBattle.Tests
             Assert.Less(Quaternion.Angle(cameraRotation, cameraTarget.localRotation), .001f);
             Assert.AreSame(settledPlay, host.State);
             Assert.Less(host.Enemy.Unit.Health, oldEnemy);
-            Assert.AreEqual(8, host.Actions.Hand.Cards.Count);
+            Assert.AreEqual(7, host.Actions.Hand.Cards.Count);
             Assert.AreEqual(cursors.Count, cursors.Select(c => c.Sequence).Distinct().Count());
             Assert.IsTrue(cursors.Zip(cursors.Skip(1), (a,b) => a.Sequence < b.Sequence).All(x => x));
             Assert.IsNull(host.PresentationDirector.LastError);
             Select(host, 1);
             Assert.AreEqual(1, host.Player.Discard(host.Actions.Hand.CaptureSelection(), true));
             yield return Idle(host);
-            Assert.AreEqual(8, host.Player.Unit.Block);
-            Assert.AreEqual(8, host.Player.Shields.TotalBlock);
-            Assert.AreEqual(8, host.Actions.Hand.Cards.Count);
+            Assert.AreSame(host.AuthorityState, host.State);
+            Assert.AreEqual(1, host.State.Duel.CompletedRounds);
+            Assert.AreEqual(host.Player.Unit.Block, host.Player.Shields.TotalBlock);
+            Assert.AreEqual(6, host.Actions.Hand.Cards.Count);
             Assert.IsNull(host.PresentationDirector.LastError);
             Assert.IsTrue(host.EndTurn(true));
             yield return null;
@@ -168,6 +171,7 @@ namespace Poker.SingleBattle.Tests
             Assert.NotNull(first.Session); Assert.NotNull(second.Session);
             Assert.IsTrue(first.AuthorityState.HasStarted); Assert.IsTrue(second.AuthorityState.HasStarted);
             var adapter = (BattleTimelineSceneAdapter)first.SceneAdapter;
+            first.Playback.Submit(adapter.ObserverId, CardDuelAction.SkipDraw, animate: false);
             var untouched = second.AuthorityState;
             adapter.SelectCards(first.AuthorityState.Zone(CardZoneKinds.Hand, adapter.ObserverId).Cards.Take(1).Select(id => id.Value));
             Assert.IsTrue(adapter.PlaySelected().Accepted);

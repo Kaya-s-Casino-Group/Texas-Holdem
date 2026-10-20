@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using CardArt;
 using CardArt.Editor;
-using RetroRendering;
 using TMPro;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -25,8 +24,8 @@ namespace Poker.Battle2DValidation.Editor
         public const string ArtProfilePath = ArtFolder + "/Battle2DCardArt.asset";
         public const string ActorSpritePath = ArtFolder + "/Battle2DActor.png";
         public const string ActorMaterialPath = ArtFolder + "/Battle2DActor.mat";
-        public const string PipelinePath = SettingsFolder + "/MainURP.asset";
-        public const string RendererPath = SettingsFolder + "/Battle2DRenderer.asset";
+        public const string PipelinePath = SettingsFolder + "/BattleURP.asset";
+        public const string RendererPath = SettingsFolder + "/BattleForwardRenderer.asset";
         private const string SourceCardPath = "Assets/GameAssets/CardArt/Prefabs/Card.prefab";
         private const string AtlasPath = "Assets/Art/CardAtlases/Classic.asset";
         private const string FontPath = "Assets/Fonts/FusionPixelFont/TMP/FusionPixel12pxProportional.asset";
@@ -159,12 +158,12 @@ namespace Poker.Battle2DValidation.Editor
         private static void EnsureRenderer()
         {
             var pipeline = Required<UniversalRenderPipelineAsset>(PipelinePath);
-            var renderer = AssetDatabase.LoadAssetAtPath<Simple2DRendererData>(RendererPath);
+            var renderer = AssetDatabase.LoadAssetAtPath<UniversalRendererData>(RendererPath);
             if (renderer == null)
             {
                 if (AssetDatabase.LoadMainAssetAtPath(RendererPath) != null)
                     throw new InvalidOperationException("固定 2D Renderer 路径存在其他类型资源：" + RendererPath);
-                renderer = ScriptableObject.CreateInstance<Simple2DRendererData>();
+                renderer = ScriptableObject.CreateInstance<UniversalRendererData>();
                 AssetDatabase.CreateAsset(renderer, RendererPath);
             }
             var data = new SerializedObject(pipeline);
@@ -181,7 +180,7 @@ namespace Poker.Battle2DValidation.Editor
 
         private static int RendererIndex(UniversalRenderPipelineAsset pipeline)
         {
-            var renderer = Required<Simple2DRendererData>(RendererPath);
+            var renderer = Required<UniversalRendererData>(RendererPath);
             var data = new SerializedObject(pipeline);
             var renderers = Property(data, "m_RendererDataList");
             for (int index = 0; index < renderers.arraySize; index++)
@@ -237,7 +236,7 @@ namespace Poker.Battle2DValidation.Editor
             var restart = Button(canvas.transform, font, "重新开始", 330);
             view.Configure(prefab, cardRoot, status, details, log, play, discard, endTurn, restart);
             Battle2DTimelineSetup.ConfigureBattle(view);
-            EditorSceneManager.MarkSceneDirty(scene);
+            if (!Application.isPlaying) EditorSceneManager.MarkSceneDirty(scene);
         }
 
         private static Transform ActorRectangle(Scene scene, Transform parent, string name, Vector3 position, Color color)

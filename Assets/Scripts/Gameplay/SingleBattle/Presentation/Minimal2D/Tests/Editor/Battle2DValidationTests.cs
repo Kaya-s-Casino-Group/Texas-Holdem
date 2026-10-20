@@ -8,7 +8,6 @@ using Poker.Battle2DValidation.Editor;
 using Poker.BattleHosting;
 using global::BattlePresentation.Unity;
 using PokerEngine;
-using RetroRendering;
 using TMPro;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -31,7 +30,7 @@ namespace Poker.Battle2DValidation.Tests
         [OneTimeSetUp] public void EnsureValidationAssets()
         {
             if (AssetDatabase.LoadAssetAtPath<GameObject>(Battle2DValidationSetup.CardPrefabPath) == null ||
-                AssetDatabase.LoadAssetAtPath<Simple2DRendererData>(Battle2DValidationSetup.RendererPath) == null)
+                AssetDatabase.LoadAssetAtPath<UniversalRendererData>(Battle2DValidationSetup.RendererPath) == null)
                 Battle2DValidationSetup.EnsureAssets();
         }
 
@@ -55,14 +54,16 @@ namespace Poker.Battle2DValidation.Tests
             {
                 var source = (XmlBattleSessionSource)f.Host.SceneHost.SessionSource;
                 Assert.AreEqual(Battle2DTimelineSetup.ContentPath, AssetDatabase.GetAssetPath(source.ContentXml));
-                Assert.AreEqual("single-battle-new", source.EncounterId);
+                Assert.AreEqual("standard-single-battle", source.EncounterId);
                 var session = source.Build("xml-2d", HmacDeckShuffler.FromSeed(new byte[32]));
                 var baseline = source.Build("xml-2d", HmacDeckShuffler.FromSeed(new byte[32]));
                 baseline.Execute(baseline.State.Revision, Player, CardDuelAction.Start);
                 f.Host.SceneHost.AttachSession(session); f.Host.Playback.Start(false);
                 SameState(baseline.State, session.State);
                 Assert.AreEqual(800, session.State.Duel.Combat.Get(Player).MaxHealth);
-                Assert.AreEqual(1200, session.State.Duel.Combat.Get(Enemy).MaxHealth);
+                Assert.AreEqual(600, session.State.Duel.Combat.Get(Enemy).MaxHealth);
+                baseline.Execute(baseline.State.Revision, Player, CardDuelAction.SkipDraw);
+                f.Host.Playback.Submit(Player, CardDuelAction.SkipDraw, animate: false);
                 foreach (var action in new[] { CardDuelAction.Play, CardDuelAction.Discard, CardDuelAction.EndTurn })
                 {
                     var cards = action == CardDuelAction.EndTurn ? Array.Empty<CardInstanceId>() : baseline.State.Zone(CardZoneKinds.Hand, Player).Cards.Take(1).ToArray();
@@ -474,30 +475,29 @@ namespace Poker.Battle2DValidation.Tests
             bool ContainsRules(Type type) => type.Namespace == "PokerEngine" || type.IsGenericType && type.GetGenericArguments().Any(ContainsRules);
         }
 
-        [Test] public void ValidationCameraSelectsSimple2DRendererWithinTheUnchangedMainPipeline()
+        [Test] public void ValidationCameraSelectsUniversalRendererWithinTheUnchangedMainPipeline()
         {
             var quality = QualitySettings.renderPipeline; var graphics = GraphicsSettings.defaultRenderPipeline;
             var pipeline = AssetDatabase.LoadAssetAtPath<UniversalRenderPipelineAsset>(Battle2DValidationSetup.PipelinePath);
-            Assert.IsNotNull(pipeline); Assert.AreEqual("Assets/Settings/MainURP.asset", AssetDatabase.GetAssetPath(pipeline));
+            Assert.IsNotNull(pipeline); Assert.AreEqual("Assets/Settings/BattleURP.asset", AssetDatabase.GetAssetPath(pipeline));
             Assert.AreSame(pipeline, graphics); Assert.AreSame(pipeline, quality);
-            var renderer = AssetDatabase.LoadAssetAtPath<Simple2DRendererData>(Battle2DValidationSetup.RendererPath);
-            Assert.IsNotNull(renderer); Assert.AreEqual("Assets/Settings/Battle2DRenderer.asset", AssetDatabase.GetAssetPath(renderer));
+            var renderer = AssetDatabase.LoadAssetAtPath<UniversalRendererData>(Battle2DValidationSetup.RendererPath);
+            Assert.IsNotNull(renderer); Assert.AreEqual("Assets/Settings/BattleForwardRenderer.asset", AssetDatabase.GetAssetPath(renderer));
             Assert.IsEmpty(renderer.rendererFeatures); Assert.IsFalse(renderer.useNativeRenderPass);
             var serialized = new SerializedObject(pipeline); var renderers = serialized.FindProperty("m_RendererDataList");
-            Assert.GreaterOrEqual(renderers.arraySize, 3);
-            Assert.AreEqual("Assets/Settings/MainDeferredRenderer.asset", AssetDatabase.GetAssetPath(renderers.GetArrayElementAtIndex(0).objectReferenceValue));
-            Assert.AreEqual("Assets/Settings/UIRenderer.asset", AssetDatabase.GetAssetPath(renderers.GetArrayElementAtIndex(1).objectReferenceValue));
+            Assert.AreEqual(1, renderers.arraySize);
+            Assert.AreEqual("Assets/Settings/BattleForwardRenderer.asset", AssetDatabase.GetAssetPath(renderers.GetArrayElementAtIndex(0).objectReferenceValue));
             Assert.AreEqual(0, serialized.FindProperty("m_DefaultRendererIndex").intValue);
             var slots = Enumerable.Range(0, renderers.arraySize)
                 .Where(index => renderers.GetArrayElementAtIndex(index).objectReferenceValue == renderer).ToArray();
-            Assert.AreEqual(1, slots.Length); Assert.Greater(slots[0], 1);
+            Assert.AreEqual(1, slots.Length); Assert.AreEqual(0, slots[0]);
             using (var f = new Fixture())
             {
                 var cameraObject = new GameObject("2D renderer test camera", typeof(Camera));
                 SceneManager.MoveGameObjectToScene(cameraObject, f.Scene);
                 var camera = cameraObject.GetComponent<Camera>(); camera.orthographic = true;
                 var data = camera.GetUniversalAdditionalCameraData(); data.SetRenderer(slots[0]);
-                Assert.IsInstanceOf<Simple2DRenderer>(data.scriptableRenderer);
+                Assert.IsInstanceOf<UniversalRenderer>(data.scriptableRenderer);
                 Assert.AreSame(quality, QualitySettings.renderPipeline); Assert.AreSame(graphics, GraphicsSettings.defaultRenderPipeline);
                 Object.DestroyImmediate(cameraObject);
                 Assert.AreSame(quality, QualitySettings.renderPipeline); Assert.AreSame(graphics, GraphicsSettings.defaultRenderPipeline);
@@ -516,7 +516,7 @@ namespace Poker.Battle2DValidation.Tests
         public void FixedRendererDrawsUprightOpaqueCardsAndDepthSortedTransparentSpritesToTexture()
         {
             var pipeline = AssetDatabase.LoadAssetAtPath<UniversalRenderPipelineAsset>(Battle2DValidationSetup.PipelinePath);
-            var renderer = AssetDatabase.LoadAssetAtPath<Simple2DRendererData>(Battle2DValidationSetup.RendererPath);
+            var renderer = AssetDatabase.LoadAssetAtPath<UniversalRendererData>(Battle2DValidationSetup.RendererPath);
             var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(Battle2DValidationSetup.CardPrefabPath);
             var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(Battle2DValidationSetup.ActorSpritePath);
             var material = AssetDatabase.LoadAssetAtPath<Material>(Battle2DValidationSetup.ActorMaterialPath);
@@ -548,7 +548,7 @@ namespace Poker.Battle2DValidation.Tests
                 var data = cameraObject.AddComponent<UniversalAdditionalCameraData>(); data.SetRenderer(rendererIndex);
                 data.renderPostProcessing = false; data.renderShadows = false;
                 data.requiresDepthOption = CameraOverrideOption.Off; data.requiresColorOption = CameraOverrideOption.Off;
-                Assert.IsInstanceOf<Simple2DRenderer>(data.scriptableRenderer);
+                Assert.IsInstanceOf<UniversalRenderer>(data.scriptableRenderer);
                 target.Create();
 
                 var card = (GameObject)PrefabUtility.InstantiatePrefab(prefab, scene);

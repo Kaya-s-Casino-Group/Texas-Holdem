@@ -12,7 +12,7 @@
 | `Presentation/CardArt` | 卡牌美术协议、运行时组件和导出工具 |
 | `Presentation/CardInteraction` | 卡牌输入、命令适配、牌桌镜像和 Presenter |
 | `Presentation/CardPresentation` | 卡牌显示协议、World/Canvas 与反馈 |
-| `Infrastructure/Rendering` | 渲染特效、VAT、独立 Forward2D Renderer |
+| `Infrastructure/Rendering` | 官方 URP Forward 相机支持、VAT 与帧率桥接 |
 | `Infrastructure/UIFoundation` | 公共 UI 基础组件 |
 | `Tools/EditorTools` | 有独立程序集的公共编辑器工具与测试 |
 | `Tools/Editor` | 构建、模型导入和资源校验工具；保持默认 Editor 程序集 |

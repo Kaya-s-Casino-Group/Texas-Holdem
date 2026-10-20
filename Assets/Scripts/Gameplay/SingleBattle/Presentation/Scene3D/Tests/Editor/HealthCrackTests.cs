@@ -22,7 +22,7 @@ namespace Poker.SingleBattle.Tests
             {
                 var go = new GameObject("Health cracks"); SceneManager.MoveGameObjectToScene(go, scene);
                 Renderer = go.AddComponent<MeshRenderer>();
-                Material = new Material(Shader.Find("Rendering/Gargoyle Cracks Deferred"));
+                Material = new Material(Shader.Find("Hidden/Tests/HealthProperties"));
                 Material.SetFloat("_CrackDepth", .01f); Material.SetFloat("_CrackProgress", .15f); Renderer.sharedMaterial = Material;
                 Vat = go.AddComponent<RigidVATPlayer>(); Vat.SetProgress(.42f);
                 Cracks = go.AddComponent<HealthCrackPresenter>(); Cracks.Configure(go.transform);

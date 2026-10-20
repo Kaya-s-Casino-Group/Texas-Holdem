@@ -1,0 +1,9 @@
+{
+  "tool": "Built-in image_gen",
+  "referenceLayout": "codex-clipboard-de4a796c-ad8e-408f-98fa-57444a2b5195.jpg",
+  "enemySource": "codex-clipboard-4fcccb67-108f-4af2-9f3d-15ad27829af9.jpg",
+  "prompts": {
+    "player": "Use case: background-extraction. Asset type: transparent 2D character cutout for a Unity battle billboard. Input image: edit target and identity reference. Extract ONLY the white-haired male character on the left. Preserve his exact face, long white hair, tan skin, jewelry, white draped scarf, gold bracers, bare chest, belt and brown trousers, the three-quarter pose facing right and raised right hand from this reference. Draw clean complete silhouette where image cropped or UI obscures it, down to upper thighs; portrait composition, character fills nearly the canvas, 2% transparent padding, no feet required. Preserve the illustrated angular inked/cel shaded style and warm lighting. Remove ALL environment, monster, UI, gray panels and green wireframes. Actual alpha transparency, not a painted checkerboard. Only a single character, no background, no shadows outside silhouette, no text. Size approx 1024x1536.",
+    "enemy": "Use case: background-extraction. Edit the provided image. Remove ONLY the uniform gray background, including gray holes between the limbs, replacing it with actual alpha transparency. Preserve every aspect of this exact demon illustration: its pose, all long arms and claws, flaming skull, ragged torso, outlines, colors, framing, proportions, scale and paint details. No redesign, no new features, no extra glow, do not move any limb or change the expression. Keep every visible small fragment of flame. Output this single exact character with a clean antialiased transparent outline, full existing framing, no cropping, no checkerboard, no text. This will be used as an unlit transparent character texture in Unity."
+  }
+}

@@ -131,7 +131,7 @@ namespace CardPresentation.Tests
             Assert.IsFalse(sample.FaceUp); Assert.IsTrue(sample.IsHovered); Assert.IsTrue(sample.IsSelected); Assert.AreEqual(Color.red, sample.Tint);
             Assert.AreEqual(neighbor, JsonUtility.ToJson(model.Cards[1]));
             var beforeInvalid = JsonUtility.ToJson(model);
-            Assert.Throws<ArgumentOutOfRangeException>(() => model.SetCardProperties(original.Id, changed.DefinitionId, (CardEffects)8, false));
+            Assert.Throws<ArgumentOutOfRangeException>(() => model.SetCardProperties(original.Id, changed.DefinitionId, (CardEffects)int.MaxValue, false));
             Assert.Throws<ArgumentException>(() => model.SetCardProperties(original.Id, new CardDefinitionId("missing"), CardEffects.None, false));
             Assert.AreEqual(beforeInvalid, JsonUtility.ToJson(model));
             var restored = JsonUtility.FromJson<CardZonePreviewModel>(beforeInvalid); restored.Reverse();

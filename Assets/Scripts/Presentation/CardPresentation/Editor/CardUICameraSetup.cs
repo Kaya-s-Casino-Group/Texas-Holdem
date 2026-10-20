@@ -14,22 +14,14 @@ namespace CardPresentation.Editor
 {
     public static class CardUICameraSetup
     {
-        public const string RendererPath = "Assets/Settings/UIRenderer.asset";
+        public const string RendererPath = "Assets/Settings/BattleForwardRenderer.asset";
         public const string CameraName = "UI Camera";
 
         public static UniversalRendererData EnsureRenderer()
         {
             var data = AssetDatabase.LoadAssetAtPath<UniversalRendererData>(RendererPath);
             if (data != null) return data;
-            var source = AssetDatabase.LoadAssetAtPath<UniversalRendererData>("Assets/Settings/MainDeferredRenderer.asset");
-            if (source == null) throw new InvalidOperationException("Main renderer resources are required.");
-            // Reuse URP shader resources, with an independent settings object and no inherited feature subassets.
-            data = UnityEngine.Object.Instantiate(source); data.name = "UIRenderer";
-            data.rendererFeatures.Clear(); data.postProcessData = null;
-            data.renderingMode = RenderingMode.Forward; data.depthPrimingMode = DepthPrimingMode.Disabled;
-            data.intermediateTextureMode = IntermediateTextureMode.Auto; data.accurateGbufferNormals = false;
-            data.opaqueLayerMask = 0; data.transparentLayerMask = 1 << LayerMask.NameToLayer("UI");
-            data.shadowTransparentReceive = false; data.lowResolution.enabled = false;
+            data = ScriptableObject.CreateInstance<UniversalRendererData>(); data.name = "BattleForwardRenderer";
             var serialized = new SerializedObject(data);
             serialized.FindProperty("m_RendererFeatureMap").arraySize = 0;
             serialized.ApplyModifiedPropertiesWithoutUndo();
@@ -96,19 +88,11 @@ namespace CardPresentation.Editor
             {
                 if (camera != rig.UICamera) return;
                 RenderPipelineManager.endCameraRendering -= Capture;
-                var sceneRenderer = (UniversalRenderer)rig.SceneCamera.GetUniversalAdditionalCameraData().scriptableRenderer;
-                var uiRenderer = (UniversalRenderer)rig.UICamera.GetUniversalAdditionalCameraData().scriptableRenderer;
-                var mainData = AssetDatabase.LoadAssetAtPath<UniversalRendererData>("Assets/Settings/MainDeferredRenderer.asset");
-                File.WriteAllText("Library/CardUICameraValidation/frame.json", JsonUtility.ToJson(new Frame {
-                    scene = sceneRenderer.lastCameraRenderTargetInfo, ui = uiRenderer.lastCameraRenderTargetInfo,
-                    retroSourceSize = mainData.rendererFeatures.OfType<RetroPostProcessFeature>().First().LastSourceSize
-                }, true));
                 ScreenCapture.CaptureScreenshot("Library/CardUICameraValidation/game.png");
                 Debug.Log("UI Camera Stack capture requested: Library/CardUICameraValidation/game.png");
             }
             RenderPipelineManager.endCameraRendering += Capture;
         }
-        [Serializable] private sealed class Frame { public CameraRenderTargetInfo scene, ui; public Vector2Int retroSourceSize; }
     }
 }
 #endif

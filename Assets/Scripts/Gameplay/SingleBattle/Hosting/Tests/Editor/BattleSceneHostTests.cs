@@ -44,6 +44,7 @@ namespace Poker.BattleHosting.Tests
             Assert.AreNotSame(first.Session, second.Session);
             Assert.AreNotEqual(first.AuthorityState.Table.MatchId, second.AuthorityState.Table.MatchId);
             var untouched = second.AuthorityState; var secondDisplay = b.Display;
+            first.Playback.Submit(a.ObserverId, CardDuelAction.SkipDraw, animate: false);
             a.SelectCards(first.AuthorityState.Zone(CardZoneKinds.Hand, a.ObserverId).Cards.Take(1).Select(id => id.Value));
             Assert.IsTrue(a.Candidate.CanPlay); Assert.AreEqual(0, b.Candidate.SelectedIds.Count);
             Assert.IsTrue(a.PlaySelected(false).Accepted);

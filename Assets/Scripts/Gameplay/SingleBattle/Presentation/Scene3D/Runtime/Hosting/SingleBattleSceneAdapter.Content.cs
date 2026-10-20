@@ -10,7 +10,7 @@ namespace Poker.SingleBattle
     {
         [Header("规则内容入口（修改后重新开战生效）")]
         [SerializeField, InspectorName("XML 内容包")] private TextAsset contentXml;
-        [SerializeField, InspectorName("编成 ID")] private string encounterId = "single-battle-new";
+        [SerializeField, InspectorName("编成 ID")] private string encounterId = "standard-single-battle";
         public TextAsset ContentXml => contentXml;
         public string ContentEncounterId => encounterId;
         public IReadOnlyList<BattleDiagnostic> ContentDiagnostics { get; private set; } = Array.Empty<BattleDiagnostic>();

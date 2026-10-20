@@ -67,6 +67,8 @@ namespace BattlePresentation
             {
                 try
                 {
+                    // Instant batches have consumed every fact; later Unity ticks must not replay them.
+                    nextFact = value.Changes.Count;
                     store.ApplyInstant(value);
                     SynchronizeActions(store.Current);
                     result.TryComplete();

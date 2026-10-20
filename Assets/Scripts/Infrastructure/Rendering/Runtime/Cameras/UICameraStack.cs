@@ -33,7 +33,6 @@ namespace RetroRendering
             camera.allowDynamicResolution = false; camera.useOcclusionCulling = false; camera.targetTexture = null;
             var data = camera.GetUniversalAdditionalCameraData();
             data.renderType = CameraRenderType.Overlay; data.renderShadows = false;
-            data.renderOverlayAtNativeResolution = true;
             data.requiresDepthOption = data.requiresColorOption = CameraOverrideOption.Off;
             data.renderPostProcessing = false; data.antialiasing = AntialiasingMode.None;
             data.stopNaN = false; data.dithering = false; data.allowXRRendering = false; data.allowHDROutput = false;

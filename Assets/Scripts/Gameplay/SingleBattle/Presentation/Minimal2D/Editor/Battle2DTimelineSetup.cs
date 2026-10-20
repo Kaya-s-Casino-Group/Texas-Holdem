@@ -11,8 +11,8 @@ namespace Poker.Battle2DValidation.Editor
     /// <summary>Authors serialized recipes. No runtime fallback order or SO rules remain in the 2D module.</summary>
     public static class Battle2DTimelineSetup
     {
-        public const string ContentPath = "Packages/com.kaya.battle-engine/Content/SingleBattleDemoNew.xml";
-        public const string EncounterId = "single-battle-new";
+        public const string ContentPath = "Packages/com.kaya.battle-engine/Content/StandardSingleBattle.xml";
+        public const string EncounterId = "standard-single-battle";
 
         [MenuItem("工具/卡牌战斗/2D验证/接入 XML 与可配置表现时间线")]
         public static void MigrateCurrent()

@@ -48,7 +48,7 @@ namespace CardArt.Editor
 
     public static class CardPrefabExporter
     {
-        static readonly string[] RequiredPasses = { "UniversalGBuffer", "UniversalForward", "ShadowCaster", "DepthOnly", "DepthNormals" };
+        static readonly string[] RequiredPasses = { "UniversalForwardOnly", "DepthOnly" };
         static readonly string[] RequiredUnlitPasses = { "UniversalForwardOnly", "DepthOnly" };
 
         public static CardPrefabCheck Validate(CardPrefabExportSettings settings)
@@ -128,15 +128,15 @@ namespace CardArt.Editor
         {
             if (float.IsNaN(settings.sealEmissionStrength) || settings.sealEmissionStrength < 0 || settings.sealEmissionStrength > 1)
                 check.errors.Add("火漆自发光强度必须在 0–1 范围内。");
-            if (settings.sealMap == null && settings.sealNormalMap == null && !settings.sealEnabled && settings.sealEmissionStrength == 0) return;
-            if (settings.sealMap == null) check.errors.Add("使用火漆或法线时，请同时选择火漆颜色贴图（Alpha 提供轮廓）。");
+            if (settings.sealMap == null && !settings.sealEnabled && settings.sealEmissionStrength == 0) return;
+            if (settings.sealMap == null) check.errors.Add("使用火漆时，请同时选择火漆颜色贴图（Alpha 提供轮廓）。");
             if (settings.shader != null)
             {
                 var material = new Material(settings.shader);
                 try
                 {
-                    if (!CardShaderProperties.SupportsSeal(material)) check.errors.Add("Shader 不支持火漆扩展 CardSealContract=ColorNormalV1。");
-                    var types = new[] { ("_SealMap", ShaderPropertyType.Texture), ("_SealNormalMap", ShaderPropertyType.Texture),
+                    if (!CardShaderProperties.SupportsSeal(material)) check.errors.Add("Shader 不支持火漆扩展 CardSealContract=ColorOverlayV1。");
+                    var types = new[] { ("_SealMap", ShaderPropertyType.Texture),
                         ("_SealColor", ShaderPropertyType.Color), ("_SealEnabled", ShaderPropertyType.Float), ("_SealRect", ShaderPropertyType.Vector) };
                     foreach (var item in types)
                     {
@@ -146,9 +146,6 @@ namespace CardArt.Editor
                         else if (item.Item2 == ShaderPropertyType.Texture && settings.shader.GetPropertyTextureDimension(index) != TextureDimension.Tex2D)
                             check.errors.Add(item.Item1 + " 必须是 Texture2D。");
                     }
-                    int scaleIndex = settings.shader.FindPropertyIndex("_SealNormalScale");
-                    if (scaleIndex < 0 || (settings.shader.GetPropertyType(scaleIndex) != ShaderPropertyType.Float &&
-                        settings.shader.GetPropertyType(scaleIndex) != ShaderPropertyType.Range)) check.errors.Add("缺少浮点属性 _SealNormalScale。");
                     int rotationIndex = settings.shader.FindPropertyIndex("_SealRotation");
                     if (rotationIndex >= 0)
                     {
@@ -182,7 +179,7 @@ namespace CardArt.Editor
                 }
                 finally { UnityEngine.Object.DestroyImmediate(material); }
             }
-            foreach (var texture in new[] { settings.sealMap, settings.sealNormalMap })
+            foreach (var texture in new[] { settings.sealMap })
             {
                 if (texture == null) continue;
                 if (!AssetDatabase.Contains(texture)) check.errors.Add("火漆贴图必须是已保存的项目资产。");
@@ -196,21 +193,7 @@ namespace CardArt.Editor
                     importer.alphaSource == TextureImporterAlphaSource.None || !importer.DoesSourceTextureHaveAlpha())
                     check.errors.Add("火漆颜色贴图需要有效的 Alpha 轮廓，不能作为 Normal Map 导入。");
             }
-            if (settings.sealNormalMap != null)
-            {
-                var importer = AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(settings.sealNormalMap)) as TextureImporter;
-                if (importer == null || importer.textureType != TextureImporterType.NormalMap)
-                    check.errors.Add("火漆法线贴图必须以 Normal Map 类型导入。");
-                if (settings.sealMap != null && settings.sealMap.width * settings.sealNormalMap.height != settings.sealMap.height * settings.sealNormalMap.width)
-                    check.errors.Add("火漆颜色与法线贴图的宽高比例必须一致。");
-            }
-            if (float.IsNaN(settings.sealNormalScale) || settings.sealNormalScale < 0 || settings.sealNormalScale > 2)
-                check.errors.Add("火漆法线强度必须在 0–2 范围内。");
-            if (float.IsNaN(settings.sealRotation) || settings.sealRotation < -180 || settings.sealRotation > 180)
-                check.errors.Add("火漆旋转角度必须在 -180–180 范围内。");
-            var r = settings.sealRect;
-            if (!(r.z > 0 && r.z <= 1 && r.w > 0 && r.w <= 1 && r.x >= 0 && r.x <= 1 && r.y >= 0 && r.y <= 1))
-                check.errors.Add("火漆中心必须在 0–1，宽高必须在 (0,1] 范围内。");
+
         }
 
         public static void ValidateShader(Shader shader, List<string> errors)
@@ -492,8 +475,6 @@ namespace CardArt.Editor
                 if (CardShaderProperties.SupportsSeal(generated))
                 {
                     generated.SetTexture(CardShaderProperties.SealMap, settings.sealMap);
-                    generated.SetTexture(CardShaderProperties.SealNormalMap, settings.sealNormalMap);
-                    generated.SetFloat(CardShaderProperties.SealNormalScale, settings.sealNormalMap != null ? settings.sealNormalScale : 0);
                     generated.SetVector(CardShaderProperties.SealRect, settings.sealRect);
                     if (generated.HasProperty(CardShaderProperties.SealRotation))
                         generated.SetFloat(CardShaderProperties.SealRotation, settings.sealRotation);

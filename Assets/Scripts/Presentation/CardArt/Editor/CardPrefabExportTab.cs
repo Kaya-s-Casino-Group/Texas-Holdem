@@ -70,18 +70,14 @@ namespace CardArt.Editor
                 GUILayout.Space(8);
                 GUILayout.Label("火漆印章（可选）", EditorStyles.boldLabel);
                 prefabSettings.sealMap = (Texture2D)EditorGUILayout.ObjectField("火漆颜色贴图", prefabSettings.sealMap, typeof(Texture2D), false);
-                prefabSettings.sealNormalMap = (Texture2D)EditorGUILayout.ObjectField("火漆法线贴图", prefabSettings.sealNormalMap, typeof(Texture2D), false);
                 if (GUILayout.Button("使用内置爪印火漆贴图"))
                 {
                     prefabSettings.sealMap = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/GameAssets/CardArt/Textures/WaxSeal_Paw.png");
-                    prefabSettings.sealNormalMap = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/GameAssets/CardArt/Textures/WaxSeal_Paw_Normal.png");
                     GUI.changed = true;
                 }
                 prefabSettings.sealEnabled = EditorGUILayout.Toggle("默认开启火漆", prefabSettings.sealEnabled);
                 prefabSettings.sealColor = EditorGUILayout.ColorField(new GUIContent("火漆颜色"), prefabSettings.sealColor, true, false, false);
-                prefabSettings.sealEmissionStrength = EditorGUILayout.Slider(new GUIContent("火漆自发光强度", "沿用火漆颜色与纹理；0 关闭，1 添加完整颜色亮度，仍保留正常受光。"), prefabSettings.sealEmissionStrength, 0, 1);
-                using (new EditorGUI.DisabledScope(prefabSettings.sealNormalMap == null))
-                    prefabSettings.sealNormalScale = EditorGUILayout.Slider("火漆法线强度", prefabSettings.sealNormalScale, 0, 2);
+                prefabSettings.sealEmissionStrength = EditorGUILayout.Slider(new GUIContent("火漆自发光强度", "沿用火漆颜色与纹理；0 关闭，1 添加完整颜色亮度，使用无光照颜色叠加。"), prefabSettings.sealEmissionStrength, 0, 1);
                 var sealCenter = EditorGUILayout.Vector2Field("中心（UV，左下为原点）", new Vector2(prefabSettings.sealRect.x, prefabSettings.sealRect.y));
                 var sealSize = EditorGUILayout.Vector2Field("尺寸（UV 宽 / 高）", new Vector2(prefabSettings.sealRect.z, prefabSettings.sealRect.w));
                 prefabSettings.sealRect = new Vector4(sealCenter.x, sealCenter.y, sealSize.x, sealSize.y);

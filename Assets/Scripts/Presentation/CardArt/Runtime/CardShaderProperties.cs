@@ -7,7 +7,7 @@ namespace CardArt
 {
     public static class CardShaderProperties
     {
-        public const string ShaderName = "CardArt/Card Deferred";
+        public const string ShaderName = "CardArt/Card Unlit Forward";
         public const string UVRectContract = "OffsetXYScaleZW";
         public const string SurfaceContract = "UV1BackXEdgeY";
         public static readonly int BaseMap = Shader.PropertyToID("_BaseMap");
@@ -36,10 +36,9 @@ namespace CardArt
         public static readonly int SealRotation = Shader.PropertyToID("_SealRotation");
         public static readonly int SealRect = Shader.PropertyToID("_SealRect");
         public static bool SupportsSeal(Material material) => material != null &&
-            material.GetTag("CardSealContract", false) == "ColorNormalV1" &&
+            (material.GetTag("CardSealContract", false) == "ColorOverlayV1" || material.GetTag("CardSealContract", false) == "ColorNormalV1") &&
             material.HasProperty(SealEnabled) && material.HasProperty(SealColor) &&
-            material.HasProperty(SealMap) && material.HasProperty(SealNormalMap) &&
-            material.HasProperty(SealNormalScale) && material.HasProperty(SealRect);
+            material.HasProperty(SealMap) && material.HasProperty(SealRect);
 
         // Optional extension: older compatible card shaders can still be bound.
         public static bool SupportsFoil(Material material) => material != null &&

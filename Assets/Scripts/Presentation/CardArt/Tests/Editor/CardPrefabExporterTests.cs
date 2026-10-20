@@ -40,9 +40,9 @@ namespace CardArt.Tests
 
         Shader TestShader(string name, Func<string, string> mutate)
         {
-            var source = File.ReadAllText("Assets/GameAssets/CardArt/Shaders/CardDeferred.shader")
-                .Replace("CardArt/Card Deferred", "Hidden/CardArt/Tests/" + name)
-                .Replace("\"CardDeferredPasses.hlsl\"", "\"Assets/GameAssets/CardArt/Shaders/CardDeferredPasses.hlsl\"");
+            var source = File.ReadAllText("Assets/GameAssets/CardArt/Shaders/CardUnlit.shader")
+                .Replace("CardArt/Card Unlit Forward", "Hidden/CardArt/Tests/" + name)
+                .Replace("\"CardUnlit.hlsl\"", "\"Assets/GameAssets/CardArt/Shaders/CardUnlit.hlsl\"");
             var path = folder + "/" + name + ".shader";
             File.WriteAllText(path, mutate(source));
             AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceSynchronousImport);
@@ -115,14 +115,12 @@ namespace CardArt.Tests
         }
 
         [Test]
-        public void SealExportRetainsNormalMapAndIndependentInstanceSettings()
+        public void SealExportRetainsColorOverlayAndIndependentInstanceSettings()
         {
             var s = Settings();
             s.sealMap = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/GameAssets/CardArt/Textures/WaxSeal_Paw.png");
-            s.sealNormalMap = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/GameAssets/CardArt/Textures/WaxSeal_Paw_Normal.png");
             s.sealEnabled = true;
             s.sealColor = Color.red;
-            s.sealNormalScale = 0.7f;
             s.sealRotation = -17;
             s.sealEmissionStrength = 0.35f;
             var prefab = CardPrefabExporter.Export(s);
@@ -132,8 +130,6 @@ namespace CardArt.Tests
             Assert.That(saved.SealColor, Is.EqualTo(Color.red));
             Assert.That(saved.SealEmissionStrength, Is.EqualTo(0.35f));
             Assert.That(mat.GetTexture(CardShaderProperties.SealMap), Is.SameAs(s.sealMap));
-            Assert.That(mat.GetTexture(CardShaderProperties.SealNormalMap), Is.SameAs(s.sealNormalMap));
-            Assert.That(mat.GetFloat(CardShaderProperties.SealNormalScale), Is.EqualTo(0.7f));
             Assert.That(mat.GetVector(CardShaderProperties.SealRect), Is.EqualTo(s.sealRect));
             Assert.That(mat.GetFloat(CardShaderProperties.SealRotation), Is.EqualTo(-17));
             var preview = UnityEditor.SceneManagement.EditorSceneManager.NewPreviewScene();
@@ -169,28 +165,23 @@ namespace CardArt.Tests
             }
             finally { UnityEditor.SceneManagement.EditorSceneManager.ClosePreviewScene(preview); }
             s.sealEnabled = false;
-            s.sealNormalMap = null;
             s.sealEmissionStrength = 0;
             var updated = CardPrefabExporter.Export(s, true);
             Assert.That(updated.GetComponentInChildren<CardView>().SealEnabled, Is.False);
             Assert.That(updated.GetComponentInChildren<CardView>().SealEmissionStrength, Is.Zero);
-            Assert.That(mat.GetFloat(CardShaderProperties.SealNormalScale), Is.Zero);
         }
 
         [Test]
-        public void SealExportRejectsWrongNormalImportAndUnsupportedShader()
+        public void SealExportRejectsMissingColorMapAndUnsupportedShader()
         {
             var s = Settings();
             s.sealMap = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/GameAssets/CardArt/Textures/WaxSeal_Paw.png");
-            s.sealNormalMap = s.sealMap;
-            Assert.That(CardPrefabExporter.Validate(s).errors.Any(e => e.Contains("Normal Map")), Is.True);
-            s.sealNormalMap = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/GameAssets/CardArt/Textures/WaxSeal_Paw_Normal.png");
-            s.sealMap = null;
+            s.sealEnabled = true; s.sealMap = null;
             Assert.That(CardPrefabExporter.Validate(s).errors.Any(e => e.Contains("颜色贴图")), Is.True);
             s.sealMap = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/GameAssets/CardArt/Textures/WaxSeal_Paw.png");
-            s.shader = TestShader("NoSeal", text => text.Replace("ColorNormalV1", "Unsupported"));
+            s.shader = TestShader("NoSeal", text => text.Replace("ColorOverlayV1", "Unsupported"));
             Assert.That(CardPrefabExporter.Validate(s).errors.Any(e => e.Contains("CardSealContract")), Is.True);
-            s.sealMap = null; s.sealNormalMap = null; s.sealEnabled = false;
+            s.sealMap = null; s.sealEnabled = false;
             Assert.That(CardPrefabExporter.Validate(s).errors, Is.Empty, "The optional extension must not reject ordinary cards.");
         }
 
@@ -291,7 +282,7 @@ namespace CardArt.Tests
 
         [TestCase("WrongType", "_FrontUVRect 必须为 Vector")]
         [TestCase("MissingTint", "缺少属性 _ColorTint")]
-        [TestCase("MissingGBuffer", "缺少 LightMode = UniversalGBuffer")]
+        [TestCase("MissingForward", "缺少 LightMode = UniversalForwardOnly")]
         [TestCase("NoInstancing", "缺少 multi_compile_instancing")]
         [TestCase("WrongUVContract", "CardUVRectContract")]
         public void IncompatibleShaderIsRejectedBeforeWriting(string variant, string expected)
@@ -300,7 +291,7 @@ namespace CardArt.Tests
             settings.shader = TestShader(variant, s => variant == "WrongType"
                 ? s.Replace("\"Front UV Rect (offset XY, scale ZW)\", Vector", "\"Front UV Rect (offset XY, scale ZW)\", Color")
                 : variant == "MissingTint" ? s.Replace("[PerRendererData] _ColorTint (", "[PerRendererData] _UnsupportedColorTint (")
-                : variant == "MissingGBuffer" ? s.Replace("\"LightMode\"=\"UniversalGBuffer\"", "\"LightMode\"=\"UniversalForwardOnly\"")
+                : variant == "MissingForward" ? s.Replace("\"LightMode\"=\"UniversalForwardOnly\"", "\"LightMode\"=\"Unsupported\"")
                 : variant == "NoInstancing" ? s.Replace("#pragma multi_compile_instancing", "")
                 : s.Replace("\"CardUVRectContract\"=\"OffsetXYScaleZW\"", "\"CardUVRectContract\"=\"ScaleXYOffsetZW\""));
             var check = CardPrefabExporter.Validate(settings);
@@ -313,16 +304,15 @@ namespace CardArt.Tests
         [Test]
         public void SharedTintUniformCannotPassAsPerCardInstancing()
         {
-            var input = File.ReadAllText("Assets/GameAssets/CardArt/Shaders/CardDeferredInput.hlsl")
+            var input = File.ReadAllText("Assets/GameAssets/CardArt/Shaders/CardUnlit.hlsl")
+                .Replace("\"CardSurfaceCommon.hlsl\"", "\"Assets/GameAssets/CardArt/Shaders/CardSurfaceCommon.hlsl\"")
                 .Replace("UNITY_DEFINE_INSTANCED_PROP(float4, _ColorTint)", "")
-                .Replace("half4 _BaseColor;", "half4 _BaseColor;\n    float4 _ColorTint;")
-                .Replace("UNITY_ACCESS_INSTANCED_PROP(CardInstances, _ColorTint)", "_ColorTint");
-            File.WriteAllText(folder + "/SharedTintInput.hlsl", input);
-            File.WriteAllText(folder + "/SharedTintPasses.hlsl", File.ReadAllText("Assets/GameAssets/CardArt/Shaders/CardDeferredPasses.hlsl")
-                .Replace("\"CardDeferredInput.hlsl\"", "\"SharedTintInput.hlsl\""));
+                .Replace("half4 _BaseColor, _EdgeColor;", "half4 _BaseColor, _EdgeColor; float4 _ColorTint;")
+                .Replace("UNITY_ACCESS_INSTANCED_PROP(CardInstances,_ColorTint)", "_ColorTint");
+            File.WriteAllText(folder + "/SharedTint.hlsl", input);
             var settings = Settings();
-            settings.shader = TestShader("SharedTint", s => s.Replace("\"Assets/GameAssets/CardArt/Shaders/CardDeferredPasses.hlsl\"",
-                "\"" + folder + "/SharedTintPasses.hlsl\""));
+            settings.shader = TestShader("SharedTint", s => s.Replace("\"Assets/GameAssets/CardArt/Shaders/CardUnlit.hlsl\"",
+                "\"" + folder + "/SharedTint.hlsl\""));
             var check = CardPrefabExporter.Validate(settings);
             Assert.That(check.errors.Any(e => e.Contains("_ColorTint 必须声明为 UNITY_DEFINE_INSTANCED_PROP")), Is.True,
                 string.Join("\n", check.errors));

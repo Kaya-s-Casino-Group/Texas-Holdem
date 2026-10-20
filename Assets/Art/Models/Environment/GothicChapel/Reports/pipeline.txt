@@ -1,3 +1,0 @@
-Scene: Assets/Scenes/CharacterValidation.unity
-Pipeline: Assets/Settings/MainURP.asset
-Main Camera renderer=UniversalRenderer

@@ -50,7 +50,7 @@ namespace CardPresentation.Tests
             Assert.AreEqual("CardPresentation/Card Canvas",view.CardMaterial.shader.name);
             Assert.AreEqual(CardUIGraphic.RequiredChannels,prefab.GetComponent<Canvas>().additionalShaderChannels & CardUIGraphic.RequiredChannels);
             Assert.IsEmpty(ShaderUtil.GetShaderMessages(view.CardMaterial.shader).Where(message => message.severity == UnityEditor.Rendering.ShaderCompilerMessageSeverity.Error));
-            Assert.IsEmpty(ShaderUtil.GetShaderMessages(Shader.Find("CardArt/Card Deferred")).Where(message => message.severity == UnityEditor.Rendering.ShaderCompilerMessageSeverity.Error));
+            Assert.IsEmpty(ShaderUtil.GetShaderMessages(Shader.Find("CardArt/Card Unlit Forward")).Where(message => message.severity == UnityEditor.Rendering.ShaderCompilerMessageSeverity.Error));
         }
 
         [Test] public void StatisticsCountRemainingInstancesIncludingDisabledAndIneffectiveCards()

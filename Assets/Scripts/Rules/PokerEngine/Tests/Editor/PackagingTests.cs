@@ -43,17 +43,16 @@ namespace PokerEngine.Tests
         }
 
         [Test]
-        public void Forward2DRenderingHasNoBattleOrLegacyRenderingDependency()
+        public void ProjectUsesOfficialUrpWithoutEmbeddedCustomRenderer()
         {
-            const string root = "Poker.Rendering.Forward2D.Runtime";
-            bool Forbidden(string name) => IsScene3DDependency(name) || name.StartsWith("PokerEngine.") ||
-                name.StartsWith("Poker.Battle") || name.StartsWith("CardArt.");
-            AssertForbiddenDependencies(CompilationDependencies(root, AssembliesType.Player), Forbidden);
-            AssertForbiddenDependencies(CompiledDependencies(root), Forbidden);
+            Assert.AreNotEqual(UnityEditor.PackageManager.PackageSource.Embedded,
+                UnityEditor.PackageManager.PackageInfo.FindForAssetPath("Packages/com.unity.render-pipelines.universal/package.json").source);
+            Assert.IsFalse(CompilationPipeline.GetAssemblies(AssembliesType.Player).Any(a => a.name == "Poker.Rendering.Forward2D.Runtime"));
+            Assert.That(File.ReadAllText("Packages/manifest.json"), Does.Contain("com.unity.render-pipelines.universal"));
         }
 
         [Test]
-        public void Minimal2DToolsReferenceForward2DWithoutADirectLegacyRendererReference()
+        public void Minimal2DToolsReferenceOfficialUrpWithoutLegacyRenderer()
         {
             var assemblies = CompilationPipeline.GetAssemblies(AssembliesType.Editor);
             foreach (string name in new[] { "Poker.Battle2DValidation.Editor", "Poker.Battle2DValidation.Tests.Editor" })
@@ -61,7 +60,7 @@ namespace PokerEngine.Tests
                 var assembly = assemblies.SingleOrDefault(candidate => candidate.name == name);
                 Assert.That(assembly, Is.Not.Null, name);
                 var dependencies = assembly.assemblyReferences.Select(reference => reference.name).ToArray();
-                Assert.That(dependencies, Does.Contain("Poker.Rendering.Forward2D.Runtime"), name);
+                Assert.That(dependencies, Does.Contain("Unity.RenderPipelines.Universal.Runtime"), name);
                 Assert.That(dependencies, Does.Not.Contain("RetroRendering.Runtime"), name);
             }
         }

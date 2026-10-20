@@ -5,7 +5,6 @@ using System.Linq;
 using NUnit.Framework;
 using Poker.Battle2DValidation.Editor;
 using PokerEngine;
-using RetroRendering;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -219,10 +218,10 @@ namespace Poker.Battle2DValidation.Tests
         }
         private static void AssertRenderingConfiguration()
         {
-            Assert.AreEqual("Assets/Settings/MainURP.asset", AssetDatabase.GetAssetPath(GraphicsSettings.defaultRenderPipeline));
-            Assert.AreEqual("Assets/Settings/MainURP.asset", AssetDatabase.GetAssetPath(QualitySettings.renderPipeline));
-            Assert.AreEqual("Assets/Settings/MainURP.asset", AssetDatabase.GetAssetPath(GraphicsSettings.currentRenderPipeline));
-            Assert.IsInstanceOf<Simple2DRenderer>(camera.GetUniversalAdditionalCameraData().scriptableRenderer);
+            Assert.AreEqual("Assets/Settings/BattleURP.asset", AssetDatabase.GetAssetPath(GraphicsSettings.defaultRenderPipeline));
+            Assert.AreEqual("Assets/Settings/BattleURP.asset", AssetDatabase.GetAssetPath(QualitySettings.renderPipeline));
+            Assert.AreEqual("Assets/Settings/BattleURP.asset", AssetDatabase.GetAssetPath(GraphicsSettings.currentRenderPipeline));
+            Assert.IsInstanceOf<UniversalRenderer>(camera.GetUniversalAdditionalCameraData().scriptableRenderer);
         }
         private static PipelineRecord ReadPipeline(Camera target = null)
         {

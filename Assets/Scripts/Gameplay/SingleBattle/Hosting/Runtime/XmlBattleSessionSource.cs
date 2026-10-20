@@ -9,7 +9,7 @@ namespace Poker.BattleHosting
     public sealed class XmlBattleSessionSource : MonoBehaviour, IBattleSessionSource
     {
         [SerializeField] private TextAsset contentXml;
-        [SerializeField] private string encounterId = "single-battle-new";
+        [SerializeField] private string encounterId = "standard-single-battle";
         public TextAsset ContentXml => contentXml;
         public string EncounterId => encounterId;
         public IReadOnlyList<BattleDiagnostic> Diagnostics { get; private set; } = Array.Empty<BattleDiagnostic>();

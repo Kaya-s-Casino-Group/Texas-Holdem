@@ -19,6 +19,11 @@ namespace Poker.SingleBattle
         [SerializeField] private Button restart, resultRestart;
         [SerializeField] private TMP_Text energy;
         [SerializeField] private Button endTurn;
+        [Header("Compact battle layout")]
+        [SerializeField] private bool compactLayout;
+        [SerializeField] private RectTransform flowContainer, feedbackContainer;
+        public void ConfigureCompactLayout(RectTransform flow, RectTransform feedback)
+        { compactLayout = true; flowContainer = flow; feedbackContainer = feedback; }
         private Button switchPlayer;
         public Button SwitchPlayerButton => switchPlayer;
         private void EnsurePlayerSwitch()
@@ -72,7 +77,8 @@ namespace Poker.SingleBattle
             if (hero == null || enemies.Length == 0) return;
             var players = snapshot.Units.Where(unit => unit.Team == "player").ToList();
             EnsurePlayerSwitch();
-            player.text = "玩家 " + (players.FindIndex(unit => unit.Id == hero.Id) + 1) + "   " + hero.Health + " / " + hero.MaxHealth + "\n格挡 " + hero.Block;
+            player.text = compactLayout ? "生命 " + hero.Health + " / " + hero.MaxHealth + "   护盾 " + hero.Block :
+                "玩家 " + (players.FindIndex(unit => unit.Id == hero.Id) + 1) + "   " + hero.Health + " / " + hero.MaxHealth + "\n格挡 " + hero.Block;
             enemy.text = string.Join("\n", enemies.Select((unit, i) => "怪物 " + (i + 1) + "  " + unit.Health + " / " + unit.MaxHealth));
             if (energy != null) energy.text = "能量 " + hero.Energy + " / " + hero.MaxEnergy +
                 "\n出牌 " + ResourceValue(snapshot, hero.Id, "playCost") + " · 弃牌 " + ResourceValue(snapshot, hero.Id, "discardCost");
@@ -87,9 +93,10 @@ namespace Poker.SingleBattle
             message.text = "玩家 " + players.Count(unit => unit.IsAlive) + " · 怪物 " + enemies.Count(unit => unit.IsAlive);
             long discardBudget = snapshot.Resource(hero.Id, "discards")?.Value ?? -1;
             counts.text = "牌库 " + ZoneCount(snapshot, hero.Id, "deck") + " · 弃牌堆 " + ZoneCount(snapshot, hero.Id, "discard") +
-                "\n弃牌次数 " + (discardBudget < 0 ? "不限" : discardBudget.ToString());
+                (compactLayout ? " · 弃牌 " : "\n弃牌次数 ") + (discardBudget < 0 ? "不限" : discardBudget.ToString());
             score.text = snapshot.Labels.TryGetValue("lastScorePattern", out var lastPattern) && snapshot.Labels.TryGetValue("lastScoreTotal", out var lastTotal)
-                ? "上次 " + lastPattern + " · " + lastTotal + " 分\n效果见规则反馈" : "总得分 " + ResourceValue(snapshot, "", "totalScore");
+                ? "上次 " + lastPattern + " · " + lastTotal + " 分" + (compactLayout ? "" : "\n效果见规则反馈")
+                : "总得分 " + ResourceValue(snapshot, "", "totalScore");
             RefreshRuleFeedback(true);
             bool showResult = snapshot.IsFinished && !host.IsPresenting;
             resultPanel.SetActive(showResult); restart.interactable = !host.IsPresenting; resultRestart.interactable = !host.IsPresenting;

@@ -1,0 +1,50 @@
+{
+  "archiveCommit": "72a1553da8a16815a4eaf63cc4208987853af5bc",
+  "devParentCommit": "23f9cf20afb7ed9a695b997d191ab5cdfa7bc51e",
+  "rulesCommit": "93478b756f65a8f59c814352736b3eee6ed0bd0a",
+  "rulesWorkingTreeClean": true,
+  "deletedTrackedFiles": 3965,
+  "deletedFilesAbsentFromArchive": [],
+  "assetScenes": [
+    "Assets/Scenes/BattleDemo.unity"
+  ],
+  "missingSerializedGuids": {},
+  "duplicateAssetGuids": {},
+  "embeddedUrpRemoved": true,
+  "tests": {
+    "editmode": {
+      "result": "Passed",
+      "total": "533",
+      "passed": "533",
+      "failed": "0",
+      "skipped": "0",
+      "start-time": "2026-10-20 04:25:31Z",
+      "end-time": "2026-10-20 04:26:21Z"
+    },
+    "playmode": {
+      "result": "Passed",
+      "total": "8",
+      "passed": "8",
+      "failed": "0",
+      "skipped": "0",
+      "start-time": "2026-10-20 04:26:40Z",
+      "end-time": "2026-10-20 04:26:50Z"
+    }
+  },
+  "gpuCardEffects": {
+    "passed": true,
+    "exportTestGroups": 6,
+    "redCross": true,
+    "redCrossWithEffects": true,
+    "sealEmission": true,
+    "unlitLightingIndependent": true,
+    "emissionWithoutLight": true,
+    "rendering": "Forward",
+    "colorOverlay": true,
+    "sealRotation": true,
+    "backUnaffected": true,
+    "originalScenePreserved": true
+  },
+  "removedManifestEntries": 1072,
+  "removedManifestEntriesAbsentFromArchive": []
+}

@@ -232,6 +232,8 @@ namespace BattlePresentation.Tests
             var director = new PresentationDirector(store, null, _ => { ++planCalls; return ActionPlan.Empty; });
             director.Initialize(State()); store.Changed += _ => ++publications;
             Assert.That(director.Present(Batch(90, 80, 70), PlaybackMode.Instant).Status, Is.EqualTo(PresentationStatus.Completed));
+            director.Tick(); director.Tick();
+            Assert.That(director.LastError, Is.Null);
             Assert.That(planCalls, Is.Zero); Assert.That(publications, Is.EqualTo(1));
             Assert.That(store.Current.Unit("e").Health, Is.EqualTo(70));
             Assert.That(store.Current.Cursor, Is.EqualTo(new DisplayCursor("batch", 2)));

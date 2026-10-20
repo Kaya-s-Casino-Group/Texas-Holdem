@@ -168,12 +168,15 @@ namespace CardArt.Tests
         }
 
         [Test]
-        public void ShaderHasDeferredShadowAndDepthPassesAndPointAtlas()
+        public void ShaderHasOnlyUnlitForwardAndDepthPassesAndPointAtlas()
         {
             var material = AssetDatabase.LoadAssetAtPath<Material>(CardRenderingValidation.MaterialPath);
             Assert.That(material, Is.Not.Null);
-            foreach (var pass in new[] { "GBuffer", "ForwardLit", "ShadowCaster", "DepthOnly", "DepthNormals" })
+            foreach (var pass in new[] { "ForwardUnlit", "DepthOnly" })
                 Assert.That(material.FindPass(pass), Is.GreaterThanOrEqualTo(0), pass);
+            foreach (var pass in new[] { "GBuffer", "ShadowCaster", "DepthNormals" })
+                Assert.That(material.FindPass(pass), Is.EqualTo(-1), pass);
+            Assert.That(material.HasProperty("_SealNormalMap"), Is.False);
             Assert.That(ShaderUtil.GetShaderMessages(material.shader).Where(m => m.severity.ToString() == "Error"), Is.Empty);
             var texture = material.GetTexture(CardShaderProperties.BaseMap);
             Assert.That(texture.filterMode, Is.EqualTo(FilterMode.Point));

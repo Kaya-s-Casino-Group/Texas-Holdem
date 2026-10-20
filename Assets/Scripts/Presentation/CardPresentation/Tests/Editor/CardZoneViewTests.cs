@@ -303,7 +303,7 @@ namespace CardPresentation.Tests
             Assert.AreEqual(CardEffects.None, hidden.Effects); Assert.IsFalse(hidden.IsDisabled); Assert.IsTrue(hidden.Interaction.IsSelected);
             Assert.AreEqual(card.Effects, shown.Effects); Assert.IsTrue(card.IsDisabled);
             Assert.Throws<ArgumentException>(() => CardVisualData.FromCard(card, "view", true, definition => null));
-            Assert.Throws<ArgumentOutOfRangeException>(() => new CardVisualData("view", effects: (CardEffects)8));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new CardVisualData("view", effects: (CardEffects)int.MaxValue));
         }
 
         [Test] public void HoverAndSelectionShareOneOffsetAcrossHideRevealAndRelayout()

@@ -13,7 +13,6 @@ namespace CardArt.Editor
     public static class CardSealValidation
     {
         const string MapPath = "Assets/GameAssets/CardArt/Textures/WaxSeal_Paw.png";
-        const string NormalPath = "Assets/GameAssets/CardArt/Textures/WaxSeal_Paw_Normal.png";
         const string Output = "ArtSource/Cards/RenderingValidation/Seal";
 
         [MenuItem("工具/卡牌美术/素材准备/蜡封材质")]
@@ -21,13 +20,12 @@ namespace CardArt.Editor
         {
             var shader = Shader.Find(CardShaderProperties.ShaderName);
             var map = AssetDatabase.LoadAssetAtPath<Texture2D>(MapPath);
-            var normal = AssetDatabase.LoadAssetAtPath<Texture2D>(NormalPath);
-            CardRenderingValidation.SetTextureDefaults(shader, new[] { "_SealMap", "_SealNormalMap" }, new Texture[] { map, normal });
+            CardRenderingValidation.SetTextureDefaults(shader, new[] { "_SealMap" }, new Texture[] { map });
             foreach (var guid in AssetDatabase.FindAssets("t:Material", new[] { "Assets" }))
             {
                 var material = AssetDatabase.LoadAssetAtPath<Material>(AssetDatabase.GUIDToAssetPath(guid));
                 if (material.shader != shader) continue;
-                foreach (var entry in new[] { (CardShaderProperties.SealMap, map), (CardShaderProperties.SealNormalMap, normal) })
+                foreach (var entry in new[] { (CardShaderProperties.SealMap, map) })
                 {
                     var current = material.GetTexture(entry.Item1);
                     if (current != null && AssetDatabase.Contains(current)) continue;
@@ -46,7 +44,7 @@ namespace CardArt.Editor
             var originalDirty = originalScene.isDirty;
             var originalRoots = originalScene.rootCount;
             var fixtureType = Type.GetType("CardArt.Tests.CardPrefabExporterTests, CardArt.Tests.Editor", true);
-            foreach (string method in new[] { "FourBeastsInputsPassAllChecks", "SealExportRetainsNormalMapAndIndependentInstanceSettings", "SealExportRejectsWrongNormalImportAndUnsupportedShader", "SealEmissionValidatesRangeAndOptionalShaderSupport", "RedCrossExportKeepsInstancesIndependentAndPreservesLifecycle", "RedCrossValidationRejectsMissingOrIncompatibleInputs" })
+            foreach (string method in new[] { "FourBeastsInputsPassAllChecks", "SealExportRetainsColorOverlayAndIndependentInstanceSettings", "SealExportRejectsMissingColorMapAndUnsupportedShader", "SealEmissionValidatesRangeAndOptionalShaderSupport", "RedCrossExportKeepsInstancesIndependentAndPreservesLifecycle", "RedCrossValidationRejectsMissingOrIncompatibleInputs" })
             {
                 var fixture = Activator.CreateInstance(fixtureType);
                 try { fixtureType.GetMethod("SetUp").Invoke(fixture, null); fixtureType.GetMethod(method).Invoke(fixture, null); }
@@ -65,7 +63,6 @@ namespace CardArt.Editor
                 var atlas = AssetDatabase.LoadAssetAtPath<CardAtlasData>(CardRenderingValidation.AtlasPath);
                 CardShaderProperties.ConfigureSkin(material, atlas);
                 material.SetTexture(CardShaderProperties.SealMap, AssetDatabase.LoadAssetAtPath<Texture2D>(MapPath));
-                material.SetTexture(CardShaderProperties.SealNormalMap, AssetDatabase.LoadAssetAtPath<Texture2D>(NormalPath));
                 material.SetFloat("_FoilSpeed", 0);
                 material.SetTexture(CardShaderProperties.RedCrossMap, AssetDatabase.LoadAssetAtPath<Texture2D>(CardRedCrossSetup.TexturePath));
                 var card = new GameObject("Temporary Seal Validation").AddComponent<CardView>();
@@ -108,23 +105,21 @@ namespace CardArt.Editor
                 card.SetRedCrossEnabled(false);
                 if (!off.SequenceEqual(Shot("red_cross_disabled"))) throw new InvalidOperationException("Disabling red cross must restore original card.");
                 card.SetSealEnabled(true);
-                material.SetFloat(CardShaderProperties.SealNormalScale, 0);
                 var flat = Shot("flat"); Different(off, flat, "Seal missing.");
-                material.SetFloat(CardShaderProperties.SealNormalScale, 1);
-                var normal = Shot("normal"); Different(flat, normal, "Normal map has no effect.");
+                var normal = flat;
                 var rotation = material.GetFloat(CardShaderProperties.SealRotation);
                 material.SetFloat(CardShaderProperties.SealRotation, 0);
                 Different(normal, Shot("unrotated"), "Seal rotation has no effect.");
                 material.SetFloat(CardShaderProperties.SealRotation, rotation);
                 card.SetSealEmissionStrength(0.4f);
                 var emission = Shot("emission"); Different(normal, emission, "Seal emission has no effect.");
-                material.SetFloat(CardShaderProperties.SealNormalScale, 0);
-                Different(emission, Shot("emission_flat"), "Emission must preserve normal lighting.");
-                material.SetFloat(CardShaderProperties.SealNormalScale, 1);
+
                 card.SetSealEmissionStrength(0);
-                if (!normal.SequenceEqual(Shot("emission_zero"))) throw new InvalidOperationException("Zero emission must restore lit wax.");
+                if (!normal.SequenceEqual(Shot("emission_zero"))) throw new InvalidOperationException("Zero emission must restore the color overlay.");
                 light.enabled = false; RenderSettings.ambientLight = Color.black;
-                var dark = Shot("dark"); card.SetSealEmissionStrength(0.4f);
+                var dark = Shot("dark");
+                if (!normal.SequenceEqual(dark)) throw new InvalidOperationException("Unlit cards must be independent of scene lighting.");
+                card.SetSealEmissionStrength(0.4f);
                 Different(dark, Shot("dark_emission"), "Emission must remain visible without light.");
                 light.enabled = true; RenderSettings.ambientLight = Color.gray * 0.3f;
                 card.SetSealColor(new Color(0.08f, 0.5f, 0.65f));
@@ -143,7 +138,7 @@ namespace CardArt.Editor
                 if (errors.Length != 0) throw new InvalidOperationException(string.Join("\n", errors.Select(e => e.message)));
                 var renderer = camera.GetUniversalAdditionalCameraData().scriptableRenderer;
                 var mode = renderer.GetType().GetProperty("renderingModeActual", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)?.GetValue(renderer)?.ToString();
-                if (mode != "Deferred") throw new InvalidOperationException("Expected Deferred rendering.");
+                if (mode != "Forward") throw new InvalidOperationException("Expected Forward rendering.");
             }
             finally
             {
@@ -153,8 +148,8 @@ namespace CardArt.Editor
             }
             if (originalScene.rootCount != originalRoots || originalScene.isDirty != originalDirty)
                 throw new InvalidOperationException("Validation changed the original scene.");
-            File.WriteAllText(Output + "/validation.json", "{\"passed\":true,\"exportTestGroups\":6,\"redCross\":true,\"redCrossWithEffects\":true,\"sealEmission\":true,\"emissionPreservesNormalLighting\":true,\"emissionWithoutLight\":true,\"rendering\":\"Deferred\",\"normalMapChangesLighting\":true,\"sealRotation\":true,\"backUnaffected\":true,\"originalScenePreserved\":true}");
-            Debug.Log("Wax seal validation passed: exported textures and instances, partial emission, normal lighting, back exclusion, and original scene preservation.");
+            File.WriteAllText(Output + "/validation.json", "{\"passed\":true,\"exportTestGroups\":6,\"redCross\":true,\"redCrossWithEffects\":true,\"sealEmission\":true,\"unlitLightingIndependent\":true,\"emissionWithoutLight\":true,\"rendering\":\"Forward\",\"colorOverlay\":true,\"sealRotation\":true,\"backUnaffected\":true,\"originalScenePreserved\":true}");
+            Debug.Log("Wax seal validation passed: exported textures and instances, partial emission, unlit color overlays, back exclusion, and original scene preservation.");
         }
     }
 }

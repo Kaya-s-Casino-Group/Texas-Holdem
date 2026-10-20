@@ -12,7 +12,7 @@ namespace Poker.BattleHosting.Editor
     public static class BattleSceneHostSetup
     {
         public const string PrefabPath = "Assets/GameAssets/SingleBattle/Hosting/BattleSceneHostMinimal.prefab";
-        public const string ContentPath = "Packages/com.kaya.battle-engine/Content/SingleBattleDemoNew.xml";
+        public const string ContentPath = "Packages/com.kaya.battle-engine/Content/StandardSingleBattle.xml";
 
         [MenuItem("工具/卡牌战斗/Battle入口/在当前场景添加 BattleSceneHost")]
         public static void AddCurrent() => AddToScene(SceneManager.GetActiveScene(), Selection.activeGameObject);
@@ -92,7 +92,7 @@ namespace Poker.BattleHosting.Editor
             {
                 var root = new GameObject("BattleSceneHost Minimal"); SceneManager.MoveGameObjectToScene(root, preview);
                 var host = root.AddComponent<BattleSceneHost>();
-                var source = root.AddComponent<XmlBattleSessionSource>(); source.Configure(content, "single-battle-new");
+                var source = root.AddComponent<XmlBattleSessionSource>(); source.Configure(content, "standard-single-battle");
                 var director = root.AddComponent<ScenePresentationDirector>();
                 var adapter = root.AddComponent<BattleTimelineSceneAdapter>(); adapter.Configure(director);
                 host.Configure(source, adapter);

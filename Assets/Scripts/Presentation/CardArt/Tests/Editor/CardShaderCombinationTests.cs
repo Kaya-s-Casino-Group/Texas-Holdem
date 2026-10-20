@@ -40,7 +40,7 @@ namespace CardArt.Tests
                 // Rename optional foil inputs throughout the shader family. Atlas contract remains identical.
                 foreach(var path in Directory.GetFiles("Assets/GameAssets/CardArt/Shaders","*.hlsl"))
                     File.WriteAllText(folder+"/"+Path.GetFileName(path),File.ReadAllText(path).Replace("_FoilEnabled","_ArtistGlintOn").Replace("_FoilStrength","_ArtistGlintAmount"));
-                string source=File.ReadAllText("Assets/GameAssets/CardArt/Shaders/CardDeferred.shader").Replace("CardArt/Card Deferred","Hidden/CardArt/Tests/Generic"+Guid.NewGuid().ToString("N"))
+                string source=File.ReadAllText("Assets/GameAssets/CardArt/Shaders/CardUnlit.shader").Replace("CardArt/Card Unlit Forward","Hidden/CardArt/Tests/Generic"+Guid.NewGuid().ToString("N"))
                     .Replace("_FoilEnabled","_ArtistGlintOn").Replace("_FoilStrength","_ArtistGlintAmount").Replace("[PerRendererData]","");
                 File.WriteAllText(folder+"/Generic.shader",source); AssetDatabase.ImportAsset(folder+"/Generic.shader",ImportAssetOptions.ForceSynchronousImport);
                 material=new Material(AssetDatabase.LoadAssetAtPath<Shader>(folder+"/Generic.shader"));

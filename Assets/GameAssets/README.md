@@ -11,7 +11,5 @@
 | `CardPresentation` | 卡牌 UI、预制件、音效 Resources |
 | `PokerScoring/Profiles` | 计分配置 |
 | `RunFlow/Configs` | 流程配置 |
-| `Rendering` | 渲染 Shader、材质、贴图与预制件 |
-| `Editor/Shaders` | 编辑器资源验证 Shader |
 
 迁移保留原 `.meta` / GUID，不重新生成资源。通用美术与原始牌面仍在 `Assets/Art`，场景仍在 `Assets/Scenes`，固定管线和 Renderer 仍在 `Assets/Settings`。

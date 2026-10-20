@@ -7,7 +7,6 @@
     "Unity.RenderPipelines.Universal.Runtime",
     "Unity.RenderPipelines.Core.Runtime",
     "UnityEngine.UI",
-    "RetroRendering.Editor",
     "RetroRendering.Runtime"
   ],
   "includePlatforms": [

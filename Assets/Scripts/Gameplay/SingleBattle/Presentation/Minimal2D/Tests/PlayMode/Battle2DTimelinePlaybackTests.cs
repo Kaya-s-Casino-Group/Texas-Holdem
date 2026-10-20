@@ -15,9 +15,27 @@ namespace Poker.Battle2DValidation.Tests
 {
     public sealed class Battle2DTimelinePlaybackTests
     {
+        private static Scene fixtureScene;
+        [UnityTearDown] public IEnumerator CloseFixture()
+        {
+            if (fixtureScene.IsValid() && fixtureScene.isLoaded) yield return SceneManager.UnloadSceneAsync(fixtureScene);
+        }
         private static IEnumerator Open()
         {
-            yield return EditorSceneManager.LoadSceneAsyncInPlayMode("Assets/Scenes/Battle2DValidation.unity", new LoadSceneParameters(LoadSceneMode.Single));
+            var previous = SceneManager.GetActiveScene();
+            var scene = SceneManager.CreateScene("Temporary 2D Timeline Fixture");
+            SceneManager.SetActiveScene(scene);
+            fixtureScene = scene;
+            var setup = System.Type.GetType("Poker.Battle2DValidation.Editor.Battle2DValidationSetup, Poker.Battle2DValidation.Editor", true);
+            setup.GetMethod("BuildScene", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static).Invoke(null,
+                new object[] { scene,
+                    UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/GameAssets/SingleBattle/Presentation/Minimal2D/Art/Battle2DCard.prefab"),
+                    UnityEditor.AssetDatabase.LoadMainAssetAtPath("Assets/Settings/BattleURP.asset"),
+                    UnityEditor.AssetDatabase.LoadMainAssetAtPath("Assets/Fonts/FusionPixelFont/TMP/FusionPixel12pxProportional.asset") });
+            yield return null;
+            var adapter = Object.FindObjectsOfType<Battle2DSceneAdapter>().Single();
+            yield return Idle(adapter.View);
+            adapter.Playback.Submit(adapter.PlayerId, CardDuelAction.SkipDraw, animate: false);
             yield return null;
         }
         private static IEnumerator Idle(Battle2DView view)
@@ -39,7 +57,7 @@ namespace Poker.Battle2DValidation.Tests
             yield return Open();
             var adapter = Object.FindObjectsOfType<Battle2DSceneAdapter>().Single(); var host = adapter.SceneHost; var view = adapter.View;
             Assert.AreSame(adapter, host.SceneAdapter); Assert.IsInstanceOf<XmlBattleSessionSource>(host.SessionSource);
-            Assert.AreEqual("single-battle-new", ((XmlBattleSessionSource)host.SessionSource).EncounterId);
+            Assert.AreEqual("standard-single-battle", ((XmlBattleSessionSource)host.SessionSource).EncounterId);
             yield return Idle(view); Assert.IsTrue(host.AuthorityState.HasStarted); Match(adapter);
             var before = host.AuthorityState; var ids = view.Cards.Take(2).Select(c => c.Id).ToArray();
             view.ToggleSelection(ids[0]); var version = view.Candidate.SelectionVersion;
@@ -75,8 +93,8 @@ namespace Poker.Battle2DValidation.Tests
             yield return Idle(view);
             var source = (XmlBattleSessionSource)adapter.SceneHost.SessionSource;
             var original = source.ContentXml;
-            const string enemy = "<Enemy id=\"enemy\" ref=\"guardian\"/>";
-            var content = new TextAsset(original.text.Replace(enemy, enemy + "<Enemy id=\"enemy-2\" ref=\"guardian\"/>"));
+            const string enemy = "<Enemy id=\"enemy\" ref=\"rotator\" />";
+            var content = new TextAsset(original.text.Replace(enemy, enemy + "<Enemy id=\"enemy-2\" ref=\"rotator\" />"));
             try
             {
                 source.Configure(content, source.EncounterId); adapter.SceneHost.RestartBattle(); yield return Idle(view);

@@ -37,6 +37,17 @@ namespace Poker.SingleBattle
         private void RefreshEnemyIntents()
         {
             if (intent == null) return;
+            if (compactLayout)
+            {
+                HideEnemyIntents();
+                var display = host.Display;
+                intent.text = display == null ? "" : string.Join(" · ", host.Enemies
+                    .Where(actor => actor.IsBound && display.Unit(actor.ParticipantId.Value)?.IsAlive == true && !display.IsFinished)
+                    .Select(actor => display.Labels.TryGetValue("intent/" + actor.ParticipantId.Value, out var label) ? label : "")
+                    .Where(label => !string.IsNullOrEmpty(label)));
+                intent.gameObject.SetActive(!string.IsNullOrEmpty(intent.text));
+                return;
+            }
             foreach (var actor in host.Enemies)
             {
                 if (!enemyIntents.TryGetValue(actor, out var view))
@@ -118,6 +129,7 @@ namespace Poker.SingleBattle
 #if UNITY_EDITOR
         private void OnDrawGizmos()
         {
+            if (compactLayout) return;
             if (host == null) return;
             var camera = ResolveIntentCamera();
             if (camera == null && UnityEditor.SceneView.currentDrawingSceneView != null)
