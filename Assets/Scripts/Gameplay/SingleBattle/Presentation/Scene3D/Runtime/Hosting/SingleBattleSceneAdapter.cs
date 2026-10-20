@@ -6,6 +6,7 @@ using CardInteraction;
 using CardPresentation;
 using PokerEngine;
 using Poker.BattleHosting;
+using Poker.BattlePresentation;
 using UnityEngine;
 
 namespace Poker.SingleBattle
@@ -59,7 +60,7 @@ namespace Poker.SingleBattle
             ? Playback.PreviewDiscard(playerActor.ParticipantId, actions.Hand.CaptureSelection().Cards) : null;
         /// <summary>Read-only evaluation of the currently selected cards. Does not commit state or emit presentation events.</summary>
         public CardDuelTransition PreviewSelectedPlay() => CanReceivePlayerInput
-            ? Playback.PreviewPlay(playerActor.ParticipantId, actions.Hand.CaptureSelection().Cards) : null;
+            ? PreviewPlayWithTargets(playerActor.ParticipantId, actions.Hand.CaptureSelection().Cards) : null;
         public event Action StateChanged;
         internal bool CanReceivePlayerInput => isActiveAndEnabled && SceneHost.isActiveAndEnabled && State != null && ReferenceEquals(State, AuthorityState) && match != null && match.IsRunning &&
             playerActor != null && ReferenceEquals(match.Commands, playerActor) && Playback != null && Playback.CanAct(playerActor.ParticipantId) &&
@@ -118,7 +119,7 @@ namespace Poker.SingleBattle
                 throw new ArgumentException("The scene actors must match the session's roster slots.", nameof(session));
             ValidateContentRoster(ReadContentEncounter(), session);
         }
-        void IBattleSceneAdapter.SessionAttached() => Publish();
+        void IBattleSceneAdapter.SessionAttached() { playTargets.Clear(); candidateKey = null; RefreshCandidate(); Publish(); }
         private void Bind()
         {
             actions.Hand.StopSession();
@@ -151,7 +152,10 @@ namespace Poker.SingleBattle
         {
             if (actor != playerActor || !playerActor.CanPlay(request)) return 0;
             RefreshCandidate(); Interaction.BeginCommit();
-            var result = Playback.Submit(actor.ParticipantId, CardDuelAction.Play, request.Cards, animate: animate);
+            var bindings = ResolvePlayTargetBindings(request.Cards);
+            var result = Playback.Submit(actor.ParticipantId, CardDuelAction.Play, request.Cards,
+                BattleInteractionQueries.LegacyTargets(AuthorityState, actor.ParticipantId, bindings), animate,
+                BattleInteractionQueries.EffectBindings(AuthorityState, actor.ParticipantId, bindings));
             if (!result.Accepted) { candidateKey = null; RefreshCandidate(); }
             return result.Accepted ? request.Cards.Count : 0;
         }

@@ -33,3 +33,9 @@ MonoBehaviour:
     Disabled: 1
     Combinations:
     - cross
+  - Required: 8
+    Excluded: 0
+    Disabled: 0
+    Combinations:
+    - dim
+    - cross

@@ -40,7 +40,12 @@ namespace Poker.SingleBattle.Editor
             serialized.ApplyModifiedProperties();
             // A second menu invocation never replaces an authored/customized recipe or its action settings.
             var existingRoot = host.transform.Find(ActionRootName);
-            if (!replaceExisting && existingRoot != null && director.HasConfiguredTimeline) return director;
+            if (!replaceExisting && existingRoot != null && director.HasConfiguredTimeline)
+            {
+                BattleRecoveryTimeline.Upgrade(host, director, includeFeedback);
+                EditorUtility.SetDirty(director);
+                return director;
+            }
             var preserved = replaceExisting ? Array.Empty<SceneTimelineGroup>() : director.Timeline
                 .Where(group => group != null && group.nodes != null && group.nodes.Length > 0).ToArray();
             var root = existingRoot != null ? existingRoot : Child(host.transform, ActionRootName);
@@ -55,6 +60,7 @@ namespace Poker.SingleBattle.Editor
             var gain = Actor(root, "Actor Gain Block", BattlePresentationKind.GainBlock);
             var clear = Actor(root, "Actor Clear Block", BattlePresentationKind.ClearBlock);
             var death = Actor(root, "Actor Death", BattlePresentationKind.Death);
+            var revive = Actor(root, "Actor Revive", BattlePresentationKind.Revive);
             var groups = new List<SceneTimelineGroup> {
                 Group("ActionStarted", "Play", NotSkipped(), new[] {
                     Node("cards", prepareCards, "cards"),
@@ -71,6 +77,9 @@ namespace Poker.SingleBattle.Editor
             groups.Add(Reaction(blockFilter, block, death));
             groups.Add(Reaction(gainFilter, gain, death));
             groups.Add(Reaction(clearFilter, clear, death));
+            groups.Add(Group("EffectSettled", null, new SceneTimelineFilter {
+                effectKind = "Revive", healthChange = SceneValueChange.Increased
+            }, new[] { Node("revive", revive) }, Marker("revive", "Revealed")));
             groups.Add(Group("EffectSettled", null, new SceneTimelineFilter {
                 isDeath = SceneMatchBoolean.True, healthLost = SceneAmountMatch.Zero,
                 blockAbsorbed = SceneAmountMatch.Zero, blockChange = SceneValueChange.Unchanged
@@ -158,6 +167,9 @@ namespace Poker.SingleBattle.Editor
                     AddUi(groups, "EffectSettled", null, new SceneTimelineFilter { targetTeam = team, effectKind = "ClearBlock", blockChange = SceneValueChange.Decreased }, clear, "ui-clear", false, Marker("effect", "Revealed"));
                     var heal = Ui("UI Heal " + team, UiFeedbackKind.Heal, floatText, "{target} +{heal}", new Color(.45f, 1, .65f));
                     AddUi(groups, "EffectSettled", null, new SceneTimelineFilter { targetTeam = team, effectKind = "Heal", healthChange = SceneValueChange.Increased }, heal, "ui-heal", true);
+                    var revive = Ui("UI Revive " + team, UiFeedbackKind.Heal, floatText, "{target} 复活 +{heal}", new Color(.45f, 1, .65f));
+                    AddUi(groups, "EffectSettled", null, new SceneTimelineFilter { targetTeam = team, effectKind = "Revive", healthChange = SceneValueChange.Increased },
+                        revive, "ui-revive", true, Marker("revive", "Revealed"));
                 }
             }
             if (camera != null)

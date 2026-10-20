@@ -37,13 +37,14 @@ namespace CardPresentation
         }
 
         /// <summary>Use observer-authorized card data and points resolved by the caller.</summary>
-        public void SetContent(Suit cardSuit, Rank cardRank, long points)
+        public void SetContent(Suit cardSuit, Rank cardRank, long points, CardEffects effects = CardEffects.None, bool disabled = false)
         {
             GetSuitSymbol(cardSuit);
             if (!Enum.IsDefined(typeof(Rank), cardRank)) throw new ArgumentOutOfRangeException(nameof(cardRank));
             suit = cardSuit;
             rank = cardRank;
             chipPoints = points;
+            CardEffectRules.Validate(effects); cardEffects = effects; cardDisabled = disabled;
             Refresh();
         }
 
@@ -71,6 +72,9 @@ namespace CardPresentation
             }
         }
 
+        private CardEffects cardEffects;
+        private bool cardDisabled;
+
         private void Refresh()
         {
             if (suitRankText == null || chipsText == null) return;
@@ -88,6 +92,11 @@ namespace CardPresentation
             suitRankText.color = suit == Suit.Hearts || suit == Suit.Diamonds ? redSuitColor : blackSuitColor;
             string points = (chipPoints >= 0 ? "+" : "") + chipPoints.ToString(CultureInfo.InvariantCulture);
             chipsText.color = blackSuitColor;
+            if ((cardEffects & CardEffects.Unplayable) != 0)
+            {
+                suitRankText.text = "废牌 · " + suitRankText.text;
+                chipsText.text = cardDisabled ? "已禁用 · 不能选择" : "不能出牌 · 可以弃牌"; return;
+            }
             chipsText.text = "<color=#" + ColorUtility.ToHtmlStringRGB(chipNumberColor) + ">" + points + "</color>筹码";
         }
 

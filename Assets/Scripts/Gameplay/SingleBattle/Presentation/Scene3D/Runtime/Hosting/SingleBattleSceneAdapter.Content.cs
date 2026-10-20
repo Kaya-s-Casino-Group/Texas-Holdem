@@ -14,6 +14,9 @@ namespace Poker.SingleBattle
         public TextAsset ContentXml => contentXml;
         public string ContentEncounterId => encounterId;
         public IReadOnlyList<BattleDiagnostic> ContentDiagnostics { get; private set; } = Array.Empty<BattleDiagnostic>();
+        private readonly Dictionary<string, string> itemNames = new Dictionary<string, string>(StringComparer.Ordinal);
+        public string ItemName(string definitionId) =>
+            definitionId != null && itemNames.TryGetValue(definitionId, out var name) ? name : definitionId ?? "";
 
         /// <summary>Changes only the next battle's source; never mutates an attached session.</summary>
         public void ConfigureContent(TextAsset xml, string encounter)
@@ -27,9 +30,16 @@ namespace Poker.SingleBattle
         {
             ContentDiagnostics = Array.Empty<BattleDiagnostic>();
             if (contentXml == null) throw ContentFailure("MissingContent", "请绑定 XML 战斗内容包。");
-            var result = BattleContentCompiler.CompileXml(contentXml.text, contentXml.name + ".xml");
+            var read = BattleContentXmlReader.Read(contentXml.text, contentXml.name + ".xml");
+            ContentDiagnostics = read.Diagnostics;
+            if (!read.Success) throw ContentFailure();
+            var result = BattleContentCompiler.Compile(read.Source);
             ContentDiagnostics = result.Diagnostics;
             if (!result.Success) throw ContentFailure();
+            itemNames.Clear();
+            foreach (var node in read.Source.Root.Children.Where(n => n.Name == "Relics").SelectMany(n => n.Children))
+                if (node.Attributes.TryGetValue("id", out var id) && node.Attributes.TryGetValue("name", out var name))
+                    itemNames[id] = name;
             return result.Content;
         }
 

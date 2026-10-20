@@ -10444,7 +10444,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dad9f709f4fa54521886b7d5b4574da3, type: 3}
   m_Name:
   m_EditorClassIdentifier:
-  contentXml: {fileID: 4900000, guid: 16f0bf3080ac4be0a7d91fba2197ebb7, type: 3}
+  contentXml: {fileID: 4900000, guid: 88f435dc0522445cb230f92808068133, type: 3}
   encounterId: standard-single-battle
   match: {fileID: 1102627770}
   actions: {fileID: 1034438534}

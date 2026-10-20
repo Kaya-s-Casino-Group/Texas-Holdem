@@ -86,5 +86,37 @@ namespace Poker.SingleBattle.Tests
             }
             finally { EditorSceneManager.ClosePreviewScene(scene); }
         }
+
+        [TestCase(false)]
+        [TestCase(true)]
+        public void RevivingCompletesTheOldHitAndSkipsQueuedDeathEvenWhenItStartsLater(bool queueBeforeRevival)
+        {
+            var scene = EditorSceneManager.NewPreviewScene();
+            try
+            {
+                var root = new GameObject("Revived actor"); SceneManager.MoveGameObjectToScene(root, scene);
+                var actor = root.AddComponent<PlayerBattleActor>();
+                var model = new GameObject("Visual"); model.transform.SetParent(root.transform, false);
+                var presenter = model.AddComponent<ManualBattlePresentation>();
+                actor.ConfigurePresentation(presenter); actor.SynchronizeDisplay(Unit(100), true);
+                var effect = new EffectDisplayData("Damage", "enemy", "unit", 100, 100, 0, Unit(100), Unit(0), true);
+                var hit = actor.PresentDisplay(BattlePresentationKind.Hit, effect, null);
+                var action = root.AddComponent<BattleActorTimelineAction>(); action.Configure(actor, BattlePresentationKind.Death);
+                var scope = new PresentationScope("late-death"); var markers = new Markers();
+                var context = new ActionContext("batch", 1, "death", new BattleDisplayChange(0, DisplayCursor.Empty,
+                    Snapshot(0), "EffectSettled", "enemy", effect: effect), Snapshot(), new DictionaryTargetResolver(), scope);
+                IPresentationOperation death = queueBeforeRevival ? action.Play(context, markers) : null;
+                actor.SynchronizeDisplay(Unit(60));
+                Assert.AreEqual(BattlePresentationStatus.Completed, hit.Status, "A superseded visual tail is not a failed battle.");
+                if (!queueBeforeRevival) death = action.Play(context, markers);
+                action.Tick();
+                Assert.AreEqual(PresentationStatus.Completed, death.Status);
+                Assert.AreEqual(1, presenter.Cues.Count, "The old death must never restart after the recovery.");
+                Assert.AreEqual(60, actor.DisplayUnit.Health);
+                CollectionAssert.AreEqual(new[] { "Revealed" }, markers.Values);
+                scope.Dispose();
+            }
+            finally { EditorSceneManager.ClosePreviewScene(scene); }
+        }
     }
 }

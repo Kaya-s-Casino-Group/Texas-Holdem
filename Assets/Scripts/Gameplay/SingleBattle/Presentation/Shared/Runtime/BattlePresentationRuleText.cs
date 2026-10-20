@@ -32,8 +32,12 @@ namespace Poker.BattlePresentation
             if (behavior is LifeStealSpec) return "吸血 " + Percent(((LifeStealSpec)behavior).Ratio);
             if (behavior is OverhealDamageSpec) return "溢出治疗转伤 " + Percent(((OverhealDamageSpec)behavior).Ratio);
             var periodic = behavior as PeriodicDamageSpec;
-            return periodic == null ? behavior.GetType().Name :
-                (periodic.Timing == CombatTimingKind.ActionCompleted ? "流血：行动后" : "中毒：阶段末") + periodic.DamagePerStack + " 伤害/层";
+            if (periodic == null) return behavior.GetType().Name;
+            string subject = periodic.TimingSubject == PeriodicTimingSubject.Applier ? "施加者" : "持有者";
+            string timing = periodic.Timing == CombatTimingKind.ActionCompleted ? "每次有效行动后" :
+                periodic.Timing == CombatTimingKind.TurnStarted ? "回合开始" : "所属阵营阶段结束";
+            return subject + timing + "：" + periodic.DamagePerStack + " 伤害/层" +
+                (periodic.StackDecay > 0 ? " · 每次移除 " + periodic.StackDecay + " 层" : " · 层数不衰减");
         }
 
         private static string Percent(decimal ratio) => ratio <= decimal.MaxValue / 100
@@ -56,7 +60,7 @@ namespace Poker.BattlePresentation
         public static string Status(StatusInstance status, CombatStatusCatalog catalog) =>
             StatusName(status.DefinitionId, catalog) + (status.Stacks > 1 ? " ×" + status.Stacks : "") + "（" + Duration(status.Duration) + "）";
 
-        public static string Snapshot(CardDuelState state, ParticipantId playerId, CombatStatusCatalog catalog)
+        public static string Snapshot(CardDuelState state, ParticipantId playerId, CombatStatusCatalog catalog, Func<string, string> name = null)
         {
             var lines = new List<string> { "【当前状态】" };
             foreach (var unit in state.Duel.Combat.Combatants)
@@ -70,17 +74,76 @@ namespace Poker.BattlePresentation
             lines.Add("【当前玩家遗物】");
             if (player.Relics.Relics.Count == 0) lines.Add("无遗物");
             foreach (var relic in player.Relics.Relics)
-                lines.Add(relic.DefinitionId + " Lv." + relic.Level + " · 次数 " + (relic.RemainingCharges?.ToString() ?? "不限") +
+                lines.Add((name?.Invoke(relic.DefinitionId) ?? relic.DefinitionId) + " Lv." + relic.Level + " · 次数 " + (relic.RemainingCharges?.ToString() ?? "不限") +
                     " · 本回合已用 " + relic.UsesThisRound + " · 冷却 " + relic.CooldownRounds);
             return string.Join("\n", lines);
         }
 
-        public static string Relics(CardDuelState state, ParticipantId playerId)
+        public static string Relics(CardDuelState state, ParticipantId playerId, Func<string, string> name = null)
         {
             var relics = state.Duel.Player(playerId).Relics.Relics;
             return relics.Count == 0 ? "无遗物" : string.Join("\n\n", relics.Select(relic =>
-                relic.DefinitionId + "  Lv." + relic.Level + "\n次数 " + (relic.RemainingCharges?.ToString() ?? "不限") +
-                " · 已用 " + relic.UsesThisRound + "\n冷却 " + relic.CooldownRounds));
+                (name?.Invoke(relic.DefinitionId) ?? relic.DefinitionId) + "  Lv." + relic.Level + "\n" + RelicRuntime(relic) + "\n" +
+                RelicDescription(state.Duel.Player(playerId).Relics.RulesFor(relic.InstanceId))));
+        }
+
+        public static string RelicDescription(BattleRelicRules rules)
+        {
+            if (rules == null) return "";
+            var lines = new List<string>(); var item = rules.Item;
+            if (item != null)
+            {
+                if (item.Activation == BattleItemActivation.Effects)
+                    foreach (var step in item.Effects)
+                    {
+                        string group = step.Target.Group == CombatTargetGroup.Self ? "自身" :
+                            (step.Target.Selection == CombatTargetSelection.AllLiving ? "所有" :
+                            step.Target.Selection == CombatTargetSelection.LowestHealth ? "生命最低的" :
+                            step.Target.Selection == CombatTargetSelection.HighestHealth ? "生命最高的" : "首个") +
+                            (step.Target.Group == CombatTargetGroup.Opponents ? "敌人" : "友方");
+                        string effect = step.Effect.Kind == CombatEffectKind.Heal ? "恢复生命 " :
+                            step.Effect.Kind == CombatEffectKind.GainBlock ? "获得护盾 " : "受到伤害 ";
+                        lines.Add(group + effect + step.Effect.Amount + "。");
+                    }
+                if (item.Activation == BattleItemActivation.ReplaceHeld)
+                    lines.Add("替换另一件持有遗物。所有等级中等概率抽取；排除原道具、六面骰及已达持有上限的道具。");
+                if (item.Activation == BattleItemActivation.Roulette)
+                    lines.Add("使用时固定随机抽取 1–" + item.RouletteTurns + " 回合中的爆炸时机；可能立刻爆炸。每回合牌型最终伤害累乘 " +
+                        item.RouletteBase.ToString("0.##", CultureInfo.InvariantCulture) + "；爆炸对自己造成 " + item.ExplosionDamage + " 伤害。状态结束后可再用。");
+                if (item.CooldownBattles > 0) lines.Add("使用后冷却 " + item.CooldownBattles + " 场战斗，当前场计第 1 场。");
+                if (item.RemoveOnDepleted) lines.Add("剩余次数跨关保留，用完移除。");
+                if (item.ReviveRatio > 0) lines.Add("死亡时自动消耗，复活至最大生命的 " + Percent(item.ReviveRatio) + "（向下取整），清空护盾和全部状态。");
+                if (item.ExecuteChance > 0) lines.Add("出牌每段对每个命中敌人独立判定 " + Percent(item.ExecuteChance) + " 击杀概率；道具和毒伤不触发。");
+                if (item.ReflectRatio > 0) lines.Add("将护盾实际挡住伤害的 " + Percent(item.ReflectRatio) + " 反给攻击者。");
+                if (item.LocationEnterHeal > 0) lines.Add("进入每个地点恢复 " + item.LocationEnterHeal + " 生命。");
+                if (item.LocationLeaveGoldRatio > 0) lines.Add("离开每个地点时，金币增加 " + Percent(item.LocationLeaveGoldRatio) + "。");
+            }
+            foreach (var program in rules.Programs)
+            {
+                string scope = program.Hand.HasValue ? (program.ExcludeHand ? "非" : "") + BattleDisplayProjector.HandName(program.Hand.Value) : "所有牌型";
+                if (program.Kind == RelicProgramKind.ScoreMultiplier)
+                    lines.Add(scope + "倍率 " + (program.Amount >= 0 ? "+" : "") + program.Amount.ToString("0.##", CultureInfo.InvariantCulture) + "。");
+                else if (program.Kind == RelicProgramKind.HealRatioAdd)
+                    lines.Add(scope + "治疗比例增加 " + (program.Amount * 100).ToString("0.##", CultureInfo.InvariantCulture) + " 个百分点。");
+            }
+            return string.Join("\n", lines);
+        }
+
+        public static string RelicRuntime(BattleRelicState relic)
+        {
+            var value = "次数 " + (relic.RemainingCharges?.ToString() ?? "不限") + " · 本回合已用 " + relic.UsesThisRound;
+            if (relic.CooldownRounds > 0) value += "\n回合冷却 " + relic.CooldownRounds;
+            long battles = relic.Memory.CounterValue(BattleItemRuntime.CooldownBattlesKey);
+            if (battles > 0) value += "\n战斗冷却 " + battles + " 场（当前场计入）";
+            if (relic.Memory.CounterValue(BattleItemRuntime.RouletteActiveKey) != 0) value += "\n转盘生效中";
+            return value;
+        }
+
+        public static string HandMultiplier(BattleRelicLoadout relics)
+        {
+            if (!relics.Relics.Any(relic => relic.Memory.CounterValue(BattleItemRuntime.RouletteActiveKey) != 0)) return "";
+            try { return "转盘 · 当前牌型伤害 ×" + BattleItemRuntime.HandMultiplier(relics).ToString("0.##", CultureInfo.InvariantCulture); }
+            catch (OverflowException) { return "转盘倍率超出可显示范围"; }
         }
 
         public static IReadOnlyList<string> Events(IEnumerable<CombatRuleEvent> events, TeamBattleState state,
@@ -122,6 +185,8 @@ namespace Poker.BattlePresentation
                 case CombatEffectKind.Damage:
                     return target + origin + "伤害 " + fact.SettledDamage + (compact ? "" :
                         "（扣血 " + fact.DamageToHealth + " · 护盾吸收 " + fact.BlockAbsorbed + "）") + (fact.Died ? " · 击败" : "");
+                case CombatEffectKind.Revive: return target + "复活 · 生命 " + fact.After.Health + " / " + fact.After.MaxHealth + " · 护盾和状态清空";
+                case CombatEffectKind.LoseHealth: return target + "失去生命 " + (fact.Before.Health - fact.After.Health) + (fact.Died ? " · 阵亡" : "");
                 case CombatEffectKind.Heal:
                     return target + origin + "治疗 +" + fact.HealthRestored + (fact.Overheal > 0 ? "（溢出 " + fact.Overheal + "）" : "");
                 case CombatEffectKind.GainBlock: return target + origin + "护盾 +" + (fact.After.Block - fact.Before.Block);

@@ -101,7 +101,7 @@ namespace Poker.SingleBattle
                 PresentActorStatuses(playerStatuses, heroStatus);
                 PresentActorStatuses(enemyStatuses, monsterStatus);
             }
-            if (energy != null) energy.text = "能量 " + hero.Energy + " / " + hero.MaxEnergy +
+            if (energy != null) energy.text = "剩余行动点 " + ResourceValue(snapshot, hero.Id, "actions") +
                 "\n出牌 " + ResourceValue(snapshot, hero.Id, "playCost") + " · 弃牌 " + ResourceValue(snapshot, hero.Id, "discardCost");
             if (endTurn != null) endTurn.interactable = host.CanEndTurn;
             playerBar.rectTransform.anchorMax = new Vector2(hero.MaxHealth > 0 ? Mathf.Clamp01((float)hero.Health / hero.MaxHealth) : 0, 1);
@@ -119,7 +119,7 @@ namespace Poker.SingleBattle
                         (discarding ? "弃牌阶段" : "出牌阶段") : "敌人行动");
             }
             RefreshEnemyIntents();
-            message.text = "玩家 " + players.Count(unit => unit.IsAlive) + " · 怪物 " + enemies.Count(unit => unit.IsAlive);
+            message.text = "玩家 " + players.Count(unit => unit.IsAlive) + " · 怪物 " + enemies.Count(unit => unit.IsAlive) + " · 金币 " + ResourceValue(snapshot, hero.Id, "gold");
             long discardBudget = snapshot.Resource(hero.Id, "discards")?.Value ?? -1;
             counts.text = "牌库 " + ZoneCount(snapshot, hero.Id, "deck") + " · 弃牌堆 " + ZoneCount(snapshot, hero.Id, "discard") +
                 (compactLayout ? "" : "\n弃牌次数 " + (discardBudget < 0 ? "不限" : discardBudget.ToString()));
@@ -186,6 +186,7 @@ namespace Poker.SingleBattle
             UpdateEnemyIntentBillboards();
             RefreshTurnFlow();
             RefreshRuleFeedback();
+            RefreshBattleTools();
             if (host != null && endTurn != null) endTurn.interactable = host.CanEndTurn;
             if (switchPlayer != null) switchPlayer.interactable = host.CanSwitchPlayer && host.Display != null && host.Display.Units.Count(unit => unit.Team == "player" && ResourceValue(host.Display, unit.Id, "canAct") == 1) > 1;
             if (Keyboard.current != null && Keyboard.current.tabKey.wasPressedThisFrame) SelectNextPlayer();

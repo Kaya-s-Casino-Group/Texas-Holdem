@@ -102,7 +102,8 @@ namespace CardInteraction
         public bool CanSelect(string viewId)
         {
             var card = Find(viewId); var hand = GetComponent<HandZoneView>();
-            return card != null && card.Card.CanPlay && (match.Commands == null || match.Commands.CanInteract) &&
+            return card != null && !card.Card.IsDisabled && (card.Card.CanPlay || card.Card.CanDiscard) &&
+                (match.Commands == null || match.Commands.CanInteract) &&
                 (hand == null || card.Interaction.IsSelected || Cards.Count(item => item.Interaction.IsSelected) < hand.MaxSelectedCards);
         }
         public void SetInteraction(string viewId, CardInteractionState state)

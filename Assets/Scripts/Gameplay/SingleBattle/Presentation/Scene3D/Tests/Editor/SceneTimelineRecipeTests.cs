@@ -44,8 +44,10 @@ namespace Poker.SingleBattle.Tests
         {
             var units = new[] { Unit("player", "player", 100, 0), Unit("enemy", "enemy", 100, beforeBlock) };
             var snapshot = new BattleDisplaySnapshot("battle", "player", 1, "player", 1, null, units, zones: null);
+            long beforeHealth = kind == "Revive" ? 0 : kind == "Heal" ? 40 : 100;
+            long afterHealth = kind == "Revive" || kind == "Heal" ? 60 : 100 - damage;
             var effect = kind == null ? null : new EffectDisplayData(kind, "player", target, damage + absorbed,
-                damage, absorbed, Unit(target, target, 100, beforeBlock), Unit(target, target, 100 - damage, afterBlock), death);
+                damage, absorbed, Unit(target, target, beforeHealth, beforeBlock), Unit(target, target, afterHealth, afterBlock), death);
             var change = new BattleDisplayChange(0, DisplayCursor.Empty, snapshot, semantic, "player", effect: effect,
                 values: new Dictionary<string, string> { { "action", action }, { "skipped", skipped ? "true" : "false" } });
             return new ActionContext("batch", 1, "node", change, snapshot, new DictionaryTargetResolver(), new PresentationScope("recipe"));
@@ -74,6 +76,7 @@ namespace Poker.SingleBattle.Tests
         [TestCase("GainBlock", 0, 0, 0, 8, false, "actor.GainBlock")]
         [TestCase("ClearBlock", 0, 0, 8, 0, false, "actor.ClearBlock")]
         [TestCase("Heal", 0, 0, 0, 0, false, null)]
+        [TestCase("Revive", 0, 0, 0, 0, false, "actor.Revive")]
         [TestCase("Damage", 0, 0, 0, 0, false, null)]
         [TestCase("Eliminate", 0, 0, 0, 0, true, "actor.Death")]
         public void EffectRecipesSelectRealReactionsAndNeverLeaveDanglingSignals(string kind, long damage, long absorbed,
@@ -111,6 +114,35 @@ namespace Poker.SingleBattle.Tests
                 var skipped = Context("ActionStarted", "Play", skipped: true);
                 Assert.IsEmpty(Plan(fixture.Director, skipped).Nodes);
                 context.Scope.Dispose(); skipped.Scope.Dispose();
+            }
+        }
+
+        [Test]
+        public void OlderSceneRecipesGainRecoveryFactsAtRuntimeWithoutReplacingTheirCustomAttack()
+        {
+            using (var fixture = new Fixture())
+            {
+                var play = Context("ActionStarted", "Play");
+                var attack = fixture.Director.Timeline.Where(group => group.Matches(play))
+                    .SelectMany(group => group.nodes).Single(node => node.id == "attack");
+                attack.after = new[] { new SceneActionDependency { actionId = "cards", kind = DependencyKind.Completed } };
+                var old = fixture.Director.Timeline.Where(group => group.filter?.effectKind != "Revive" && group.filter?.effectKind != "Heal").ToArray();
+                fixture.Director.ConfigureTimeline(old, fixture.Director.Targets.ToArray());
+                BattleRecoveryTimeline.Upgrade(fixture.Host, fixture.Director);
+                int count = fixture.Director.Timeline.Count;
+                foreach (var kind in new[] { "Heal", "Revive" })
+                foreach (var team in new[] { "player", "enemy" })
+                {
+                    var context = Context("EffectSettled", "UseItem", kind, target: team);
+                    var plan = Plan(fixture.Director, context); Validate(plan);
+                    Assert.IsTrue(plan.Nodes.Any(node => node.Id == (kind == "Revive" ? "ui-revive" : "ui-heal")));
+                    if (kind == "Revive") Assert.IsTrue(plan.Nodes.Any(node => node.Action.Descriptor.Key == "actor.Revive"));
+                    context.Scope.Dispose();
+                }
+                BattleRecoveryTimeline.Upgrade(fixture.Host, fixture.Director);
+                Assert.AreEqual(count, fixture.Director.Timeline.Count, "Runtime upgrades must be idempotent.");
+                Assert.AreEqual(DependencyKind.Completed, Plan(fixture.Director, play).Nodes.Single(node => node.Id == "attack").Dependencies.Single().Kind);
+                play.Scope.Dispose();
             }
         }
     }

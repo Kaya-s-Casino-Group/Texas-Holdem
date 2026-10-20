@@ -20,6 +20,8 @@ namespace Poker.BattlePresentation
                 new ResourceDisplayData("", "roundLimit", engine.Duel.Definition.RoundLimit) };
             foreach (var p in duel.Players)
             {
+                resources.Add(new ResourceDisplayData(p.Id.Value, "gold", state.GoldFor(p.Id)));
+                resources.Add(new ResourceDisplayData(p.Id.Value, "actions", p.Rules.Flow.UsesTurnFlow ? state.FlowFor(p.Id).ActionsRemaining : p.Energy.Energy));
                 resources.Add(new ResourceDisplayData(p.Id.Value, "discards", state.RemainingDiscardBudgetFor(p.Id) ?? -1));
                 resources.Add(new ResourceDisplayData(p.Id.Value, "maxSelection", p.Rules.MaxSelection));
                 resources.Add(new ResourceDisplayData(p.Id.Value, "canAct", state.HasStarted && duel.HasPlayerWindow(p.Id) ? 1 : 0));

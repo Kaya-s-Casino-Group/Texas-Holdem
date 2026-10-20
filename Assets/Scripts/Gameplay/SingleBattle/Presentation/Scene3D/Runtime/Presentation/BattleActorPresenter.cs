@@ -54,6 +54,13 @@ namespace Poker.SingleBattle
         public BattlePresentationOperation Play(BattlePresentationCue cue)
         {
             if (cue == null) throw new ArgumentNullException(nameof(cue));
+            if (cue.Kind == BattlePresentationKind.Revive)
+            {
+                ResetPresentation();
+                if (cue.DisplayEffect?.After != null) SynchronizeDisplay(cue.DisplayEffect.After);
+                else if (cue.Effect?.After != null) Synchronize(cue.Effect.After);
+                return BattlePresentationOperation.Completed();
+            }
             if (active != null && active.keepWaiting) throw new InvalidOperationException("Presentation operations must be sequenced.");
             if (cue.Kind == BattlePresentationKind.GainBlock || cue.Kind == BattlePresentationKind.ClearBlock ||
                 cue.Kind == BattlePresentationKind.BlockHit && cue.HealthLost == 0)
@@ -138,6 +145,13 @@ namespace Poker.SingleBattle
         { model.localRotation = restRotation * Quaternion.Euler(0, 0, 25); model.localScale = restScale * .75f; }
         public void Snap(BattlePresentationCue cue)
         {
+            if (cue.Kind == BattlePresentationKind.Revive)
+            {
+                ResetPresentation();
+                if (cue.DisplayEffect?.After != null) SynchronizeDisplay(cue.DisplayEffect.After);
+                else if (cue.Effect?.After != null) Synchronize(cue.Effect.After);
+                return;
+            }
             CancelPresentation(); CapturePose(); RestorePose();
             if (model != null && cue.Kind == BattlePresentationKind.Death) SnapDeath();
         }

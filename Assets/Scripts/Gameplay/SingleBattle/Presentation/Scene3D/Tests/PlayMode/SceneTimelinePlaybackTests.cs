@@ -45,8 +45,12 @@ namespace Poker.SingleBattle.Tests
         [UnityTest]
         public IEnumerator AuthoredSceneUsesTimelineForOpeningSelectionPlayDiscardAndCancellation()
         {
+            var resultPath = Path.GetFullPath(Path.Combine(Application.dataPath, "../Library/BattleRuleAlignment/scene-flow.txt"));
+            if (File.Exists(resultPath)) File.Delete(resultPath);
             yield return EditorSceneManager.LoadSceneAsyncInPlayMode("Assets/Scenes/BattleDemo.unity", new LoadSceneParameters(LoadSceneMode.Single));
             var host = Object.FindObjectsOfType<SingleBattleSceneAdapter>().Single();
+            Assert.AreEqual("Packages/com.kaya.battle-engine/Content/StandardSingleBattle-2026-10-21.xml",
+                AssetDatabase.GetAssetPath(host.ContentXml));
             Assert.AreSame(host.SceneHost, host.GetComponent<BattleSceneHost>());
             Assert.AreSame(host, host.SceneHost.SceneAdapter);
             Assert.AreSame(host.Session, host.SceneHost.Session);
@@ -65,8 +69,9 @@ namespace Poker.SingleBattle.Tests
             Assert.AreEqual(8, host.Actions.Hand.Cards.Count);
             Assert.AreSame(host.AuthorityState, host.State);
             Assert.IsTrue(host.CanEndTurn);
-            Assert.IsTrue(host.SkipDraw());
-            yield return Idle(host);
+            Assert.AreEqual(BattlePlayerWindow.Action, host.State.FlowFor(host.Player.ParticipantId).Window,
+                "The date standard automatically fills the opening hand and enters the player action window.");
+            Assert.AreEqual(3, host.Player.Turn.Energy);
             var authority = host.AuthorityState;
             Select(host, 1); host.RefreshCandidate();
             Assert.AreEqual(CandidateState.Valid, host.Candidate.State);
@@ -113,7 +118,9 @@ namespace Poker.SingleBattle.Tests
             Assert.Less(Quaternion.Angle(cameraRotation, cameraTarget.localRotation), .001f);
             Assert.AreSame(settledPlay, host.State);
             Assert.Less(host.Enemy.Unit.Health, oldEnemy);
-            Assert.AreEqual(7, host.Actions.Hand.Cards.Count);
+            Assert.AreEqual(7, host.Actions.Hand.Cards.Count, "Playing a card does not refill it.");
+            Assert.AreEqual(2, host.Player.Turn.Energy);
+            Assert.AreEqual(0, host.State.Duel.CompletedRounds);
             Assert.AreEqual(cursors.Count, cursors.Select(c => c.Sequence).Distinct().Count());
             Assert.IsTrue(cursors.Zip(cursors.Skip(1), (a,b) => a.Sequence < b.Sequence).All(x => x));
             Assert.IsNull(host.PresentationDirector.LastError);
@@ -121,9 +128,11 @@ namespace Poker.SingleBattle.Tests
             Assert.AreEqual(1, host.Player.Discard(host.Actions.Hand.CaptureSelection(), true));
             yield return Idle(host);
             Assert.AreSame(host.AuthorityState, host.State);
-            Assert.AreEqual(1, host.State.Duel.CompletedRounds);
+            Assert.AreEqual(0, host.State.Duel.CompletedRounds, "Discarding does not end a turn with action points remaining.");
+            Assert.AreEqual(1, host.Player.Turn.Energy);
+            Assert.AreEqual(BattlePlayerWindow.Action, host.State.FlowFor(host.Player.ParticipantId).Window);
             Assert.AreEqual(host.Player.Unit.Block, host.Player.Shields.TotalBlock);
-            Assert.AreEqual(6, host.Actions.Hand.Cards.Count);
+            Assert.AreEqual(7, host.Actions.Hand.Cards.Count, "Discarding one card immediately replaces one card.");
             Assert.IsNull(host.PresentationDirector.LastError);
             Assert.IsTrue(host.EndTurn(true));
             yield return null;
@@ -133,6 +142,9 @@ namespace Poker.SingleBattle.Tests
             Assert.IsTrue(uiActions.All(action => action.ActiveViewCount == 0), "Recovery releases all scoped UI feedback.");
             Assert.AreSame(final, host.State);
             Assert.IsFalse(host.IsPresenting);
+            Assert.AreEqual(1, final.Duel.CompletedRounds);
+            Assert.AreEqual(8, host.Actions.Hand.Cards.Count, "The next player turn fills the hand to its limit.");
+            Assert.AreEqual(3, host.Player.Turn.Energy);
             var cursor = host.Display.Cursor;
             yield return new WaitForSecondsRealtime(1.3f);
             Assert.AreSame(final, host.AuthorityState);
@@ -156,6 +168,10 @@ namespace Poker.SingleBattle.Tests
             Assert.AreEqual(8, host.Actions.Hand.Cards.Count);
             Assert.IsTrue(host.CanEndTurn);
             Assert.IsNull(host.PresentationDirector.LastError);
+            Assert.IsEmpty(errors, "The authored scene flow must finish without product errors.");
+            Directory.CreateDirectory(Path.GetDirectoryName(resultPath));
+            File.WriteAllText(resultPath, "PASS\nAuthoredSceneUsesTimelineForOpeningSelectionPlayDiscardAndCancellation\n" +
+                System.DateTime.UtcNow.ToString("O"));
         }
         [UnityTest]
         public IEnumerator MinimalPrefabAutoStartsTwoIndependentBattlesWithoutSceneBindings()
@@ -185,6 +201,40 @@ namespace Poker.SingleBattle.Tests
             SceneManager.SetActiveScene(previous);
             yield return SceneManager.UnloadSceneAsync(empty);
         }
+        [UnityTest]
+        public IEnumerator RevivalStopsAnActiveDeathCoroutineAndItsLatePoseWrite()
+        {
+            var resultPath = Path.GetFullPath(Path.Combine(Application.dataPath, "../Library/BattleRuleAlignment/revival-coroutine.txt"));
+            if (File.Exists(resultPath)) File.Delete(resultPath);
+            var root = new GameObject("Revival coroutine regression");
+            try
+            {
+                var actor = root.AddComponent<PlayerBattleActor>();
+                var model = new GameObject("Model").transform; model.SetParent(root.transform, false);
+                var presenter = model.gameObject.AddComponent<BattleActorPresenter>(); presenter.Configure(model);
+                actor.ConfigurePresentation(presenter);
+                UnitDisplayData Unit(long hp) => new UnitDisplayData("revival", "Player", "player", hp, 100, 0, 3, 3);
+                actor.SynchronizeDisplay(Unit(100), true);
+                var lethal = new EffectDisplayData("Damage", "enemy", "revival", 100, 100, 0, Unit(100), Unit(0), true);
+                var death = actor.PresentDisplay(BattlePresentationKind.Death, lethal, null);
+                yield return null;
+                Assert.IsTrue(death.keepWaiting);
+                actor.SynchronizeDisplay(Unit(60));
+                Assert.AreEqual(BattlePresentationStatus.Completed, death.Status);
+                yield return new WaitForSecondsRealtime(.45f);
+                Assert.AreEqual(Vector3.one, model.localScale);
+                Assert.AreEqual(Quaternion.identity, model.localRotation);
+                Assert.AreEqual(60, actor.DisplayUnit.Health);
+                Assert.IsFalse(actor.IsDisplayBusy);
+            }
+            finally { Object.Destroy(root); }
+            yield return null;
+            Assert.IsEmpty(errors, "The revival regression must finish without product errors.");
+            // Preserve a scoped assertion result when the editor's test-runner connection fails during its later cleanup.
+            Directory.CreateDirectory(Path.GetDirectoryName(resultPath));
+            File.WriteAllText(resultPath, "PASS\nRevivalStopsAnActiveDeathCoroutineAndItsLatePoseWrite\n" + System.DateTime.UtcNow.ToString("O"));
+        }
+
         private static IEnumerator Idle(SingleBattleSceneAdapter host)
         {
             float deadline = Time.realtimeSinceStartup + 15;

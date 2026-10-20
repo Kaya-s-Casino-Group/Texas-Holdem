@@ -50,6 +50,7 @@ namespace Poker.SingleBattle
             if (presentationDirector == null) presentationDirector = GetComponent<ScenePresentationDirector>();
             if (presentationDirector == null || !presentationDirector.HasConfiguredTimeline)
                 throw new InvalidOperationException("Configure the scene presentation timeline before starting this battle.");
+            BattleRecoveryTimeline.Upgrade(this, presentationDirector);
             presentationDirector.Configure(null);
             presentationDirector.Display.Changed += DisplayChanged;
             presentationDirector.PlaybackFinished += FinishPresentation;
@@ -120,7 +121,7 @@ namespace Poker.SingleBattle
                 {
                     var step = pendingPresentation.Steps[int.Parse(index)];
                     if (step.Transition.Score != null) {
-                        LastScore = step.Transition.Score; LastDamage = step.Transition.Events.Sum(e => (long)e.HealthLost);
+                        LastScore = step.Transition.Score; LastDamage = OpponentDamage(step.Transition);
                         Message = BattleDisplayProjector.HandName(LastScore.Category) + " · " + LastScore.Total + " 分 → " + LastDamage + " 伤害";
                     }
                 }
@@ -152,8 +153,13 @@ namespace Poker.SingleBattle
             var scored = batch.Steps.LastOrDefault(step => step.Transition.Score != null);
             if (scored == null) return;
             LastScore = scored.Transition.Score;
-            LastDamage = scored.Transition.Events.Sum(effect => (long)effect.HealthLost);
+            LastDamage = OpponentDamage(scored.Transition);
             Message = BattleDisplayProjector.HandName(LastScore.Category) + " · " + LastScore.Total + " 分 → " + LastDamage + " 伤害";
+        }
+        private long OpponentDamage(CardDuelTransition transition)
+        {
+            var enemies = new HashSet<ParticipantId>(transition.State.Duel.Enemies.Select(enemy => enemy.Id));
+            return transition.Events.Where(effect => enemies.Contains(effect.Effect.Target)).Sum(effect => effect.HealthLost);
         }
         private ShieldSnapshot RecordShield(string key, BattleDisplayChange fact, BattleActor actor)
         {
@@ -200,11 +206,12 @@ namespace Poker.SingleBattle
         {
             if (State == null || actions == null || actions.Hand == null || !actions.Hand.IsRunning || playerActor == null) return;
             var selected = actions.Hand.CaptureSelection().Cards.OrderBy(x => x.Value, StringComparer.Ordinal).ToArray();
+            var targetBindings = ResolvePlayTargetBindings(selected);
             bool allowed = CanReceivePlayerInput;
-            string key = State.Table.MatchId + "/" + State.Revision + "/" + playerActor.ParticipantId + "/" + allowed + "/" + string.Join(",", selected.Select(x => x.Value));
+            string key = State.Table.MatchId + "/" + State.Revision + "/" + playerActor.ParticipantId + "/" + allowed + "/" + string.Join(",", selected.Select(x => x.Value)) + "/" + PlayTargetSelectionKey;
             if (key == candidateKey) return; candidateKey = key;
             long version = Interaction.BeginRequest(State.Table.MatchId.ToString(), playerActor.ParticipantId.Value, State.Revision, selected.Select(x => x.Value));
-            Interaction.Apply(BattleInteractionQueries.Query(State, Engine, playerActor.ParticipantId, selected, allowed, version));
+            Interaction.Apply(BattleInteractionQueries.Query(State, Engine, playerActor.ParticipantId, selected, allowed, version, targetBindings: targetBindings));
         }
         private void LateUpdate() => RefreshCandidate();
         public void SnapToState() => SynchronizeBattle();

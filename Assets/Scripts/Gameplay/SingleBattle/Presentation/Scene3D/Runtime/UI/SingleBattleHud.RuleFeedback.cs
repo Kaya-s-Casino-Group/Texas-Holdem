@@ -10,6 +10,8 @@ namespace Poker.SingleBattle
     public sealed partial class SingleBattleHud
     {
         private TMP_Text ruleFeedback;
+        private RectTransform relicIcons;
+        private readonly System.Collections.Generic.List<Image> relicIconViews = new System.Collections.Generic.List<Image>();
         private ScrollRect ruleScroll;
         private BattleDisplaySnapshot feedbackState;
         private CandidatePresentationModel feedbackCandidate;
@@ -61,9 +63,13 @@ namespace Poker.SingleBattle
             {
                 title.text = "遗物"; title.fontSize = 18;
                 title.rectTransform.anchoredPosition = new Vector2(18, -18);
-                viewport.offsetMin = new Vector2(16, 18); viewport.offsetMax = new Vector2(-16, -62);
+                relicIcons = new GameObject("Relic Icons", typeof(RectTransform)).GetComponent<RectTransform>();
+                relicIcons.SetParent(frame, false); relicIcons.gameObject.layer = gameObject.layer; Place(relicIcons, 16, -52, 180, 28);
+                viewport.offsetMin = new Vector2(16, 18); viewport.offsetMax = new Vector2(-16, -92);
                 GetComponent<BattleDemoUITheme>()?.StylePanel(panel.GetComponent<Image>());
             }
+            // A raycastable background gives the ScrollRect a wheel/drag target even though text and icons are read-only.
+            panel.GetComponent<Image>().raycastTarget = true;
         }
 
         private void RefreshRuleFeedback(bool force = false)
@@ -85,8 +91,10 @@ namespace Poker.SingleBattle
             {
                 if (!force && ReferenceEquals(feedbackState, snapshot)) return;
                 feedbackState = snapshot;
-                snapshot.Labels.TryGetValue("relics", out var relics);
-                SetRuleFeedback(relics ?? "无遗物", false);
+                RefreshRelicIcons();
+                string relics = Poker.BattlePresentation.BattlePresentationRuleText.Relics(host.State, host.Player.ParticipantId, host.ItemName);
+                string multiplier = Poker.BattlePresentation.BattlePresentationRuleText.HandMultiplier(host.State.Duel.Player(host.Player.ParticipantId).Relics);
+                SetRuleFeedback(relics + (multiplier.Length == 0 ? "" : "\n\n" + multiplier), false);
                 // Content errors remain visible without mixing battle state into the relic rail.
                 if (!string.IsNullOrEmpty(diagnostics))
                 { message.text = diagnostics; message.gameObject.SetActive(true); }
@@ -107,7 +115,9 @@ namespace Poker.SingleBattle
                 text.AppendLine(candidate.Labels.TryGetValue("discardPreview", out var discardPreview) ? discardPreview : candidate.Reason ?? "当前选择不可用");
                 text.AppendLine();
             }
-            if (snapshot.Labels.TryGetValue("statusSummary", out var statusText)) text.AppendLine(statusText);
+            if (host.State != null && host.Player != null)
+                text.AppendLine(Poker.BattlePresentation.BattlePresentationRuleText.Snapshot(host.State, host.Player.ParticipantId,
+                    host.Engine.Duel.Definition.StatusCatalog, host.ItemName));
             if (!string.IsNullOrEmpty(revealed))
             {
                 text.AppendLine(); text.AppendLine("【最近结算】");
@@ -115,6 +125,29 @@ namespace Poker.SingleBattle
                 text.AppendLine(revealed);
             }
             SetRuleFeedback(text.ToString().TrimEnd(), newBatch);
+        }
+
+        private void RefreshRelicIcons()
+        {
+            if (relicIcons == null || host?.State == null || host.Player == null) return;
+            var relics = host.State.Duel.Player(host.Player.ParticipantId).Relics.Relics;
+            while (relicIconViews.Count < relics.Count)
+            {
+                var icon = new GameObject("Relic", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
+                icon.transform.SetParent(relicIcons, false); icon.gameObject.layer = gameObject.layer; icon.preserveAspect = true; icon.raycastTarget = false; relicIconViews.Add(icon);
+            }
+            float width = Mathf.Max(28, ruleScroll.viewport.rect.width);
+            int columns = Mathf.Max(1, Mathf.FloorToInt(width / 28));
+            int rows = Mathf.Max(1, Mathf.CeilToInt((float)relics.Count / columns));
+            ruleScroll.viewport.offsetMax = new Vector2(-16, -(64 + rows * 28));
+            for (int i = 0; i < relicIconViews.Count; i++)
+            {
+                var icon = relicIconViews[i]; icon.gameObject.SetActive(i < relics.Count);
+                if (i >= relics.Count) continue;
+                icon.name = host.ItemName(relics[i].DefinitionId); icon.sprite = BattleRelicArt.Get(relics[i].DefinitionId);
+                icon.enabled = icon.sprite != null;
+                Place(icon.rectTransform, i % columns * 28, -(i / columns) * 28, 24, 24);
+            }
         }
 
         private void SetRuleFeedback(string value, bool scrollToTop)

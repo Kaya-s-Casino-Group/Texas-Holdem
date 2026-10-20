@@ -23,6 +23,7 @@ namespace Poker.SingleBattle
             internal PresentationOperation Operation;
             internal Action Stop;
             internal bool Started;
+            internal long LifeVersion;
         }
         private sealed class GuardedMarkers : IMarkerSink
         {
@@ -42,7 +43,7 @@ namespace Poker.SingleBattle
             if (!isActiveAndEnabled) return PresentationOperation.Failed("ActionDisabled", name);
             var actor = Resolve(context);
             if (actor == null) return PresentationOperation.Failed("MissingActor", context.TargetKey ?? context.Data.ActorId ?? name);
-            var run = new Run { Actor = actor, Context = context, Markers = markers };
+            var run = new Run { Actor = actor, Context = context, Markers = markers, LifeVersion = actor.DisplayLifeVersion };
             run.Operation = new PresentationOperation(() => Release(run)); pending.Add(run); resolvedActors.Add(actor);
             context.Scope.Own(() => { if (run.Operation.Status == PresentationStatus.Pending) run.Operation.Cancel(); else Release(run); });
             Tick(run);
@@ -65,6 +66,16 @@ namespace Poker.SingleBattle
             {
                 if (!run.Started)
                 {
+                    if (kind != BattlePresentationKind.Attack && kind != BattlePresentationKind.PrepareAttack &&
+                        kind != BattlePresentationKind.Revive &&
+                        (run.LifeVersion != run.Actor.DisplayLifeVersion || run.Actor.IsSupersededDeath(run.Context.Data.Effect)))
+                    {
+                        // A newer revive fact may overtake a queued death in an older scene recipe.
+                        // Satisfy its marker without applying the obsolete dead snapshot or pose.
+                        new GuardedMarkers(run).Emit("Revealed");
+                        run.Operation.TryComplete();
+                        return;
+                    }
                     if (run.Actor.IsDisplayBusy) return;
                     var effect = run.Context.Data.Effect;
                     run.Source = run.Actor.PresentDisplay(kind, effect, new GuardedMarkers(run), ShieldFrame(run, effect));

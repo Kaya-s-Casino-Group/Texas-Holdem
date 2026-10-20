@@ -104,7 +104,7 @@ namespace CardInteraction
                 canvas.overrideSorting = tooltipPrefab.GetComponent<Canvas>().overrideSorting;
                 canvas.sortingLayerID = tooltipPrefab.GetComponent<Canvas>().sortingLayerID;
                 canvas.sortingOrder = tooltipPrefab.GetComponent<Canvas>().sortingOrder;
-                instance.SetContent(target.Suit, target.Rank, target.ChipPoints);
+                instance.SetContent(target.Suit, target.Rank, target.ChipPoints, target.View.Data.Effects, target.View.Data.IsDisabled);
                 canvas.worldCamera = renderCamera;
                 // Keep camera-facing UI independent of the card rotation while matching its size.
                 instance.transform.rotation = camera.transform.rotation;
@@ -149,7 +149,7 @@ namespace CardInteraction
             if (owner == null || owner.renderMode == RenderMode.WorldSpace ||
                 (owner.renderMode == RenderMode.ScreenSpaceCamera && owner.worldCamera != renderCamera)) return false;
             if (!EnsureInstance()) return false;
-            instance.SetContent(target.Suit,target.Rank,target.ChipPoints);
+            instance.SetContent(target.Suit,target.Rank,target.ChipPoints,target.UIView.Card.Effects,target.UIView.Card.IsDisabled);
             // Reuse the same owned instance in this Canvas so scaling, camera and page ordering remain consistent.
             var rect = (RectTransform)instance.transform;
             if (rect.parent != owner.transform) rect.SetParent(owner.transform,false);

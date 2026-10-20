@@ -22,6 +22,8 @@ namespace Poker.Battle2DValidation
         private BattlePresentationBridge bridge;
         private Battle2DView boundView;
         private readonly List<CardInstanceId> selected = new List<CardInstanceId>();
+        private readonly BattleTargetSelection playTargets = new BattleTargetSelection();
+        public IReadOnlyList<BattleTargetChoice> PlayTargetChoices => playTargets.Choices;
         public Battle2DView View => view;
         public ParticipantId PlayerId => Session.State.Duel.PlayerId;
         public bool CanPlay { get; private set; }
@@ -51,7 +53,7 @@ namespace Poker.Battle2DValidation
             if (session.State.Duel.Players.Count != 1)
                 throw new ArgumentException("The minimal validation UI supports one player.", nameof(session));
         }
-        public void SessionAttached() { BindView(); RefreshInteraction(); }
+        public void SessionAttached() { playTargets.Clear(); BindView(); RefreshInteraction(); }
         void IBattleSessionPresentation.Initialize(CardDuelState state) => GetBridge().Initialize(state);
         void IBattleSessionPresentation.Present(BattleSessionResult result, bool animate) => GetBridge().Present(result, animate);
         void IBattleSessionPresentation.Synchronize(CardDuelState state) => GetBridge().Synchronize(state);
@@ -111,9 +113,18 @@ namespace Poker.Battle2DValidation
             selected.RemoveAll(card => !hand.Contains(card) || Session.State.Table.GetCard(card).IsDisabled);
             CanEndTurn = CanReceiveInput;
             var candidate = BattleInteractionQueries.Query(Session.State, Session.Engine, PlayerId, selected,
-                CanEndTurn, view.NextSelectionVersion);
+                CanEndTurn, view.NextSelectionVersion,
+                playTargets.Reconcile(Session.State, Session.Engine, PlayerId, selected));
             CanPlay = candidate.CanPlay; CanDiscard = candidate.CanDiscard;
             view.SetInteraction(candidate, CanEndTurn);
+            view.SetTargets(playTargets.Choices, CanEndTurn, SelectPlayTarget);
+        }
+        public bool SelectPlayTarget(string slot, string participantId)
+        {
+            if (!CanReceiveInput) return false;
+            playTargets.Reconcile(Session.State, Session.Engine, PlayerId, selected);
+            if (!playTargets.Select(slot, participantId)) return false;
+            RefreshInteraction(); return true;
         }
         public BattleSessionResult PlaySelected() => Submit(CardDuelAction.Play);
         public BattleSessionResult DiscardSelected() => Submit(CardDuelAction.Discard);
@@ -124,8 +135,11 @@ namespace Poker.Battle2DValidation
             if (!isActiveAndEnabled || !SceneHost.isActiveAndEnabled || !view.isActiveAndEnabled || !view.SceneDirector.isActiveAndEnabled)
                 throw new InvalidOperationException("This battle is not accepting input.");
             var intent = action == CardDuelAction.EndTurn ? Array.Empty<CardInstanceId>() : selected.ToArray();
+            var targets = action == CardDuelAction.Play ? playTargets.Reconcile(Session.State, Session.Engine, PlayerId, intent) : null;
             view.BeginCommit();
-            var result = Playback.Submit(PlayerId, action, intent, animate: true);
+            var result = Playback.Submit(PlayerId, action, intent,
+                BattleInteractionQueries.LegacyTargets(Session.State, PlayerId, targets), animate: true,
+                targetBindings: BattleInteractionQueries.EffectBindings(Session.State, PlayerId, targets));
             if (!result.Accepted) { RefreshInteraction(); view.ShowRejected(result.Error.ToString()); }
             return result;
         }

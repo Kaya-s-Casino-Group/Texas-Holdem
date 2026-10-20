@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using global::BattlePresentation;
 using global::BattlePresentation.Unity;
+using Poker.BattlePresentation;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -33,6 +34,9 @@ namespace Poker.Battle2DValidation
         private Action playIntent, discardIntent, endTurnIntent, restartIntent;
         private bool canPlay, canDiscard, canEndTurn;
         private long playbackEpoch;
+        private RectTransform targetRoot;
+        private string targetKey;
+        private readonly List<Button> targetButtons = new List<Button>();
         public event Action DisplayChanged;
         public event Action InteractionClosed;
         public event Action PresentationFinished;
@@ -49,6 +53,7 @@ namespace Poker.Battle2DValidation
         public Button DiscardButton => discard;
         public Button EndTurnButton => endTurn;
         public Button RestartButton => restart;
+        public IReadOnlyList<Button> TargetButtons => targetButtons.AsReadOnly();
         public string LogText => log != null ? log.text : "";
 
         public void ConfigureDirector(ScenePresentationDirector frontend)
@@ -117,7 +122,53 @@ namespace Poker.Battle2DValidation
         public void CloseInteraction()
         {
             interaction?.Close(); canPlay = canDiscard = canEndTurn = false;
+            if (targetRoot != null) targetRoot.gameObject.SetActive(false);
             selected.Clear(); ReconcileSelection(); RefreshButtons(); InteractionClosed?.Invoke();
+        }
+
+        public void SetTargets(IReadOnlyList<BattleTargetChoice> choices, bool allowed, Func<string, string, bool> select)
+        {
+            if (details == null) return;
+            string key = string.Join(";", choices.Select(choice => choice.Slot + "=" + choice.SelectedId + ":" +
+                string.Join(",", choice.Candidates.Select(candidate => candidate.Id + "/" + candidate.Health))));
+            if (targetRoot == null && choices.Count > 0)
+            {
+                var root = new GameObject("出牌目标", typeof(RectTransform), typeof(HorizontalLayoutGroup));
+                root.layer = details.gameObject.layer; root.transform.SetParent(details.transform.parent, false);
+                targetRoot = root.GetComponent<RectTransform>();
+                targetRoot.anchorMin = targetRoot.anchorMax = new Vector2(.5f, 1);
+                targetRoot.pivot = new Vector2(.5f, 1); targetRoot.anchoredPosition = new Vector2(0, -278);
+                targetRoot.sizeDelta = new Vector2(1400, 42);
+                var layout = root.GetComponent<HorizontalLayoutGroup>();
+                layout.childAlignment = TextAnchor.MiddleCenter; layout.spacing = 10;
+                layout.childControlWidth = false; layout.childControlHeight = false; layout.childForceExpandWidth = false;
+                if (!Application.isPlaying) root.hideFlags = HideFlags.DontSave;
+            }
+            if (targetRoot == null) return;
+            targetRoot.gameObject.SetActive(allowed && choices.Count > 0 && !IsPresenting);
+            if (key != targetKey)
+            {
+                targetKey = key;
+                foreach (var item in targetButtons) if (item != null) Remove(item.gameObject);
+                targetButtons.Clear();
+                foreach (var choice in choices)
+                    foreach (var candidate in choice.Candidates)
+                    {
+                        var item = new GameObject(choice.Label + " " + candidate.Label, typeof(RectTransform), typeof(Image), typeof(Button));
+                        item.layer = details.gameObject.layer; item.transform.SetParent(targetRoot, false);
+                        item.GetComponent<RectTransform>().sizeDelta = new Vector2(280, 42);
+                        item.GetComponent<Image>().color = choice.SelectedId == candidate.Id ? new Color(.25f, .5f, .3f) : new Color(.2f, .23f, .3f);
+                        var label = new GameObject("Label", typeof(RectTransform), typeof(TextMeshProUGUI));
+                        label.transform.SetParent(item.transform, false);
+                        var rect = label.GetComponent<RectTransform>(); rect.anchorMin = Vector2.zero; rect.anchorMax = Vector2.one; rect.offsetMin = rect.offsetMax = Vector2.zero;
+                        var text = label.GetComponent<TextMeshProUGUI>(); text.font = details.font; text.fontSize = 17;
+                        text.alignment = TextAlignmentOptions.Center; text.raycastTarget = false;
+                        text.text = (choice.SelectedId == candidate.Id ? "✓ " : "") + choice.Label + " · " + candidate.Label;
+                        var button = item.GetComponent<Button>(); button.onClick.AddListener(() => select(choice.Slot, candidate.Id));
+                        targetButtons.Add(button);
+                    }
+            }
+            foreach (var button in targetButtons) button.interactable = allowed && !IsPresenting;
         }
         private void OnCandidateChanged(CandidatePresentationModel candidate)
         {
@@ -298,6 +349,6 @@ namespace Poker.Battle2DValidation
             var final = settledState ?? PresentedState;
             if (final != null) Synchronize(final);
         }
-        private void OnDestroy() { if (store != null) store.Changed -= OnDisplayChanged; interaction?.Dispose(); ClearCards(); }
+        private void OnDestroy() { if (store != null) store.Changed -= OnDisplayChanged; interaction?.Dispose(); ClearCards(); if (targetRoot != null) Remove(targetRoot.gameObject); }
     }
 }

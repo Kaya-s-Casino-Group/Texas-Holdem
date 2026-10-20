@@ -43,7 +43,7 @@ public static class BattleDemoMigration
     public static void FinalizeRules()
     {
         var scene=SceneManager.GetActiveScene();var host=All<SingleBattleSceneAdapter>(scene).Single();
-        var xml=AssetDatabase.LoadAssetAtPath<TextAsset>("Packages/com.kaya.battle-engine/Content/StandardSingleBattle.xml");
+        var xml=AssetDatabase.LoadAssetAtPath<TextAsset>("Packages/com.kaya.battle-engine/Content/StandardSingleBattle-2026-10-21.xml");
         host.ConfigureContent(xml,"standard-single-battle");
         foreach(var source in All<Poker.BattleHosting.XmlBattleSessionSource>(scene))source.Configure(xml,"standard-single-battle");
         BattleDemoReferenceLayout.ApplyHud(All<SingleBattleHud>(scene).Single(),host);

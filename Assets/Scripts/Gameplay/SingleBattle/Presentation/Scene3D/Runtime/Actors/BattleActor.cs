@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using global::BattlePresentation;
 using PokerEngine;
 using UnityEngine;
@@ -24,6 +25,11 @@ namespace Poker.SingleBattle
         public UnitDisplayData DisplayUnit => displayUnit;
         public string DisplayId => displayUnit?.Id ?? (participant.IsValid ? participant.Value : null);
         public bool IsDisplayBusy => startingPresentation || pending != null && pending.keepWaiting;
+        /// <summary>Queued reactions from an earlier life must not overwrite a revived actor.</summary>
+        public long DisplayLifeVersion { get; private set; }
+        private EffectDisplayData lethalDisplayEffect;
+        private readonly HashSet<EffectDisplayData> supersededDeaths = new HashSet<EffectDisplayData>();
+        internal bool IsSupersededDeath(EffectDisplayData effect) => effect != null && supersededDeaths.Contains(effect);
 
         public ShieldSnapshot RecordDisplayBlock(string effectKey, EffectDisplayData effect, ShieldCard[] cards)
         {
@@ -40,8 +46,8 @@ namespace Poker.SingleBattle
                 effect != null && effect.TargetId != DisplayId) return BattlePresentationOperation.Completed();
             if (effect?.After != null && effect.TargetId == DisplayId)
             {
-                displayUnit = effect.After;
-                (Presentation as IBattleActorDisplayPresentation)?.SynchronizeDisplay(displayUnit);
+                if (effect.IsDeath) lethalDisplayEffect = effect;
+                SynchronizeDisplay(effect.After);
             }
             if (kind == BattlePresentationKind.Attack) ActionPresented?.Invoke();
             return Play(new BattlePresentationCue(kind, DisplayId, effect, markers, shields), true);
@@ -52,12 +58,24 @@ namespace Poker.SingleBattle
             bool first = displayUnit == null;
             bool identityChanged = displayUnit != null && displayUnit.Id != unit.Id;
             bool blockChanged = Shields.TotalBlock != unit.Block;
+            bool revived = !identityChanged && displayUnit != null && !displayUnit.IsAlive && unit.IsAlive;
+            if (revived)
+            {
+                DisplayLifeVersion++;
+                if (lethalDisplayEffect != null) supersededDeaths.Add(lethalDisplayEffect);
+                lethalDisplayEffect = null;
+                // This resolved fact supersedes the old hit/death tail. Complete that action before
+                // cancelling its visual work so the presentation director does not treat revival as failure.
+                pending?.Complete();
+                ResetPresentation();
+            }
             if (reset || identityChanged) ResetPresentation();
+            if (identityChanged) { supersededDeaths.Clear(); lethalDisplayEffect = null; }
             displayUnit = unit;
             if (identityChanged) shieldLedger.Reset(unit.Block);
             else shieldLedger.Reconcile(unit.Block);
             (Presentation as IBattleActorDisplayPresentation)?.SynchronizeDisplay(unit);
-            if (reset || first || identityChanged || blockChanged)
+            if (reset || first || identityChanged || blockChanged || revived)
                 (Presentation as IShieldPresentation)?.SynchronizeShields(Shields);
             if (reset && !unit.IsAlive) Presentation?.Snap(new BattlePresentationCue(BattlePresentationKind.Death, unit.Id));
         }
@@ -79,6 +97,7 @@ namespace Poker.SingleBattle
                 model != null && (model == transform || !model.IsChildOf(transform)))
                 throw new ArgumentException("Bind an owner in this scene and an optional visual beneath this actor.");
             ResetPresentation(); battle = owner; visual = model; participant = default; displayUnit = null;
+            supersededDeaths.Clear(); lethalDisplayEffect = null;
         }
         public void ConfigurePresentation(MonoBehaviour implementation)
         {
@@ -95,6 +114,7 @@ namespace Poker.SingleBattle
             if (visual != null && (visual == transform || !visual.IsChildOf(transform)))
                 throw new ArgumentException("The visual must be beneath the logical actor, not its root.");
             ResetPresentation(); participant = id; displayUnit = null;
+            supersededDeaths.Clear(); lethalDisplayEffect = null;
             string session = battle.PresentedState.Table.MatchId.ToString() + "/" + id;
             if (shieldSession != session) { shieldSession = session; shieldLedger.Reset(Unit.Block); }
             else shieldLedger.Reconcile(Unit.Block);
@@ -114,9 +134,11 @@ namespace Poker.SingleBattle
         internal BattlePresentationOperation PresentEffect(CombatEvent effect, bool animate, ShieldSnapshot shields)
         {
             if (!IsBound || effect.Effect.Target != participant) return BattlePresentationOperation.Completed();
+            if (effect.Effect.Kind == CombatEffectKind.Revive) { pending?.Complete(); ResetPresentation(); }
             Presentation?.Synchronize(effect.After);
             BattlePresentationKind kind;
-            if (effect.Effect.Kind == CombatEffectKind.GainBlock && effect.After.Block > effect.Before.Block) kind = BattlePresentationKind.GainBlock;
+            if (effect.Effect.Kind == CombatEffectKind.Revive) kind = BattlePresentationKind.Revive;
+            else if (effect.Effect.Kind == CombatEffectKind.GainBlock && effect.After.Block > effect.Before.Block) kind = BattlePresentationKind.GainBlock;
             else if (effect.Effect.Kind == CombatEffectKind.ClearBlock) kind = BattlePresentationKind.ClearBlock;
             else if (effect.BlockAbsorbed > 0) kind = BattlePresentationKind.BlockHit;
             else if (effect.HealthLost > 0) kind = BattlePresentationKind.Hit;

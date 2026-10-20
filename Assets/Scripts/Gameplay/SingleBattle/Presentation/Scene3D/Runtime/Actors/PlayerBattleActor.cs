@@ -21,7 +21,7 @@ namespace Poker.SingleBattle
             var state = Battle.AuthorityState;
             if (request.MatchId != state.Table.MatchId ||
                 request.ControllerId != ParticipantId || request.ZoneId != state.Zone(CardZoneKinds.Hand, ParticipantId).Id) return false;
-            return discard ? Battle.Playback.CanDiscard(ParticipantId, request.Cards) : Battle.Playback.CanPlay(ParticipantId, request.Cards);
+            return discard ? Battle.Playback.CanDiscard(ParticipantId, request.Cards) : Battle.CanPlayWithTargets(ParticipantId, request.Cards);
         }
         public bool TryGetCardBasePoints(CardInstanceId card, out long points)
         {

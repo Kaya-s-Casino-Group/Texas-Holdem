@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Poker.SingleBattle
 {
-    public enum BattlePresentationKind { PrepareAttack, Attack, Hit, Death, GainBlock, BlockHit, ClearBlock }
+    public enum BattlePresentationKind { PrepareAttack, Attack, Hit, Death, GainBlock, BlockHit, ClearBlock, Revive }
     public enum BattlePresentationStatus { Pending, Completed, Cancelled, Failed }
 
     /// <summary>Immutable, already-resolved presentation input. It cannot submit gameplay commands.</summary>

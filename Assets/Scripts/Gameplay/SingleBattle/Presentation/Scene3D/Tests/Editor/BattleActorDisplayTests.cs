@@ -5,6 +5,7 @@ using System.Reflection;
 using global::BattlePresentation;
 using DG.Tweening;
 using NUnit.Framework;
+using RetroRendering;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -91,6 +92,46 @@ namespace Poker.SingleBattle.Tests
                 var replacement = new UnitDisplayData("other", "Other", "player", health, health, health, 3, 3);
                 f.Actor.SynchronizeDisplay(replacement, true);
                 Assert.AreEqual(health, f.Actor.Shields.TotalBlock);
+            }
+        }
+
+        [Test] public void DeadToAliveSynchronizationRestoresThePoseWithoutAReauthoredTimeline()
+        {
+            using (var f = new Fixture())
+            {
+                var death = new EffectDisplayData("Damage", "enemy", "unit", 100, 100, 0, Unit(100), Unit(0), true);
+                f.Actor.PresentDisplay(BattlePresentationKind.Death, death, null);
+                Assert.AreEqual(Vector3.one * .75f, f.Model.localScale);
+                f.Actor.SynchronizeDisplay(Unit(60));
+                Assert.AreEqual(60, f.Actor.DisplayUnit.Health);
+                Assert.AreEqual(Vector3.one, f.Model.localScale);
+                Assert.AreEqual(Quaternion.identity, f.Model.localRotation);
+                Assert.AreEqual(1, f.Actor.DisplayLifeVersion);
+                f.Actor.SynchronizeDisplay(Unit(60));
+                Assert.AreEqual(1, f.Actor.DisplayLifeVersion, "Repeated snapshots must not replay recovery.");
+            }
+        }
+
+        [Test] public void ReviveCueRestoresVatAndUsesRecoveredHealthForCracks()
+        {
+            using (var f = new Fixture())
+            {
+                f.Actor.ConfigurePresentation(null);
+                UnityEngine.Object.DestroyImmediate(f.Presenter);
+                var vat = f.Model.gameObject.AddComponent<RigidVATPlayer>();
+                var cracks = f.Model.gameObject.AddComponent<HealthCrackPresenter>(); cracks.Configure(f.Model);
+                var presenter = f.Model.gameObject.AddComponent<VatBattleActorPresenter>();
+                presenter.Configure(f.Model, vat); presenter.ConfigureCracks(cracks);
+                f.Actor.ConfigurePresentation(presenter); f.Actor.SynchronizeDisplay(Unit(100), true);
+                var death = new EffectDisplayData("Damage", "enemy", "unit", 100, 100, 0, Unit(100), Unit(0), true);
+                f.Actor.PresentDisplay(BattlePresentationKind.Death, death, null);
+                Assert.AreEqual(1, vat.Progress);
+                var revive = new EffectDisplayData("Revive", "unit", "unit", 60, 0, 0, Unit(0), Unit(60));
+                var operation = f.Actor.PresentDisplay(BattlePresentationKind.Revive, revive, null);
+                Assert.AreEqual(BattlePresentationStatus.Completed, operation.Status);
+                Assert.AreEqual(0, vat.Progress); Assert.IsFalse(vat.IsPlaying);
+                Assert.AreEqual(1, cracks.CurrentStage, "Revival restores the body while retaining the 60% HP crack stage.");
+                Assert.AreEqual(60, f.Actor.DisplayUnit.Health);
             }
         }
 

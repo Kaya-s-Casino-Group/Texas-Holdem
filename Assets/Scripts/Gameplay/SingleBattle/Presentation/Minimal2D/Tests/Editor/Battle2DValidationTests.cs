@@ -48,6 +48,51 @@ namespace Poker.Battle2DValidation.Tests
             return session;
         }
 
+        [Test] public void DatedStandardFullHouseUsesTheVisibleTargetChoiceAndCommits()
+        {
+            var content = BattleContentCompiler.CompileXml(AssetDatabase.LoadAssetAtPath<TextAsset>(
+                "Packages/com.kaya.battle-engine/Content/StandardSingleBattle-2026-10-21.xml").text);
+            Assert.IsTrue(content.Success, string.Join("; ", content.Diagnostics.Select(item => item.Message)));
+            var created = BattleContentFactory.Create(content.Content, new BattleSetupRequest(
+                "standard-single-battle", "2d-dated-target", HmacDeckShuffler.FromSeed(new byte[32])));
+            Assert.IsTrue(created.Success);
+            var session = created.Session;
+            Assert.IsTrue(session.Execute(session.State.Revision, Player, CardDuelAction.Start).Accepted);
+            Assert.IsTrue(session.ApplyAdmin(session.State.Revision, new BattleAdminPatch(zones: new[] {
+                new BattleAdminZone(Player, CardZoneKinds.Hand, new[] { "standard:1:2", "standard:2:2", "standard:3:2", "standard:1:3", "standard:2:3" }
+                    .Select(id => new BattleAdminCard(definitionId: id)))
+            })).Accepted);
+            using (var f = new Fixture(session))
+            {
+                foreach (var id in session.State.Zone(CardZoneKinds.Hand, Player).Cards) f.View.ToggleSelection(id.Value);
+                Assert.AreEqual(Enemy.Value, f.Host.PlayTargetChoices.Single().SelectedId);
+                Assert.AreEqual(1, f.View.TargetButtons.Count); Assert.IsTrue(f.View.TargetButtons[0].interactable);
+                Assert.IsTrue(f.View.PlayButton.interactable);
+                f.Click(f.View.TargetButtons[0].gameObject);
+                Assert.IsTrue(f.Host.PlaySelected().Accepted);
+                Assert.AreEqual(1, session.State.Duel.Scores.Count);
+                Assert.IsTrue(f.View.TargetButtons.All(button => !button.gameObject.activeInHierarchy));
+            }
+        }
+
+        [Test] public void UnplayableCardRemainsSelectableForTheDiscardButton()
+        {
+            var session = Create();
+            Assert.IsTrue(session.ApplyAdmin(session.State.Revision, new BattleAdminPatch(zones: new[] {
+                new BattleAdminZone(Player, CardZoneKinds.Hand, new[] {
+                    new BattleAdminCard(definitionId: "standard:1:2", effects: CardEffects.Unplayable)
+                })
+            })).Accepted);
+            using (var f = new Fixture(session))
+            {
+                var id = session.State.Zone(CardZoneKinds.Hand, Player).Cards.Single();
+                f.View.ToggleSelection(id.Value);
+                Assert.IsFalse(f.View.PlayButton.interactable); Assert.IsTrue(f.View.DiscardButton.interactable);
+                Assert.IsTrue(f.Host.DiscardSelected().Accepted);
+                Assert.IsTrue(session.State.Zone(CardZoneKinds.Discard, Player).Cards.Contains(id));
+            }
+        }
+
         [Test] public void XmlSourceUsesTheSharedEncounterAndMatchesHeadlessCommands()
         {
             using (var f = new Fixture())
