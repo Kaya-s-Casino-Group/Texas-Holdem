@@ -8,4 +8,4 @@ Graphics 与所有 Quality 等级统一使用 `Assets/Settings/BattleURP.asset`�
 
 `Runtime/Cameras` 保留通用 URP 相机叠加、视口同步桥接；`Runtime/VAT` 保留可选的动画播放桥接；`Runtime/Infrastructure` 保留帧率支持。历史命名空间 `RetroRendering` 为兼容已有脚本引用保留，不代表继续使用旧管线。旧环境组件不在 BattleDemo 中启用。
 
-旧 Deferred、降分辨率、SSAO、雾、体积光、Bloom、CRT、自研 Simple2DRenderer 及相关美术资产见本地归档分支 `codex/legacy-3d-scenes`。
+旧 Deferred、降分辨率、SSAO、雾、体积光、Bloom、CRT、自研 Simple2DRenderer 及相关美术资产见本地归档分支 `legacy-3d-scenes`。
