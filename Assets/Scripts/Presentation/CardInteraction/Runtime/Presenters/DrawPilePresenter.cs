@@ -13,7 +13,6 @@ namespace CardInteraction
         [SerializeField] private DrawPileView view;
         [SerializeField] private DeckOverviewPresenter overview;
         [SerializeField] private DeckSummaryView summaryPrefab;
-        [SerializeField, Min(0)] private float summaryGap = 14;
         private DeckSummaryView summary;
         private bool changingVisibility;
         private bool pinned, dismissed;
@@ -86,10 +85,12 @@ namespace CardInteraction
             {
                 if (summary == null)
                 {
-                    summary = Instantiate(summaryPrefab,view.MotionRoot.parent.parent,false); summary.name = "Deck Hover Summary (Runtime)";
+                    var canvas = view.GetComponentInParent<Canvas>().rootCanvas;
+                    summary = Instantiate(summaryPrefab,canvas.transform,false); summary.name = "Deck Hover Summary (Runtime)";
                     summary.gameObject.hideFlags = HideFlags.DontSave;
-                    var rect = (RectTransform)summary.transform; var icon = (RectTransform)view.MotionRoot.parent;
-                    rect.anchoredPosition = new Vector2(icon.anchoredPosition.x,icon.anchoredPosition.y+icon.rect.height+summaryGap);
+                    var rect = (RectTransform)summary.transform;
+                    rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(.5f,.5f);
+                    rect.anchoredPosition = Vector2.zero;
                     summary.Hide(false);
                 }
                 var data = overview.ReadData(); if (data != null) { summary.Present(data); summary.Show(); }

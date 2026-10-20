@@ -89,7 +89,7 @@ var pending = mouseInput.Controller.GetSelectedViewIds();
 
 ## Game 中的手牌操作按钮
 
-场景 `HandActionPresenter` 绑定一个手牌 `CardZonePlayHost`、`HandActionPanelView` 及既有 `CardZoneTransferPresenter` 路径；展示 Prefab 为 `Assets/GameAssets/CardPresentation/Prefabs/HandActionPanel.prefab`。四个按钮分别出牌、弃掉选中、点数理牌、花色理牌；没有主动抽牌按钮，不显示牌堆数字和“优先”状态行。当前使用 Fusion Pixel 字体和占位色块，默认缩小为左下角两行；位置、尺寸及颜色可在 Prefab 调整。按钮面板为 Screen Space Camera Canvas，独立 UI Camera 叠加到主相机 Stack；World Space 单牌提示和右下角抽牌堆图标共用 UI Camera 绘制，数据与 Presenter 所有权仍各自独立。相机及 Renderer 接入见 [渲染模块](../../Infrastructure/Rendering/README.md)。
+场景 `HandActionPresenter` 绑定一个手牌 `CardZonePlayHost`、`HandActionPanelView` 及既有 `CardZoneTransferPresenter` 路径；展示 Prefab 为 `Assets/GameAssets/CardPresentation/Prefabs/HandActionPanel.prefab`。四个按钮分别出牌、弃掉选中、点数理牌、花色理牌；没有主动抽牌按钮，不显示牌堆数字和“优先”状态行。当前使用 Noto Sans CJK SC 字体和占位色块，默认缩小为左下角两行；位置、尺寸及颜色可在 Prefab 调整。按钮面板为 Screen Space Camera Canvas，独立 UI Camera 叠加到主相机 Stack；World Space 单牌提示和右下角抽牌堆图标共用 UI Camera 绘制，数据与 Presenter 所有权仍各自独立。相机及 Renderer 接入见 [渲染模块](../../Infrastructure/Rendering/README.md)。
 
 ```text
 UGUI Button → HandActionPanelView 请求 → HandActionPresenter
@@ -111,7 +111,7 @@ UGUI Button → HandActionPanelView 请求 → HandActionPresenter
 
 旧场景可执行 `工具 > 卡牌表现 > 场景接入 > 迁移牌桌状态`：验证全局身份后迁移所有牌区，合并弃牌堆，单个旧抽牌堆作为共享堆；若原来有多个非空堆则保留各自归属。迁移支持 Undo、清空旧 Host 列表，只标记场景 dirty。运行时 Match/Core 脚本使用既有 Runtime 程序集与 link.xml 进入首包；需保存场景以持久化 Match 引用。
 
-抽牌由玩法流程调用 `DrawCards`，不由玩家按钮触发。`Runtime/Presenters/DrawPilePresenter.cs` 保存本地宿主与 `CardPresentation.DrawPileView` 引用，每帧将当前 DeckCards 数量投影为牌背叠层；Edit 显式刷新读取 InitialDeckCards，Play 不读取编辑器窗口。图标不拥有牌堆、不发抽牌命令；悬停显示紧凑牌组统计表，点击打开并保持完整卡牌总览，返回关闭，全部属于本地展示状态。空堆保留一张暗色牌背；右下角数字显示剩余牌数（含 0），复用 Fusion Pixel 字体，不接收射线。`Editor/DrawPileSetup.cs` 将独立 `DrawPileIcon.prefab` 放在右下角并绑定同一 UI Camera；采用 GraphicRaycaster 和稳定的 Icon 射线区域；Deck 子节点的 CardUIGraphic 仅负责图集渲染与惯性缩放，不接收射线。
+抽牌由玩法流程调用 `DrawCards`，不由玩家按钮触发。`Runtime/Presenters/DrawPilePresenter.cs` 保存本地宿主与 `CardPresentation.DrawPileView` 引用，每帧将当前 DeckCards 数量投影为牌背叠层；Edit 显式刷新读取 InitialDeckCards，Play 不读取编辑器窗口。图标不拥有牌堆、不发抽牌命令；悬停显示紧凑牌组统计表，点击打开并保持完整卡牌总览，返回关闭，全部属于本地展示状态。空堆保留一张暗色牌背；右下角数字显示剩余牌数（含 0），复用 Noto Sans CJK SC 字体，不接收射线。`Editor/DrawPileSetup.cs` 将独立 `DrawPileIcon.prefab` 放在右下角并绑定同一 UI Camera；采用 GraphicRaycaster 和稳定的 Icon 射线区域；Deck 子节点的 CardUIGraphic 仅负责图集渲染与惯性缩放，不接收射线。
 
 固化手牌时自动创建按钮和抽牌堆图标并绑定；`工具 > 卡牌表现 > 场景接入 > 配置手牌操作按钮` 可手动接入。出牌路径从该手牌上的 CardZoneTransferPresenter 匹配；没有路径时仅禁用出牌按钮，配置路径后重新接入。`Update Player Hand UI` 可升级旧 Prefab：原 Draw 字段通过 FormerlySerializedAs 保留按钮/文字引用，改为 Play 并移除 Status 节点，保留 GUID/配色。缺少 EventSystem 时创建 InputSystemUIInputModule；运行时复用已有 EventSystem，仅使用 InputSystemUIInputModule；旧场景中残留的 StandaloneInputModule 会停用。项目 Active Input Handling 固定为 Input System Package (New)，修改该设置后必须重启 Unity，脚本重编译不能启动原生设备后端。鼠标、触摸与键盘不再读取旧输入 API。四个按钮 Graphic 与牌堆 Icon 固定区域拦截射线，背景/文字及图集牌堆叠层不拦截；CardZoneMouseInput 沿用 UI 遮挡检查。准备工具支持 Undo、保留已有 Prefab 样式，仅标记场景 dirty；需保存场景以保留引用。Prefab、运行脚本、字体与 .meta 沿现有程序集和 link.xml 进入首包，不依赖打开验证窗口。
 
@@ -213,7 +213,7 @@ Open / Close 控制 Canvas 页，逐牌悬停属于页面的 CardUIItemView，�
 
 ## 牌堆预览与 UI 动画
 
-DrawPilePresenter 只管理本地预览、固定显示与关闭意图：DrawPileView 发出悬停/左键事件，DeckOverviewPresenter 继续提供同一 Match 的只读牌组投影；悬停的 DeckSummary 统计表仅由图标控制，离开图标立即收起；点击固定显示完整 DeckOverview 卡牌页，返回取消固定并抑制仍在图标上的重复开启。默认进入 Play 关闭总览，玩法可通过 SetPinned / Open 显式打开。图标跟随手牌 CardView 的当前图集，顶层 CoverCardId 是美术配置，不揭示权威牌顶。
+DrawPilePresenter 只管理本地预览、固定显示与关闭意图：DrawPileView 发出悬停/左键事件，DeckOverviewPresenter 继续提供同一 Match 的只读牌组投影；悬停的 DeckSummary 统计表固定居中于根 Canvas，随屏幕尺寸保持居中，仅由图标控制，离开图标立即收起；点击固定显示完整 DeckOverview 卡牌页，返回取消固定并抑制仍在图标上的重复开启。默认进入 Play 关闭总览，玩法可通过 SetPinned / Open 显式打开。图标跟随手牌 CardView 的当前图集，顶层 CoverCardId 是美术配置，不揭示权威牌顶。
 
 CardHoverPresenter 仍拥有唯一提示实例，新增独立 DOTween 显隐倍率。有效目标出现时 OutBack 放大，离开时 InBack 缩小结束再停用；重复刷新不重播，快速反向接续当前倍率。IsVisible 表示当前有有效展示目标，退场阶段实例可暂时保持活动；Hide(false) 与停用立即回收自身动画。Canvas/World Space 切换继续复用模板、数据内容和实例，不改变权威卡牌或手牌交互。
 

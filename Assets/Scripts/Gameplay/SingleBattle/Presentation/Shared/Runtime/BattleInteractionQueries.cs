@@ -24,6 +24,13 @@ namespace Poker.BattlePresentation
                 labels["scoredCount"] = hand.Pattern == null ? "0" : hand.Pattern.ScoringCards.Count(id => CardEffectRules.CanScore(state.Table.GetCard(id).Effects)).ToString();
                 labels["playPreview"] = BattlePresentationRuleText.Transition(play, state.Duel, engine.Duel.Definition.StatusCatalog);
                 labels["discardPreview"] = BattlePresentationRuleText.Transition(discard, state.Duel, engine.Duel.Definition.StatusCatalog);
+                if (hand.Accepted)
+                {
+                    var facts = engine.PreviewHandFacts(state, player, ids);
+                    labels["mechanisms"] = string.Join("、", facts.CompatibleCategories.Select(BattleDisplayProjector.HandName));
+                    labels["additionalMechanisms"] = string.Join("、", facts.CompatibleCategories
+                        .Where(category => category != facts.Pattern.Category).Select(BattleDisplayProjector.HandName));
+                }
             }
             return new CandidatePresentationModel(state.Table.MatchId.ToString(), player.Value, state.Revision, selectionVersion,
                 mode, ids.Select(id => id.Value), hand?.Pattern?.Category.ToString(), hand?.Pattern == null ? null : BattleDisplayProjector.HandName(hand.Pattern.Category),

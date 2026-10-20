@@ -54,7 +54,15 @@ namespace Poker.SingleBattle
                 title.rectTransform.anchoredPosition = new Vector2(6, -12); title.rectTransform.sizeDelta = new Vector2(-12, 42);
                 title.text = "状态 / 遗物"; title.fontSize = 12; title.enableWordWrapping = true;
                 viewport.offsetMin = new Vector2(6, 10); viewport.offsetMax = new Vector2(-6, -54);
-                ruleFeedback.fontSize = 11;
+                ruleFeedback.fontSize = 12;
+                ruleFeedback.lineSpacing = 3;
+            }
+            if (ritualLayout)
+            {
+                title.text = "遗物"; title.fontSize = 18;
+                title.rectTransform.anchoredPosition = new Vector2(18, -18);
+                viewport.offsetMin = new Vector2(16, 18); viewport.offsetMax = new Vector2(-16, -62);
+                GetComponent<BattleDemoUITheme>()?.StylePanel(panel.GetComponent<Image>());
             }
         }
 
@@ -73,6 +81,17 @@ namespace Poker.SingleBattle
             }
             var candidate = host.Candidate;
             string revealed = host.DisplayFeedback ?? "";
+            if (ritualLayout)
+            {
+                if (!force && ReferenceEquals(feedbackState, snapshot)) return;
+                feedbackState = snapshot;
+                snapshot.Labels.TryGetValue("relics", out var relics);
+                SetRuleFeedback(relics ?? "无遗物", false);
+                // Content errors remain visible without mixing battle state into the relic rail.
+                if (!string.IsNullOrEmpty(diagnostics))
+                { message.text = diagnostics; message.gameObject.SetActive(true); }
+                return;
+            }
             if (!force && ReferenceEquals(feedbackState, snapshot) && ReferenceEquals(feedbackCandidate, candidate) &&
                 feedbackFacts == revealed && feedbackDiagnostics == diagnostics) return;
             bool newBatch = feedbackBatchId != snapshot.Cursor.BatchId;

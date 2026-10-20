@@ -61,7 +61,7 @@ namespace Poker.SingleBattle.Editor
             }
             var rect = label.rectTransform; rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(0, 1);
             rect.anchoredPosition = new Vector2(x, -top); rect.sizeDelta = new Vector2(width, height);
-            label.font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/Fonts/FusionPixelFont/TMP/FusionPixel12pxProportional.asset");
+            label.font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/Fonts/NotoSansCJK/TMP/NotoSansCJKSCRegular.asset");
             label.text = value; label.fontSize = size; label.color = color; label.alignment = TextAlignmentOptions.TopLeft;
             label.enableWordWrapping = false; label.raycastTarget = false;
             return label;

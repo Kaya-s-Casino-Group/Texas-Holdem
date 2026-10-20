@@ -1,4 +1,5 @@
 using global::BattlePresentation;
+using PokerEngine;
 using TMPro;
 using UIFoundation;
 using UnityEngine;
@@ -11,6 +12,8 @@ namespace Poker.SingleBattle
         [SerializeField] private SingleBattleSceneAdapter host;
         [SerializeField] private TMP_Text handName, details;
         [SerializeField] private RollingNumberText chips, multiplier;
+        [SerializeField] private GameObject[] scoreVisuals = System.Array.Empty<GameObject>();
+        public void ConfigurePhaseDisplay(params GameObject[] visuals) => scoreVisuals = visuals;
         private InteractionSession subscribedInteraction;
         private CandidatePresentationModel cached;
         public CandidatePresentationModel Candidate { get; private set; }
@@ -43,6 +46,20 @@ namespace Poker.SingleBattle
         public void PresentCandidate(CandidatePresentationModel next)
         {
             if (handName == null || details == null || chips == null || multiplier == null) return;
+            bool discardPhase = scoreVisuals.Length > 0 && host?.State != null && host.Player.Rules.Flow.ManualDraw &&
+                (host.State.FlowFor(host.Player.ParticipantId).Window == BattlePlayerWindow.Draw ||
+                 host.State.FlowFor(host.Player.ParticipantId).Window == BattlePlayerWindow.ForcedDiscard);
+            foreach (var visual in scoreVisuals)
+                if (visual != null && visual.activeSelf == discardPhase) visual.SetActive(!discardPhase);
+            if (discardPhase)
+            {
+                cached = null; Candidate = next;
+                int selected = host.Actions.Hand.CaptureSelection().Cards.Count;
+                handName.text = "弃牌阶段";
+                details.text = "已选 " + selected + " 张 · 可多选弃牌";
+                chips.SnapTo(0); multiplier.SnapTo(0);
+                return;
+            }
             if (ReferenceEquals(cached, next) && next != null) return;
             cached = next; Candidate = next;
             if (next == null || next.State == CandidateState.Closed || next.State == CandidateState.Committing || next.State == CandidateState.Empty)
@@ -57,6 +74,8 @@ namespace Poker.SingleBattle
             handName.text = next.PatternName ?? next.PatternKey ?? "候选牌型";
             string scored = next.Labels.TryGetValue("scoredCount", out var count) ? count : "0";
             details.text = "选中 " + next.SelectedIds.Count + " · 计分 " + scored;
+            if (next.Labels.TryGetValue("additionalMechanisms", out var mechanisms) && !string.IsNullOrEmpty(mechanisms))
+                details.text = "兼容 " + mechanisms;
             chips.SetTarget(next.Points); multiplier.SetTarget(next.Multiplier);
         }
         private void ShowEmpty(int count)

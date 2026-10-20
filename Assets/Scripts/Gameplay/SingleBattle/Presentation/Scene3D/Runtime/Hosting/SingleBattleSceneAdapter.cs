@@ -124,7 +124,7 @@ namespace Poker.SingleBattle
             actions.Hand.StopSession();
             match.StartExternalMatch(playerActor, State.Table, State.Table.Cards.Select(card => Style(card)));
             var deck = PlayerZone(CardZoneKinds.Deck).Id; var discard = PlayerZone(CardZoneKinds.Discard).Id;
-            actions.Hand.BindBattleHand(match, PlayerZone(CardZoneKinds.Hand).Id, deck, discard, playerActor.Rules.Flow.ManualDraw ? 512 : playerActor.Rules.MaxSelection);
+            actions.Hand.BindBattleHand(match, PlayerZone(CardZoneKinds.Hand).Id, deck, discard, SelectionLimit());
             // Rebinding an observer also restores the selected ordering for an already dealt hand.
             actions.Hand.RequestSortAfterLanding(actions.Hand.SortOrder);
             if (overview != null) { overview.BindArtwork(actions.Hand.CardPrefab); overview.Configure(match, overview.View, deck, State.Table.Zones.Where(zone => zone.ControllerId == playerActor.ParticipantId).SelectMany(zone => zone.Cards)); overview.Close(false); }
@@ -165,6 +165,7 @@ namespace Poker.SingleBattle
         }
         private void Publish()
         {
+            RefreshSelectionLimit();
             if (CanSwitchPlayer && !State.Duel.HasPlayerWindow(playerActor.ParticipantId))
             {
                 var next = Players.FirstOrDefault(player => State.Duel.HasPlayerWindow(player.ParticipantId));

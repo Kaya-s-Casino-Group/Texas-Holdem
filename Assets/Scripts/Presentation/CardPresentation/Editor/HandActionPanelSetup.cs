@@ -24,7 +24,7 @@ namespace CardPresentation.Editor
         {
             if (HasPrefab) return; // Preserve authored layout and styling when preparing again.
             var font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(CardTooltipPrefabBuilder.FontPath);
-            if (font == null) throw new InvalidOperationException("先准备 Fusion Pixel TMP 字体。");
+            if (font == null) throw new InvalidOperationException("先准备 Noto Sans CJK SC TMP 字体。");
             if (!font.TryAddCharacters("出牌弃牌点数理牌花色", out string missing))
                 throw new InvalidOperationException("按钮字体缺少字符：" + missing);
             var root = new GameObject("Hand Action UI", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));

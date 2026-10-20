@@ -1,0 +1,57 @@
+{
+  "tool": "built-in image_gen",
+  "date": "2026-10-20",
+  "sourceDirectory": "/Users/linxi/Downloads/场景",
+  "scope": "Only Boss and Minion; existing Elite preserved; Campfire excluded",
+  "jobs": [
+    {
+      "name": "Boss_Back",
+      "file": "boss场景.jpg",
+      "transparent": false,
+      "prompt": "Production 2.5D game background layer extraction from this exact painting. Preserve the original wide 2442:1080 composition, perspective, painted linework, red/black colors and positions. Output a full-width landscape image (same aspect 2.261:1), no crop or reframing, no text, no added characters. Use case: precise-object-edit. Make a clean opaque rear plate. KEEP the central distant gothic castle, sky, distant haze and tiny distant floating fragments. REMOVE both huge near side obelisks, all intermediate standalone pillars/braziers, both large floating islands at the far left/right, and the near stairway. Reconstruct what was hidden with coherent distant architecture and haze. Preserve and extend the original flat dark reflective red stone FLOOR across the entire lower 25 percent, seamlessly from the center entrance toward the bottom corners. No foreground obstructions on the floor. This same rear plate will also be projected onto a real horizontal floor mesh. Do not add a new horizon."
+    },
+    {
+      "name": "Boss_Mid",
+      "file": "boss场景.jpg",
+      "transparent": true,
+      "prompt": "Production 2.5D game background layer extraction from this exact painting. Preserve the original wide 2442:1080 composition, perspective, painted linework, red/black colors and positions. Output a full-width landscape image (same aspect 2.261:1), no crop or reframing, no text, no added characters. Use case: background-extraction. Extract ONLY the mid-distance scene: the floating castle islands at upper left and upper right, mid-distance freestanding slender pillars/braziers, and the small central staircase/entrance approach. Keep their exact original screen positions and sizes on the full original canvas. Exclude the massive near left and right black obelisks, the central huge distant castle, the sky, haze, ground floor. All removed areas genuinely transparent alpha, including between structures and below. No filled rectangular panels. Flame edges may have translucent alpha. No checkerboard drawn."
+    },
+    {
+      "name": "Boss_Front",
+      "file": "boss场景.jpg",
+      "transparent": true,
+      "prompt": "Production 2.5D game background layer extraction from this exact painting. Preserve the original wide 2442:1080 composition, perspective, painted linework, red/black colors and positions. Output a full-width landscape image (same aspect 2.261:1), no crop or reframing, no text, no added characters. Use case: background-extraction. Extract ONLY the two largest near black obelisks/broken pillars framing the view, left around x=10-32% and right around x=66-87%, with their attached small flames and pedestal bases, plus immediate black corner masonry if attached. Preserve exact shapes, screen positions and scale on the full original wide canvas. Remove all castle, sky, islands, mid-distance columns, stairs and the floor. The center and the rest must be genuinely transparent alpha. No added objects, no checkerboard drawn."
+    },
+    {
+      "name": "Minion_Back",
+      "file": "小怪场景.jpg",
+      "transparent": false,
+      "prompt": "Production 2.5D game background layer extraction from this exact painting. Preserve the original wide 2442:1080 composition, perspective, painted linework, red/black colors and positions. Output a full-width landscape image (same aspect 2.261:1), no crop or reframing, no text, no added characters. Use case: precise-object-edit. Make a clean opaque rear plate. KEEP the red moon and swirling dark sky, distant mountain silhouettes and atmospheric horizon, and the open red reflective/lava-streaked flat ground. REMOVE every foreground rock, dead tree, ruined pillar and medium-distance column. Inpaint hidden areas as continuous distant hills/haze above, and coherent flat red/black ground below. The lower 45 percent is clear uninterrupted walkable ground continuing naturally into bottom corners, preserving the original ground perspective and the red streak placement. This same rear plate will be camera-projected on a horizontal floor mesh. Preserve the original horizon."
+    },
+    {
+      "name": "Minion_Mid",
+      "file": "小怪场景.jpg",
+      "transparent": true,
+      "prompt": "Production 2.5D game background layer extraction from this exact painting. Preserve the original wide 2442:1080 composition, perspective, painted linework, red/black colors and positions. Output a full-width landscape image (same aspect 2.261:1), no crop or reframing, no text, no added characters. Use case: background-extraction. Extract ONLY the medium-distance ruined pillars and their low rocky ridge foundations: pillar near x31%, near x56%, and the right group around x80-90%; a few low scattered middle-distance boulders. Preserve exact positions, proportions and original full wide canvas. Do NOT include the large near-left ruined wall/column or dead tree, close bottom-edge rocks, the small near-right dead tree, sky, moon, mountains, haze, ground surface or lava streaks. All those areas transparent alpha; no opaque horizon band. Clean silhouette edges, center mostly empty, no checkerboard drawn."
+    },
+    {
+      "name": "Minion_Front",
+      "file": "小怪场景.jpg",
+      "transparent": true,
+      "prompt": "Production 2.5D game background layer extraction from this exact painting. Preserve the original wide 2442:1080 composition, perspective, painted linework, red/black colors and positions. Output a full-width landscape image (same aspect 2.261:1), no crop or reframing, no text, no added characters. Use case: background-extraction. Extract ONLY the immediate foreground frame: large broken column/wall at far left with the adjacent black dead tree and connected rock pile down the left side, the black jagged bottom-edge rocks and sparse scrub, and the near right black dead tree/edge rocks. Preserve all their exact shapes, screen positions and full original wide-canvas framing. Exclude every mid-distance pillar, mountains, sky, red moon, ground and lava. The central combat space and all removed pixels genuinely transparent alpha. No new props, no checkerboard drawn."
+    }
+  ],
+  "bossRearRefinement": "Use case: precise-object-edit. Edit this exact opaque rear layer for a layered game background. REMOVE ALL detached floating islands, floating castles and floating debris in the SKY, especially the giant floating cluster in the upper left, the little fire island left-of-center, the castle island upper right and the large island at middle right. Replace ONLY those islands with the same sky, clouds and haze behind. KEEP the main central giant cathedral and its connected sides pixel-aligned and exactly the same scale, keep all lower mountains/volcanic cliffs and the entire dark red reflective floor exactly as they are. Do not redesign the cathedral, do not change lighting or color, do not add anything. Full same 2.261:1 wide canvas, no crop. This is sky cleanup so extracted floating islands can be added separately without doubled silhouettes.",
+  "sourceCopies": {
+    "Minion_Source.jpg": "76f6b6e61cd21ca8c65e2979b2024eef85a0cfd9a77475265356af4f4590443b",
+    "Boss_Source.jpg": "ac8a17e62df3a357b17c6073c5c6547991a26acbb81ad0bf4c280d20c6f62269"
+  },
+  "outputs": {
+    "Minion_Back.png": "e5a5b64fa6aca74126fd5cfb48a35f694745e3980da3c3723b836652dcb80c35",
+    "Boss_Mid.png": "21c568a5cbab70dfabdc9420dc776b2491a418b14772d3c16006b6b3928cb544",
+    "Minion_Mid.png": "589e5191a802ecfe03a98646e7982df23ed3ecc640f6b53b0ef9c81b0f92ad79",
+    "Boss_Back.png": "2cc6dd0e61761b7c56266351a4a811001d4c5c5f3e95747f5d8ea265a26343c0",
+    "Minion_Front.png": "1ee6d88cd64c903622e152f520bbb2cd000bf04e4be18d1a691fe9692112d751",
+    "Boss_Front.png": "0ef26787babb72ce532ad263183b4eb12ec186b69614c3cef9d48529f3caac41"
+  }
+}

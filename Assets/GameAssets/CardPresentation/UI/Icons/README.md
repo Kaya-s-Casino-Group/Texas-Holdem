@@ -8,7 +8,7 @@
 | DeckFace.png | J/Q/K 人头牌 |
 | DeckNumber.png | 2–10 数字牌 |
 
-花色符号继续用 Fusion Pixel 字体中的 ♠ ♥ ♣ ♦。这些图标只表示统计分类，不携带规则状态。
+花色符号继续用 Noto Sans CJK SC 字体中的 ♠ ♥ ♣ ♦。这些图标只表示统计分类，不携带规则状态。
 
 ## 生成提示词
 

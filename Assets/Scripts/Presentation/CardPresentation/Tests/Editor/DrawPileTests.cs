@@ -120,6 +120,19 @@ namespace CardPresentation.Tests
                 var pile = DrawPileSetup.Register(host,null); var overview = DeckOverviewSetup.Register(host,null);
                 pile.BindOverview(overview); pile.BindOverview(overview); overview.Close(false);
                 pile.View.SetHovered(true,false); Assert.IsTrue(pile.Summary.IsOpen); Assert.IsFalse(overview.View.IsOpen);
+                var canvas = pile.View.GetComponent<Canvas>(); canvas.renderMode = RenderMode.WorldSpace;
+                var canvasRect = (RectTransform)canvas.transform;
+                var summaryRect = (RectTransform)pile.Summary.transform;
+                var iconRect = (RectTransform)pile.View.MotionRoot.parent;
+                foreach (var size in new[] { new Vector2(1377,757),new Vector2(1920,1080),new Vector2(2778,1284) })
+                {
+                    canvasRect.sizeDelta = size;
+                    iconRect.anchoredPosition = new Vector2(-size.x*.3f,20);
+                    Canvas.ForceUpdateCanvases();
+                    Assert.Less(Vector3.Distance(canvasRect.TransformPoint(canvasRect.rect.center),
+                        summaryRect.TransformPoint(summaryRect.rect.center)),.01f,
+                        "Hover summary stays in the canvas center when the screen or deck button moves.");
+                }
                 pile.View.SetHovered(false,false); Assert.IsFalse(pile.Summary.IsOpen,"Leaving the icon closes preview immediately.");
                 pile.Summary.AdvanceAnimation(1); Assert.IsFalse(pile.Summary.gameObject.activeSelf);
                 pile.View.SetHovered(true,false);

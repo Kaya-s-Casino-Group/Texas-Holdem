@@ -209,7 +209,7 @@ namespace Poker.Battle2DValidation.Tests
             private TMP_Text Text(string name, Transform parent)
             {
                 var value = New(name, parent, typeof(RectTransform), typeof(TextMeshProUGUI)).GetComponent<TextMeshProUGUI>();
-                value.font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/Fonts/FusionPixelFont/TMP/FusionPixel12pxProportional.asset");
+                value.font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/Fonts/NotoSansCJK/TMP/NotoSansCJKSCRegular.asset");
                 return value;
             }
             private Button Button(string name, Transform parent)

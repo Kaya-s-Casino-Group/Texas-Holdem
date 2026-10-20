@@ -45,6 +45,12 @@ namespace Poker.SingleBattle
                     .Where(actor => actor.IsBound && display.Unit(actor.ParticipantId.Value)?.IsAlive == true && !display.IsFinished)
                     .Select(actor => display.Labels.TryGetValue("intent/" + actor.ParticipantId.Value, out var label) ? label : "")
                     .Where(label => !string.IsNullOrEmpty(label)));
+                if (ritualLayout)
+                {
+                    // Only one player in BattleDemo; retain self-targeted enemy effects.
+                    intent.text = intent.text.Replace("玩家 1：", "");
+                    if (intentPanel != null) intentPanel.SetActive(!string.IsNullOrEmpty(intent.text));
+                }
                 intent.gameObject.SetActive(!string.IsNullOrEmpty(intent.text));
                 return;
             }

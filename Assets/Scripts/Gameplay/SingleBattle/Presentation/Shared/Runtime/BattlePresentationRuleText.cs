@@ -75,6 +75,14 @@ namespace Poker.BattlePresentation
             return string.Join("\n", lines);
         }
 
+        public static string Relics(CardDuelState state, ParticipantId playerId)
+        {
+            var relics = state.Duel.Player(playerId).Relics.Relics;
+            return relics.Count == 0 ? "无遗物" : string.Join("\n\n", relics.Select(relic =>
+                relic.DefinitionId + "  Lv." + relic.Level + "\n次数 " + (relic.RemainingCharges?.ToString() ?? "不限") +
+                " · 已用 " + relic.UsesThisRound + "\n冷却 " + relic.CooldownRounds));
+        }
+
         public static IReadOnlyList<string> Events(IEnumerable<CombatRuleEvent> events, TeamBattleState state,
             CombatStatusCatalog catalog, bool compact = false)
         {
@@ -141,6 +149,9 @@ namespace Poker.BattlePresentation
             if (result == null) return "等待可操作窗口";
             if (!result.Accepted) return "不可执行：" + Error(result.Error);
             var lines = new List<string>();
+            var hand = result.ActionCompletion?.Context.Hand;
+            if (hand != null && hand.UsesCompatibleEffects && hand.CompatibleCategories.Count > 1)
+                lines.Add("兼容牌型：" + string.Join("、", hand.CompatibleCategories.Select(BattleDisplayProjector.HandName)));
             if (result.EffectPlan != null && !string.IsNullOrEmpty(result.EffectPlan.Explanation)) lines.Add(result.EffectPlan.Explanation);
             if (result.ActionCost != null) lines.Add("消耗能量 " + result.ActionCost.Cost);
             lines.AddRange(Events(result.RuleEvents, names, catalog));

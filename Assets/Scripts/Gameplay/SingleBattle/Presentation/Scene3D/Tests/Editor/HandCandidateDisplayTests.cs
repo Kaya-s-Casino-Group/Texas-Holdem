@@ -37,7 +37,7 @@ namespace Poker.SingleBattle.Tests
             {
                 var value = New(name); value.transform.SetParent(parent, false);
                 var text = value.AddComponent<TextMeshProUGUI>();
-                text.font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/Fonts/FusionPixelFont/TMP/FusionPixel12pxProportional.asset");
+                text.font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/Fonts/NotoSansCJK/TMP/NotoSansCJKSCRegular.asset");
                 return text;
             }
             public void Advance() { View.Chips.Advance(1); View.Multiplier.Advance(1); }
@@ -86,6 +86,24 @@ namespace Poker.SingleBattle.Tests
                 Assert.IsFalse(interaction.Apply(preview)); f.Advance();
                 Assert.AreEqual(CandidateState.Closed, f.View.Candidate.State);
                 Assert.AreEqual("未选牌", f.View.HandText); Assert.AreEqual(0, f.View.Chips.CurrentValue);
+            }
+        }
+
+        [Test] public void CompatibleMechanismsDoNotReplaceTheHighestScoringHand()
+        {
+            using (var f = new Fixture())
+            {
+                var candidate = new CandidatePresentationModel("display-test", "player", 4, 1,
+                    CandidateState.Valid, new[] { "a", "b", "c", "d", "e" }, "StraightFlush", "同花顺",
+                    20, 8, 160, true, true, labels: new Dictionary<string, string>
+                    { ["scoredCount"] = "5", ["additionalMechanisms"] = "同花、顺子" });
+                f.View.PresentCandidate(candidate); f.Advance();
+                Assert.AreEqual("同花顺", f.View.HandText);
+                Assert.AreEqual("兼容 同花、顺子", f.View.DetailText);
+                Assert.AreEqual(20, f.View.Chips.CurrentValue);
+                Assert.AreEqual(8, f.View.Multiplier.CurrentValue);
+                f.View.PresentCandidate(Model(2, "OnePair", 30, 2));
+                StringAssert.DoesNotContain("兼容", f.View.DetailText);
             }
         }
 

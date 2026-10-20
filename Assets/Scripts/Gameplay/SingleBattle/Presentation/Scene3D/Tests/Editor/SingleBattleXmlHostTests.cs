@@ -2,11 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Xml.Linq;
 using CardInteraction;
 using CardPresentation;
 using NUnit.Framework;
 using PokerEngine;
 using TMPro;
+using UIFoundation;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -228,6 +230,108 @@ namespace Poker.SingleBattle.Tests
         }
 
         [Test]
+        public void OpeningDiscardCanSelectAndDiscardAllEightCards()
+        {
+            using (var f = new Fixture())
+            {
+                f.Host.ConfigureContent(AssetDatabase.LoadAssetAtPath<TextAsset>("Packages/com.kaya.battle-engine/Content/StandardSingleBattle.xml"), "standard-single-battle");
+                f.Host.StartBattle(); f.HandView.CompleteTransitions();
+                var cards = f.Hand.Cards.ToArray();
+                foreach (var card in cards)
+                {
+                    Assert.That(f.Hand.CanSelect(card.Id), Is.True);
+                    f.Hand.SetInteraction(card.Id, new CardInteractionState(isSelected: true));
+                }
+                f.Hand.Publish();
+                Assert.That(f.Hand.CaptureSelection().Cards.Count, Is.EqualTo(8));
+                Assert.That(f.Host.DiscardBeforeDraw(false), Is.True);
+                f.HandView.CompleteTransitions();
+                Assert.That(f.Hand.Cards, Is.Empty);
+                CollectionAssert.IsSubsetOf(cards.Select(card => card.Card.Id), f.Host.PlayerZone(CardZoneKinds.Discard).Cards);
+                Assert.That(f.Host.DrawCards(5, false), Is.True);
+                f.HandView.CompleteTransitions();
+                Assert.That(f.Host.State.FlowFor(f.Host.Player.ParticipantId).Window, Is.EqualTo(BattlePlayerWindow.Action));
+                Assert.That(f.HandView.MaxSelectedCards, Is.EqualTo(5));
+            }
+        }
+
+        [Test]
+        public void OpeningStageHidesScoresAndActionStageRestoresThem()
+        {
+            using (var f = new Fixture())
+            {
+                f.Host.ConfigureContent(AssetDatabase.LoadAssetAtPath<TextAsset>("Packages/com.kaya.battle-engine/Content/StandardSingleBattle.xml"), "standard-single-battle");
+                f.Host.StartBattle(); f.HandView.CompleteTransitions();
+                var root = new GameObject("Candidate");
+                SceneManager.MoveGameObjectToScene(root, f.Scene);
+                TMP_Text Label(string name)
+                {
+                    var go = new GameObject(name, typeof(RectTransform), typeof(TextMeshProUGUI));
+                    go.transform.SetParent(root.transform, false);
+                    var text = go.GetComponent<TextMeshProUGUI>();
+                    text.font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/Fonts/NotoSansCJK/TMP/NotoSansCJKSCRegular.asset");
+                    return text;
+                }
+                var title = Label("Title"); var details = Label("Details");
+                var chips = Label("Chips").gameObject.AddComponent<RollingNumberText>();
+                var mult = Label("Mult").gameObject.AddComponent<RollingNumberText>();
+                var times = Label("Times").gameObject;
+                chips.Configure("N0"); mult.Configure("0.##");
+                var view = root.AddComponent<HandCandidatePresenter>();
+                view.Configure(f.Host, title, details, chips, mult);
+                view.ConfigurePhaseDisplay(chips.gameObject, mult.gameObject, times);
+                view.Refresh();
+                Assert.That(view.HandText, Is.EqualTo("弃牌阶段"));
+                Assert.That(view.DetailText, Does.Not.Contain("计分"));
+                Assert.That(chips.gameObject.activeSelf || mult.gameObject.activeSelf || times.activeSelf, Is.False);
+                foreach (var card in f.Hand.Cards)
+                    f.Hand.SetInteraction(card.Id, new CardInteractionState(isSelected: true));
+                f.Hand.Publish(); view.Refresh();
+                Assert.That(view.DetailText, Does.Contain("8 张"));
+                Assert.That(f.Host.SkipDraw(false), Is.True);
+                f.HandView.CompleteTransitions(); f.SelectOne(); view.Refresh();
+                Assert.That(view.HandText, Is.Not.EqualTo("弃牌阶段"));
+                Assert.That(view.DetailText, Does.Contain("计分"));
+                Assert.That(chips.gameObject.activeSelf && mult.gameObject.activeSelf && times.activeSelf, Is.True);
+                f.Host.RestartBattle(); f.HandView.CompleteTransitions(); view.Refresh();
+                Assert.That(view.HandText, Is.EqualTo("弃牌阶段"));
+                Assert.That(times.activeSelf, Is.False);
+            }
+        }
+
+        [TestCase(5)]
+        [TestCase(3)]
+        public void ActionSelectionUsesRuleLimitAndUnlocksAfterDeselecting(int limit)
+        {
+            using (var f = new Fixture())
+            {
+                var xml = AssetDatabase.LoadAssetAtPath<TextAsset>("Packages/com.kaya.battle-engine/Content/StandardSingleBattle.xml").text;
+                f.Host.ConfigureContent(f.Content(xml.Replace("maxPlayCards=\"5\"", "maxPlayCards=\"" + limit + "\"")), "standard-single-battle");
+                f.Host.StartBattle(); f.HandView.CompleteTransitions();
+                foreach (var card in f.Hand.Cards)
+                    f.Hand.SetInteraction(card.Id, new CardInteractionState(isSelected: true));
+                f.Hand.Publish();
+                Assert.That(f.Hand.CaptureSelection().Cards.Count, Is.EqualTo(8));
+                Assert.That(f.Host.SkipDraw(false), Is.True);
+                f.HandView.CompleteTransitions();
+                Assert.That(f.HandView.MaxSelectedCards, Is.EqualTo(limit));
+                Assert.That(f.Hand.CaptureSelection().Cards, Is.Empty, "Discard-stage selections exceeding the play limit are cleared.");
+                foreach (var card in f.Hand.Cards.Take(limit))
+                    f.Hand.SetInteraction(card.Id, new CardInteractionState(isSelected: true));
+                var extra = f.Hand.Cards[limit];
+                Assert.That(f.Hand.CanSelect(extra.Id), Is.False);
+                f.Hand.SetInteraction(extra.Id, new CardInteractionState(isSelected: true));
+                Assert.That(f.Hand.CaptureSelection().Cards.Count, Is.EqualTo(limit));
+                f.Hand.SetInteraction(f.Hand.Cards[0].Id, default);
+                Assert.That(f.Hand.CanSelect(extra.Id), Is.True);
+                f.Hand.SetInteraction(extra.Id, new CardInteractionState(isSelected: true));
+                Assert.That(f.Hand.CaptureSelection().Cards.Count, Is.EqualTo(limit));
+                f.Host.RestartBattle(); f.HandView.CompleteTransitions();
+                Assert.That(f.HandView.MaxSelectedCards, Is.EqualTo(8));
+            }
+        }
+
+        [Test]
         public void StandardXmlDrawAndDefenseCommandsDriveTheSceneHand()
         {
             using (var f = new Fixture())
@@ -245,6 +349,42 @@ namespace Poker.SingleBattle.Tests
                 Assert.That(f.Host.SkipDraw(false), Is.True);
                 Assert.That(f.Hand.Cards.Count, Is.EqualTo(7));
                 Assert.That(f.Host.State, Is.SameAs(f.Host.AuthorityState));
+            }
+        }
+
+        [TestCase(true)]
+        [TestCase(false)]
+        public void CompatibleRulePreviewAndScenePlaybackUseOneHighestScore(bool straightFlush)
+        {
+            using (var f = new Fixture())
+            {
+                var doc = XDocument.Parse(AssetDatabase.LoadAssetAtPath<TextAsset>(
+                    "Packages/com.kaya.battle-engine/Content/StandardSingleBattle.xml").text);
+                int[] ranks = straightFlush ? new[] { 2, 3, 4, 5, 6 } : new[] { 7, 7, 7, 8, 8 };
+                doc.Root.Element("Decks").Elements().First().ReplaceNodes(ranks.Select((rank, i) => new XElement("Card",
+                    new XAttribute("id", "c" + i), new XAttribute("face", "standard:" + (straightFlush ? 1 : i % 4 + 1) + ":" + rank))));
+                var foe = doc.Root.Element("Enemies").Elements().First(e => (string)e.Attribute("id") == "rotator");
+                foe.SetAttributeValue("maxHealth", 10000);
+                f.Host.ConfigureContent(f.Content(doc.ToString()), "standard-single-battle");
+                f.Host.StartBattle(); f.HandView.CompleteTransitions();
+                Assert.IsTrue(f.Host.SkipDraw(false)); f.HandView.CompleteTransitions();
+                foreach (var card in f.Hand.Cards)
+                    f.Hand.SetInteraction(card.Id, new CardInteractionState(isSelected: true));
+                f.Hand.Publish(); f.Actions.Refresh(); f.Host.RefreshCandidate();
+                var before = f.Host.AuthorityState;
+                var candidate = f.Host.Candidate;
+                Assert.AreEqual(straightFlush ? "StraightFlush" : "FullHouse", candidate.PatternKey);
+                Assert.AreEqual(straightFlush ? 160 : 148, candidate.Total);
+                StringAssert.Contains(straightFlush ? "同花" : "三条", candidate.Labels["additionalMechanisms"]);
+                StringAssert.Contains(straightFlush ? "顺子" : "一对", candidate.Labels["additionalMechanisms"]);
+                Assert.AreSame(before, f.Host.AuthorityState, "A candidate preview must not mutate authority.");
+                Assert.AreEqual(5, f.Host.Player.Play(f.Hand.CaptureSelection(), false));
+                f.HandView.CompleteTransitions();
+                Assert.AreEqual(10000 - candidate.Total, f.Host.Enemy.Unit.Health,
+                    "Compatible effects must not duplicate the highest hand's damage budget.");
+                Assert.That(f.Host.AuthorityState.Duel.Combat.Statuses.Any(s =>
+                    s.DefinitionId.Value == (straightFlush ? "bleed" : "stun")), Is.True);
+                Assert.AreSame(f.Host.AuthorityState, f.Host.State);
             }
         }
 

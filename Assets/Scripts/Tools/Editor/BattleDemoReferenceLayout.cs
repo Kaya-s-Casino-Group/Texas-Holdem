@@ -22,6 +22,87 @@ public static class BattleDemoReferenceLayout
     private static T[] All<T>() where T : Component => SceneManager.GetActiveScene().GetRootGameObjects()
         .SelectMany(root => root.GetComponentsInChildren<T>(true)).ToArray();
 
+    [MenuItem("Tools/BattleDemo/Improve UI Readability")]
+    public static void ImproveReadability()
+    {
+        var scene = SceneManager.GetActiveScene();
+        if (Application.isPlaying || scene.path != "Assets/Scenes/BattleDemo.unity")
+            throw new InvalidOperationException("Open BattleDemo in Edit mode.");
+        ApplyHud(All<SingleBattleHud>().Single(), All<SingleBattleSceneAdapter>().Single());
+        var overview = All<DeckOverviewView>().Single();
+        var frame = overview.transform.Find("Frame") ?? overview.transform.Find("Safe Area/Frame");
+        var panel = frame.Find("Panel");
+        ((RectTransform)frame).sizeDelta = new Vector2(1180,632);
+        ((RectTransform)panel).sizeDelta = new Vector2(1172,624);
+        ((RectTransform)panel.Find("StatisticsPanel")).anchoredPosition = new Vector2(-452,0);
+        // Fixed positions make this authoring operation safe to repeat.
+        foreach (Transform child in panel)
+        {
+            var rect = child as RectTransform;
+            if (child.name.StartsWith("Rank Token ")) rect.anchoredPosition = new Vector2(-310,rect.anchoredPosition.y);
+            else if (child.name.StartsWith("Rank Count ")) rect.anchoredPosition = new Vector2(-275,rect.anchoredPosition.y);
+            else if (child.name.StartsWith("Rank ")) rect.anchoredPosition = new Vector2(-310,rect.anchoredPosition.y);
+        }
+        overview.SuitRowsRoot.anchoredPosition = new Vector2(164,-8);
+        overview.SuitRowsRoot.sizeDelta = new Vector2(800,504);
+        overview.SetVerticalOverlap(0);
+        overview.SetRowLayout(88,0,4);
+        foreach (var label in overview.GetComponentsInChildren<TMP_Text>(true))
+        {
+            // Noto CJK needs more line height than the former bitmap font, even without wrapping.
+            if (label.name.StartsWith("Count Header ")) label.fontSize = 13;
+            else if (label.name.StartsWith("Total "))
+            {
+                label.fontSize = 26;
+                label.rectTransform.anchoredPosition = new Vector2(label.rectTransform.anchoredPosition.x, 64);
+            }
+            else if (label.name == "Deck Name") label.fontSize = 22;
+            else if (label.name == "Deck Type") label.fontSize = 14;
+            else if (label.name == "Categories") label.fontSize = 18;
+            label.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,
+                Mathf.Max(label.rectTransform.rect.height, label.fontSize * 1.75f));
+            label.enableWordWrapping = false;
+            label.overflowMode = TextOverflowModes.Ellipsis;
+        }
+        EditorUtility.SetDirty(overview);
+        EditorSceneManager.MarkSceneDirty(scene); EditorSceneManager.SaveScene(scene);
+        Debug.Log("BattleDemo UI updated: centered deck overlay above HUD, spaced card rows and phase-aware selection display.");
+    }
+
+    [MenuItem("Tools/BattleDemo/Preview Deck Summary")]
+    public static void PreviewSummary()
+    {
+        if (!Application.isPlaying || SceneManager.GetActiveScene().path != "Assets/Scenes/BattleDemo.unity")
+            throw new InvalidOperationException("Run BattleDemo first.");
+        var pile = All<DrawPilePresenter>().Single();
+        pile.SetPinned(false); pile.View.SetHovered(false, false); pile.View.SetHovered(true, false);
+        pile.Summary.AdvanceAnimation(1);
+        Canvas.ForceUpdateCanvases();
+        var canvas = pile.GetComponent<Canvas>().rootCanvas;
+        var summary = (RectTransform)pile.Summary.transform;
+        var canvasRect = (RectTransform)canvas.transform;
+        if (Vector3.Distance(summary.TransformPoint(summary.rect.center), canvasRect.TransformPoint(canvasRect.rect.center)) > .1f ||
+            canvas.sortingOrder <= All<SingleBattleHud>().Single().GetComponent<Canvas>().sortingOrder)
+            throw new InvalidOperationException("Deck summary must be centered above the battle HUD.");
+    }
+
+    [MenuItem("Tools/BattleDemo/Close Deck Preview")]
+    public static void CloseDeckPreview()
+    {
+        var pile = All<DrawPilePresenter>().Single();
+        pile.SetPinned(false); pile.View.SetHovered(false, false);
+        if (pile.Summary != null) pile.Summary.Hide(false);
+        pile.Overview.Close(false);
+    }
+
+    [MenuItem("Tools/BattleDemo/Preview Deck Overview")]
+    public static void PreviewOverview()
+    {
+        if (!Application.isPlaying || SceneManager.GetActiveScene().path != "Assets/Scenes/BattleDemo.unity")
+            throw new InvalidOperationException("Run BattleDemo first.");
+        All<DrawPilePresenter>().Single().SetPinned(true);
+    }
+
     [MenuItem("Tools/BattleDemo/Apply Reference Layout")]
     public static void Apply()
     {
@@ -58,45 +139,45 @@ public static class BattleDemoReferenceLayout
         }
         hud.GetComponent<Canvas>().sortingOrder = 30;
         var turn = root.Find("Turn");
-        Region(turn, .006f, .908f, .258f, .082f);
-        Label(turn.Find("Round"), 12, -8, 140, 48, 15);
+        Region(turn, .006f, .898f, .29f, .092f);
+        Label(turn.Find("Round"), 12, -8, 154, 54, 14);
         var energy = root.GetComponentsInChildren<TMP_Text>(true).Single(t => t.name == "Energy");
         energy.transform.SetParent(turn, false);
-        Label(energy.transform, 158, -8, 140, 48, 14);
+        Label(energy.transform, 174, -8, 142, 54, 13);
         var restart = hud.RestartButton;
         restart.transform.SetParent(turn, false);
-        Region(restart.transform, .86f, .22f, .12f, .56f);
+        Region(restart.transform, .88f, .22f, .10f, .56f);
         restart.GetComponentInChildren<TMP_Text>().text = "重开";
         StyleButton(restart, 12);
 
         var player = root.Find("Player");
-        Region(player, .006f, .844f, .185f, .041f);
-        Label(player.Find("Health"), 7, -2, 244, 21, 13);
-        Fixed(player.Find("Health Bar"), 6, -24, 242, 4);
+        Region(player, .006f, .842f, .23f, .046f);
+        Label(player.Find("Health"), 8, -3, 296, 24, 14);
+        Fixed(player.Find("Health Bar"), 8, -28, 296, 4);
         Region(root.Find("Enemy"), .70f, .635f, .18f, .086f);
         root.Find("Enemy").localRotation = Quaternion.Euler(0, 0, 18);
-        Label(root.Find("Enemy/Health"), 12, -6, 226, 23, 17);
+        Label(root.Find("Enemy/Health"), 12, -2, 226, 31, 17);
         Fixed(root.Find("Enemy/Health Bar"), 12, -33, 222, 5);
         var intent = root.GetComponentsInChildren<TMP_Text>(true).Single(t => t.name == "Intent");
         intent.transform.SetParent(root.Find("Enemy"), false);
         Label(intent.transform, 12, -42, 222, 18, 11);
 
         var info = root.Find("Battle Info");
-        Region(info, .58f, .212f, .25f, .05f, false);
+        Region(info, .59f, .212f, .24f, .055f, false);
         info.GetComponent<Image>().color = Color.clear;
         info.Find("Message").gameObject.SetActive(false);
-        Label(info.Find("Counts"), 0, 0, 340, 19, 11);
-        Label(info.Find("Score"), 0, -19, 340, 18, 11);
+        Label(info.Find("Counts"), 0, 0, 320, 21, 13);
+        Label(info.Find("Score"), 0, -22, 320, 20, 12);
         info.Find("Score").GetComponent<TMP_Text>().enableWordWrapping = false;
 
         var candidate = root.Find("Hand Candidate");
-        Region(candidate, .30f, .212f, .28f, .05f, false);
+        Region(candidate, .30f, .212f, .28f, .055f, false);
         candidate.GetComponent<Image>().color = Color.clear;
         candidate.Find("Heading").gameObject.SetActive(false);
         candidate.Find("Chips Caption").gameObject.SetActive(false);
         candidate.Find("Multiplier Caption").gameObject.SetActive(false);
-        Label(candidate.Find("Hand"), 0, 0, 132, 23, 19);
-        Label(candidate.Find("Details"), 0, -24, 138, 14, 10);
+        Label(candidate.Find("Hand"), 0, 4, 144, 34, 19);
+        Label(candidate.Find("Details"), 0, -28, 240, 22, 12);
         Fixed(candidate.Find("Chips Box"), 146, -4, 60, 31);
         Fixed(candidate.Find("Multiplier Box"), 239, -4, 60, 31);
         Label(candidate.Find("Times"), 214, -6, 20, 28, 18);
@@ -106,6 +187,10 @@ public static class BattleDemoReferenceLayout
             var text = box.GetComponentInChildren<TMP_Text>();
             text.fontSize = 22; text.color = TextColor;
         }
+        var candidatePresenter = candidate.GetComponent<HandCandidatePresenter>();
+        candidatePresenter.ConfigurePhaseDisplay(candidate.Find("Chips Box").gameObject,
+            candidate.Find("Multiplier Box").gameObject, candidate.Find("Times").gameObject);
+        EditorUtility.SetDirty(candidatePresenter);
 
         var actions = host.Actions.Panel;
         var actionCanvas = actions.GetComponentInParent<Canvas>();
@@ -121,7 +206,7 @@ public static class BattleDemoReferenceLayout
         StyleButton(hud.EndTurnButton, 13);
 
         var pile = All<DrawPilePresenter>().Single();
-        pile.GetComponent<Canvas>().sortingOrder = 25;
+        pile.GetComponent<Canvas>().sortingOrder = 50;
         var icon = pile.View.transform.Find("Icon");
         Region(icon, .29f, .025f, .047f, .15f, false);
         icon.GetComponent<Image>().preserveAspect = true;
@@ -129,8 +214,8 @@ public static class BattleDemoReferenceLayout
         count.fontSize = 16; count.alignment = TextAlignmentOptions.Bottom;
         foreach (var canvas in All<Canvas>().Where(c => c.name == "DeckOverview")) canvas.sortingOrder = 100;
 
-        var flow = Slot(root, "Draw Controls", .84f, .076f, .15f, .18f);
-        var feedback = Slot(root, "Status Rail", .927f, .31f, .066f, .66f);
+        var flow = Slot(root, "Draw Controls", .84f, .076f, .15f, .19f);
+        var feedback = Slot(root, "Status Rail", .885f, .31f, .108f, .66f);
         hud.ConfigureCompactLayout(flow, feedback);
         foreach (var hover in All<CardHoverPresenter>())
         {
@@ -249,6 +334,7 @@ public static class BattleDemoReferenceLayout
         Fixed(value, left, top, width, height);
         var label = value.GetComponent<TMP_Text>(); label.fontSize = font;
         label.enableAutoSizing = false; label.enableWordWrapping = true;
+        label.overflowMode = TextOverflowModes.Ellipsis;
         label.alignment = TextAlignmentOptions.TopLeft; label.color = TextColor;
         label.raycastTarget = false;
     }

@@ -31,7 +31,7 @@ namespace Poker.Battle2DValidation.Tests
                 new object[] { scene,
                     UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/GameAssets/SingleBattle/Presentation/Minimal2D/Art/Battle2DCard.prefab"),
                     UnityEditor.AssetDatabase.LoadMainAssetAtPath("Assets/Settings/BattleURP.asset"),
-                    UnityEditor.AssetDatabase.LoadMainAssetAtPath("Assets/Fonts/FusionPixelFont/TMP/FusionPixel12pxProportional.asset") });
+                    UnityEditor.AssetDatabase.LoadMainAssetAtPath("Assets/Fonts/NotoSansCJK/TMP/NotoSansCJKSCRegular.asset") });
             yield return null;
             var adapter = Object.FindObjectsOfType<Battle2DSceneAdapter>().Single();
             yield return Idle(adapter.View);

@@ -18,11 +18,11 @@ namespace CardPresentation.Editor
     /// <summary>Prepare the suit/chips tooltip prefab without installing gameplay or scene hover behaviour.</summary>
     public static class CardTooltipPrefabBuilder
     {
-        public const string FontPath = "Assets/Fonts/FusionPixelFont/TMP/FusionPixel12pxProportional.asset";
+        public const string FontPath = "Assets/Fonts/NotoSansCJK/TMP/NotoSansCJKSCRegular.asset";
         public const string PrefabPath = "Assets/GameAssets/CardPresentation/Prefabs/CardSuitChipsTooltip.prefab";
         private static readonly Color BackgroundColor = new Color32(51, 42, 36, 255);
         private static readonly Color RowBackgroundColor = new Color32(242, 230, 204, 255);
-        private const string SourceFont = "Assets/Fonts/FusionPixelFont/fusion-pixel-12px-proportional-zh_hans.ttf";
+        internal const string SourceFont = "Assets/Fonts/NotoSansCJK/NotoSansCJKsc-Regular.otf";
         private const string PreviewPath = "Library/CardTooltipValidation/tooltip.png";
         private static bool importingTextMeshPro;
 
@@ -91,8 +91,8 @@ namespace CardPresentation.Editor
             StyleRow(Decoration("ChipsBackground", rect, RowBackgroundColor),
                 new Vector2(0, -38), new Vector2(312, 76), 4);
 
-            StyleLabel(rect.Find("SuitRank").GetComponent<TMP_Text>(), 36, new Vector2(0, 44), new Vector2(296, 48));
-            StyleLabel(rect.Find("Chips").GetComponent<TMP_Text>(), 48, new Vector2(0, -38), new Vector2(296, 64));
+            StyleLabel(rect.Find("SuitRank").GetComponent<TMP_Text>(), 36, new Vector2(0, 44), new Vector2(296, 56));
+            StyleLabel(rect.Find("Chips").GetComponent<TMP_Text>(), 48, new Vector2(0, -38), new Vector2(296, 72));
         }
 
         private static void StyleRow(Image image, Vector2 position, Vector2 size, int siblingIndex)
@@ -130,7 +130,7 @@ namespace CardPresentation.Editor
 
         private static bool EnsureTextMeshProResources()
         {
-            if (Shader.Find("TextMeshPro/Mobile/Bitmap") != null && TMP_Settings.GetSettings() != null) return true;
+            if (Shader.Find("TextMeshPro/Mobile/Distance Field") != null && TMP_Settings.GetSettings() != null) return true;
             if (importingTextMeshPro) return false;
             var package = UnityEditor.PackageManager.PackageInfo.FindForAssembly(typeof(TMP_Text).Assembly);
             if (package == null) throw new InvalidOperationException("TextMeshPro package is unavailable.");
@@ -165,7 +165,7 @@ namespace CardPresentation.Editor
             AssetDatabase.importPackageCancelled -= OnResourcesImportCancelled;
         }
 
-        private static TMP_FontAsset PrepareFont()
+        public static TMP_FontAsset PrepareFont()
         {
             var existing = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(FontPath);
             if (existing != null)
@@ -174,15 +174,15 @@ namespace CardPresentation.Editor
                 return existing;
             }
             var source = AssetDatabase.LoadAssetAtPath<Font>(SourceFont);
-            if (source == null) throw new FileNotFoundException("Missing Fusion Pixel font.", SourceFont);
-            var font = TMP_FontAsset.CreateFontAsset(source, 12, 1, GlyphRenderMode.RASTER_HINTED,
-                1024, 1024, AtlasPopulationMode.Dynamic, true);
-            if (font == null) throw new InvalidOperationException("Cannot create Fusion Pixel TMP font.");
-            font.name = "FusionPixel12pxProportional";
+            if (source == null) throw new FileNotFoundException("Missing Noto Sans CJK SC font.", SourceFont);
+            var font = TMP_FontAsset.CreateFontAsset(source, 64, 8, GlyphRenderMode.SDFAA,
+                2048, 2048, AtlasPopulationMode.Dynamic, true);
+            if (font == null) throw new InvalidOperationException("Cannot create Noto Sans CJK SC TMP font.");
+            font.name = "NotoSansCJKSCRegular";
             font.material.name = font.name + " Material";
             PrewarmFont(font);
             font.atlasTextures[0].name = font.name + " Atlas";
-            font.atlasTextures[0].filterMode = FilterMode.Point;
+            font.atlasTextures[0].filterMode = FilterMode.Bilinear;
             font.atlasTextures[0].wrapMode = TextureWrapMode.Clamp;
             AssetDatabase.CreateAsset(font, FontPath);
             AssetDatabase.AddObjectToAsset(font.material, font);
@@ -196,7 +196,7 @@ namespace CardPresentation.Editor
             // Use the font's actual suit glyphs, with no sprite replacement or fallback font.
             string characters = new string(Enumerable.Range(32, 95).Select(value => (char)value).ToArray()) + "黑桃红桃梅花方块筹码♠♥♣♦";
             if (!font.TryAddCharacters(characters, out string missing))
-                throw new InvalidOperationException("Fusion Pixel font lacks tooltip characters: " + missing);
+                throw new InvalidOperationException("Noto Sans CJK SC font lacks tooltip characters: " + missing);
             EditorUtility.SetDirty(font);
         }
 
@@ -284,7 +284,7 @@ namespace CardPresentation.Editor
             var font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(FontPath);
             var labels = prefab.GetComponentsInChildren<TMP_Text>();
             if (labels.Length != 2 || labels.Any(label => label.font != font))
-                throw new InvalidOperationException("Both tooltip labels must use the Fusion Pixel font asset.");
+                throw new InvalidOperationException("Both tooltip labels must use the Noto Sans CJK SC font asset.");
             if (prefab.GetComponent<CardTooltipView>() == null || "♠♥♣♦".Any(symbol => !font.HasCharacter((int)symbol)))
                 throw new InvalidOperationException("Tooltip must bind its display component and all four native font suit glyphs.");
         }
@@ -327,11 +327,16 @@ namespace CardPresentation.Editor
                 void Shot(string path)
                 {
                     Canvas.ForceUpdateCanvases();
-                    foreach (var label in root.GetComponentsInChildren<TMP_Text>()) label.ForceMeshUpdate();
+                    foreach (var label in root.GetComponentsInChildren<TMP_Text>())
+                    {
+                        label.ForceMeshUpdate(true, true);
+                        if (label.textInfo.characterCount == 0)
+                            throw new InvalidOperationException("Tooltip preview generated no text: " + label.name);
+                    }
                     var header = root.GetComponent<CardTooltipView>().SuitRankText;
                     if (header.textInfo.characterInfo.Take(header.textInfo.characterCount)
                         .Any(character => character.isVisible && character.fontAsset != header.font))
-                        throw new InvalidOperationException("Tooltip heading must render entirely with Fusion Pixel glyphs.");
+                        throw new InvalidOperationException("Tooltip heading must render entirely with Noto Sans CJK SC glyphs.");
                     RenderPipeline.SubmitRenderRequest(camera, new UniversalRenderPipeline.SingleCameraRequest { destination = target });
                     RenderTexture.active = target;
                     pixels.ReadPixels(new Rect(0, 0, 896, 480), 0, 0);

@@ -1,4 +1,5 @@
 using PokerEngine;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -32,13 +33,22 @@ namespace Poker.SingleBattle
                 flowPanel.anchorMin = Vector2.zero; flowPanel.anchorMax = Vector2.one;
                 flowPanel.offsetMin = flowPanel.offsetMax = Vector2.zero;
                 flowPanel.GetComponent<Image>().color = new Color32(27, 23, 34, 255);
-                flowHint.fontSize = 12; Place(flowHint.rectTransform, 8, -6, 185, 42);
-                Place(lessDrawButton.GetComponent<RectTransform>(), 8, -52, 28, 32);
-                Place(drawButton.GetComponent<RectTransform>(), 40, -52, 120, 32);
-                Place(moreDrawButton.GetComponent<RectTransform>(), 164, -52, 28, 32);
-                Place(discardDrawButton.GetComponent<RectTransform>(), 8, -90, 100, 32);
-                Place(skipDrawButton.GetComponent<RectTransform>(), 112, -90, 80, 32);
+                flowHint.fontSize = 13; Place(flowHint.rectTransform, 8, -6, 185, 52);
+                flowHint.enableWordWrapping = true; flowHint.overflowMode = TextOverflowModes.Ellipsis;
+                Place(lessDrawButton.GetComponent<RectTransform>(), 8, -64, 28, 32);
+                Place(drawButton.GetComponent<RectTransform>(), 40, -64, 120, 32);
+                Place(moreDrawButton.GetComponent<RectTransform>(), 164, -64, 28, 32);
+                Place(discardDrawButton.GetComponent<RectTransform>(), 8, -102, 100, 32);
+                Place(skipDrawButton.GetComponent<RectTransform>(), 112, -102, 80, 32);
                 Place(confirmOverflowButton.GetComponent<RectTransform>(), 8, -64, 184, 40);
+            }
+            if (ritualLayout)
+            {
+                var theme = GetComponent<BattleDemoUITheme>();
+                theme?.StylePanel(flowPanel.GetComponent<Image>());
+                foreach (var button in new[] { drawButton, lessDrawButton, moreDrawButton, skipDrawButton, discardDrawButton, confirmOverflowButton })
+                    theme?.StyleButton(button, button == discardDrawButton || button == confirmOverflowButton);
+                discardDrawButton.GetComponentInChildren<TMP_Text>().text = "弃置所选";
             }
         }
         private Button FlowButton(string title, float left, UnityEngine.Events.UnityAction click, float top = 68)
@@ -64,6 +74,11 @@ namespace Poker.SingleBattle
             EnsureTurnFlow(); if (flowPanel == null) return;
             var flow = state.FlowFor(actor); bool drawing = flow.Window == BattlePlayerWindow.Draw;
             bool forced = flow.Window == BattlePlayerWindow.ForcedDiscard;
+            if (ritualLayout && host.Actions != null && host.Actions.Panel != null)
+            {
+                var actions = host.Actions.Panel.GetComponentsInChildren<RectTransform>(true).FirstOrDefault(rect => rect.name == "Actions");
+                if (actions != null) actions.gameObject.SetActive(!drawing && !forced);
+            }
             bool active = !state.Duel.IsFinished && state.Duel.HasPlayerWindow(actor) && (!compactLayout || drawing || forced);
             flowPanel.gameObject.SetActive(active);
             if (endTurn != null) endTurn.GetComponentInChildren<TMP_Text>().text = flow.Window == BattlePlayerWindow.Ending ? "确认结束回合" : "结束出牌阶段";
@@ -83,6 +98,8 @@ namespace Poker.SingleBattle
             flowHint.text = forced ? "手牌超限：请选择恰好 " + host.Engine.RequiredDiscards(state, actor) + " 张弃牌" : drawing ?
                 (host.Engine.RequiresDrawWarning(state, actor) ? "手牌较多：少摸，或先弃掉所选手牌再摸。" : "行动前可摸牌一次，也可以跳过。") :
                 flow.Window == BattlePlayerWindow.Ending ? "出牌阶段结束：可弃牌防御，或确认结束回合。" : "剩余行动 " + flow.ActionsRemaining;
+            if (compactLayout && drawing)
+                flowHint.text = "先弃所选牌再摸牌\n也可以跳过摸牌";
         }
     }
 }

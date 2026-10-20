@@ -39,7 +39,7 @@ namespace Poker.SingleBattle.Editor
             var oldHud = roots.SelectMany(root => root.GetComponentsInChildren<SingleBattleHud>(true)).SingleOrDefault();
             var hudParent = oldHud != null ? oldHud.transform.parent : null;
             if (oldHud != null) UnityEngine.Object.DestroyImmediate(oldHud.gameObject);
-            font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/Fonts/FusionPixelFont/TMP/FusionPixel12pxProportional.asset");
+            font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/Fonts/NotoSansCJK/TMP/NotoSansCJKSCRegular.asset");
             var go = new GameObject("Battle HUD", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
             SceneManager.MoveGameObjectToScene(go, scene); go.layer = 5;
             if (hudParent != null) go.transform.SetParent(hudParent, false);

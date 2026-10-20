@@ -69,7 +69,7 @@ namespace CardPresentation.Editor
         private static void AddRemainingCount(DrawPileView view)
         {
             var font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(CardTooltipPrefabBuilder.FontPath);
-            if (font == null) throw new InvalidOperationException("先准备 Fusion Pixel TMP 字体。");
+            if (font == null) throw new InvalidOperationException("先准备 Noto Sans CJK SC TMP 字体。");
             var badge = Rect("Remaining",view.MotionRoot);
             badge.anchoredPosition = new Vector2(-2,2); badge.sizeDelta = new Vector2(36,24);
             var background = badge.gameObject.AddComponent<Image>();

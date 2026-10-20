@@ -28,7 +28,7 @@ namespace Poker.Battle2DValidation.Editor
         public const string RendererPath = SettingsFolder + "/BattleForwardRenderer.asset";
         private const string SourceCardPath = "Assets/GameAssets/CardArt/Prefabs/Card.prefab";
         private const string AtlasPath = "Assets/Art/CardAtlases/Classic.asset";
-        private const string FontPath = "Assets/Fonts/FusionPixelFont/TMP/FusionPixel12pxProportional.asset";
+        private const string FontPath = "Assets/Fonts/NotoSansCJK/TMP/NotoSansCJKSCRegular.asset";
         private const string ShaderName = "CardArt/Validation Unlit";
 
         [MenuItem("工具/卡牌战斗/2D验证/创建或更新场景")]

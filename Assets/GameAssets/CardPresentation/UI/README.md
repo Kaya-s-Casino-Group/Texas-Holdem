@@ -7,12 +7,12 @@
 | 资源 | 路径 | 配置 |
 | --- | --- | --- |
 | 背景 | Prefab 的 `Background` 节点 | 336 × 180 外框，深棕色 #332A24；Image/Simple，无 Sprite，内缩 2px |
-| 字体 | `Assets/Fonts/FusionPixelFont/TMP/FusionPixel12pxProportional.asset` | Fusion Pixel 12px 比例简体中文，12px RASTER_HINTED 位图，Point/Clamp，动态字符图集 |
+| 字体 | `Assets/Fonts/NotoSansCJK/TMP/NotoSansCJKSCRegular.asset` | Noto Sans CJK SC Regular，64px SDFAA，Bilinear/Clamp，动态字符图集 |
 | 提示 Prefab | `Assets/GameAssets/CardPresentation/Prefabs/CardSuitChipsTooltip.prefab` | World Space Canvas，上方花色/点数、下方筹码 |
 
 外层是深棕色底板，每行文字各有独立的浅米色 #F2E6CC 矩形背景：上行 312 × 64，下行 312 × 76，两行间隔 12px。另有 2px 棕色边框和轻阴影。全部使用无 Sprite 的 Image 绘制纯色矩形，关闭 Preserve Aspect；颜色可在对应 Image 上调整。缩放根节点可以整体调整尺寸。
 
-字体 Asset 保存自身材质与 1024 × 1024 位图图集，直接引用原始 `fusion-pixel-12px-proportional-zh_hans.ttf`，预填 ASCII、四种花色名称、“筹码”和原生花色字形 `♠ ♥ ♣ ♦`（U+2660/U+2665/U+2663/U+2666）。花色字形不用 Sprite 或其他字体替代。动态模式可补充后续中文；原字体许可证沿用 FusionPixelFont 目录中的 OFL 与来源说明。标准 TMP Essential Resources 位于 `Assets/TextMesh Pro`，提示的两行文字都显式使用 Fusion Pixel，不修改全局默认字体。
+字体 Asset 保存自身材质与 2048 × 2048 SDF 图集，直接引用原始 `NotoSansCJKsc-Regular.otf`，预填 ASCII、四种花色名称、“筹码”和原生花色字形 `♠ ♥ ♣ ♦`（U+2660/U+2665/U+2663/U+2666）。花色字形不用 Sprite 或其他字体替代。动态模式可补充后续中文；字体许可证和来源说明见 `Assets/Fonts/NotoSansCJK/`。标准 TMP Essential Resources 位于 `Assets/TextMesh Pro`，提示的两行文字都显式使用 Noto Sans CJK SC，全局默认字体也使用该资源。
 
 ## Prefab 结构
 
@@ -27,7 +27,7 @@ CardSuitChipsTooltip         RectTransform + World Space Canvas + CanvasGroup + 
 └── Chips                   TextMeshProUGUI：<color=#009AFF>+10</color>筹码
 ```
 
-画布为 336 × 180，根节点等比缩放 0.0004，文字字号分别为 36 与 48（12px 的整数倍）。上栏按“花色符号 + 花色文字 + 点数”排列：黑桃/梅花整行深棕色，红桃/方块整行红色（默认 #C73532），包含符号、文字和点数。下栏数字始终蓝色，筹码文字深棕色。文字居中、不换行，超长内容采用省略；两栏的位置和尺寸均可在 Prefab 内调整。Prefab 的“+10”是预览数值；运行时由宿主提供基础/名义筹码数据，不代表最终结算。
+画布为 336 × 180，根节点等比缩放 0.0004，文字字号分别为 36 与 48，文本框高度按 Noto 字体行高预留空间。上栏按“花色符号 + 花色文字 + 点数”排列：黑桃/梅花整行深棕色，红桃/方块整行红色（默认 #C73532），包含符号、文字和点数。下栏数字始终蓝色，筹码文字深棕色。文字居中、不换行，超长内容采用省略；两栏的位置和尺寸均可在 Prefab 内调整。Prefab 的“+10”是预览数值；运行时由宿主提供基础/名义筹码数据，不代表最终结算。
 
 `CardTooltipView` 保存当前展示内容及三种颜色配置，可在 Prefab Inspector 修改 Suit、Rank、Chip Points 预览不同卡牌；内容变化会重新填写两个 TMP 文本节点。调用方也可使用：
 
@@ -44,22 +44,22 @@ View 接收已经解析、允许当前观察者读取的花色/点数和筹码�
 
 - `工具 > 卡牌表现 > 界面预制体 > 准备花色与筹码提示`：准备缺失的字体和 Prefab；将旧图片背景转换为纯色矩形，补充四种花色字形并为旧模板绑定 CardTooltipView，重复执行保留 GUID、布局和纯色背景的颜色设置。不在场景安装对象或逻辑。
 - `工具 > 卡牌表现 > 界面布局 > 应用紧凑提示样式`：应用 336 × 180 的紧凑布局、深色底板、两行浅色背景、细边框与轻阴影，字号为 36/48。新建 Prefab 默认使用此样式。
-- `工具 > 卡牌表现 > 截图 > 花色与筹码提示`：在独立 Preview Scene 中渲染，输出 `Library/CardTooltipValidation/tooltip.png` 及四种花色的 `tooltip_clubs/diamonds/hearts/spades.png`；检查上栏实际使用 Fusion Pixel 字形，关闭临时场景并释放资源，不修改或保存用户场景。
+- `工具 > 卡牌表现 > 截图 > 花色与筹码提示`：在独立 Preview Scene 中渲染，输出 `Library/CardTooltipValidation/tooltip.png` 及四种花色的 `tooltip_clubs/diamonds/hearts/spades.png`；检查上栏实际使用 Noto Sans CJK SC 字形，关闭临时场景并释放资源，不修改或保存用户场景。
 - `工具 > 卡牌表现 > 场景接入 > 配置悬停提示`：将选中的固化手牌（或当前场景的全部固化手牌）注册到场景提示 Presenter；固化手牌时也自动接入。进入 Play 后在 Game 悬停查看。工具不自动保存场景。
 
 生成工具位于 `Editor/CardTooltipPrefabBuilder.cs`，展示组件位于 `Runtime/Canvas/CardTooltipView.cs`，各有独立 .meta。CardPresentation.Runtime 新增 UGUI/TMP 引用；离屏渲染依赖仍只在 Editor，PokerEngine 的纯 C# 模块不引用 UI。Prefab 及引用的 TMP 字体/材质属于普通 Assets，可随引用它们的游戏场景进入首包，展示组件沿用现有 link.xml 的保留规则。
 
 ## 手牌操作按钮
 
-`Assets/GameAssets/CardPresentation/Prefabs/HandActionPanel.prefab` 使用同一 Fusion Pixel TMP 字体，包含 Actions 背景、Play / Discard / RankSort / SuitSort 四个 Button，不再保留 Status 节点。Screen Space Camera Canvas 排序 100、Plane Distance 1，场景实例绑定独立 UI Camera；CanvasScaler 以 1280 × 720 缩放。Actions 锚定左下角，边距 (16, 16)，基准大小 316 × 124、局部缩放 0.75；第一行出牌/弃牌，第二行点数/花色理牌，没有牌堆数字和“优先”状态行。四按钮的尺寸/位置/色块可以在 Prefab 修改，当前是交互验证用占位美术。
+`Assets/GameAssets/CardPresentation/Prefabs/HandActionPanel.prefab` 使用同一 Noto Sans CJK SC TMP 字体，包含 Actions 背景、Play / Discard / RankSort / SuitSort 四个 Button，不再保留 Status 节点。Screen Space Camera Canvas 排序 100、Plane Distance 1，场景实例绑定独立 UI Camera；CanvasScaler 以 1280 × 720 缩放。Actions 锚定左下角，边距 (16, 16)，基准大小 316 × 124、局部缩放 0.75；第一行出牌/弃牌，第二行点数/花色理牌，没有牌堆数字和“优先”状态行。四按钮的尺寸/位置/色块可以在 Prefab 修改，当前是交互验证用占位美术。
 
-Prefab 只持有 `HandActionPanelView` 和 UI 引用；场景 `HandActionPresenter` 引用实际手牌宿主和出牌路径，提交出/弃/理牌命令。所有文字显式使用 Fusion Pixel，只有按钮 Image 开启 Raycast Target，其余 Graphic 关闭。准备/配置菜单位于 `Editor/HandActionPanelSetup.cs`，固化手牌时自动安装；场景同时需要 EventSystem。玩法数据和按钮权限见 [交互模块](../../../Scripts/Presentation/CardInteraction/README.md#game-中的手牌操作按钮)。
+Prefab 只持有 `HandActionPanelView` 和 UI 引用；场景 `HandActionPresenter` 引用实际手牌宿主和出牌路径，提交出/弃/理牌命令。所有文字显式使用 Noto Sans CJK SC，只有按钮 Image 开启 Raycast Target，其余 Graphic 关闭。准备/配置菜单位于 `Editor/HandActionPanelSetup.cs`，固化手牌时自动安装；场景同时需要 EventSystem。玩法数据和按钮权限见 [交互模块](../../../Scripts/Presentation/CardInteraction/README.md#game-中的手牌操作按钮)。
 
 `工具 > 卡牌表现 > 界面布局 > 更新玩家手牌界面` 将已有 Prefab 更新为上述紧凑布局并连接当前场景，保留 GUID 和美术颜色。独立 `UIRenderer.asset` 使用 Forward，不添加自定义 Feature/后处理；UI Camera 为主相机的 Overlay，关闭阴影及深度/颜色纹理请求。Stack 先将场景 Point 放大，再由 UI Camera 按输出分辨率绘制，UI 不降采样。详见 [渲染模块](../../../Scripts/Infrastructure/Rendering/README.md)。
 
 ## 右下角抽牌堆
 
-`Assets/GameAssets/CardPresentation/Prefabs/DrawPileIcon.prefab` 是独立 Screen Space Camera Canvas，共用 UI Camera 和 1280 × 720 参考分辨率，排序 300；总览打开后由全屏遮罩拦截背后的牌堆与其他操作。Icon 锚定右下角，保留边距 (20, 20)、大小 64 × 96。Deck 子节点使用最多八层 CardUIGraphic 采样当前手牌 CardView.Atlas 的 card_back，错位、逐层乘色与阴影组成有厚度的牌堆；不再使用独立牌背 PNG / RawImage。所有层共享原生 Card Canvas 材质和图集，余量控制厚度，空堆保留暗色单层。右下角 Remaining/Count 以 Fusion Pixel 字体显示当前剩余牌数（含 0），带深色底、随 Deck 悬停缩放，不接收射线；可在 Prefab 调整位置/大小/配色，Prepare 只补缺失节点并保留现有封面与布局。
+`Assets/GameAssets/CardPresentation/Prefabs/DrawPileIcon.prefab` 是独立 Screen Space Camera Canvas，共用 UI Camera 和 1280 × 720 参考分辨率，排序 300；总览打开后由全屏遮罩拦截背后的牌堆与其他操作。Icon 锚定右下角，保留边距 (20, 20)、大小 64 × 96。Deck 子节点使用最多八层 CardUIGraphic 采样当前手牌 CardView.Atlas 的 card_back，错位、逐层乘色与阴影组成有厚度的牌堆；不再使用独立牌背 PNG / RawImage。所有层共享原生 Card Canvas 材质和图集，余量控制厚度，空堆保留暗色单层。右下角 Remaining/Count 以 Noto Sans CJK SC 字体显示当前剩余牌数（含 0），带深色底、随 Deck 悬停缩放，不接收射线；可在 Prefab 调整位置/大小/配色，Prepare 只补缺失节点并保留现有封面与布局。
 
 顶层由 DrawPileView 的 Cover Card Id 指定，默认 card_back；SetCoverCard("hearts_q") 等可换为当前图集内的指定牌面，非法 id 在改变已有图标前拒绝。这是牌组外观配置，不读取隐藏的牌顶卡牌。DrawPilePresenter 从 CardMatchHost 的 DeckCards 读取余量，Refresh 跟随当前手牌图集；不保存另一份牌堆、不发起抽牌命令。
 
@@ -69,7 +69,7 @@ Prepare Draw Pile Icon Prefab 迁移旧模板，保留 GUID 与 Icon 位置/尺�
 
 ## 原生 Canvas 牌组总览
 
-`DeckOverview.prefab` 是 Screen Space Overlay 页面，保留 Fusion Pixel 字体；打开时排在其他屏幕 Canvas 上方，关闭动画结束前保持全屏输入遮罩。面板缩至 1040 × 632（原 1200 × 642），右侧 ♠ / ♥ / ♣ / ♦ 四行按 A、K、Q、J、10…2 排列，每个实例独立展示，同牌面多份保留原稳定次序。行宽由共同父级决定，卡牌基准高度 120，浅弧高度 5、边距 2（以行高 132 为参考）；按牌数填充固定行宽，使用与手牌相同的 CardZoneRowLayout 圆弧/边界算法，映射 XZ 到 Canvas XY，卡牌轻微倾斜并从左向右重叠。单牌居中，空行保留槽位；SetRowLayout 或 Inspector 可调卡牌高度/弧高/边距，不改变固定行宽。
+`DeckOverview.prefab` 是 Screen Space Overlay 页面，保留 Noto Sans CJK SC 字体；打开时排在其他屏幕 Canvas 上方，关闭动画结束前保持全屏输入遮罩。面板缩至 1040 × 632（原 1200 × 642），右侧 ♠ / ♥ / ♣ / ♦ 四行按 A、K、Q、J、10…2 排列，每个实例独立展示，同牌面多份保留原稳定次序。行宽由共同父级决定，卡牌基准高度 120，浅弧高度 5、边距 2（以行高 132 为参考）；按牌数填充固定行宽，使用与手牌相同的 CardZoneRowLayout 圆弧/边界算法，映射 XZ 到 Canvas XY，卡牌轻微倾斜并从左向右重叠。单牌居中，空行保留槽位；SetRowLayout 或 Inspector 可调卡牌高度/弧高/边距，不改变固定行宽。
 
 四行的共同父级为 `DeckOverview/Frame/Panel/SuitRows`（生成基准位置 164, -8，大小 680 × 528；已有 Prefab 调整保留）。直接修改父级 RectTransform 的位置、Width/Height 或 Scale 即可整体调整牌区。四行等高，宽度撑满父级；`Vertical Overlap` 默认 0.12、范围 0–0.3，通过 Inspector 或 `SetVerticalOverlap` 调整。行高为区域高度 / (4 − 3 × overlap)，中心间距为行高 × (1 − overlap)，四行始终填满区域；0 恢复四分之一高度。渲染前检测尺寸变化并复用现有卡牌重排，Edit/Play 都生效。卡牌高度、弧高及边距以默认行高 132 为基准按区域高度同比变化，极窄区域会额外缩小卡牌以容纳完整牌面；左侧统计、点数列和标题不属于该父级。`SuitRowsRoot` 提供运行时引用，`RefreshLayout` 可显式刷新。
 
@@ -99,7 +99,7 @@ Tint、HDR 镭射颜色/强度、火漆颜色/贡献、红叉、去色通过顶�
 
 ## 牌堆悬停统计表
 
-`Prefabs/DeckSummary.prefab` 是独立原生 Canvas 片段（RectTransform 896 × 272），由 DrawPilePresenter 持有 Prefab 引用并按需实例化为牌堆 Canvas 的子节点。默认在 icon 上方 14 Canvas 单位、右侧对齐，沿用 UI Camera 原生输出与 Fusion Pixel 字体；Summary Gap 在 Presenter Inspector 调整，整体尺寸及排版可修改 Prefab。悬停表无 Raycaster，所有 Graphic 和 CanvasGroup 都不接收输入，离开 icon 即收起；点击切换为既有完整卡牌总览，返回关闭且不会因仍悬停而重开。
+`Prefabs/DeckSummary.prefab` 是独立原生 Canvas 片段（RectTransform 896 × 272），由 DrawPilePresenter 持有 Prefab 引用并按需实例化为牌堆 Canvas 的子节点。默认在 icon 上方 14 Canvas 单位、右侧对齐，沿用 UI Camera 原生输出与 Noto Sans CJK SC 字体；Summary Gap 在 Presenter Inspector 调整，整体尺寸及排版可修改 Prefab。悬停表无 Raycaster，所有 Graphic 和 CanvasGroup 都不接收输入，离开 icon 即收起；点击切换为既有完整卡牌总览，返回关闭且不会因仍悬停而重开。
 
 参考紧凑牌组表排版：上方 A、K、Q、J、10…2 十三列，每列白色点数牌签及剩余合计；下方 ♠、♥、♣、♦ 四条蓝/红/绿/橙色行，52 个格子显示对应花色与点数余量；左侧花色标记与该花色剩余总数，0 降低透明度。统计按获准查看的 Definition 计数，多份同牌分别计入，已抽出不计入；禁用/失效仍属于剩余牌。隐藏或未知牌只显示“其他 / 不可见”汇总，不猜测分布。
 

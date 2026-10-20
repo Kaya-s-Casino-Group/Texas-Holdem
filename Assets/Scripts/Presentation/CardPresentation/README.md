@@ -34,7 +34,7 @@
 
 ## 卡牌悬停信息 Prefab
 
-`Prefabs/CardSuitChipsTooltip.prefab` 提供 World Space 的两栏卡牌提示：上栏“花色符号 + 花色文字 + 点数”（如 `♣ 梅花 J`），下栏蓝色点数加“筹码”；背景为深色底板，两行各有独立的浅米色矩形背景（均无 Sprite），文字与原生花色符号都使用 Fusion Pixel 12px 比例简体中文的 TMP 位图字体。`CardTooltipView.SetContent(suit, rank, chips)` 消费调用方提供的数据，红桃/方块整个上栏变红，切回黑桃/梅花恢复深色，可在 Inspector 预览；不查询计分或更改卡牌属性。Runtime 新增 UGUI/TMP 依赖，纯 C# 引擎保持独立，鼠标射线拦截关闭。
+`Prefabs/CardSuitChipsTooltip.prefab` 提供 World Space 的两栏卡牌提示：上栏“花色符号 + 花色文字 + 点数”（如 `♣ 梅花 J`），下栏蓝色点数加“筹码”；背景为深色底板，两行各有独立的浅米色矩形背景（均无 Sprite），文字与原生花色符号都使用 Noto Sans CJK SC Regular 的 TMP SDF 字体。`CardTooltipView.SetContent(suit, rank, chips)` 消费调用方提供的数据，红桃/方块整个上栏变红，切回黑桃/梅花恢复深色，可在 Inspector 预览；不查询计分或更改卡牌属性。Runtime 新增 UGUI/TMP 依赖，纯 C# 引擎保持独立，鼠标射线拦截关闭。
 
 场景 `CardInteraction.CardHoverPresenter` 持有提示 Prefab，并为本地相机复用一个实例；`ICardHoverSource` 提供观察者可读的数据与卡牌视觉锚点。提示跟随卡牌上方、朝向场景相机且可限制在视口内，牌背及飞入/离场不显示。验证宿主按卡牌定义查询基础点数；固化手牌会自动注册，也可用 `工具 > 卡牌表现 > 场景接入 > 配置悬停提示` 接入已有手牌。CardZoneView 不持有提示引用、不采集鼠标、不查询计分。资源结构见 [UI README](../../../GameAssets/CardPresentation/UI/README.md)，数据边界与配置见 [交互 README](../CardInteraction/README.md#场景共用的悬停提示)。
 
@@ -311,7 +311,7 @@ HandZoneView 消费外部悬停/选中状态；独立 [CardInteraction](../CardI
 
 ## 手牌操作面板
 
-`Prefabs/HandActionPanel.prefab` 是四按钮 Screen Space Camera UI：出牌、弃牌、点数理牌、花色理牌；当前占位色块和 Fusion Pixel 字体，默认位于左下角、两行排列、缩放 0.75。`Runtime/Canvas/HandActionPanelView.cs` 只发送按钮请求和指示当前排序选择，不显示牌堆数字或“优先”状态行；`CardInteraction.HandActionPresenter` 持有手牌数据宿主和出牌路径引用并调用命令。UI 不更改视觉牌或持有规则数据，增减牌/理牌/音效仍由既有列表变化驱动。
+`Prefabs/HandActionPanel.prefab` 是四按钮 Screen Space Camera UI：出牌、弃牌、点数理牌、花色理牌；当前占位色块和 Noto Sans CJK SC 字体，默认位于左下角、两行排列、缩放 0.75。`Runtime/Canvas/HandActionPanelView.cs` 只发送按钮请求和指示当前排序选择，不显示牌堆数字或“优先”状态行；`CardInteraction.HandActionPresenter` 持有手牌数据宿主和出牌路径引用并调用命令。UI 不更改视觉牌或持有规则数据，增减牌/理牌/音效仍由既有列表变化驱动。
 
 `Editor/HandActionPanelSetup.cs` 的 Prepare Hand Action Panel Prefab 准备缺失 Prefab，重复执行保留美术调整；Configure Hand Action Buttons 固化当前手牌并绑定出牌路径与右下角抽牌堆图标。固化手牌时也自动安装，缺少 EventSystem 才创建，已有活动输入系统复用。仅按钮 Image 拦截射线，背景和文字不拦截。工具不自动保存当前场景。Prefab、字体、运行脚本与独立 .meta 沿用首包程序集及 link.xml；功能及牌堆接口见 [交互 README](../CardInteraction/README.md#game-中的手牌操作按钮)。
 
@@ -430,7 +430,7 @@ DeckOverviewData 明确区分 IsRemaining 与规则效果，按规则定义计�
 
 牌堆图标、牌组面板和共用筹码提示都使用独立 DOTween：图标惯性缩放，总览 Frame 从下方快速上移回稳，提示以显隐倍率放大出现/缩小消失。详细参数、当前图集/指定顶层牌和预览固定行为见 UI README；播放验证覆盖实际事件、上移回弹、反向与原对局不变。
 
-牌堆悬停改用 DeckSummaryView 原生统计片段，上方十三列点数余量，下方四行花色交叉余量及花色总数；0 压暗，隐藏/未知仅汇总。点击仍进入完整 DeckOverview。两者共用 DeckOverviewData 与 Presenter.ReadData，PixelPanelGraphic 生成阶梯边框并沿用 Canvas 默认材质，无新增纹理。详见 UI README 的“牌堆悬停统计表”；全部运行脚本、Prefab、字体引用和 .meta 沿现有 Runtime/link.xml 进入首包。
+牌堆悬停使用屏幕居中的 DeckSummaryView 原生统计片段，上方十三列点数余量，下方四行花色交叉余量及花色总数；0 压暗，隐藏/未知仅汇总。点击仍进入完整 DeckOverview。两者共用 DeckOverviewData 与 Presenter.ReadData，PixelPanelGraphic 生成阶梯边框并沿用 Canvas 默认材质，无新增纹理。详见 UI README 的“牌堆悬停统计表”；全部运行脚本、Prefab、字体引用和 .meta 沿现有 Runtime/link.xml 进入首包。
 
 
 ### 选牌上限与无法选中反馈
@@ -460,3 +460,5 @@ HandZoneView 默认最多选中 5 张，由 `SetMaxSelectedCards` 调整；此�
 战斗对外统一使用 `ICardZonePresentation`，经 `CardZoneTimelineAction` 调用 World/Canvas/平面牌区实现。操作返回 `IPresentationOperation`，信号使用 `Prepared / Released / AllArrived / Settled`，先后关系由场景时间线配置。规则检查点的牌表投影同样通过该接口，View 不持有 Actor 或规则命令。
 
 `CardActionViewOperation` 仅用于底层原生抬升和弃牌动画的完成追踪，不再作为战斗调用协议。具体约定见 `Tools/CardZonePresentationContract.md`。
+
+BattleDemo 使用 `Assets/Art/CardAtlases/Classic.asset` 经典扑克牌图集：手牌绑定 ClassicCard，牌堆与总览绑定 ClassicCanvas，总览条目使用 ClassicCardUIItem；三处共享 Classic 美术 Profile。

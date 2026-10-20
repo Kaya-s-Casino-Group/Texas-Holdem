@@ -75,7 +75,7 @@ namespace CardPresentation.Editor
                 EnsureRowsRoot(existing); return;
             }
             var font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(CardTooltipPrefabBuilder.FontPath);
-            if (font == null) throw new InvalidOperationException("Prepare the Fusion Pixel TMP font first.");
+            if (font == null) throw new InvalidOperationException("Prepare the Noto Sans CJK SC TMP font first.");
             var icons = new[] { ImportIcon("DeckAce"), ImportIcon("DeckFace"), ImportIcon("DeckNumber") };
             var canvasRoot = existing != null ? PrefabUtility.LoadPrefabContents(PrefabPath) :
                 new GameObject("Deck Overview UI", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));

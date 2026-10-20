@@ -27,6 +27,13 @@ namespace Poker.BattlePresentation
                 resources.Add(new ResourceDisplayData(p.Id.Value, "discardCost", engine.Duel.QueryActionCost(duel, p.Id, ScoredDuelActionKind.Discard).Cost));
             }
             var labels = new Dictionary<string, string> { ["statusSummary"] = BattlePresentationRuleText.Snapshot(state, observer, engine.Duel.Definition.StatusCatalog) };
+            // Separate read-only presentation channels: status badges belong to their actor,
+            // while the side rail contains only the observing player's relics.
+            foreach (var unit in duel.Combat.Combatants)
+                labels["status/" + unit.Id.Value] = string.Join("\n", duel.Combat.Statuses
+                    .Where(s => s.Target.Kind == EntityKind.Participant && s.Target.Id == unit.Id.Value)
+                    .Select(s => BattlePresentationRuleText.Status(s, engine.Duel.Definition.StatusCatalog)));
+            labels["relics"] = BattlePresentationRuleText.Relics(state, observer);
             foreach (var enemy in duel.Enemies)
             {
                 if (!duel.Combat.Get(enemy.Id).IsAlive || duel.IsFinished) continue;

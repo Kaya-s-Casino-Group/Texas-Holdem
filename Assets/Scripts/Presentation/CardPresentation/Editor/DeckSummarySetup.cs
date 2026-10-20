@@ -29,12 +29,11 @@ namespace CardPresentation.Editor
                 return;
             }
             var font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(CardTooltipPrefabBuilder.FontPath);
-            if (font == null) throw new InvalidOperationException("Prepare Fusion Pixel first.");
+            if (font == null) throw new InvalidOperationException("Prepare Noto Sans CJK SC first.");
             var ink = new Color32(17,38,35,255); var cream = new Color32(224,232,214,255);
             var root = Rect("Deck Hover Summary",null,Vector2.zero,new Vector2(896,272));
             try
             {
-                root.anchorMin = root.anchorMax = root.pivot = new Vector2(1,0);
                 root.gameObject.AddComponent<CanvasGroup>();
                 Panel("Shadow",root,new Vector2(2,-4),root.sizeDelta,new Color32(0,0,0,120),Color.clear,0);
                 Panel("Frame",root,Vector2.zero,root.sizeDelta,ink,cream,3);
