@@ -118,7 +118,7 @@ namespace CardPresentation.Editor
             if (target == null) return;
             layout = target.Layout;
             motionSettings = target.MotionSettings;
-            faceCamera = target.FaceCamera; facingCamera = target.FacingCamera;
+            facingMode = target.FacingMode; facingCamera = target.FacingCamera;
             if (Hand == null) return;
             raisedOffset = Hand.SelectedOffset; hoveredOffset = Hand.HoveredOffset; liftSettings = Hand.LiftSettings;
             transitionSettings = Hand.TransitionSettings; deckLocalPosition = Hand.DeckLocalPosition; deckAnchor = Hand.DeckAnchor;
@@ -162,7 +162,7 @@ namespace CardPresentation.Editor
                 Hand.SetInteractionOffsets(hoveredOffset, raisedOffset);
             }
             target.SetLayout(layout, motionSettings, animate); layout = target.Layout; motionSettings = target.MotionSettings;
-            target.SetCameraFacing(faceCamera, facingCamera);
+            target.SetCameraFacing(facingMode, facingCamera);
         }
         private void Mutate(string description, Action change)
         {
@@ -232,7 +232,7 @@ namespace CardPresentation.Editor
             }
             finally { EditorGUIUtility.labelWidth = previousLabelWidth; GUILayout.EndArea(); }
         }
-        [SerializeField] private bool faceCamera;
+        [SerializeField] private CardZoneFacingMode facingMode;
         [SerializeField] private Camera facingCamera;
         [SerializeField] private int stylePage;
         private void DrawStylePage()
@@ -274,10 +274,10 @@ namespace CardPresentation.Editor
         {
             EditorGUILayout.Space(); EditorGUILayout.LabelField("牌区朝向", EditorStyles.boldLabel);
             EditorGUI.BeginChangeCheck();
-            bool enabled = EditorGUILayout.Toggle("Y 指向摄像机", faceCamera);
+            var mode = (CardZoneFacingMode)EditorGUILayout.EnumPopup("朝向模式", facingMode);
             var camera = (Camera)EditorGUILayout.ObjectField("目标摄像机", facingCamera, typeof(Camera), true);
-            if (EditorGUI.EndChangeCheck()) Mutate("调整牌区朝向", () => { faceCamera = enabled; facingCamera = camera; });
-            EditorGUILayout.HelpBox("开启后整区 +Y 朝向相机位置，+Z 沿相机上方；未指定时使用 MainCamera。关闭后恢复原朝向。", MessageType.None);
+            if (EditorGUI.EndChangeCheck()) Mutate("调整牌区朝向", () => { facingMode = mode; facingCamera = camera; });
+            EditorGUILayout.HelpBox("平行画面：整区 +Y 沿相机反向、+Z 沿相机上方，支持透视和正交。朝向位置：整区 +Y 指向相机位置。保持配置：恢复跟随前的局部旋转。相机为空时使用 MainCamera。", MessageType.None);
         }
 
 

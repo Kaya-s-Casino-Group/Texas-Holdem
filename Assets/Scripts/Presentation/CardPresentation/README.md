@@ -199,7 +199,7 @@ zoneView.Present(new CardZoneViewData(new ZoneId("opponent/hand"), new[] {
 - **手牌**：`SetTransitionSettings(settings)`：设置补牌/让位参数；关闭时立即完成当前过渡，持续摆动独立。
 - **手牌**：`SetDeckSource(localPosition, anchor = null)`：维护右侧牌堆局部位置，可选场景 Transform 优先。`DeckWorldPosition` 读取实际来源。
 - `CompleteTransitions()` / `IsTransitioning`：立即完成全部过渡（释放飞出视觉），或查询是否仍有飞入/让位/飞出。单牌可读取 IsTransitioning / IsEntering / IsExiting / DisplayPose；DisplayPose 是牌区局部空间中的实际显示位置与未翻面的美术朝向，不含上浮/发牌翻面/持续摆动。单牌 `DealFlipAngle` 读取当前飞行翻面附加角度（抽牌 180° → 0°，弃牌 0° → 180°），`DealFlipRoot` 为独立视觉节点。
-- `SetCameraFacing(enabled, camera = null)`：切换整区 +Y 朝向相机，未指定时使用 Camera.main；关闭恢复启用前的局部旋转。
+- `SetCameraFacing(mode, camera = null)`：选择 KeepAuthored / LookAtCameraPosition / ParallelCameraPlane，未指定相机时使用 Camera.main；KeepAuthored 恢复跟随前的局部旋转。bool 重载保留兼容。
 - `RefreshCameraFacing()`：立即同步相机朝向；运行时 LateUpdate 自动调用，编辑器预览独立于摆动播放状态调用。
 - `AdvanceMotion(deltaTime)`：只推进本牌区拥有的 Tween。运行时 Update 自动调用；编辑器预览按自己的时钟调用，运行时宿主无需额外调用。
 - **手牌**：`SetLiftSettings(settings)` / `LiftSettings`：设置/读取上浮与回落动画；关闭时立即到达目标。单牌 `InteractionOffset` 返回实际牌区局部偏移，`IsLifting` 表示是否仍在过渡。
@@ -283,13 +283,24 @@ Size.x / Size.y 分别对应局部 X / Z 的宽高，Transform 决定整组在�
 
 ## 可选相机朝向
 
-`FaceCamera` 默认关闭，`FacingCamera` 可指定 Camera；为空时使用带 MainCamera 标签的活动相机。开启后，牌区 Transform 的 +Y 指向相机位置，+Z 尽量沿相机屏幕上方；相机上方向与观察方向平行时改用相机 forward 作为参考。相机缺失或与牌区重合时保留当前旋转，后续有效时自动恢复跟随。
+`FacingMode` 独立于相机的透视/正交投影，Inspector 和通用牌区验证窗口均可配置：
 
-朝向在 LateUpdate 更新，编辑器验证窗口也会持续更新；暂停/关闭逐牌摆动、空牌区均不阻止朝向跟随。只改变整区旋转，保持位置、缩放、卡牌顺序、翻面、属性与 Tween 相位；关闭选项或停用组件/对象后恢复启用前的局部旋转。基础旋转作为隐藏序列化配置保留，可随组件重载恢复。父级建议采用正的均匀缩放，避免层级非均匀缩放造成 Mesh 剪切。
+| 模式 | 基准朝向 |
+| --- | --- |
+| KeepAuthored（默认） | 保持配置的局部旋转；从跟随模式切回时恢复缓存的配置旋转 |
+| LookAtCameraPosition | 牌区 +Y 指向相机位置，+Z 尽量沿相机屏幕上方 |
+| ParallelCameraPlane | 牌区 +Y 沿 -camera.forward，+Z 沿 camera.up；右下角手牌推荐此模式 |
+
+`FacingCamera` 为空时使用 Camera.main。朝向位置模式下，当相机上方向与观察方向平行时改用相机 forward 作为参考；相机缺失或与牌区重合时保留当前旋转。平行画面模式不依赖牌区位置，透视相机也不会造成角落牌区整体朝镜头倾斜。
+
+朝向在 LateUpdate 更新，编辑器验证窗口也会持续更新；暂停/关闭逐牌摆动、空牌区均不阻止跟随。只改变整区旋转，保持位置、缩放、卡牌顺序、翻面、属性与 Tween 相位；返回 KeepAuthored 或停用组件/对象后恢复跟随前的局部旋转。基础旋转作为隐藏序列化配置保留，可随组件重载恢复。父级建议采用正的均匀缩放，避免层级非均匀缩放造成 Mesh 剪切。
+
+旧 faceCamera 序列化字段仅用于迁移：true → LookAtCameraPosition，false → KeepAuthored，迁移后清空旧标记。FaceCamera 属性仍表示是否处于跟随模式，旧 bool setter 保持兼容。导出牌区预制体时保留模式，清空场景相机引用。
 
 ```csharp
-zoneView.SetCameraFacing(true, playerCamera); // 对准本观察者的相机
-zoneView.SetCameraFacing(false);             // 恢复原先的牌区朝向
+zoneView.SetCameraFacing(CardZoneFacingMode.ParallelCameraPlane, cardCamera);
+zoneView.SetCameraFacing(CardZoneFacingMode.LookAtCameraPosition, playerCamera);
+zoneView.SetCameraFacing(CardZoneFacingMode.KeepAuthored); // 恢复配置旋转
 ```
 
 ## 生命周期与范围
@@ -336,7 +347,7 @@ HandZoneView 消费外部悬停/选中状态；独立 [CardInteraction](../CardI
 
 - 保留实际组件类型、所有可序列化的展示设置、卡牌 Prefab 引用、布局/摆动/外观、上浮/飞入/弃牌参数，以及三组音效。资源继续共享，不复制材质或音频。
 - 导出仅包含牌区展示组件。CardZonePlayHost、鼠标组件、测试手牌/弃牌、临时 CardInstanceView、音源及场景中的其他子对象不随之导出。实例化后由宿主调用 Present 提供真实数据。
-- 抽牌与弃牌锚点按导出时的世界位置换算成牌区局部坐标，清空场景锚点引用。FaceCamera 开关保留，相机引用清空，实例使用 MainCamera，也可由新场景重新绑定。
+- 抽牌与弃牌锚点按导出时的世界位置换算成牌区局部坐标，清空场景锚点引用。FacingMode 保留，相机引用清空，实例使用 MainCamera，也可由新场景重新绑定。
 - 根位置归零，保留本地缩放、Layer、启用状态及原本的本地旋转；如果相机正在驱动朝向，导出旋转使用驱动前缓存的原朝向，不保存当前跟随帧。
 - 子类的资源引用与自身组件/根对象/Transform 引用保留或重映射；其他场景引用及未保存的临时资源在写入前报错，避免生成断链配置。
 - 默认建议未占用的名称；覆盖需要确认，只接受相同具体子类的普通牌区 Prefab。覆盖会替换资源中的组件和子对象，但保留资源 GUID。单张卡牌、不同牌区子类、Prefab Variant 和其他资产不能被此入口覆盖。

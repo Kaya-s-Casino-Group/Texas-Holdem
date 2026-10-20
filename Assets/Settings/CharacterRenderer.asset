@@ -101,13 +101,6 @@ MonoBehaviour:
     posterization: 0.499
     dither: 0.379
     chromaticOffset: 3
-    crtEnabled: 1
-    crtIntensity: 0.597
-    crtCurvature: 0.0691
-    crtScanlinePitch: 8.41
-    crtScanlineStrength: 0.459
-    crtMaskStrength: 0.306
-    crtEdgeSoftness: 0.0255
   injectionPoint: 1001
   postShader: {fileID: 4800000, guid: a6c4b4b14be464680b808eb2a672d809, type: 3}
 --- !u!114 &11400000
@@ -126,14 +119,13 @@ MonoBehaviour:
     debugReplacementPS: {fileID: 4800000, guid: cf852408f2e174538bcd9b7fda1c5ae7, type: 3}
     hdrDebugViewPS: {fileID: 4800000, guid: 573620ae32aec764abd4d728906d2587, type: 3}
   m_RendererFeatures:
-  - {fileID: 7032191250042867021}
   - {fileID: 41553810914614333}
   - {fileID: -8892501650121948477}
   - {fileID: 7827378729397276015}
   - {fileID: -6502474241548791235}
   - {fileID: -8149700247589552751}
   - {fileID: -6135896016876051283}
-  m_RendererFeatureMap: 4d4d6a0baf5c97613d1ca18af8a09300c302e81bdd7c97846f4d2cb07b6fa06c3d525bff2092c2a591fd82c4cd72e68ead645eff14ebd8aa
+  m_RendererFeatureMap: 3d1ca18af8a09300c302e81bdd7c97846f4d2cb07b6fa06c3d525bff2092c2a591fd82c4cd72e68ead645eff14ebd8aa
   m_UseNativeRenderPass: 0
   postProcessData: {fileID: 0}
   xrSystemData: {fileID: 11400000, guid: 60e1133243b97e347b653163a8c01b64, type: 2}
@@ -192,7 +184,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d2fcc0c7cf72c4fbca1c1ba83fbc3d63, type: 3}
   m_Name: "\u4F4E\u5206\u8FA8\u7387 SSAO"
   m_EditorClassIdentifier: 
-  m_Active: 1
+  m_Active: 0
   settings:
     applyToRenderTextures: 1
     applyToSceneView: 0
@@ -219,7 +211,7 @@ MonoBehaviour:
     applyToRenderTextures: 1
     applyToSceneView: 0
     baseHeight: 0.64
-    maximumHeight: 4.62
+    maximumHeight: 0.35
     heightFalloff: 2
     heightCurve:
       serializedVersion: 2
@@ -259,17 +251,3 @@ MonoBehaviour:
     noiseVelocity: {x: 0.4, y: 0, z: 0.4}
     noiseSteps: 32
   fogShader: {fileID: 4800000, guid: 21a057b5c004c41b0a74ef8ec8a875d4, type: 3}
-
---- !u!114 &7032191250042867021
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0ea5e3ac68934d47aa43874e09ed37cb, type: 3}
-  m_Name: CharacterOutlineFeature
-  m_EditorClassIdentifier:
-  m_Active: 1

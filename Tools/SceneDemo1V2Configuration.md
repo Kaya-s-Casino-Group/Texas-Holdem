@@ -29,13 +29,62 @@ Director 已注册 `player`、`enemy`、`enemy-1`、`enemy-2`、`camera`、`scen
 
 直接复制 `SingleBattleDemoNew.unity` 的牌区配置，不使用场景准备工具，也不修改共用预制体：
 
-- `Card Table/Hand Zone`：`HandZoneView`（继承 `CardZoneView`）、`CardZonePlayHost`、`CardZoneMouseInput`、`WorldCardZonePresentation`。输入和绑定组件引用本场唯一 CardMatchHost 和 Main Camera。WorldCardZonePresentation 对外实现通用牌区表现能力，见 [接口约定](CardZonePresentationContract.md)。
-- `Deck Anchor` / `Discard Anchor`：保留旧场景发牌、弃牌锚点和运动参数。牌区位置调整到当前相机前方下部，布局宽度改为 2.6、高度保持 0.5；朝向由 HandZoneView 对准当前相机。
-- `HandActionPanel`：复用共享预制体及 HandActionPresenter，提供出牌、弃牌、按点数/花色排序；使用 Overlay Canvas 和独立 UI EventSystem。SingleBattleSceneAdapter.actions 已引用此 Presenter。
+- `Card Table/Hand Zone`：`HandZoneView`（继承 `CardZoneView`）、`CardZonePlayHost`、`CardZoneMouseInput`、`WorldCardZonePresentation`。输入和绑定组件引用本场唯一 CardMatchHost 和独立的 Card Camera。WorldCardZonePresentation 对外实现通用牌区表现能力，见 [接口约定](CardZonePresentationContract.md)。
+- `Deck Anchor` / `Discard Anchor`：锚点改为手牌局部坐标 `(0.55, 0.035, 0)` / `(-0.55, 0.035, 0)`，配合独立牌区空间；运动时长、曲线和牌区现有 `0.95 × 0.38` 布局保留。HandZoneView 使用 Card Camera 的「平行相机画面」朝向。
+- `HandActionPanel`：复用共享预制体及 HandActionPresenter，提供出牌、弃牌、按点数/花色排序；使用 Screen Space Camera Canvas，绑定 UI Camera，并保留独立 UI EventSystem。SingleBattleSceneAdapter.actions 已引用此 Presenter。
 - `HandZoneView.cardPrefab` 引用 `Assets/GameAssets/CardArt/Prefabs/Card.prefab`；其 Surface 使用 `FourBeastsAtlas.asset`、`FourBeastsCards.mat` 和已有美术效果配置。`StandardCardStateArt` 负责状态效果映射，卡面主题由 Card.prefab 的图集决定。
 - Director 的 `cards` 目标指向 WorldCardZonePresentation。开战后规则桥接按当前玩家动态绑定 hand/deck/discard 区域，不序列化第二份牌表。
 
 自动开战关闭时牌区等待规则数据，不自行生成示例牌。此阶段完成牌区组件与资源接线，不代表完整战斗时间线已经可运行。
+
+## 场景、牌区、UI 三相机
+
+当前场景的相机栈为：
+
+```text
+Main Camera（场景，Base / CharacterRenderer，原透视投影和场景效果）
+  → Card Camera（牌区，Overlay / CardForwardRenderer，原生分辨率透视投影，FOV 30°）
+  → UI Camera（UI，Overlay / UIRenderer，原生分辨率）
+  → CRT 最终合成并上屏
+```
+
+- `Cards` 是第 11 层（Mask 2048）。Card Table、Hand Zone 和两个牌堆锚点都使用该层；CardInstanceView 已将生成卡牌的全部子对象设置为所属牌区的 Layer。
+- Main Camera 排除 UI 和 Cards；Card Camera 仅绘制 Cards；UI Camera 仅绘制 UI。两个 Overlay 都清理深度，牌区不会被场景几何遮挡，UI 在牌区上方。
+- UI Camera 复用 UICameraStack，跟随场景相机的投影与输出。`UIRenderer.asset` 的 CRT 参数和最终合成机制未改动：包含场景、牌区和 UI 后才执行 CRT，不是只处理 UI 像素。
+- Card Camera 使用独立 `CardForwardRenderer.asset`（MainURP renderer index 4）。它是无 Renderer Feature 的 Forward Renderer，禁用低分辨率、深度预通道、透明阴影；相机关闭阴影、后处理、深度/颜色纹理请求、MSAA、遮挡剔除和逐帧 Volume 更新。没有为牌区新增 RenderTexture 合成步骤；最终 CRT 继续使用原有共享合成目标。
+- 现有 Card Deferred Shader 已有 `UniversalForward` Pass，牌区直接使用该 Pass。FourBeasts 材质、图集和卡面效果协议不变；保留 Shader 的 GBuffer Pass 供其他场景使用，不代表牌区会执行 GBuffer。当前仍是前向光照材质，可受主灯、环境和附加灯影响；不是新增 Unlit 材质，也没有承诺移除所有光照成本。
+
+### 调整牌区位置、大小
+
+在 **Card Camera / ViewportOverlayCamera** 配置：
+
+| 字段 | 当前值 | 含义 |
+| --- | --- | --- |
+| Scene Camera | Main Camera | 输出视口、宽高比来源，不跟随它的位姿/震动 |
+| Before Camera | UI Camera | 将牌区插入 UI 之前 |
+| Content Layers | Cards | 本相机绘制层，同时从 Base 排除 |
+| Content Root | Card Table | 独立的场景根容器 |
+| Content Viewport | `(0.56, 0.06, 0.40, 0.24)` | 输出画面右下方的适配区域 |
+| Content Size | `(0.95, 0.38)` | 未缩放的牌区参考宽高，与 Hand Zone 布局对应 |
+| Content Distance | `5` | 容器距牌区相机的深度 |
+
+牌区相机使用全输出视口，当前为透视、垂直 FOV 30°、Content Distance 5。ViewportOverlayCamera 保留 Camera 自身的 Projection 设置；可切回正交（Size 保留为 1）。组件通过 ViewportToWorldPoint 测量指定深度处的可见宽高，将 Content Size 等比例放入 Content Viewport 并居中定位，因此两种投影、FOV、正交 Size 和输出比例变化都使用同一套布局。Content Viewport 是布局范围，不是裁切区域；手牌动画、选中抬升和牌堆进出允许越界。修改 Hand Zone 布局宽高时同步调整 Content Size。不同屏幕比例会重新适配，在编辑器中也生效。
+
+Content Root 应保持为场景根对象。组件拥有它的位置、旋转和缩放；时间线应驱动 Hand Zone 或其下卡牌的动画层，不要同时动画 Card Table，以免与屏幕锚定竞争。
+
+### 牌区朝向模式
+
+Hand Zone 的 Inspector 和通用牌区验证窗口均提供三个模式：KeepAuthored（保持配置朝向）、LookAtCameraPosition（朝向相机位置）、ParallelCameraPlane（平行相机画面）。模式独立于相机投影类型。返回 KeepAuthored 或停用牌区时，恢复跟随前缓存的局部旋转；卡牌子级的扇形、翻牌、抬升等动画不受模式切换重置。
+
+旧场景 faceCamera=true 自动迁移为 LookAtCameraPosition，false 为 KeepAuthored；旧 SetCameraFacing(bool, Camera) 调用仍兼容。通用相机组件重命名时保留原脚本 GUID，既有场景引用继续有效。
+
+### 输入与表现边界
+
+`HandZoneView.facingCamera`、`CardZonePlayHost.inputCamera`、`CardZoneMouseInput.inputCamera` 均引用 Card Camera。HandZoneView.FacingMode 设置为 ParallelCameraPlane（平行相机画面），在透视和正交下均按 `-camera.forward` 确定牌面法线，+Z 沿相机上方；牌区移到角落不会改变基准旋转。规则桥接的 BindBattleHand 会继续读取 HandZoneView.FacingCamera，重绑或重开对局不会退回 Main Camera。鼠标/触摸通过该相机产生射线，原有 GraphicRaycaster 阻挡和选择规则保留。
+
+Director 的 `cards` 目标仍指向原 WorldCardZonePresentation；抽牌、理牌、出牌准备、弃牌、自定义动作和 Prepared 等信号沿用原能力接口。镜头目标仍属于场景表现，移动场景相机不会带动独立牌区。跨相机动画若需要从牌区飞向角色，必须通过屏幕/视口坐标转换目标，不能直接复用角色世界坐标。
+
+本次只拆分渲染和屏幕布局、改绑既有接口。XML、CardMatchHost、规则数据和玩法命令未修改；原本未完成的战斗 HUD、完整时间线和关闭 Auto Start 的状态保留。
 
 ## 规则入口
 
@@ -89,3 +138,7 @@ XML 阶段使用 BattleToolkit 自带 .NET 10 宿主验证：
 占位接入阶段：Unity 编译通过；检查保存的场景确认只有一个 Host/Adapter、1+2 Actor 均绑定 Visual/Presenter、XML 和目标引用完整、Auto Start 关闭；进入 Play Mode 未发现错误。完整战斗、输入与动画联调留待实际接入后验证。
 
 牌区接入阶段：检查唯一 Host/美术桥接、HandZoneView/输入相机、HandActionPresenter 和 cards 目标引用；确认 Card.prefab 指向 FourBeasts 图集及材质。进入 Play Mode（自动开战关闭）无控制台错误，随后退出。此检查不包含尚未接入的完整战斗播放。
+
+三相机拆分阶段：按要求未运行测试、未进入 Play Mode，未做 GPU 或输入效果验证。
+
+透视/正交通用化阶段：SceneDemo 1V2 牌区改为透视 + ParallelCameraPlane，右下角 Content Viewport 与输入/表现绑定保留；按要求未运行测试或进入 Play Mode。

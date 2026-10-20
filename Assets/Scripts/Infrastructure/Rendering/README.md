@@ -201,3 +201,9 @@ Base 和所有 Overlay 共享这个颜色目标；原生 UI 使用独立深度�
 默认排除位为 layer 8；各场景可按自身层定义调整，不依赖角色资产或角色 Renderer。
 Overlay 相机跳过描边，描边在原生 UI 之前合成；CRT 在最终 UI 之后处理整幅画面。
 `工具/渲染/描边/验证屏幕像素宽度` 检查 1/2/4 像素宽度在 1x/2x/3x/2.5x 输出中的稳定性。
+
+## 独立视口表现相机
+
+`Runtime/Cameras/ViewportOverlayCamera.cs` 用于独立于场景透视的 3D 展示区域：相机作为原生分辨率 Overlay 插到指定相机之前，保留 Camera 的透视/正交设置，在 Content Distance 处测量实际投影宽高，内容按归一化视口矩形等比适配。它只依赖 Camera、Transform 和 URP，不依赖 Battle、卡牌数据或表现调度器。场景根 Content Root 专用于布局，动画在其子对象上进行；该组件不替代输入相机和对象 Layer 的显式配置。
+
+SceneDemo 1V2 使用 Scene → Cards → UI → 最终 CRT；Cards 当前为 FOV 30° 的透视投影、牌区平行相机画面，使用无 Feature 的 `CardForwardRenderer` 和现有卡牌 Shader 的 Forward Pass。相机、Layer、输入和调参说明见 `Tools/SceneDemo1V2Configuration.md`。本次未运行测试。

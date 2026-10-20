@@ -7,14 +7,22 @@ using UnityEngine;
 
 namespace CardPresentation
 {
+    public enum CardZoneFacingMode
+    {
+        [InspectorName("保持配置朝向")] KeepAuthored = 0,
+        [InspectorName("朝向相机位置")] LookAtCameraPosition = 1,
+        [InspectorName("平行相机画面")] ParallelCameraPlane = 2
+    }
+
     /// <summary>Common ordered-zone visuals. Consumes snapshots without mutating card or zone data.</summary>
     [ExecuteAlways, DisallowMultipleComponent]
-    public partial class CardZoneView : MonoBehaviour
+    public partial class CardZoneView : MonoBehaviour, ISerializationCallbackReceiver
     {
         [SerializeField] private GameObject cardPrefab;
         [SerializeField] private CardZoneLayoutSettings layout = CardZoneLayoutSettings.Default;
         [SerializeField] private CardZoneMotionSettings motionSettings = CardZoneMotionSettings.Default;
-        [SerializeField] private bool faceCamera;
+        [SerializeField, HideInInspector] private bool faceCamera; // Legacy scene/prefab migration only.
+        [SerializeField] private CardZoneFacingMode facingMode;
         [SerializeField] private Camera facingCamera;
         [SerializeField, HideInInspector] private bool hasUnfacedRotation;
         [SerializeField, HideInInspector] private Quaternion unfacedLocalRotation = Quaternion.identity;
@@ -41,7 +49,8 @@ namespace CardPresentation
         internal float AnimationWorldScale => Layout.FitCardsToZone ? CardScale * transform.TransformVector(Vector3.up).magnitude : 1;
         public CardZoneMotionSettings MotionSettings => ResolveMotionSettings(motionSettings);
         public virtual bool IsTransitioning => ordered.Any(view => view != null && view.IsTransitioning);
-        public bool FaceCamera => faceCamera;
+        public bool FaceCamera => facingMode != CardZoneFacingMode.KeepAuthored;
+        public CardZoneFacingMode FacingMode => facingMode;
         public Camera FacingCamera => facingCamera;
         protected bool ContainsViewIdentity(string id) => views.ContainsKey(id);
 
@@ -216,19 +225,36 @@ namespace CardPresentation
             foreach (var view in ordered) if (view != null) { view.CompleteLift(); view.StopMotion(); }
         }
 
-        /// <summary>Optionally aim this zone's +Y at a camera. A null camera uses Camera.main.</summary>
+        void ISerializationCallbackReceiver.OnBeforeSerialize() { }
+        void ISerializationCallbackReceiver.OnAfterDeserialize()
+        {
+            if (faceCamera && facingMode == CardZoneFacingMode.KeepAuthored)
+                facingMode = CardZoneFacingMode.LookAtCameraPosition;
+            faceCamera = false;
+        }
+
+        /// <summary>Compatibility overload: true aims at the camera position; false restores authored rotation.</summary>
         public void SetCameraFacing(bool enabled, Camera camera = null)
         {
-            faceCamera = enabled; facingCamera = camera; RefreshCameraFacing();
+            SetCameraFacing(enabled ? CardZoneFacingMode.LookAtCameraPosition : CardZoneFacingMode.KeepAuthored, camera);
+        }
+
+        /// <summary>Sets the zone's baseline orientation without changing child animation transforms.</summary>
+        public void SetCameraFacing(CardZoneFacingMode mode, Camera camera = null)
+        {
+            if (!Enum.IsDefined(typeof(CardZoneFacingMode), mode)) throw new ArgumentOutOfRangeException(nameof(mode));
+            faceCamera = false; facingMode = mode; facingCamera = camera; RefreshCameraFacing();
         }
 
         /// <summary>Tracks the camera independently of cards and sway. Runtime calls this from LateUpdate.</summary>
         public void RefreshCameraFacing()
         {
-            if (!faceCamera || !isActiveAndEnabled) { RestoreUnfacedRotation(); return; }
+            if (facingMode == CardZoneFacingMode.KeepAuthored || !isActiveAndEnabled) { RestoreUnfacedRotation(); return; }
             var camera = facingCamera != null ? facingCamera : Camera.main;
             if (camera == null) return;
-            var direction = camera.transform.position - transform.position;
+            // Projection and orientation are independent: a perspective hand can remain parallel to the screen.
+            var direction = facingMode == CardZoneFacingMode.ParallelCameraPlane
+                ? -camera.transform.forward : camera.transform.position - transform.position;
             if (!CardZoneRowLayout.Finite(direction.sqrMagnitude) || direction.sqrMagnitude < 0.00000001f) return;
             direction.Normalize();
             var forward = Vector3.ProjectOnPlane(camera.transform.up, direction);
