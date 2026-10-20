@@ -67,4 +67,4 @@ Unity 在从嵌入式管线切换到官方包后曾崩溃，现已重启并重�
 
 旧 3D 工程保留在 `legacy-3d-scenes`，配套规则快照保留在子仓库分支 `codex/pre-unity-migration-20261020`。需要打开历史工程时，使用单独检出目录，并初始化到该归档提交记录的子模块版本。不要把整个旧分支合并回 `dev`；复用单个资产时连同 `.meta` 和依赖一起迁入。
 
-归档发布顺序为：先推送 BattleToolkit 的 `codex/pre-unity-migration-20261020` 快照分支，再推送主工程的 `legacy-3d-scenes`，保证归档 gitlink 可被其他机器获取。主工程分支位于 `LifeSugar/Texas-Holdem`，规则快照位于 `Kaya-s-Casino-Group/BattleToolkit`。在单独检出目录获取 `origin/legacy-3d-scenes` 后，执行 `git submodule update --init --recursive` 即可恢复配套规则版本。
+归档发布顺序为：先推送 BattleToolkit 的 `codex/pre-unity-migration-20261020` 快照分支，再推送主工程的 `legacy-3d-scenes`，保证归档 gitlink 可被其他机器获取。主工程分支位于 `Kaya-s-Casino-Group/Texas-Holdem`，规则快照位于 `Kaya-s-Casino-Group/BattleToolkit`。在单独检出目录获取 `origin/legacy-3d-scenes` 后，执行 `git submodule update --init --recursive` 即可恢复配套规则版本。
