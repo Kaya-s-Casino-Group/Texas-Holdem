@@ -1,11 +1,11 @@
 # dev / 旧 3D 场景迁移记录
 
-更新：2026-10-20。本记录随迁移改动一并提交到本地 `dev`；分支尚未推送。迁移提交以 `23f9cf20afb7ed9a695b997d191ab5cdfa7bc51e` 为父提交，保留这次已同步的规则版本。
+更新：2026-10-20。本记录随迁移改动一并提交到 `dev`。主工程的远端分支为 `origin/dev` 和 `origin/legacy-3d-scenes`。迁移提交以 `23f9cf20afb7ed9a695b997d191ab5cdfa7bc51e` 为父提交，保留这次已同步的规则版本。
 
 ## 归档与本地规则
 
 - 旧工程完整快照：`legacy-3d-scenes`，提交 `72a1553da8a16815a4eaf63cc4208987853af5bc`。包含迁移前已修改和未跟踪的工程资产，保留原路径和 GUID。
-- 该快照内的 BattleToolkit gitlink 指向子仓库快照 `7a0036e1f58b69a6257d1903e9f44056905d7aaa`，对应子仓库本地分支 `codex/pre-unity-migration-20261020`。
+- 该快照内的 BattleToolkit gitlink 指向子仓库快照 `7a0036e1f58b69a6257d1903e9f44056905d7aaa`，对应子仓库分支 `codex/pre-unity-migration-20261020`。
 - 当前 `External/BattleToolkit` 工作区是运行规则的权威来源。未执行 reset、checkout、同步远端或改写规则实现。迁移期间发现子仓库仍有后续本地更新，均继续保留；归档快照只代表迁移开始时的状态。
 - 最终落库时规则更新已独立提交到 `93478b756f65a8f59c814352736b3eee6ed0bd0a`，子仓库工作区干净；`dev` 保持该 gitlink，不回退到归档中的规则快照。
 - `Art/`、`ArtSource/`、`Blender/` 等本来被 Git 忽略的源文件仍留在磁盘，不属于 Git 快照，不因本次精简删除。
@@ -67,4 +67,4 @@ Unity 在从嵌入式管线切换到官方包后曾崩溃，现已重启并重�
 
 旧 3D 工程保留在 `legacy-3d-scenes`，配套规则快照保留在子仓库分支 `codex/pre-unity-migration-20261020`。需要打开历史工程时，使用单独检出目录，并初始化到该归档提交记录的子模块版本。不要把整个旧分支合并回 `dev`；复用单个资产时连同 `.meta` 和依赖一起迁入。
 
-这两个归档分支目前仅在本地。向远端发布归档时，先推送 BattleToolkit 的快照分支，再推送主工程的旧 3D 分支，保证归档 gitlink 可被其他机器获取。
+归档发布顺序为：先推送 BattleToolkit 的 `codex/pre-unity-migration-20261020` 快照分支，再推送主工程的 `legacy-3d-scenes`，保证归档 gitlink 可被其他机器获取。主工程分支位于 `LifeSugar/Texas-Holdem`，规则快照位于 `Kaya-s-Casino-Group/BattleToolkit`。在单独检出目录获取 `origin/legacy-3d-scenes` 后，执行 `git submodule update --init --recursive` 即可恢复配套规则版本。

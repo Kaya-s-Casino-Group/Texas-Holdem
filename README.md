@@ -17,4 +17,4 @@ Unity 通过 `External/BattleToolkit/Engine` 本地包引用规则与共享 XML�
 
 主动接入小仓库新版本时，可双击根目录 `sync-battle-toolkit.cmd`（Windows）或 `sync-battle-toolkit.command`（macOS）：检查两边工作区、选择四项 CI 均通过的版本并再次确认后更新；不覆盖本地改动，不自动提交。用法和前置条件见 [一键同步说明](Tools/BattleToolkitSync/README.md)。
 
-开发入口为 `Assets/Scenes/BattleDemo.unity`，使用官方 URP 14 的标准 Forward Renderer。旧 3D 场景与定制管线已保存在本地 `legacy-3d-scenes` 分支，范围、恢复点和验证结果见 [迁移记录](Tools/BranchMigration-2026-10-20.md)。有尚未提交的本地规则更新时，以子仓库工作区为准，不执行子模块覆盖更新。
+开发入口为 `Assets/Scenes/BattleDemo.unity`，使用官方 URP 14 的标准 Forward Renderer。旧 3D 场景与定制管线已归档到 `legacy-3d-scenes` 分支，范围、恢复点和验证结果见 [迁移记录](Tools/BranchMigration-2026-10-20.md)。有尚未提交的本地规则更新时，以子仓库工作区为准，不执行子模块覆盖更新。
