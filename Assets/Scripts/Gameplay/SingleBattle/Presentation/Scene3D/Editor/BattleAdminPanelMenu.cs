@@ -9,7 +9,7 @@ namespace Poker.SingleBattle.Editor
         public static void Open()
         {
             var hud = Object.FindObjectOfType<SingleBattleHud>();
-            if (hud?.Administrator != null) hud.Administrator.Open();
+            if (hud?.Administrator != null) hud.OpenAdministrator();
         }
 
         [MenuItem("Tools/BattleDemo/Open Runtime Administrator", true)]

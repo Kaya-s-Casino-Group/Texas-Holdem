@@ -187,7 +187,7 @@ namespace Poker.SingleBattle
             RefreshTurnFlow();
             RefreshRuleFeedback();
             RefreshBattleTools();
-            EnsureAdminPanel();
+            RefreshAdminEntry();
             if (host != null && endTurn != null) endTurn.interactable = host.CanEndTurn;
             if (switchPlayer != null) switchPlayer.interactable = host.CanSwitchPlayer && host.Display != null && host.Display.Units.Count(unit => unit.Team == "player" && ResourceValue(host.Display, unit.Id, "canAct") == 1) > 1;
             if (adminPanel?.IsOpen != true && Keyboard.current != null && Keyboard.current.tabKey.wasPressedThisFrame) SelectNextPlayer();

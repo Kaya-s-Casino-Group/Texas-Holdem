@@ -1,4 +1,3 @@
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -6,21 +5,24 @@ namespace Poker.SingleBattle
 {
     public sealed partial class SingleBattleHud
     {
-        private BattleAdminPanel adminPanel;
-        private Button adminButton;
+        [Header("对局修改器 · 场景 GUI 固定入口")]
+        [SerializeField] private BattleAdminPanel adminPanel;
+        [SerializeField] private Button adminButton;
         public BattleAdminPanel Administrator => adminPanel;
-        private void EnsureAdminPanel()
+        public Button AdministratorButton => adminButton;
+
+        private void RefreshAdminEntry()
         {
-            if (!Application.isPlaying || host?.Session == null || restart == null || message == null || adminPanel != null) return;
-            adminPanel = gameObject.AddComponent<BattleAdminPanel>();
+            if (!Application.isPlaying || adminButton == null) return;
+            adminButton.interactable = adminPanel != null && host?.Session != null;
+        }
+
+        // Bound persistently by the scene button, so no runtime clone or listener installation is required.
+        public void OpenAdministrator()
+        {
+            if (!Application.isPlaying || adminPanel == null || host?.Session == null || message == null) return;
             adminPanel.Configure(host, message.font);
-            adminButton = Instantiate(restart, transform);
-            adminButton.name = "Open Battle Administrator"; adminButton.gameObject.SetActive(true);
-            adminButton.onClick = new Button.ButtonClickedEvent(); adminButton.onClick.AddListener(adminPanel.Open);
-            Place(adminButton.GetComponent<RectTransform>(), 480, -158, 150, 36);
-            var label = adminButton.GetComponentInChildren<TMP_Text>();
-            label.text = "对局修改器"; label.fontSize = 16; label.enableAutoSizing = false;
-            GetComponent<BattleDemoUITheme>()?.StyleButton(adminButton, false);
+            adminPanel.Open();
         }
     }
 }
