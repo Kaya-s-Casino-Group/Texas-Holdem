@@ -187,6 +187,7 @@ namespace Poker.SingleBattle.Tests
                 }
                 else if (stage == 5)
                 {
+                    if (!hud.ResultPanel.activeSelf) return;
                     Assert.That(host.State.Duel.Phase, Is.EqualTo(ScoredDuelPhase.Won)); Assert.That(hud.ResultPanel.activeSelf, Is.True);
                     Assert.That(host.State.Duel.Combat.Get(host.State.Duel.PlayerId).Health, Is.EqualTo(playerHealth));
                     Assert.That(host.State.Duel.PlayerTurn.Energy, Is.EqualTo(2)); Assert.That(hud.EndTurnButton.interactable, Is.False);
@@ -214,6 +215,7 @@ namespace Poker.SingleBattle.Tests
                 }
                 else
                 {
+                    if (!hud.ResultPanel.activeSelf) return;
                     Assert.That(host.State.Duel.Phase, Is.EqualTo(ScoredDuelPhase.Lost)); Assert.That(hud.ResultPanel.activeSelf, Is.True);
                     Assert.That(host.State.Duel.Combat.Get(host.State.Duel.PlayerId).Health, Is.Zero); Assert.That(host.Actions.CanPlay, Is.False);
                     Assert.That(host.State.Duel.Scores, Is.Empty); Assert.That(hud.EndTurnButton.interactable, Is.False);

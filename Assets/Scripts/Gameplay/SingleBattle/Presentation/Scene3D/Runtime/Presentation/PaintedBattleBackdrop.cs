@@ -22,6 +22,14 @@ namespace Poker.SingleBattle
         public Mesh FloorMesh => floorMesh;
         public float FloorY => floorY;
 
+        public void ConfigureImage(Camera camera, Transform image, float aspect)
+        {
+            referenceCamera = camera; rear = image; middle = front = null; floor = null;
+            artworkAspect = aspect;
+            projectionPosition = camera.transform.position; projectionRotation = camera.transform.rotation;
+            Refresh(true);
+        }
+
         public void Configure(Camera camera, Transform back, Transform mid, Transform near,
             MeshFilter ground, float groundTop, float groundY = 0)
         {
@@ -38,7 +46,7 @@ namespace Poker.SingleBattle
 
         public void Refresh(bool force = false)
         {
-            if (referenceCamera == null || rear == null || middle == null || front == null || floor == null) return;
+            if (referenceCamera == null || rear == null) return;
             float aspect = referenceCamera.aspect;
             if (aspect <= 0) return;
             if (!Application.isPlaying)
@@ -55,8 +63,10 @@ namespace Poker.SingleBattle
             lastAspect = aspect; lastFov = referenceCamera.fieldOfView;
             lastSize = referenceCamera.orthographicSize; lastOrthographic = referenceCamera.orthographic;
             invalid = false;
-            PlaceLayer(rear, 200); PlaceLayer(middle, 50); PlaceLayer(front, 18);
-            BuildFloor();
+            PlaceLayer(rear, 200);
+            if (middle != null) PlaceLayer(middle, 50);
+            if (front != null) PlaceLayer(front, 18);
+            if (floor != null) BuildFloor();
         }
 
         // Cover the viewport without stretching; every layer and the floor share this exact crop.

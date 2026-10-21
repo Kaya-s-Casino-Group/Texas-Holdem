@@ -10,6 +10,9 @@ namespace CardPresentation
         [SerializeField] private CardZoneDiscardSettings discardSettings = CardZoneDiscardSettings.Default;
         [SerializeField] private Vector3 discardLocalPosition = new Vector3(-0.38f, 0.035f, 0);
         [SerializeField] private Transform discardAnchor;
+        [SerializeField, Tooltip("Use the facing camera's lower-left area, beyond the bottom screen edge.")] private bool discardOffscreen;
+        [SerializeField] private Vector2 discardViewport = new Vector2(.22f, -.12f);
+        [SerializeField, Range(0, 1), Tooltip("Start replacement cards after the last departing card has travelled this fraction of its exit path, including queued departures.")] private float refillDepartureWait;
         private readonly List<CardInstanceView> departing = new List<CardInstanceView>();
 
         private sealed class DiscardBatch
@@ -41,7 +44,27 @@ namespace CardPresentation
         public CardZoneDiscardSettings DiscardSettings => discardSettings;
         public Vector3 DiscardLocalPosition => discardLocalPosition;
         public Transform DiscardAnchor => discardAnchor;
-        public Vector3 DiscardWorldPosition => discardAnchor != null ? discardAnchor.position : transform.TransformPoint(discardLocalPosition * CardScale);
+        public Vector3 DiscardWorldPosition
+        {
+            get
+            {
+                if (discardOffscreen && FacingCamera != null)
+                {
+                    float depth = FacingCamera.WorldToViewportPoint(transform.position).z;
+                    return FacingCamera.ViewportToWorldPoint(new Vector3(discardViewport.x, discardViewport.y,
+                        Mathf.Max(FacingCamera.nearClipPlane + .01f, depth)));
+                }
+                return discardAnchor != null ? discardAnchor.position : transform.TransformPoint(discardLocalPosition * CardScale);
+            }
+        }
+        private float RefillDepartureDelay => refillDepartureWait <= 0 ? 0 : departing.Where(view => view != null)
+            .Select(view => view.SecondsUntilExitTravelProgress(refillDepartureWait)).DefaultIfEmpty(0).Max();
+        public void ConfigureScreenDiscard(bool enabled, float refillWait = .92f)
+        {
+            if (float.IsNaN(refillWait) || float.IsInfinity(refillWait) || refillWait < 0 || refillWait > 1)
+                throw new ArgumentOutOfRangeException(nameof(refillWait));
+            discardOffscreen = enabled; refillDepartureWait = refillWait;
+        }
         /// <summary>Visual ghosts only. These cards have already left Data/Views and cannot receive input.</summary>
         public IReadOnlyList<CardInstanceView> DepartingViews => departing.AsReadOnly();
 

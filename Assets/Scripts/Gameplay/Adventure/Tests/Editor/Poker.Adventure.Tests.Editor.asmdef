@@ -1,0 +1,10 @@
+{
+  "name": "Poker.Adventure.Tests.Editor",
+  "rootNamespace": "Poker.Adventure.Tests",
+  "references": ["Poker.Adventure.Runtime", "Poker.SingleBattle.Runtime", "PokerEngine.Core", "PokerEngine.Abilities", "PokerEngine.Combat", "PokerEngine.Scoring", "PokerEngine.Runs", "PokerEngine.Progression", "PokerEngine.Composition", "PokerEngine.Encounters"],
+  "includePlatforms": ["Editor"],
+  "overrideReferences": true,
+  "precompiledReferences": ["nunit.framework.dll"],
+  "optionalUnityReferences": ["TestAssemblies"],
+  "autoReferenced": false
+}

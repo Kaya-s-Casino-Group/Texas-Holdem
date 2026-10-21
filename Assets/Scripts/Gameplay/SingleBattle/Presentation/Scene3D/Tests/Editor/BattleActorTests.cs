@@ -71,6 +71,83 @@ namespace Poker.SingleBattle.Tests
                 Content.Dispose();
             }
         }
+        private sealed class AdventureCommandProbe : IBattleSessionCommands
+        {
+            private readonly BattleSession authority;
+            public BattleSession Session => new BattleSession(authority.Engine, authority.State);
+            public long Revision { get; private set; } = 500;
+            public int Calls;
+            public AdventureCommandProbe(BattleSession session) { authority = session; }
+            public BattleSessionResult Execute(long revision, ParticipantId actor, CardDuelAction action,
+                IEnumerable<CardInstanceId> selected = null, IEnumerable<ParticipantId> targets = null,
+                BattleTargetBindings targetBindings = null, int drawCount = 0)
+            {
+                Assert.AreEqual(Revision, revision); Calls++;
+                var result = authority.Execute(authority.State.Revision, actor, action, selected, targets, targetBindings, drawCount);
+                if (result.Accepted) Revision++; return result;
+            }
+            public BattleSessionResult UseItem(long revision, ParticipantId actor, string instanceId, string targetInstanceId = null)
+            { Assert.AreEqual(Revision, revision); return authority.UseItem(authority.State.Revision, actor, instanceId, targetInstanceId); }
+            public BattleSessionResult ApplyAdmin(long revision, BattleAdminPatch patch)
+            { Assert.AreEqual(Revision, revision); return authority.ApplyAdmin(authority.State.Revision, patch); }
+        }
+
+        [Test] public void ExternalAuthorityConsumesOpeningWithoutRestartAndKeepsAdminDraftValidAcrossReadWrappers()
+        {
+            using (var f = new Fixture(start: false))
+            {
+                var session = f.Host.BuildConfiguredSession();
+                var opening = session.Execute(session.State.Revision, session.State.Duel.PlayerId, CardDuelAction.Start);
+                var commands = new AdventureCommandProbe(session);
+                f.Host.AttachCommands(commands, opening, false);
+                Assert.AreEqual(0, commands.Calls); Assert.AreSame(opening.State, f.Host.PresentedState);
+                Assert.IsTrue(f.Host.UsesExternalCommands);
+                var draft = new BattleAdminDraft(f.Host.Session);
+                Assert.IsTrue(draft.IsCurrent(f.Host.Session));
+                var state = session.State;
+                f.Host.StartBattle(); f.Host.RestartBattle(); f.Host.SceneHost.StartBattle(); f.Host.SceneHost.RestartBattle();
+                Assert.AreSame(state, f.Host.AuthorityState);
+                f.Select(); Assert.AreEqual(1, f.Hand.PlaySelected(false));
+                Assert.AreEqual(1, commands.Calls); Assert.IsFalse(draft.IsCurrent(f.Host.Session));
+                Assert.AreSame(session.State, f.Host.PresentedState);
+            }
+        }
+
+        [Test] public void ExternalSummonerBindsSpawnedEnemiesAndReusesRosterWithoutLeakingIntoNextBattle()
+        {
+            using (var f = new Fixture(start: false))
+            {
+                var nextBattle = f.Host.BuildConfiguredSession();
+                var xml = System.IO.File.ReadAllText(System.IO.Path.Combine(Application.dataPath,
+                    "../External/BattleToolkit/Engine/Content/Templates/08_ArmoredSummoner.xml"));
+                var compiled = BattleContentCompiler.CompileXml(xml);
+                Assert.IsTrue(compiled.Success, string.Join("\n", compiled.Diagnostics.Select(d => d.Message)));
+                var session = BattleContentFactory.Create(compiled.Content, new BattleSetupRequest("08_ArmoredSummoner",
+                    "scene-summon", HmacDeckShuffler.FromSeed(new byte[32]))).Session;
+                var opening = session.Execute(session.State.Revision, session.State.Duel.PlayerId, CardDuelAction.Start);
+                f.Host.AttachCommands(new AdventureCommandProbe(session), opening, false);
+                f.HandView.CompleteTransitions();
+                if (session.State.FlowFor(session.State.Duel.PlayerId).Window == BattlePlayerWindow.Draw)
+                    Assert.IsTrue(f.Host.SkipDraw(false));
+                Assert.IsTrue(f.Host.EndTurn(false));
+                if (session.State.FlowFor(session.State.Duel.PlayerId).Window == BattlePlayerWindow.Ending)
+                    Assert.IsTrue(f.Host.EndTurn(false));
+                Assert.AreEqual(3, session.State.Duel.Enemies.Count); Assert.AreEqual(3, f.Host.Enemies.Count);
+                var spawned = f.Host.Enemies.Skip(1).ToArray();
+                foreach (var actor in f.Host.Enemies)
+                {
+                    Assert.IsTrue(actor.IsBound); Assert.IsNotNull(actor.ReadIntent());
+                    Assert.AreEqual(actor.ParticipantId.Value, actor.DisplayUnit.Id);
+                }
+                f.Host.SynchronizeBattle();
+                CollectionAssert.AreEqual(spawned, f.Host.Enemies.Skip(1));
+                var nextOpening = nextBattle.Execute(nextBattle.State.Revision, nextBattle.State.Duel.PlayerId, CardDuelAction.Start);
+                f.Host.AttachCommands(new AdventureCommandProbe(nextBattle), nextOpening, false);
+                Assert.AreEqual(1, f.Host.Enemies.Count); Assert.IsTrue(f.Host.Enemy.IsBound);
+                Assert.IsTrue(spawned.All(actor => !actor.gameObject.activeSelf));
+                Assert.AreSame(nextBattle.State, f.Host.PresentedState);
+            }
+        }
         [Test] public void SharedLifecycleRestartsFromCurrentXmlAndSynchronizesWithoutAdvancingRules()
         {
             using (var f = new Fixture())

@@ -271,3 +271,29 @@ Director 用 `Prepared` 连接出牌准备和角色攻击，用 `Impact` 连接�
 BattleDemo 的玩家使用 `PortraitBattleActorPresenter`，继承既有 Actor 攻击、受击及死亡表现；护盾仍由原 Coordinator 管理。桥接层将当前显示游标的阶段写入 `UnitDisplayData.Labels["portraitPose"]`，通过既有 `SynchronizeDisplay` 分发。组件不读取规则会话，也不按最终权威状态提前切图。
 
 Artwork 子节点以 0.12 秒淡出右移、0.18 秒淡入归位切换贴图，使用 MaterialPropertyBlock 保持共享材质不变。阶段重复推送不重播，快速切换可续接当前透明度，Cancel/Reset 与 Actor 生命周期统一恢复。素材和完整生成提示词见 `Assets/Art/Characters/BattleBillboards/PlayerPoses/`；编辑器设置与真实流程检查位于 `Tools/BattleDemo/Portraits`。
+
+### BattleDemo 多目标验证
+
+`Assets/Scenes/BattleDemo.unity` 使用独立的 `BattleDemoValidation.xml` 内容副本，保留标准牌型规则，敌人血量为 600 / 4 / 6。两个低血量目标用于观察顺子击杀后的规则转火；群攻会向三个实际目标分别发射卡牌分支。
+
+场景专用 `BattleDemoTargetSelection` 将肖像点击接到已有 `SelectPlayTarget` 接口。可先点怪物再选牌；选中目标沿贴图透明边缘显示红色描边。只有规则提供的目标槽可被指定，群攻不绑定单体目标，死亡目标不能选择。顺子首个目标可指定，后续转火由规则决定。
+
+`BattleCardEffectBridge` 将顺子的已结算主伤害归到同一次飞行中，每张保留独立命中标记；发射间隔由场景弹道组件的 `straightInterval` 配置，当前为 0.1 秒。上述内容、目标描边材质和桥接组件仅由 BattleDemo 引用，不改变通用表现层约定。
+
+### BattleDemo 小怪世界空间 UI
+
+`BattleDemoEnemyWorldHud` 仅挂在 BattleDemo：头顶逐只显示规则预览的意图，脚下显示实时血条与当前护盾，血条下方显示状态图标及层数。攻击为红剑，防御为银白盾；同一条意图的数值与图标共用颜色。复合意图并排显示，悬停可查看意图或状态说明。
+
+图标由场景专用 `BattleDemoEnemyIcon` 原生 uGUI 网格绘制，世界 Canvas 面向战斗相机并随怪物移动。血量、护盾与状态只读取已展示的快照；意图使用当前展示步骤的只读规则预览，过滤反伤、吸血等衍生效果。旧的合并敌人面板在当前 scene 中通过 CanvasGroup 隐藏；目标红色轮廓描边仍保留。此改动未扩展通用表现协议。
+
+### BattleDemo 出牌、灰烬与遗物美术
+
+出牌桥接直接使用规则结果的 `SubmittedCards / ScoringCards`：非计分牌只在首波攻击时同步向手牌区正下方飞出，不创建拖尾；计分牌沿原牌型弹道命中目标，随后触发受击。`BattleCardProjectileAction` Inspector 的“计分牌拖尾宽度比例”当前为 0.55，拖尾沿长度逐渐变细，横向颜色保持一致。
+
+三个小怪使用场景专用 `BattleDemoAshPresenter` 与 `BattleDemoAsh.shader`。死亡时灰化并逐步剥落为上飘灰烬；Inspector 的“灰烬消散时长”默认为 0.85 秒。进度通过每个 Renderer 的属性块驱动，重开、同步与复活恢复显示，禁用时还原原始材质。其他场景继续使用原来的死亡表现。
+
+`BattleDemoOutcomePreview` 在选牌时直接显示正式规则预览的伤害、群攻数量、可击杀数量与目标生命变化；筹码和倍率放在悬停详情内。预览不提交动作或推进规则。
+
+HUD 上的 `BattleDemoRelicArt` 在 Inspector 配置规则 ID 与 Sprite，也可调整图标尺寸、间距；当前接入 `Assets/Art/UI/Relics` 的全部 12 张 PNG。未命名图片按已确认的映射：遗物1→13002 致命一击、遗物2→10002 急救药水、遗物3→10001 同花倍率、遗物4→13003 牌型倍率。其他图片按规则名称对应。图标同时供遗物栏与主动道具按钮使用；绑定图片不会自动授予遗物。
+
+当前场景的遗物栏仅常驻图标；有次数上限的主动道具在右下角显示规则快照中的剩余次数。悬浮图标展开效果说明与当前冷却，主动道具在同一面板提供使用按钮；六面骰需先选替换对象。移入说明面板可继续操作，离开图标和面板后关闭。按钮仍调用既有 `CanUseItem / UseItem`，演出门禁、次数与冷却均由规则和 Host 处理。未绑定 `BattleDemoRelicArt` 的其他场景保留原 UI。

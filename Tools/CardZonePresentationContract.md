@@ -51,6 +51,14 @@ cards.play.Completed → cards.arrange
 
 挂在现有 HandZoneView 对象上，封装发牌、整理、准备抬升和离场动画。复用原卡牌预制体、FourBeasts 图集、状态美术和运动参数；不重写渲染器。默认 Play 和 Discard 都复用已有离场飞行能力及弃牌目的地，需要独立出牌目标或不同特效时扩展自定义动作。
 
+`BattleDemo` 已注册自定义 `cards.projectile`，由 `BattleCardProjectileAction` 通过同一个 `ICardZonePresentation.Play` 入口执行。场景动作只解析效果真实目标并传入中性目标坐标、牌身份与 `handCategory`；具体飞行不读规则状态。选牌先上浮，弹道中将 XZ 牌面翻到世界水平面，所有飞行牌实际到达目标才报告 `Impact / AllArrived`。目标受击依赖 `Impact`，镜头与浮字继续依赖受击的 `Revealed`。非玩家出牌的伤害在此动作中直接通过，不增加卡牌弹道。
+
+弹道采用线性位移叠加 `4t(1-t)` 二次偏移，各牌型通过抛物线高度、展开平面和发射节奏区分。`HandZoneView.DeckAnchor` 支持绑定 Canvas 内的 RectTransform：取可见牌堆顶牌中心的屏幕坐标，再由手牌相机映射到手牌深度；普通 Transform 和本地发牌位置仍按世界坐标解释。首次发牌前会刷新 Canvas 布局，避免开场从未布局的旧位置起飞。
+
+每张飞行牌复用原卡面网格、共享材质和属性块，牌尾绑定一个独立 `Tail / TrailRenderer`。拖尾与牌面同平面，宽度取网格实际牌宽乘世界缩放，保持等宽并按透明度渐隐；命中后停止发射，等待尾迹淡出。飞行替身、尾迹与原牌的临时隐藏均归请求作用域所有，取消、同步和禁用会清理。原牌仍属于当前展示快照；到真实 `CardsMoved` 时移除，已经作为弹道发出的隐藏原牌不再重复播放弃牌飞行。
+
+当前场景的弃牌目标使用牌区相机的 viewport `(0.22, -0.12)`，落点向右收至左下区域并保持在下边界之外。补牌投影保留上一段已释放的弃牌作用域，不强行完成飞行；新牌的入场队列等待最后一张排队弃牌实际飞完 92% 的离场路程后启动（按加速曲线反求剩余等待时间，包含逐牌发射间隔），后续补牌落定才完成输入门禁。该配置由 `HandZoneView.ConfigureScreenDiscard` 控制，不改变其他牌桌默认离场位置。
+
 已有 3D 场景已接入此组件。SceneDemo 1V2 的牌区接入属于独立关卡改动，未包含在本次基建提交中。
 
 ### CanvasCardZonePresentation

@@ -33,7 +33,7 @@ namespace Poker.SingleBattle
             battleToolsPanel.anchorMin = battleToolsPanel.anchorMax = battleToolsPanel.pivot = new Vector2(0, 1);
             battleToolsPanel.anchoredPosition = new Vector2(24, -158);
             battleToolsPanel.sizeDelta = new Vector2(440, 36);
-            battleToolsToggle = CreateToolsButton(battleToolsPanel, "选敌 · 道具 · 结算预览", () => {
+            battleToolsToggle = CreateToolsButton(battleToolsPanel, GetComponent<BattleDemoRelicArt>() != null ? "选敌 · 结算预览" : "选敌 · 道具 · 结算预览", () => {
                 battleToolsExpanded = !battleToolsExpanded; RefreshBattleTools(true);
             }, 0, 36);
             battleToolsBody = new GameObject("Details", typeof(RectTransform), typeof(Image), typeof(ScrollRect)).GetComponent<RectTransform>();
@@ -87,9 +87,9 @@ namespace Poker.SingleBattle
             button.interactable = available(); return button;
         }
 
-        private static void ItemIcon(Button button, string definitionId)
+        private void ItemIcon(Button button, string definitionId)
         {
-            var sprite = BattleRelicArt.Get(definitionId); if (sprite == null) return;
+            var sprite = ResolveRelicIcon(definitionId); if (sprite == null) return;
             var icon = new GameObject("Icon", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
             icon.transform.SetParent(button.transform, false); icon.gameObject.layer = button.gameObject.layer; icon.sprite = sprite; icon.preserveAspect = true; icon.raycastTarget = false;
             Place(icon.rectTransform, 6, -5, 32, 32);
@@ -99,6 +99,13 @@ namespace Poker.SingleBattle
         public bool SelectItem(string instanceId)
         {
             if (host?.State == null || host.Player == null || !host.State.Duel.Player(host.Player.ParticipantId).Relics.Relics.Any(r => r.InstanceId == instanceId)) return false;
+            if (GetComponent<BattleDemoRelicArt>() != null)
+            {
+                RefreshRelicIcons();
+                var relics = host.State.Duel.Player(host.Player.ParticipantId).Relics.Relics;
+                int index = relics.ToList().FindIndex(item => item.InstanceId == instanceId);
+                selectedItem = instanceId; ShowRelicHover(instanceId, relicIconViews[index].rectTransform); return true;
+            }
             ResetToolsContext();
             selectedItem = instanceId; selectedItemTarget = null; itemFeedback = null; battleToolsExpanded = true;
             RefreshBattleTools(true); return true;
@@ -123,11 +130,12 @@ namespace Poker.SingleBattle
             EnsureBattleTools(); if (battleToolsPanel == null) return;
             var state = host.State; var candidate = host.Candidate;
             var choices = host.PlayTargetChoices;
-            string key = host.Player.ParticipantId.Value + "/" + string.Join("|", choices.Select(choice => choice.Slot + "=" + choice.SelectedId)) + "/" + selectedItem + "/" + selectedItemTarget;
+            string key = host.Player.ParticipantId.Value + "/" + string.Join("|", choices.Select(choice => choice.Slot + "=" + choice.SelectedId)) + "/" + selectedItem + "/" + selectedItemTarget + "/" + (GetComponent<BattleDemoRelicArt>()?.Version ?? 0);
             bool changed = force || contextChanged || !ReferenceEquals(battleToolsState, state) || !ReferenceEquals(battleToolsCandidate, candidate) || key != battleToolsKey;
             bool needsTarget = choices.Any(choice => choice.Required && string.IsNullOrEmpty(choice.SelectedId));
             battleToolsToggle.GetComponentInChildren<TMP_Text>().text = "行动点 " + ResourceValue(host.Display, host.Player.ParticipantId.Value, "actions") +
-                " · 金币 " + state.GoldFor(host.Player.ParticipantId) + " · " + (battleToolsExpanded ? "收起操作" : needsTarget ? "请选择目标" : "选敌 / 道具 / 预览");
+                " · 金币 " + state.GoldFor(host.Player.ParticipantId) + " · " + (battleToolsExpanded ? "收起操作" : needsTarget ? "请选择目标" :
+                    GetComponent<BattleDemoRelicArt>() != null ? "选敌 / 预览" : "选敌 / 道具 / 预览");
             battleToolsBody.gameObject.SetActive(battleToolsExpanded);
             if (!battleToolsExpanded) return;
             float parentHeight = ((RectTransform)transform).rect.height;
@@ -163,6 +171,7 @@ namespace Poker.SingleBattle
 
         private void BuildToolsItems(CardDuelState state)
         {
+            if (GetComponent<BattleDemoRelicArt>() != null) return;
             var loadout = state.Duel.Player(host.Player.ParticipantId).Relics;
             var items = loadout.Relics.Where(relic => loadout.RulesFor(relic.InstanceId).Item?.Activation != null &&
                 loadout.RulesFor(relic.InstanceId).Item.Activation != BattleItemActivation.None).ToArray();

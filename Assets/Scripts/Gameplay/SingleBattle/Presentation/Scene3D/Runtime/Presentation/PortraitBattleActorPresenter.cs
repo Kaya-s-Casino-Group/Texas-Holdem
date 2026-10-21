@@ -92,6 +92,8 @@ namespace Poker.SingleBattle
         {
             currentTexture = texture; Opacity = alpha; shift = offset;
             if (artwork == null) return;
+            // Keep the full 0..1 UV quad at the texture's actual aspect for every phase portrait.
+            GetComponentInParent<BattleBillboardLayout>()?.SetArtworkAspect((float)texture.width / texture.height);
             properties = properties ?? new MaterialPropertyBlock();
             artwork.GetPropertyBlock(properties);
             properties.SetTexture(BaseMap, texture); properties.SetTexture(MainTex, texture);

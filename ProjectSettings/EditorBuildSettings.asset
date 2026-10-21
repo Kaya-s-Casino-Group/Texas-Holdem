@@ -8,4 +8,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/BattleDemo.unity
     guid: d6f9714732e274ac6ab790f032091e3b
+  - enabled: 1
+    path: Assets/Scenes/SingleChapterAdventure.unity
+    guid: 4fe8021536a6c4ce68b6db5632affe78
   m_configObjects: {}

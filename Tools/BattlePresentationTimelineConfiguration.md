@@ -2,6 +2,14 @@
 
 更新：2026-10-19。适用场景：`Assets/Scenes/SingleBattleDemoNew.unity`。架构和恢复约定见 [实施记录](BattlePresentationImplementation.md)，规则与表现的完整设计见 [设计文档](BattlePresentationDesign.md)。
 
+2026-10-21 `BattleDemo` 补充：场景已接入 `Presentation Timeline/Card Projectiles`，并在 `Card Match` 挂载场景专用 `BattleCardEffectBridge`。场景适配器在收到已结算的批次时将其交给该桥接，桥接只读主效果的 `RootEffectIndex`、绑定后的效果计划、权威 `AttackCards / PatternCards`、葫芦分项计分以及实际目标，生成按事实序号查找的不可变飞行计划。不修改通用 DTO、信号、规则或调度协议；未挂桥接的其他场景保持原路径。
+
+顺子每条主伤害只发对应的一张牌，身份按规则捕获的攻击顺序对应，转火取真实结算目标。群攻的多个目标共享一次飞行，首个效果启动时为所有实际目标创建分支；后续目标事实等待各自的真实到达状态，复用已经发出的卡牌，显示快照仍按规则事实顺序提交。葫芦的三条群攻与对子指定单体分别使用对应的计分牌。派生中毒、反射、道具和状态不重复发整组选牌。皇家同花顺的 `Eliminate` 事实发出金色飞牌，命中后播放金色扩散环、“皇家同花顺 · 消灭”文字及既有受击/死亡；不再显示普通扣血浮字。命中环、飞牌、尾迹、等待操作和原牌临时隐藏都受动作作用域管理。
+
+`EffectSettled` 的 Hit / BlockHit 组保留 `card-projectile` 节点，`effect.after` 等待其 `Impact`，没有新造跨事实信号。各群攻目标可以在同一轮飞行中到达，但受击及基础 HUD 依旧遵守事实提交顺序。卡牌上浮后在飞行前 45% 的进程中翻到世界水平面，牌尾 Trail 从牌宽逐渐收细，横向不作渐变。`liftSeconds / flightSeconds / volleyInterval / arcHeight / horizontalAt / tailSeconds / tailColor / tailMaterial` 可在该组件调整。
+
+牌型使用桥接的稳定 `handCategory`：所有飞行轨迹均为 `Lerp(start, target, t) + offset * 4t(1-t)` 的抛物线。高牌单弧、对子并行、两对分组错拍、三条多高度弧线、顺子连续低弧、同花扇形抛射、葫芦两组弧线、四条高弧、同花顺连续高弧、五条放射汇聚。所有轨迹收敛到本次效果实际目标的视觉中心。当前场景使用手牌区子节点 `Discard Target` 作为弃牌落点，位于手牌中心正下方并从下边界飞出；补牌等待最后一张弃牌实际飞完约 92% 的离场路程后起飞。发牌锚点绑定同一手牌的 `DrawPileView.DealAnchor`（最上层卡牌中心），通过 Canvas 相机转屏幕坐标，再投影到手牌相机的手牌深度，随 UI 布局与缩放保持对齐。编辑器菜单“工具 > 卡牌战斗 > 表现时间线 > 接入卡牌弹道与弃牌”可幂等接入既有场景，保留其他节点依赖与动作参数。
+
 当前场景的出牌顺序完整保存在 `ScenePresentationDirector.timeline`。`SingleBattleSceneAdapter` 通过通用 Host 的命令端口提交规则命令，桥接不可变数据并同步牌区和基础 HUD；它不再生成 `BuildPlan`，也不调用固定的“牌区→攻击→受击”协程。
 
 ## 1. 先找到三个配置位置

@@ -43,6 +43,7 @@ namespace Poker.SingleBattle.Editor
             if (!replaceExisting && existingRoot != null && director.HasConfiguredTimeline)
             {
                 BattleRecoveryTimeline.Upgrade(host, director, includeFeedback);
+                BattleCardFlightSceneSetup.Configure(host, director);
                 EditorUtility.SetDirty(director);
                 return director;
             }
@@ -105,6 +106,7 @@ namespace Poker.SingleBattle.Editor
                 if (bindings.All(current => current.key != binding.key)) bindings.Add(binding);
             Undo.RecordObject(director, "Author battle timeline recipe");
             director.ConfigureTimeline(groups.ToArray(), bindings.ToArray());
+            BattleCardFlightSceneSetup.Configure(host, director);
             foreach (var action in root.GetComponentsInChildren<PresentationActionBehaviour>(true))
             { action.StartPresentationRoutine = host.StartPresentationRoutine; EditorUtility.SetDirty(action); }
             EditorUtility.SetDirty(host); EditorUtility.SetDirty(director);

@@ -38,6 +38,8 @@ namespace CardPresentation
         public bool IsTransitioning => IsTransferring || (transition != null && transition.IsAnimating);
         public bool IsEntering => IsTransferring || (transition != null && transition.IsEntering);
         public bool IsExiting => transition != null && transition.IsExiting;
+        public float ExitSecondsRemaining => transition?.ExitSecondsRemaining ?? 0;
+        internal float SecondsUntilExitTravelProgress(float progress) => transition?.SecondsUntilExitTravelProgress(progress) ?? 0;
         internal bool IsTransitionVisible => surfaceRenderer != null && surfaceRenderer.enabled;
         /// <summary>Displayed zone-local pose before hover, face flip and idle sway; Rotation describes upright artwork.</summary>
         public CardZoneCardPose DisplayPose => new CardZoneCardPose(

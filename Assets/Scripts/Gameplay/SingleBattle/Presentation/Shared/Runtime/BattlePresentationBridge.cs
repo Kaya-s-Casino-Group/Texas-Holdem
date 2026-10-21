@@ -53,6 +53,10 @@ namespace Poker.BattlePresentation
                     values["multiplier"] = fact.Score.Multiplier.ToString(CultureInfo.InvariantCulture);
                     values["pattern"] = BattleDisplayProjector.HandName(fact.Score.Category);
                 }
+                // Stable presentation metadata from the already resolved action; no frontend evaluates poker rules.
+                var handScore = fact.Score ?? (fact.Kind == BattleTimelineKind.EffectSettled && fact.Action == CardDuelAction.Play
+                    ? result.Steps[fact.StepIndex].Transition.Score : null);
+                if (handScore != null) values["handCategory"] = handScore.Category.ToString();
                 if (fact.ActionCost != null) values["cost"] = fact.ActionCost.Cost.ToString(CultureInfo.InvariantCulture);
                 if (fact.RuleEvent != null) values["feedback"] = string.Join("\n", BattlePresentationRuleText.Events(new[] { fact.RuleEvent }, fact.State.Duel, engine().Duel.Definition.StatusCatalog));
                 if (fact.RelicActivation != null) values["feedback"] = "遗物触发：" + fact.RelicActivation.Before.DefinitionId + " / " + fact.RelicActivation.TriggerId;

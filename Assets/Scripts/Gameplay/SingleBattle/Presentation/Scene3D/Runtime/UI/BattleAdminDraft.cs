@@ -33,15 +33,16 @@ namespace Poker.SingleBattle
         }
         public static readonly string[] ZoneKinds = { CardZoneKinds.Hand, CardZoneKinds.Deck, CardZoneKinds.Discard };
         public BattleSession Session { get; }
+        private readonly CardDuelState capturedState;
         public long Revision { get; }
         public readonly List<Vitals> Units = new List<Vitals>();
         public readonly List<Player> Players = new List<Player>();
-        public bool IsCurrent(BattleSession session) => ReferenceEquals(Session, session) && session.State.Revision == Revision;
+        public bool IsCurrent(BattleSession session) => session != null && ReferenceEquals(capturedState, session.State) && session.State.Revision == Revision;
 
         public BattleAdminDraft(BattleSession session)
         {
             Session = session ?? throw new ArgumentNullException(nameof(session));
-            var state = session.State; Revision = state.Revision;
+            var state = session.State; capturedState = state; Revision = state.Revision;
             foreach (var unit in state.Duel.Combat.Combatants)
                 Units.Add(new Vitals { Id = unit.Id, Health = N(unit.Health), Maximum = N(unit.MaxHealth), Block = N(unit.Block),
                     Gold = state.Duel.Players.Any(p => p.Id == unit.Id) ? N(state.GoldFor(unit.Id)) : null });

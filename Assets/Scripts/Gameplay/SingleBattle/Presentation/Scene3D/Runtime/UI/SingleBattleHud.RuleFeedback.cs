@@ -15,6 +15,7 @@ namespace Poker.SingleBattle
         private ScrollRect ruleScroll;
         private BattleDisplaySnapshot feedbackState;
         private CandidatePresentationModel feedbackCandidate;
+        private int feedbackArtVersion = -1;
         private string feedbackBatchId, feedbackFacts, feedbackDiagnostics;
         public string RuleFeedbackText => ruleFeedback != null ? ruleFeedback.text : "";
 
@@ -89,9 +90,16 @@ namespace Poker.SingleBattle
             string revealed = host.DisplayFeedback ?? "";
             if (ritualLayout)
             {
-                if (!force && ReferenceEquals(feedbackState, snapshot)) return;
-                feedbackState = snapshot;
+                int artVersion = GetComponent<BattleDemoRelicArt>()?.Version ?? 0;
+                if (!force && ReferenceEquals(feedbackState, snapshot) && feedbackArtVersion == artVersion) return;
+                feedbackArtVersion = artVersion; feedbackState = snapshot;
                 RefreshRelicIcons();
+                if (GetComponent<BattleDemoRelicArt>() != null)
+                {
+                    SetRuleFeedback(host.State.Duel.Player(host.Player.ParticipantId).Relics.Relics.Count == 0 ? "无遗物" : "", false);
+                    if (!string.IsNullOrEmpty(diagnostics)) { message.text = diagnostics; message.gameObject.SetActive(true); }
+                    return;
+                }
                 string relics = Poker.BattlePresentation.BattlePresentationRuleText.Relics(host.State, host.Player.ParticipantId, host.ItemName);
                 string multiplier = Poker.BattlePresentation.BattlePresentationRuleText.HandMultiplier(host.State.Duel.Player(host.Player.ParticipantId).Relics);
                 SetRuleFeedback(relics + (multiplier.Length == 0 ? "" : "\n\n" + multiplier), false);
@@ -136,18 +144,28 @@ namespace Poker.SingleBattle
                 var icon = new GameObject("Relic", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
                 icon.transform.SetParent(relicIcons, false); icon.gameObject.layer = gameObject.layer; icon.preserveAspect = true; icon.raycastTarget = false; relicIconViews.Add(icon);
             }
-            float width = Mathf.Max(28, ruleScroll.viewport.rect.width);
-            int columns = Mathf.Max(1, Mathf.FloorToInt(width / 28));
+            var art = GetComponent<BattleDemoRelicArt>();
+            float size = art != null ? art.IconSize : 24;
+            float step = size + (art != null ? art.Spacing : 4);
+            float width = Mathf.Max(step, ruleScroll.viewport.rect.width);
+            int columns = Mathf.Max(1, Mathf.FloorToInt(width / step));
             int rows = Mathf.Max(1, Mathf.CeilToInt((float)relics.Count / columns));
-            ruleScroll.viewport.offsetMax = new Vector2(-16, -(64 + rows * 28));
+            ruleScroll.viewport.offsetMax = new Vector2(-16, -(64 + rows * step));
             for (int i = 0; i < relicIconViews.Count; i++)
             {
                 var icon = relicIconViews[i]; icon.gameObject.SetActive(i < relics.Count);
                 if (i >= relics.Count) continue;
-                icon.name = host.ItemName(relics[i].DefinitionId); icon.sprite = BattleRelicArt.Get(relics[i].DefinitionId);
+                icon.name = host.ItemName(relics[i].DefinitionId); icon.sprite = ResolveRelicIcon(relics[i].DefinitionId);
                 icon.enabled = icon.sprite != null;
-                Place(icon.rectTransform, i % columns * 28, -(i / columns) * 28, 24, 24);
+                Place(icon.rectTransform, i % columns * step, -(i / columns) * step, size, size);
+                if (art != null) BindRelicHover(icon, relics[i], host.State.Duel.Player(host.Player.ParticipantId).Relics);
             }
+        }
+
+        private Sprite ResolveRelicIcon(string definitionId)
+        {
+            var art = GetComponent<BattleDemoRelicArt>();
+            return art != null ? art.Resolve(definitionId) : BattleRelicArt.Get(definitionId);
         }
 
         private void SetRuleFeedback(string value, bool scrollToTop)

@@ -1,5 +1,22 @@
 # BattleDemo 背景
 
+## 2026-10-21 更新素材
+
+`BattleDemo.unity` 与 `SingleChapterAdventure.unity` 现使用下载目录“更新”中提供的普通/精英场景原图：
+
+- `Sources/Minion_Updated.jpg` → `Materials/Minion_Updated.mat`。
+- `Sources/Elite_Updated.jpg` → `Materials/Elite_Updated.mat`。
+
+两张图均原样复制到工程，以 16:9 的原图比例 cover 铺满相机视口，不拉伸、不重新生成分层。对应背景根节点下的 `Updated Artwork` 为当前画面，旧分层子物体保留但停用。Boss 根节点、材质和纹理仍使用原版本。
+
+`Assets/Art/Characters/BattleBillboards/Minion-Updated.png` 与同名材质替换普通小怪；`Elite-Updated.png` 用于精英本体，召唤小怪仍使用小怪图。整局宿主按节点与显示中的敌人身份切换材质及原图宽高比，Boss 继续使用旧 `Enemy.mat`。新图保留原始 alpha，Boss 拆件未导入。
+
+主角使用常规世界空间面片，保留原有视口高度与阶段姿态，完整 UV 采样并按源图宽高比布局；两个 Demo 场景均已移除最上层 Overlay 覆盖处理。新 UI 图片采用等比适配或等比裁切。
+
+重新绑定可执行 **工具 → 局外冒险 → 应用更新背景与小怪立绘**。运行不依赖下载目录。
+
+## 原分层背景记录
+
 只用于 `Assets/Scenes/BattleDemo.unity`，同一对局内切换三个环境：
 
 | 选项 | 内容 | 分层 |

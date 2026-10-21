@@ -37,6 +37,7 @@ namespace Poker.SingleBattle
         public void ConfigureCompactLayout(RectTransform flow, RectTransform feedback)
         { compactLayout = true; flowContainer = flow; feedbackContainer = feedback; }
         private Button switchPlayer;
+        private readonly BattleResultDelay resultDelay = new BattleResultDelay();
         public Button SwitchPlayerButton => switchPlayer;
         private void EnsurePlayerSwitch()
         {
@@ -68,7 +69,7 @@ namespace Poker.SingleBattle
             TMP_Text messageText, TMP_Text countsText, TMP_Text scoreText, Image playerFill, Image enemyFill,
             GameObject result, TMP_Text title, TMP_Text details, Button restartButton, Button resultButton, TMP_Text energyText, Button endTurnButton)
         {
-            Unsubscribe(); host = owner; player = playerText; enemy = enemyText; turn = turnText; intent = intentText;
+            Unsubscribe(); resultDelay.Reset(); host = owner; player = playerText; enemy = enemyText; turn = turnText; intent = intentText;
             message = messageText; counts = countsText; score = scoreText; playerBar = playerFill; enemyBar = enemyFill;
             resultPanel = result; resultTitle = title; resultDetails = details; restart = restartButton; resultRestart = resultButton;
             energy = energyText; endTurn = endTurnButton;
@@ -80,6 +81,8 @@ namespace Poker.SingleBattle
             var snapshot = host.Display;
             if (snapshot == null)
             {
+                resultDelay.Reset();
+                if (resultPanel != null) resultPanel.SetActive(false);
                 if (message != null) message.text = host.Message;
                 RefreshRuleFeedback(true); return;
             }
@@ -127,10 +130,13 @@ namespace Poker.SingleBattle
                 ? "上次 " + lastPattern + " · " + lastTotal + " 分" + (compactLayout ? "" : "\n效果见规则反馈")
                 : "总得分 " + ResourceValue(snapshot, "", "totalScore");
             RefreshRuleFeedback(true);
-            bool showResult = snapshot.IsFinished && !host.IsPresenting;
-            resultPanel.SetActive(showResult); restart.interactable = !host.IsPresenting; resultRestart.interactable = !host.IsPresenting;
+            bool showResult = resultDelay.Ready(snapshot.IsFinished && !host.UsesExternalCommands,
+                host.IsPresenting, Time.unscaledTimeAsDouble);
+            resultPanel.SetActive(showResult);
+            restart.interactable = !host.IsPresenting && (!snapshot.IsFinished || showResult);
+            resultRestart.interactable = showResult;
             if (endTurn != null) endTurn.gameObject.SetActive(!showResult);
-            restart.gameObject.SetActive(!showResult);
+            restart.gameObject.SetActive(!showResult && !host.UsesExternalCommands);
             if (switchPlayer != null) switchPlayer.gameObject.SetActive(!showResult);
             if (showResult)
             {
@@ -178,15 +184,18 @@ namespace Poker.SingleBattle
             if (endTurn != null) endTurn.onClick.RemoveListener(EndTurn);
         }
         private void OnEnable() { Subscribe(); Refresh(); if (Application.isPlaying) ScreenSafeArea.Ensure(GetComponent<Canvas>()); }
-        private void OnDisable() { Unsubscribe(); HideEnemyIntents(); }
+        private void OnDisable() { Unsubscribe(); resultDelay.Reset(); HideEnemyIntents(); HideRelicHover(); }
         private void OnDestroy() => DestroyEnemyIntents();
         // Card landing can finish without a rules transition (e.g. opening deal or local sort).
         private void LateUpdate()
         {
+            if (host != null && !host.UsesExternalCommands && host.Display?.IsFinished == true &&
+                resultPanel != null && !resultPanel.activeSelf) Refresh();
             UpdateEnemyIntentBillboards();
             RefreshTurnFlow();
             RefreshRuleFeedback();
             RefreshBattleTools();
+            RefreshRelicHover();
             RefreshAdminEntry();
             if (host != null && endTurn != null) endTurn.interactable = host.CanEndTurn;
             if (switchPlayer != null) switchPlayer.interactable = host.CanSwitchPlayer && host.Display != null && host.Display.Units.Count(unit => unit.Team == "player" && ResourceValue(host.Display, unit.Id, "canAct") == 1) > 1;

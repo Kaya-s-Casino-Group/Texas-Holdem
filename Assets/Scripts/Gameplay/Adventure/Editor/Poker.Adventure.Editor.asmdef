@@ -1,0 +1,5 @@
+{
+  "name": "Poker.Adventure.Editor",
+  "references": ["BattlePresentation.Unity", "CardInteraction.Runtime", "CardArt.Runtime", "CardPresentation.Runtime", "Poker.Adventure.Runtime", "Poker.SingleBattle.Runtime", "Poker.BattleHosting.Runtime", "PokerEngine.Composition", "Unity.TextMeshPro", "Unity.ugui", "Unity.InputSystem"],
+  "includePlatforms": ["Editor"]
+}

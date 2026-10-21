@@ -88,14 +88,10 @@ namespace Poker.SingleBattle
             playerActors = p; enemyActors = e; playerActor = p[0];
         }
         internal bool OwnsPlayer(PlayerBattleActor actor, ParticipantId id) => Players.Contains(actor) &&
-            State.Duel.Players[Players.ToList().IndexOf(actor)].Id == id;
+            actorParticipants.TryGetValue(actor, out var owned) && owned == id && State.Duel.Players.Any(player => player.Id == id);
         internal bool OwnsEnemy(EnemyBattleActor actor, ParticipantId id) => Enemies.Contains(actor) &&
-            State.Duel.Enemies[Enemies.ToList().IndexOf(actor)].Id == id;
-        private void BindActors()
-        {
-            for (int i = 0; i < Players.Count; i++) Players[i].Bind(State.Duel.Players[i].Id);
-            for (int i = 0; i < Enemies.Count; i++) Enemies[i].Bind(State.Duel.Enemies[i].Id);
-        }
+            actorParticipants.TryGetValue(actor, out var owned) && owned == id && State.Duel.Enemies.Any(enemy => enemy.Id == id);
+        private void BindActors() => ReconcileActors(true);
         BattleSession IBattleSessionSource.CreateSession() => BuildConfiguredSession();
         /// <summary>Builds an undealt session for validation or play, without changing the current battle.</summary>
         public BattleSession BuildConfiguredSession(string battleId = null, RandomState random = null)
@@ -115,9 +111,9 @@ namespace Poker.SingleBattle
             if (busy) throw new InvalidOperationException("Finish or synchronize the current presentation before replacing its session.");
             if (session == null) throw new ArgumentNullException(nameof(session));
             RequireSceneBindings();
-            if (session.State.Duel.Players.Count != Players.Count || session.State.Duel.Enemies.Count != Enemies.Count)
+            if (session.State.Duel.Players.Count != Players.Count || !externalCommands && session.State.Duel.Enemies.Count != Enemies.Count)
                 throw new ArgumentException("The scene actors must match the session's roster slots.", nameof(session));
-            ValidateContentRoster(ReadContentEncounter(), session);
+            if (!externalCommands) ValidateContentRoster(ReadContentEncounter(), session);
         }
         void IBattleSceneAdapter.SessionAttached() { playTargets.Clear(); candidateKey = null; RefreshCandidate(); Publish(); }
         private void Bind()

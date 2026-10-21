@@ -45,6 +45,41 @@ namespace CardPresentation.Tests
         }
         [TearDown] public void Teardown() => EditorSceneManager.ClosePreviewScene(scene);
         private ICardZonePresentation View(bool isCanvas) => isCanvas ? (ICardZonePresentation)canvas : world;
+        [TestCase(1, .05f)]
+        [TestCase(3, .05f)]
+        [TestCase(3, .3f)]
+        public void DrawWaitsForTheLastDiscardToNearlyReachItsDestination(int count, float requestDelay)
+        {
+            hand.ConfigureScreenDiscard(true);
+            var before = Zone(Card("a"), Card("b"), Card("c"), Card("d"));
+            var removed = Zone(before.Cards.Skip(count).ToArray());
+            var replacements = Enumerable.Range(0, count).Select(i => Card("replacement-" + i)).ToArray();
+            var refilled = Zone(removed.Cards.Concat(replacements).ToArray());
+            world.Synchronize(before);
+            using (var discardScope = new PresentationScope("discard"))
+            using (var drawScope = new PresentationScope("draw"))
+            {
+                var discard = world.Play(new CardZonePresentationRequest(CardZoneActions.Discard, "discard", discardScope, before, removed,
+                    before.Cards.Take(count).Select(card => card.CardId)), new Markers());
+                hand.AdvanceMotion(requestDelay); world.Tick();
+                bool launched = false; hand.CardDealStarted += _ => launched = true;
+                var draw = world.Play(new CardZonePresentationRequest(CardZoneActions.Draw, "draw", drawScope, removed, refilled,
+                    replacements.Select(card => card.CardId)), new Markers());
+                Assert.AreEqual(PresentationStatus.Pending, discard.Status);
+                Assert.AreEqual(PresentationStatus.Pending, draw.Status, draw.Error?.ToString());
+                Assert.Greater(hand.DepartingViews.Count, 0);
+                float gate = (count - 1) * hand.DiscardSettings.Interval + hand.DiscardSettings.FlightSeconds * Mathf.Pow(.92f, 1f / 3f);
+                hand.AdvanceMotion(gate - requestDelay - .01f); world.Tick();
+                Assert.IsFalse(launched, "Replacement cards wait until the last queued departure is visually near its destination.");
+                Assert.Greater(hand.DepartingViews.Count, 0);
+                hand.AdvanceMotion(.015f); world.Tick(); Assert.IsTrue(launched);
+                Assert.Less(hand.DepartingViews.Max(card => card.ExitSecondsRemaining), hand.DiscardSettings.FlightSeconds * .03f);
+                hand.AdvanceMotion(2); world.Tick();
+                Assert.AreEqual(PresentationStatus.Completed, draw.Status);
+                Assert.AreEqual(PresentationStatus.Completed, discard.Status);
+                Assert.IsEmpty(hand.DepartingViews);
+            }
+        }
         private void Advance(bool isCanvas, float seconds = 2) { if (isCanvas) canvas.AdvanceMotion(seconds); else { hand.AdvanceMotion(seconds); world.Tick(); } }
         [TestCase(false)] [TestCase(true)]
         public void DrawPrepareCancelAndReleaseShareOneProtocol(bool isCanvas)

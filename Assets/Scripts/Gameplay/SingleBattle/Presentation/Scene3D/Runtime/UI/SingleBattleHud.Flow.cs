@@ -53,10 +53,10 @@ namespace Poker.SingleBattle
         }
         private Button FlowButton(string title, float left, UnityEngine.Events.UnityAction click, float top = 68)
         {
-            var button = Instantiate(restart, flowPanel); button.name = title;
+            var button = Instantiate(restart, flowPanel); button.name = title; button.gameObject.SetActive(true);
             button.onClick = new Button.ButtonClickedEvent(); button.onClick.AddListener(click);
             Place(button.GetComponent<RectTransform>(), left, -top, title == "−" || title == "+" ? 40 : 96, 38);
-            var label = button.GetComponentInChildren<TMP_Text>(); label.text = title; label.fontSize = 14;
+            var label = button.GetComponentInChildren<TMP_Text>(true); label.text = title; label.fontSize = 14;
             label.rectTransform.anchorMin = Vector2.zero; label.rectTransform.anchorMax = Vector2.one;
             label.rectTransform.offsetMin = new Vector2(2, 1); label.rectTransform.offsetMax = new Vector2(-2, -1);
             return button;

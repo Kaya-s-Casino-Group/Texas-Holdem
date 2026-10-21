@@ -17,6 +17,42 @@ namespace CardPresentation.Tests
     [TestFixture]
     public sealed class DrawPileTests
     {
+        [TestCase(RenderMode.ScreenSpaceOverlay)]
+        [TestCase(RenderMode.ScreenSpaceCamera)]
+        [TestCase(RenderMode.WorldSpace)]
+        public void DealAnchorMatchesTheVisibleTopCardAfterLayoutAndHoverChanges(RenderMode mode)
+        {
+            var scene = EditorSceneManager.NewPreviewScene();
+            try
+            {
+                var root = new GameObject("Hand"); SceneManager.MoveGameObjectToScene(root, scene);
+                var hand = root.AddComponent<HandZoneView>(); root.transform.position = new Vector3(0, 0, 8);
+                var cameraRoot = new GameObject("Draw camera"); SceneManager.MoveGameObjectToScene(cameraRoot, scene);
+                var camera = cameraRoot.AddComponent<Camera>(); camera.orthographic = true; camera.orthographicSize = 5;
+                hand.SetCameraFacing(true, camera);
+                var pileRoot = (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>(DrawPileSetup.PrefabPath), scene);
+                var pile = pileRoot.GetComponent<DrawPileView>(); var canvas = pileRoot.GetComponent<Canvas>();
+                canvas.renderMode = mode; canvas.worldCamera = camera; canvas.planeDistance = 1;
+                hand.SetDeckSource(Vector3.zero, pile.DealAnchor);
+                foreach (var viewport in new[] { new Rect(0, 0, 960, 540), new Rect(30, 20, 640, 480) })
+                {
+                    camera.pixelRect = viewport;
+                    foreach (var hovered in new[] { false, true })
+                    {
+                        pile.SetHovered(hovered, false);
+                        ((RectTransform)pile.MotionRoot.parent).anchoredPosition += new Vector2(-17, 11);
+                        Canvas.ForceUpdateCanvases();
+                        var expected = RectTransformUtility.WorldToScreenPoint(mode == RenderMode.ScreenSpaceOverlay ? null : camera,
+                            pile.DealAnchor.TransformPoint(pile.DealAnchor.rect.center));
+                        var actual = camera.WorldToScreenPoint(hand.DeckWorldPosition);
+                        Assert.Less(Vector2.Distance(expected, new Vector2(actual.x, actual.y)), .02f);
+                        Assert.AreEqual(camera.WorldToScreenPoint(hand.transform.position).z, actual.z, .0001f);
+                    }
+                }
+            }
+            finally { EditorSceneManager.ClosePreviewScene(scene); }
+        }
+
         [Test] public void IconUsesCurrentAtlasAndLayerThicknessWithOneStablePointerTarget()
         {
             var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(DrawPileSetup.PrefabPath);

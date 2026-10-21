@@ -31,9 +31,18 @@ namespace Poker.SingleBattle
             sceneHost = owner;
         }
         // Compatibility forwarding for existing buttons and integrations; no session is owned here.
-        public void StartBattle() => SceneHost.StartBattle();
-        public void RestartBattle() => SceneHost.RestartBattle();
-        public void AttachSession(BattleSession session) => SceneHost.AttachSession(session);
+        public bool UsesExternalCommands => externalCommands;
+        public void StartBattle() { if (!externalCommands) SceneHost.StartBattle(); }
+        public void RestartBattle() { if (!externalCommands) SceneHost.RestartBattle(); }
+        public void AttachSession(BattleSession session) { externalCommands = false; SceneHost.AttachSession(session); }
+        /// <summary>Uses an adventure's command authority and consumes an opening that has already run.</summary>
+        public void AttachCommands(IBattleSessionCommands commands, BattleSessionResult opening = null, bool animate = true)
+        {
+            externalCommands = true;
+            try { SceneHost.AttachCommands(commands, opening, animate); }
+            catch { externalCommands = SceneHost.Commands != null && !(SceneHost.Commands is BattleSessionCommands); throw; }
+        }
+        private bool externalCommands;
         public void SynchronizeBattle() { if (Session != null) SceneHost.SynchronizeBattle(); }
     }
 }

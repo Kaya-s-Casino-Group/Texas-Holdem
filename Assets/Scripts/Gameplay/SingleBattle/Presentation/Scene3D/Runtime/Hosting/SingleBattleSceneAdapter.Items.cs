@@ -20,7 +20,7 @@ namespace Poker.SingleBattle
         {
             if (!CanReceiveItemInput) return null;
             Interaction.BeginCommit();
-            var result = Playback.UseItem(AuthorityState.Revision, playerActor.ParticipantId, instanceId, targetInstanceId, animate);
+            var result = Playback.UseItem(Playback.Revision, playerActor.ParticipantId, instanceId, targetInstanceId, animate);
             if (!result.Accepted) { candidateKey = null; RefreshCandidate(); Publish(); }
             return result;
         }

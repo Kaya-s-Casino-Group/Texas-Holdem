@@ -21,6 +21,9 @@ namespace CardPresentation
         public bool IsAnimating => tween != null && tween.IsActive();
         public bool IsEntering { get; private set; }
         public bool IsExiting { get; private set; }
+        public float ExitSecondsRemaining => IsExiting && IsAnimating ? Mathf.Max(0, delay + flight - elapsed) : 0;
+        public float SecondsUntilExitTravelProgress(float progress) => IsExiting && IsAnimating
+            ? Mathf.Max(0, delay + flight * Mathf.Pow(Mathf.Clamp01(progress), 1f / 3f) - elapsed) : 0;
 
         public CardInstanceTransition(CardInstanceView view) { this.view = view; }
 

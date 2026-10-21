@@ -15,13 +15,8 @@ namespace Poker.SingleBattle
         public void StylePanel(Image image)
         {
             if (image == null) return;
-            image.sprite = null; image.type = Image.Type.Simple;
-            image.color = new Color32(24, 23, 28, 250);
+            RitualSkin.Panel(image);
             image.raycastTarget = image.GetComponent<Button>() != null;
-            var outline = image.GetComponent<Outline>();
-            if (outline == null) outline = image.gameObject.AddComponent<Outline>();
-            outline.enabled = true; outline.effectColor = new Color32(109, 102, 101, 255);
-            outline.effectDistance = new Vector2(1, -1);
         }
 
         public void StyleButton(Button target, bool primary = false)
@@ -30,7 +25,7 @@ namespace Poker.SingleBattle
             var graphic = target.GetComponent<Image>();
             if (graphic == null) return;
             StylePanel(graphic);
-            graphic.color = primary ? new Color32(98, 43, 48, 255) : new Color32(46, 43, 48, 255);
+            RitualSkin.Button(target, primary);
             graphic.raycastTarget = true; target.targetGraphic = graphic;
             var colors = target.colors;
             colors.normalColor = Color.white;

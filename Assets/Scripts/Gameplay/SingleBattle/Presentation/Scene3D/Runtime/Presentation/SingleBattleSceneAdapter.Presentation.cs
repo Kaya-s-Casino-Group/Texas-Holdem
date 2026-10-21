@@ -57,6 +57,7 @@ namespace Poker.SingleBattle
             bridge = new BattlePresentationBridge(() => Engine, () => playerActor.ParticipantId, presentationDirector);
             bridge.BeforeInitialize = InitializeScene;
             bridge.BeforePresent = batch => {
+                GetComponent<BattleCardEffectBridge>()?.Prepare(batch, playerActor.ParticipantId);
                 pendingPresentation = batch; LastResolution = batch; busy = true; feedback.Clear(); shieldFrames.Clear();
                 Interaction.Close(); candidateKey = null;
                 var first = batch.Steps[0];
@@ -64,10 +65,12 @@ namespace Poker.SingleBattle
                 if (first.Action == CardDuelAction.Discard) { LastDiscardResolution = first.Transition; LastDiscardedBy = first.Actor; }
             };
             bridge.BeforeSynchronize = state => {
+                GetComponent<BattleCardEffectBridge>()?.Clear();
                 Interaction.Close(); candidateKey = null;
                 // Reconstruct presentation-only shield attribution from already-resolved facts, never run rules.
                 if (pendingPresentation != null) RecordAllShields(pendingPresentation);
                 PresentedState = state;
+                ReconcileActors();
                 foreach (var actor in Actors) if (actor != null) actor.CancelPresentation();
                 if (actions != null && actions.Hand != null) actions.Hand.Presentation.Synchronize(actions.Hand.Presentation.Current);
             };
@@ -75,6 +78,7 @@ namespace Poker.SingleBattle
         }
         private void InitializeScene(CardDuelState state)
         {
+            GetComponent<BattleCardEffectBridge>()?.Clear();
             busy = false; pendingPresentation = null; LastResolution = null; shieldFrames.Clear(); feedback.Clear();
             Interaction.Close(); candidateKey = null; PresentedState = state;
             LastScore = null; LastDamage = 0; LastPlayResolution = null; LastDiscardResolution = null;
@@ -98,6 +102,7 @@ namespace Poker.SingleBattle
         {
             PresentedState = bridge.StateAt(update.Current.Cursor);
             if (PresentedState == null || actions == null || actions.Hand == null || match == null) return;
+            ReconcileActors();
             if (update.IsSynchronization || instant)
             {
                 if (pendingPresentation != null) {

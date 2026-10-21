@@ -22,6 +22,10 @@ namespace BattlePresentation.Unity
             var previous = customActions; customActions = actions?.ToArray() ?? Array.Empty<MonoBehaviour>();
             try { ValidateCapabilities(); } catch { customActions = previous; throw; }
         }
+        public void RegisterCustomAction(MonoBehaviour action)
+        {
+            if (!customActions.Contains(action)) ConfigureCustomActions(customActions.Concat(new[] { action }).ToArray());
+        }
         private void ValidateCapabilities()
         {
             var descriptors = Capabilities;

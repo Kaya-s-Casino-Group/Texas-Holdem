@@ -116,6 +116,7 @@ InitTestScene*.unity*
 
 # Auto-generated scenes by play mode tests
 /[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
+/Assets/Scenes/__AdventureValidation_*.unity*
 
 # External authoring files, concept art, generation records and validation captures.
 # Imported game assets remain versioned under Assets/.

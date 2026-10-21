@@ -22,6 +22,7 @@ namespace Poker.BattleHosting
         }
         public BattleSession Session => lifecycle?.Session;
         public BattleSessionPlayback Playback => lifecycle?.Playback;
+        public IBattleSessionCommands Commands => lifecycle?.Commands;
         public CardDuelEngine Engine => Session?.Engine;
         public CardDuelState AuthorityState => lifecycle?.AuthorityState;
 
@@ -42,6 +43,12 @@ namespace Poker.BattleHosting
         {
             ValidateSession(session);
             Lifecycle.AttachSession(session, RequirePresentation());
+        }
+        public void AttachCommands(IBattleSessionCommands commands, BattleSessionResult opening = null, bool animate = true)
+        {
+            if (commands == null) throw new ArgumentNullException(nameof(commands));
+            ValidateSession(commands.Session);
+            Lifecycle.AttachCommands(commands, RequirePresentation(), opening, animate);
         }
         public void SynchronizeBattle() => lifecycle?.Synchronize();
 

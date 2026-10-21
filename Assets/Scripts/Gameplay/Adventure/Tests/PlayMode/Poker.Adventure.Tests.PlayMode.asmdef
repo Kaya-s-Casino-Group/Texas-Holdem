@@ -1,0 +1,8 @@
+{
+  "name": "Poker.Adventure.Tests.PlayMode",
+  "rootNamespace": "Poker.Adventure.Tests",
+  "references": ["Poker.Adventure.Runtime", "Poker.SingleBattle.Runtime", "Poker.BattleHosting.Runtime", "PokerEngine.Core", "PokerEngine.Abilities", "PokerEngine.Combat", "PokerEngine.Scoring", "PokerEngine.Runs", "PokerEngine.Progression", "PokerEngine.Composition", "PokerEngine.Encounters", "BattlePresentation.Runtime", "BattlePresentation.Unity", "CardInteraction.Runtime", "CardArt.Runtime", "CardPresentation.Runtime", "CardMatch.Runtime", "Unity.TextMeshPro", "Unity.ugui"],
+  "optionalUnityReferences": ["TestAssemblies"],
+  "autoReferenced": false,
+  "defineConstraints": ["UNITY_EDITOR"]
+}

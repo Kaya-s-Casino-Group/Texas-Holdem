@@ -15,7 +15,7 @@ namespace Poker.SingleBattle
             var patch = draft.Build();
             if (preview) return Session.PreviewAdmin(draft.Revision, patch);
             // Keep the presentation/candidate/actors synchronized through the existing authority bridge.
-            return Playback.ApplyAdmin(draft.Revision, patch, animate: false);
+            return Playback.ApplyAdmin(Playback.Revision, patch, animate: false);
         }
     }
 }

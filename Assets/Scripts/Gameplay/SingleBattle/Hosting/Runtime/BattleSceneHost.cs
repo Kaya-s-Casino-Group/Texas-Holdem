@@ -46,7 +46,7 @@ namespace Poker.BattleHosting
             return adapter;
         }
         protected override IBattleSessionPresentation BattlePresentation => RequireAdapter();
-        protected override bool CanStartBattle => isActiveAndEnabled && RequireAdapter() != null &&
+        protected override bool CanStartBattle => (Commands == null || Commands is BattleSessionCommands) && isActiveAndEnabled && RequireAdapter() != null &&
             sceneAdapter.isActiveAndEnabled && !IsPresenting;
         protected override bool AnimateOpening => animateOpening && Application.isPlaying;
         protected override BattleSession CreateSession()

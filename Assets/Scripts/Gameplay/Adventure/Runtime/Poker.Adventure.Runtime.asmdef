@@ -1,0 +1,5 @@
+{
+  "name": "Poker.Adventure.Runtime",
+  "rootNamespace": "Poker.Adventure",
+  "references": ["PokerEngine.Core", "PokerEngine.Abilities", "PokerEngine.Combat", "PokerEngine.Scoring", "PokerEngine.Runs", "PokerEngine.Progression", "PokerEngine.Composition", "PokerEngine.Encounters", "Poker.BattleHosting.Runtime", "Poker.SingleBattle.Runtime", "Poker.BattlePresentation.Shared", "BattlePresentation.Runtime", "BattlePresentation.Unity", "CardArt.Runtime", "CardPresentation.Runtime", "CardInteraction.Runtime", "CardMatch.Runtime", "Unity.TextMeshPro", "Unity.ugui", "Unity.InputSystem", "UIFoundation.Runtime"]
+}

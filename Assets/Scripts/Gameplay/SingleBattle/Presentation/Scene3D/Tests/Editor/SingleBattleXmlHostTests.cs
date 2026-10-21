@@ -207,7 +207,8 @@ namespace Poker.SingleBattle.Tests
             {
                 var host = scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<SingleBattleSceneAdapter>(true)).Single();
                 Assert.That(host.ContentXml, Is.SameAs(AssetDatabase.LoadAssetAtPath<TextAsset>(
-                    "Packages/com.kaya.battle-engine/Content/StandardSingleBattle.xml")));
+                    "Assets/GameAssets/SingleBattle/Presentation/Scene3D/BattleDemoValidation.xml")));
+                Assert.That(host.Enemies.Count, Is.EqualTo(3));
                 Assert.That(host.ContentEncounterId, Is.EqualTo("standard-single-battle"));
                 var built = host.BuildConfiguredSession("scene-validation", HmacDeckShuffler.FromSeed(new byte[32]));
                 Assert.That(built.State.HasStarted, Is.False);

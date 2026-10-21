@@ -28,7 +28,27 @@ namespace CardPresentation
         public CardZoneTransitionSettings TransitionSettings => transitionSettings;
         public Vector3 DeckLocalPosition => deckLocalPosition;
         public Transform DeckAnchor => deckAnchor;
-        public Vector3 DeckWorldPosition => deckAnchor != null ? deckAnchor.position : transform.TransformPoint(deckLocalPosition * CardScale);
+        public Vector3 DeckWorldPosition
+        {
+            get
+            {
+                if (deckAnchor is RectTransform rect && FacingCamera != null)
+                {
+                    var canvas = rect.GetComponentInParent<Canvas>()?.rootCanvas;
+                    if (canvas != null)
+                    {
+                        // Opening deals can be requested before the first normal Canvas layout pass.
+                        Canvas.ForceUpdateCanvases();
+                        var uiCamera = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
+                        var screen = RectTransformUtility.WorldToScreenPoint(uiCamera, rect.TransformPoint(rect.rect.center));
+                        float depth = FacingCamera.WorldToScreenPoint(transform.position).z;
+                        return FacingCamera.ScreenToWorldPoint(new Vector3(screen.x, screen.y,
+                            Mathf.Max(FacingCamera.nearClipPlane + .01f, depth)));
+                    }
+                }
+                return deckAnchor != null ? deckAnchor.position : transform.TransformPoint(deckLocalPosition * CardScale);
+            }
+        }
         public override bool IsTransitioning => selectionAction?.Operation.keepWaiting == true || departing.Count > 0 || base.IsTransitioning;
 
         protected override void ValidatePresentationSettings()
@@ -95,6 +115,7 @@ namespace CardPresentation
                 selections = new bool[data.Cards.Count]; deselections = new bool[data.Cards.Count];
                 arrivals = new bool[data.Cards.Count]; delays = new float[data.Cards.Count];
                 queue = reuse ? hand.nextDealTime : hand.AnimationTime;
+                if (animate && reuse) queue = Math.Max(queue, hand.AnimationTime + hand.RefillDepartureDelay);
                 source = hand.transform.InverseTransformPoint(hand.DeckWorldPosition);
                 ValidateOffset(source);
                 for (int i = 0; i < data.Cards.Count; i++)

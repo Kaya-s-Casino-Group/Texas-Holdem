@@ -30,6 +30,8 @@ namespace CardPresentation
         public Material CardMaterial => cardMaterial;
         public string CoverCardId => coverCardId;
         public RectTransform MotionRoot => motionRoot;
+        public RectTransform DealAnchor => cardLayers != null && cardLayers.Length > 0 && cardLayers[cardLayers.Length - 1] != null
+            ? cardLayers[cardLayers.Length - 1].rectTransform : motionRoot;
         public TMP_Text RemainingCount => remainingCount;
         public void BindRemainingCount(TMP_Text label)
         {

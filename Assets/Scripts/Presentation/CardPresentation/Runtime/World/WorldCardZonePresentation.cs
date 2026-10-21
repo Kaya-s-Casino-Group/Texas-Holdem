@@ -49,6 +49,8 @@ namespace CardPresentation
             {
                 if (active.Request.ActionKey == CardZoneActions.Prepare && active.Released)
                     active = null; // A released preparation may hand its instances to a later card fact.
+                else if (active.Request.ActionKey == CardZoneActions.Discard && active.Released && request.ActionKey == CardZoneActions.Draw)
+                    active = null; // Departing ghosts keep their own flight while the replacement batch queues its entrance.
                 else if (request.ActionKey == CardZoneActions.Selection && active.Request.ActionKey == CardZoneActions.Selection)
                 { active.Superseded = true; active.Operation.Cancel(); }
                 else return PresentationOperation.Failed("CardZoneBusy", request.ActionKey);
@@ -82,7 +84,9 @@ namespace CardPresentation
                     {
                         var after = Project(request.After);
                         if (request.ActionKey == CardZoneActions.Play || request.ActionKey == CardZoneActions.Discard)
-                            Hand.Present(after, request.ViewIds, request.Mode == PlaybackMode.Animated);
+                            Hand.Present(after, request.ViewIds.Where(id => request.ActionKey == CardZoneActions.Discard ||
+                                !Hand.TryGetView(id, out var card) || card.Surface == null ||
+                                !card.Surface.GetComponent<Renderer>().forceRenderingOff), request.Mode == PlaybackMode.Animated);
                         else Hand.Present(after, request.Mode == PlaybackMode.Animated);
                     }
                 }

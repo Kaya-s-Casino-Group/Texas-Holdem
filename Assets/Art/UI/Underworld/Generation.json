@@ -1,0 +1,18 @@
+{
+  "tool": "built-in image_gen",
+  "prompts": [
+    [
+      "panel",
+      "Use case: ui-mockup. Asset type: production game UI nine-slice panel texture, a single panel, no text. Create a front-facing perfectly rectangular 1536x1024 dark obsidian parchment panel for a hand-painted mythological roguelike poker game. Hades-inspired angular ink outlines, restrained worn antique gold thin bevel border, charcoal aubergine nearly black matte center, small sharp gold corner ornaments, tiny garnet red insets only at four corners. The outermost edge fills the image canvas. Border confined to outer 8 percent; center 84 percent completely quiet uniform very dark charcoal with subtle painterly grain, suitable for white Chinese text. Straight horizontal and vertical middle edges suitable for Unity nine slicing; all decorative complexity exclusively in corners. Flat orthographic UI art, no perspective, no drop shadow, no text, no characters, no logos. High contrast frame and quiet interior. Opaque background."
+    ],
+    [
+      "nodes",
+      "Use case: ui-mockup. Asset type: production transparent game icon atlas. Create exactly six isolated hand-painted map-node emblems in a strict evenly-spaced 3-column by 2-row grid, square 1536x1536 transparent canvas. Each emblem centered in its own 512x768 cell, with lots of transparent margin so they never touch. TOP ROW LEFT TO RIGHT: a simple ivory skull with a sword behind it (ordinary combat), an ivory horned crowned skull with red gemstone (elite combat), a gold treasure chest with red jewel (treasure). BOTTOM ROW LEFT TO RIGHT: merchant's antique gold scales with coin (shop), ivory and orange campfire on two logs (rest), a black-gold spiked crown with three red eyes (boss). All six same visual diameter about 350px, simple instantly legible silhouettes, thick dark ink contours, bone white highlights, antique gold and restrained red, Hades-like angular painted fantasy art consistent with dark gothic relic icons. No circles around icons, no cards, no text, no labels, no numbers. True alpha transparency everywhere outside symbols, no checkerboard."
+    ],
+    [
+      "map",
+      "Use case: stylized-concept. Asset type: game route map background, landscape 1920x1080. Create a subdued illustrated ancient underworld map parchment for a gothic poker roguelike, Hades-inspired angular ink linework, antique charcoal brown parchment with softly weathered gold edges. Entire central 65 percent must be empty quiet warm parchment with very faint grain so route nodes and dotted lines can be rendered separately. Only at far left and far right margins: loose ink etchings of broken columns, floating islands, stone ruins, thorns; far upper margin a very small distant ominous citadel. Muted desaturated sepia, bone beige and smoky dark brown, no saturated colors. Flat map view, no perspective. No routes, no path dots, no icons, no nodes, no labels, no text, no letters, no watermark. Premium hand-painted game production background. Do not draw UI panels or characters."
+    ]
+  ],
+  "usage": "All generated images use uniform contain or cover UV cropping; never non-uniform scaling."
+}

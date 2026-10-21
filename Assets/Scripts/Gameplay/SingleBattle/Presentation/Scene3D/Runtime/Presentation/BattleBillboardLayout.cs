@@ -16,6 +16,19 @@ namespace Poker.SingleBattle
         private Vector3 cameraPosition;
         private Quaternion cameraRotation;
         private bool initialized;
+        public Rect ViewportArea => viewportArea;
+
+        public void SetArtworkAspect(float aspect)
+        {
+            if (Mathf.Approximately(artworkAspect, aspect)) return;
+            artworkAspect = aspect; initialized = false; Refresh();
+        }
+
+        public void SetViewportArea(Rect area)
+        {
+            if (viewportArea == area) return;
+            viewportArea = area; initialized = false; Refresh();
+        }
 
         public void Configure(Camera camera, Rect area, float depth, float aspect)
         {
