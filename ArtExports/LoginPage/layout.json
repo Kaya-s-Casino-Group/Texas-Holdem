@@ -1,0 +1,524 @@
+{
+  "canvas": {
+    "width": 1920,
+    "height": 1080
+  },
+  "exported": [
+    {
+      "id": "13:2",
+      "path": "Background/background.png",
+      "name": "背景",
+      "width": 1920,
+      "height": 1080,
+      "x": 0,
+      "y": 0,
+      "renderBounds": {
+        "x": 3394,
+        "y": -1273,
+        "width": 1920,
+        "height": 1080
+      },
+      "bytes": 3426340,
+      "pngWidth": 1920,
+      "pngHeight": 1080,
+      "hasAlphaChannel": true
+    },
+    {
+      "id": "14:36969",
+      "path": "Title/title.png",
+      "name": "标题",
+      "width": 875,
+      "height": 300,
+      "x": 522,
+      "y": 75,
+      "renderBounds": {
+        "x": 3916,
+        "y": -1198,
+        "width": 875,
+        "height": 300
+      },
+      "bytes": 115708,
+      "pngWidth": 875,
+      "pngHeight": 300,
+      "hasAlphaChannel": true
+    },
+    {
+      "id": "14:36975",
+      "path": "Buttons/01_start_game.png",
+      "name": "开始游戏",
+      "width": 430,
+      "height": 88,
+      "x": 745,
+      "y": 358,
+      "renderBounds": {
+        "x": 4139,
+        "y": -915,
+        "width": 430,
+        "height": 88
+      },
+      "bytes": 40998,
+      "pngWidth": 430,
+      "pngHeight": 88,
+      "hasAlphaChannel": true
+    },
+    {
+      "id": "14:36976",
+      "path": "Buttons/02_continue_game.png",
+      "name": "继续游戏",
+      "width": 430,
+      "height": 88,
+      "x": 745,
+      "y": 467,
+      "renderBounds": {
+        "x": 4139,
+        "y": -806,
+        "width": 430,
+        "height": 88
+      },
+      "bytes": 41392,
+      "pngWidth": 430,
+      "pngHeight": 88,
+      "hasAlphaChannel": true
+    },
+    {
+      "id": "14:36973",
+      "path": "Buttons/03_tarot_collection.png",
+      "name": "塔罗图鉴",
+      "width": 430,
+      "height": 88,
+      "x": 745,
+      "y": 574,
+      "renderBounds": {
+        "x": 4139,
+        "y": -699,
+        "width": 430,
+        "height": 88
+      },
+      "bytes": 41288,
+      "pngWidth": 430,
+      "pngHeight": 88,
+      "hasAlphaChannel": true
+    },
+    {
+      "id": "14:36972",
+      "path": "Buttons/04_options.png",
+      "name": "选项",
+      "width": 430,
+      "height": 88,
+      "x": 746,
+      "y": 681,
+      "renderBounds": {
+        "x": 4140,
+        "y": -592,
+        "width": 430,
+        "height": 88
+      },
+      "bytes": 39979,
+      "pngWidth": 430,
+      "pngHeight": 88,
+      "hasAlphaChannel": true
+    },
+    {
+      "id": "14:36971",
+      "path": "Buttons/05_patch_notes.png",
+      "name": "更新说明",
+      "width": 430,
+      "height": 88,
+      "x": 745,
+      "y": 790,
+      "renderBounds": {
+        "x": 4139,
+        "y": -483,
+        "width": 430,
+        "height": 88
+      },
+      "bytes": 40598,
+      "pngWidth": 430,
+      "pngHeight": 88,
+      "hasAlphaChannel": true
+    },
+    {
+      "id": "14:36970",
+      "path": "Buttons/06_exit_game.png",
+      "name": "退出游戏",
+      "width": 430,
+      "height": 88,
+      "x": 745,
+      "y": 897,
+      "renderBounds": {
+        "x": 4139,
+        "y": -376,
+        "width": 430,
+        "height": 88
+      },
+      "bytes": 41164,
+      "pngWidth": 430,
+      "pngHeight": 88,
+      "hasAlphaChannel": true
+    },
+    {
+      "id": "13:6364",
+      "path": "Parts/01_start_game_panel.png",
+      "name": "Frame",
+      "width": 430,
+      "height": 88,
+      "x": 745,
+      "y": 358,
+      "renderBounds": {
+        "x": 4139,
+        "y": -915,
+        "width": 430,
+        "height": 88
+      },
+      "bytes": 35341,
+      "pngWidth": 430,
+      "pngHeight": 88,
+      "hasAlphaChannel": true
+    },
+    {
+      "id": "13:9885",
+      "path": "Parts/01_start_game_icon.png",
+      "name": "Frame",
+      "width": 55.64706039428711,
+      "height": 55.31428527832031,
+      "x": 780.41162109375,
+      "y": 374.34283447265625,
+      "renderBounds": {
+        "x": 4174.41162109375,
+        "y": -898.6571655273438,
+        "width": 55.64706039428711,
+        "height": 55.31428527832031
+      },
+      "bytes": 4166,
+      "pngWidth": 56,
+      "pngHeight": 56,
+      "hasAlphaChannel": true
+    },
+    {
+      "id": "13:10412",
+      "path": "Parts/01_start_game_text.png",
+      "name": "Frame",
+      "width": 126.47058868408203,
+      "height": 40.228572845458984,
+      "x": 851.2353515625,
+      "y": 381.8857421875,
+      "renderBounds": {
+        "x": 4245.2353515625,
+        "y": -891.1142578125,
+        "width": 126.470703125,
+        "height": 40.22857666015625
+      },
+      "bytes": 4423,
+      "pngWidth": 127,
+      "pngHeight": 41,
+      "hasAlphaChannel": true
+    },
+    {
+      "id": "13:10415",
+      "path": "Parts/02_continue_game_panel.png",
+      "name": "Frame",
+      "width": 430,
+      "height": 88,
+      "x": 745,
+      "y": 467,
+      "renderBounds": {
+        "x": 4139,
+        "y": -806,
+        "width": 430,
+        "height": 88
+      },
+      "bytes": 35341,
+      "pngWidth": 430,
+      "pngHeight": 88,
+      "hasAlphaChannel": true
+    },
+    {
+      "id": "13:13936",
+      "path": "Parts/02_continue_game_icon.png",
+      "name": "Frame",
+      "width": 55.64706039428711,
+      "height": 55.31428527832031,
+      "x": 780.41162109375,
+      "y": 483.34283447265625,
+      "renderBounds": {
+        "x": 4174.41162109375,
+        "y": -789.6571655273438,
+        "width": 55.64706039428711,
+        "height": 55.31428527832031
+      },
+      "bytes": 3328,
+      "pngWidth": 56,
+      "pngHeight": 56,
+      "hasAlphaChannel": true
+    },
+    {
+      "id": "13:14453",
+      "path": "Parts/02_continue_game_text.png",
+      "name": "Frame",
+      "width": 126.47058868408203,
+      "height": 40.228572845458984,
+      "x": 851.2353515625,
+      "y": 490.8857421875,
+      "renderBounds": {
+        "x": 4245.2353515625,
+        "y": -782.1142578125,
+        "width": 126.470703125,
+        "height": 40.22857666015625
+      },
+      "bytes": 5015,
+      "pngWidth": 127,
+      "pngHeight": 41,
+      "hasAlphaChannel": true
+    },
+    {
+      "id": "13:14456",
+      "path": "Parts/03_tarot_collection_panel.png",
+      "name": "Frame",
+      "width": 430,
+      "height": 88,
+      "x": 745,
+      "y": 574,
+      "renderBounds": {
+        "x": 4139,
+        "y": -699,
+        "width": 430,
+        "height": 88
+      },
+      "bytes": 35341,
+      "pngWidth": 430,
+      "pngHeight": 88,
+      "hasAlphaChannel": true
+    },
+    {
+      "id": "13:17977",
+      "path": "Parts/03_tarot_collection_icon.png",
+      "name": "Frame",
+      "width": 55.64706039428711,
+      "height": 55.31428527832031,
+      "x": 780.41162109375,
+      "y": 590.3428344726562,
+      "renderBounds": {
+        "x": 4174.41162109375,
+        "y": -682.6571655273438,
+        "width": 55.64706039428711,
+        "height": 55.31428527832031
+      },
+      "bytes": 4375,
+      "pngWidth": 56,
+      "pngHeight": 56,
+      "hasAlphaChannel": true
+    },
+    {
+      "id": "13:18494",
+      "path": "Parts/03_tarot_collection_text.png",
+      "name": "Frame",
+      "width": 126.47058868408203,
+      "height": 40.228572845458984,
+      "x": 851.2353515625,
+      "y": 597.8857421875,
+      "renderBounds": {
+        "x": 4245.2353515625,
+        "y": -675.1142578125,
+        "width": 126.470703125,
+        "height": 40.22857666015625
+      },
+      "bytes": 4456,
+      "pngWidth": 127,
+      "pngHeight": 41,
+      "hasAlphaChannel": true
+    },
+    {
+      "id": "13:18497",
+      "path": "Parts/04_options_panel.png",
+      "name": "Frame",
+      "width": 430,
+      "height": 88,
+      "x": 746,
+      "y": 681,
+      "renderBounds": {
+        "x": 4140,
+        "y": -592,
+        "width": 430,
+        "height": 88
+      },
+      "bytes": 35341,
+      "pngWidth": 430,
+      "pngHeight": 88,
+      "hasAlphaChannel": true
+    },
+    {
+      "id": "13:22018",
+      "path": "Parts/04_options_icon.png",
+      "name": "Frame",
+      "width": 55.64706039428711,
+      "height": 55.31428527832031,
+      "x": 781.41162109375,
+      "y": 697.3428344726562,
+      "renderBounds": {
+        "x": 4175.41162109375,
+        "y": -575.6571655273438,
+        "width": 55.64706039428711,
+        "height": 55.31428527832031
+      },
+      "bytes": 4697,
+      "pngWidth": 56,
+      "pngHeight": 56,
+      "hasAlphaChannel": true
+    },
+    {
+      "id": "13:22529",
+      "path": "Parts/04_options_text.png",
+      "name": "Frame",
+      "width": 126.47058868408203,
+      "height": 40.228572845458984,
+      "x": 852.2353515625,
+      "y": 704.8857421875,
+      "renderBounds": {
+        "x": 4246.2353515625,
+        "y": -568.1142578125,
+        "width": 126.470703125,
+        "height": 40.22857666015625
+      },
+      "bytes": 2228,
+      "pngWidth": 127,
+      "pngHeight": 41,
+      "hasAlphaChannel": true
+    },
+    {
+      "id": "13:22532",
+      "path": "Parts/05_patch_notes_panel.png",
+      "name": "Frame",
+      "width": 430,
+      "height": 88,
+      "x": 745,
+      "y": 790,
+      "renderBounds": {
+        "x": 4139,
+        "y": -483,
+        "width": 430,
+        "height": 88
+      },
+      "bytes": 35341,
+      "pngWidth": 430,
+      "pngHeight": 88,
+      "hasAlphaChannel": true
+    },
+    {
+      "id": "13:26053",
+      "path": "Parts/05_patch_notes_icon.png",
+      "name": "Frame",
+      "width": 55.64706039428711,
+      "height": 55.31428527832031,
+      "x": 780.41162109375,
+      "y": 806.3428649902344,
+      "renderBounds": {
+        "x": 4174.41162109375,
+        "y": -466.6571350097656,
+        "width": 55.64706039428711,
+        "height": 55.314300537109375
+      },
+      "bytes": 4089,
+      "pngWidth": 56,
+      "pngHeight": 56,
+      "hasAlphaChannel": true
+    },
+    {
+      "id": "13:26568",
+      "path": "Parts/05_patch_notes_text.png",
+      "name": "Frame",
+      "width": 126.47058868408203,
+      "height": 40.228572845458984,
+      "x": 851.2353515625,
+      "y": 813.8857116699219,
+      "renderBounds": {
+        "x": 4245.2353515625,
+        "y": -459.1142883300781,
+        "width": 126.470703125,
+        "height": 40.22857666015625
+      },
+      "bytes": 4108,
+      "pngWidth": 127,
+      "pngHeight": 41,
+      "hasAlphaChannel": true
+    },
+    {
+      "id": "13:26571",
+      "path": "Parts/06_exit_game_panel.png",
+      "name": "Frame",
+      "width": 430,
+      "height": 88,
+      "x": 745,
+      "y": 897,
+      "renderBounds": {
+        "x": 4139,
+        "y": -376,
+        "width": 430,
+        "height": 88
+      },
+      "bytes": 35341,
+      "pngWidth": 430,
+      "pngHeight": 88,
+      "hasAlphaChannel": true
+    },
+    {
+      "id": "13:30092",
+      "path": "Parts/06_exit_game_icon.png",
+      "name": "Frame",
+      "width": 55.64706039428711,
+      "height": 55.31428527832031,
+      "x": 780.41162109375,
+      "y": 913.3428649902344,
+      "renderBounds": {
+        "x": 4174.41162109375,
+        "y": -359.6571350097656,
+        "width": 55.64706039428711,
+        "height": 55.314300537109375
+      },
+      "bytes": 4097,
+      "pngWidth": 56,
+      "pngHeight": 56,
+      "hasAlphaChannel": true
+    },
+    {
+      "id": "13:30607",
+      "path": "Parts/06_exit_game_text.png",
+      "name": "Frame",
+      "width": 126.47058868408203,
+      "height": 40.228572845458984,
+      "x": 851.2353515625,
+      "y": 920.8857116699219,
+      "renderBounds": {
+        "x": 4245.2353515625,
+        "y": -352.1142883300781,
+        "width": 126.470703125,
+        "height": 40.22857666015625
+      },
+      "bytes": 4311,
+      "pngWidth": 127,
+      "pngHeight": 41,
+      "hasAlphaChannel": true
+    },
+    {
+      "id": "14:36978",
+      "path": "Preview/login_page.png",
+      "name": "Frame 7",
+      "width": 1920,
+      "height": 1080,
+      "x": 0,
+      "y": 0,
+      "renderBounds": {
+        "x": 3394,
+        "y": -1273,
+        "width": 1920,
+        "height": 1080
+      },
+      "bytes": 3439835,
+      "pngWidth": 1920,
+      "pngHeight": 1080,
+      "hasAlphaChannel": true
+    }
+  ],
+  "source": "https://www.figma.com/design/WW1AXtYEku8PfEbHbuSd0R/login_page",
+  "scale": 1,
+  "coordinateSystem": "Top left origin, pixels; x/y are relative to 1920x1080 canvas; PNG preserves layer frame bounds."
+}

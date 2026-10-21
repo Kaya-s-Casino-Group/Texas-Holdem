@@ -1,0 +1,1 @@
+PASS: LoginPage; 1920x1080; 6 buttons; 18 independent button sprites; background and title; all Sprite references assigned; Figma visual positions exact; Input System UI enabled; landscape-only autorotation; 480x104 transparent touch targets; safe-area layout.

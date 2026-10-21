@@ -1,0 +1,18 @@
+Figma 原生导出，来源 login_page，倍率 1x。
+
+素材目录：Assets/Art/UI/LoginPage
+Background：背景 1920×1080
+Title：标题 875×300
+Buttons：6 个完整按钮 430×88
+Parts：每个按钮的 panel 底图、icon 图标、text 文字，共18张
+
+PNG 保留原图层画布和透明边距，图标/文字画布原始小数尺寸会取整。布局精确尺寸及位置见 layout.json / layout.csv，坐标原点为整页左上角。
+
+Unity 已设置 Sprite (2D and UI)、Single、Full Rect、100 PPU、透明通道、Clamp、关闭 Mipmap、无压缩。
+按钮可直接使用 Buttons 完整版，或用 Parts 底图、图标和文字分层组合。6张底图一致，保留各按钮命名便于对应。
+文字在原设计中已是矢量轮廓，这里按要求导出 PNG。
+
+还原局部布局：icon 相对按钮左上角 x=35.411766，y=16.342857，宽55.647060，高55.314285；text x=106.235291，y=23.885714，宽126.470589，高40.228573。
+若 RectTransform 采用左上角锚点与左上角 pivot，anchoredPosition=(x,-y)，sizeDelta 使用 layout 表中的 width/height；sprite 使用完整矩形。Canvas 参考分辨率可设1920×1080。
+
+login_page_preview.png 是整页预览，不作为场景素材导入。

@@ -61,17 +61,33 @@ namespace Poker.BattlePresentation
                 duel.Phase == ScoredDuelPhase.AwaitingEnemyAction ? "enemy" : "player";
             return new BattleDisplaySnapshot(state.Table.MatchId.ToString(), observer.Value, state.Revision, phase,
                 duel.CompletedRounds, duel.IsFinished ? (duel.Phase == ScoredDuelPhase.Won ? "Won" : "Lost") : null,
-                duel.Combat.Combatants.Select(unit => Unit(unit, duel)), zones, resources, cursor,
+                duel.Combat.Combatants.Select(unit => Unit(unit, duel, state)), zones, resources, cursor,
                 hasStarted: state.HasStarted, completedRounds: duel.CompletedRounds, labels: labels);
         }
-        public static UnitDisplayData Unit(CombatantState unit, TeamBattleState duel)
+        public static UnitDisplayData Unit(CombatantState unit, TeamBattleState duel, CardDuelState state = null)
         {
             var player = duel.Players.FirstOrDefault(p => p.Id == unit.Id);
+            // Only full cursor snapshots carry phase poses. Intermediate damage facts omit
+            // the label so receiving a hit cannot overwrite the currently displayed pose.
+            Dictionary<string, string> labels = null;
+            if (player != null && state != null)
+            {
+                string pose = "idle";
+                if (state.HasStarted && !duel.IsFinished)
+                {
+                    var window = state.FlowFor(player.Id).Window;
+                    pose = duel.Phase == ScoredDuelPhase.AwaitingEnemyAction ? "guard" :
+                        !player.Rules.Flow.ManualDraw ? "action" :
+                        window == BattlePlayerWindow.Draw || window == BattlePlayerWindow.ForcedDiscard ? "discard" :
+                        window == BattlePlayerWindow.Ending ? "guard" : "action";
+                }
+                labels = new Dictionary<string, string> { ["portraitPose"] = pose };
+            }
             return new UnitDisplayData(unit.Id.Value, BattlePresentationRuleText.Participant(duel, unit.Id),
                 player == null ? "enemy" : "player", unit.Health, unit.MaxHealth, unit.Block,
                 player?.Energy.Energy ?? 0, player?.Energy.MaxEnergy ?? 0,
                 duel.Combat.Statuses.Where(s => s.Target.Kind == EntityKind.Participant && s.Target.Id == unit.Id.Value)
-                    .Select(s => new StatusDisplayData(s.DefinitionId.Value, s.Stacks)));
+                    .Select(s => new StatusDisplayData(s.DefinitionId.Value, s.Stacks)), labels);
         }
         public static string StandardArt(CardDefinition card)
         {

@@ -265,3 +265,9 @@ XML Player / Enemy 的 `attackTarget` 支持 `FirstLiving / LowestHealth / Highe
 Director 用 `Prepared` 连接出牌准备和角色攻击，用 `Impact` 连接攻击与后续规则事实；弃牌默认等待准备动作 Completed 后进入收益效果。卡牌成员变化与补牌只跟随事实显示游标，动作结束不直接改写 cardlist。准备偏移拥有独立作用域，取消只释放自己的贡献；跨过准备信号后可与后续卡牌转移衔接，不能恢复过时位置或卡牌列表。任一动作取消或失败进入恢复同步，不当成成功继续播旧动作。扩展卡牌、镜头或场景物体演出应实现中性动作协议并配置依赖，无需恢复旧逐步协程路径。
 
 当前场景完整配置教程见 [BattlePresentationTimelineConfiguration.md](../../../../../../Tools/BattlePresentationTimelineConfiguration.md)，包含信号顺序、效果/目标筛选、基础 HUD 检查点及 UI 动画模板。
+
+### 阶段静态立绘
+
+BattleDemo 的玩家使用 `PortraitBattleActorPresenter`，继承既有 Actor 攻击、受击及死亡表现；护盾仍由原 Coordinator 管理。桥接层将当前显示游标的阶段写入 `UnitDisplayData.Labels["portraitPose"]`，通过既有 `SynchronizeDisplay` 分发。组件不读取规则会话，也不按最终权威状态提前切图。
+
+Artwork 子节点以 0.12 秒淡出右移、0.18 秒淡入归位切换贴图，使用 MaterialPropertyBlock 保持共享材质不变。阶段重复推送不重播，快速切换可续接当前透明度，Cancel/Reset 与 Actor 生命周期统一恢复。素材和完整生成提示词见 `Assets/Art/Characters/BattleBillboards/PlayerPoses/`；编辑器设置与真实流程检查位于 `Tools/BattleDemo/Portraits`。
