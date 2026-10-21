@@ -20,6 +20,17 @@ public static class BattleDemoMigration
     public static void ConfigurePipeline()
     {
         const string rp = "Assets/Settings/BattleForwardRenderer.asset", pp = "Assets/Settings/BattleURP.asset";
+        // Refresh the MonoScript mapping after switching from the embedded URP package.
+        const string rendererScriptPath = "Packages/com.unity.render-pipelines.universal/Runtime/UniversalRendererData.cs";
+        AssetDatabase.ImportAsset(rendererScriptPath, ImportAssetOptions.ForceUpdate);
+        var rendererScript = AssetDatabase.LoadAssetAtPath<MonoScript>(rendererScriptPath);
+        if (rendererScript == null || rendererScript.GetClass() != typeof(UniversalRendererData))
+            throw new InvalidOperationException("Official URP renderer script is not imported; cannot save a renderer without its script binding.");
+        const string cameraScriptPath = "Packages/com.unity.render-pipelines.universal/Runtime/UniversalAdditionalCameraData.cs";
+        AssetDatabase.ImportAsset(cameraScriptPath, ImportAssetOptions.ForceUpdate);
+        var cameraScript = AssetDatabase.LoadAssetAtPath<MonoScript>(cameraScriptPath);
+        if (cameraScript == null || cameraScript.GetClass() != typeof(UniversalAdditionalCameraData))
+            throw new InvalidOperationException("Official URP camera script is not imported; cannot configure camera components without its script binding.");
         var renderer = AssetDatabase.LoadAssetAtPath<UniversalRendererData>(rp);
         if (renderer == null) { renderer = ScriptableObject.CreateInstance<UniversalRendererData>(); AssetDatabase.CreateAsset(renderer, rp); }
         renderer.renderingMode = RenderingMode.Forward; renderer.rendererFeatures.Clear();

@@ -52,6 +52,59 @@ namespace PokerEngine.Tests
         }
 
         [Test]
+        public void BattleRendererRetainsOfficialScriptBindingAfterReimport()
+        {
+            const string path = "Assets/Settings/BattleForwardRenderer.asset";
+            // Reimport checks the saved binding instead of an instance left alive by migration.
+            AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
+            var renderer = AssetDatabase.LoadAssetAtPath<UnityEngine.ScriptableObject>(path);
+            Assert.That(renderer, Is.Not.Null, "The saved default renderer must load after an editor restart.");
+            Assert.That(renderer.GetType().FullName, Is.EqualTo("UnityEngine.Rendering.Universal.UniversalRendererData"));
+            var script = MonoScript.FromScriptableObject(renderer);
+            Assert.That(script, Is.Not.Null);
+            Assert.That(AssetDatabase.GetAssetPath(script),
+                Is.EqualTo("Packages/com.unity.render-pipelines.universal/Runtime/UniversalRendererData.cs"));
+            var pipeline = AssetDatabase.LoadAssetAtPath<UnityEngine.Rendering.RenderPipelineAsset>("Assets/Settings/BattleURP.asset");
+            Assert.That(pipeline, Is.Not.Null);
+            var settings = new SerializedObject(pipeline);
+            int index = settings.FindProperty("m_DefaultRendererIndex").intValue;
+            Assert.That(settings.FindProperty("m_RendererDataList").GetArrayElementAtIndex(index).objectReferenceValue,
+                Is.EqualTo(renderer));
+            Assert.That(UnityEngine.Rendering.GraphicsSettings.defaultRenderPipeline, Is.EqualTo(pipeline));
+            Assert.That(UnityEngine.QualitySettings.renderPipeline, Is.EqualTo(pipeline));
+        }
+
+        [TestCase("Assets/Scenes/BattleDemo.unity")]
+        [TestCase("Assets/Scenes/CardFoilValidation.unity")]
+        public void SceneCamerasHaveOneOfficialUrpComponent(string path)
+        {
+            var scene = UnityEngine.SceneManagement.SceneManager.GetSceneByPath(path);
+            bool alreadyLoaded = scene.IsValid() && scene.isLoaded;
+            if (!alreadyLoaded)
+                scene = UnityEditor.SceneManagement.EditorSceneManager.OpenScene(path,
+                    UnityEditor.SceneManagement.OpenSceneMode.Additive);
+            try
+            {
+                var cameras = scene.GetRootGameObjects()
+                    .SelectMany(root => root.GetComponentsInChildren<UnityEngine.Camera>(true)).ToArray();
+                Assert.That(cameras, Is.Not.Empty, path);
+                foreach (var camera in cameras)
+                {
+                    var data = camera.GetComponents<UnityEngine.MonoBehaviour>()
+                        .Where(component => component != null && component.GetType().FullName ==
+                            "UnityEngine.Rendering.Universal.UniversalAdditionalCameraData").ToArray();
+                    Assert.That(data.Length, Is.EqualTo(1), path + ": " + camera.name);
+                    Assert.That(AssetDatabase.GetAssetPath(MonoScript.FromMonoBehaviour(data[0])),
+                        Is.EqualTo("Packages/com.unity.render-pipelines.universal/Runtime/UniversalAdditionalCameraData.cs"));
+                }
+            }
+            finally
+            {
+                if (!alreadyLoaded) UnityEditor.SceneManagement.EditorSceneManager.CloseScene(scene, true);
+            }
+        }
+
+        [Test]
         public void Minimal2DToolsReferenceOfficialUrpWithoutLegacyRenderer()
         {
             var assemblies = CompilationPipeline.GetAssemblies(AssembliesType.Editor);

@@ -8933,7 +8933,6 @@ GameObject:
   - component: {fileID: 961739752}
   - component: {fileID: 961739751}
   - component: {fileID: 961739750}
-  - component: {fileID: 961739754}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -9027,18 +9026,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 7.581, y: -29.055, z: 0}
---- !u!114 &961739754
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 961739749}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 1252624035}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &968030840
 GameObject:
   m_ObjectHideFlags: 0
@@ -14968,21 +14955,6 @@ MonoBehaviour:
   m_EffectColor: {r: 0.42745098, g: 0.4, b: 0.39607844, a: 1}
   m_EffectDistance: {x: 1, y: -1}
   m_UseGraphicAlpha: 1
---- !u!115 &1252624035
-MonoScript:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: 
-  serializedVersion: 7
-  m_DefaultReferences: {}
-  m_Icon: {fileID: 0}
-  m_Type: 0
-  m_ExecutionOrder: 0
-  m_ClassName: UniversalAdditionalCameraData
-  m_Namespace: UnityEngine.Rendering.Universal
-  m_AssemblyName: Unity.RenderPipelines.Universal.Runtime
 --- !u!1 &1270146641
 GameObject:
   m_ObjectHideFlags: 0
