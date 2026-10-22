@@ -256,7 +256,12 @@ namespace Poker.Adventure.Tests
             AssertRemotePresentation();
             yield return Capture("elite");
             var view = host.BattleView;
-            Assert.AreEqual(400, view.Enemies.Single().DisplayUnit.MaxHealth);
+            Assert.AreEqual(500, view.Enemies.Single().DisplayUnit.MaxHealth);
+            Assert.AreEqual(144, view.Player.DisplayUnit.MaxHealth, "The shipped 120 base HP retains the Fool's 20% bonus.");
+            // Isolate the four-round skill/presentation check from the deliberately lower starting HP.
+            Assert.IsTrue(view.Playback.ApplyAdmin(host.Revision, new BattleAdminPatch(
+                vitals: new[] { new BattleAdminVitals(host.Adventure.PlayerId, 100000, 100000) })).Accepted);
+            yield return Idle();
             Assert.IsFalse(view.Display.Labels.ContainsKey("wrath.body"));
             long[] damage = { 4, 36, 21, 95 };
             for (int i = 0; i < damage.Length; i++)
@@ -282,7 +287,9 @@ namespace Poker.Adventure.Tests
             Assert.IsTrue(view.GetComponent<BattleDemoTargetSelection>().ChooseTarget(view.Enemies[0]));
             var hands = view.Enemies.Skip(1).ToArray();
             var positions = hands.Select(actor => actor.transform.position).ToArray();
+            // This test waits for regeneration; normal player survival is covered separately.
             Assert.IsTrue(view.Playback.ApplyAdmin(host.Revision, new BattleAdminPatch(
+                vitals: new[] { new BattleAdminVitals(host.Adventure.PlayerId, 100000, 100000) },
                 relics: new[] { new BattleAdminRelics(host.Adventure.PlayerId, new[] { new BattleAdminRelic("11004", charges: 3) }) })).Accepted);
             yield return Idle();
             string grenade = view.State.Duel.Player(host.Adventure.PlayerId).Relics.Relics.Single().InstanceId;
