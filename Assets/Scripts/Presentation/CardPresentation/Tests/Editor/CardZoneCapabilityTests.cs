@@ -45,39 +45,90 @@ namespace CardPresentation.Tests
         }
         [TearDown] public void Teardown() => EditorSceneManager.ClosePreviewScene(scene);
         private ICardZonePresentation View(bool isCanvas) => isCanvas ? (ICardZonePresentation)canvas : world;
-        [TestCase(1, .05f)]
-        [TestCase(3, .05f)]
-        [TestCase(3, .3f)]
-        public void DrawWaitsForTheLastDiscardToNearlyReachItsDestination(int count, float requestDelay)
+        [TestCase(CardZoneActions.Discard, 1, .05f)]
+        [TestCase(CardZoneActions.Discard, 3, .05f)]
+        [TestCase(CardZoneActions.Discard, 3, .3f)]
+        [TestCase(CardZoneActions.Discard, 4, .05f)]
+        [TestCase(CardZoneActions.Play, 1, .05f)]
+        [TestCase(CardZoneActions.Play, 3, .05f)]
+        [TestCase(CardZoneActions.Play, 4, .05f)]
+        public void OutgoingCardsFinishThenSurvivorsCompactThenReplacementCardsDraw(string action, int count, float requestDelay)
         {
             hand.ConfigureScreenDiscard(true);
-            var before = Zone(Card("a"), Card("b"), Card("c"), Card("d"));
+            var before = Zone(Card("d"), Card("b"), Card("a"), Card("c"));
             var removed = Zone(before.Cards.Skip(count).ToArray());
             var replacements = Enumerable.Range(0, count).Select(i => Card("replacement-" + i)).ToArray();
             var refilled = Zone(removed.Cards.Concat(replacements).ToArray());
             world.Synchronize(before);
-            using (var discardScope = new PresentationScope("discard"))
+            var originals = hand.Views.ToDictionary(view => view.ViewId);
+            var positions = hand.Views.ToDictionary(view => view.ViewId, view => view.DisplayPose.Position);
+            using (var outgoingScope = new PresentationScope("outgoing"))
             using (var drawScope = new PresentationScope("draw"))
             {
-                var discard = world.Play(new CardZonePresentationRequest(CardZoneActions.Discard, "discard", discardScope, before, removed,
+                bool compacted = false, launched = false;
+                hand.ReflowStarted += () => compacted = true;
+                hand.CardDealStarted += _ => launched = true;
+                var outgoing = world.Play(new CardZonePresentationRequest(action, "outgoing", outgoingScope, before, removed,
                     before.Cards.Take(count).Select(card => card.CardId)), new Markers());
+                CollectionAssert.AreEqual(before.Cards.Take(count).Select(card => card.ViewId), hand.DepartingViews.Select(card => card.ViewId));
                 hand.AdvanceMotion(requestDelay); world.Tick();
-                bool launched = false; hand.CardDealStarted += _ => launched = true;
                 var draw = world.Play(new CardZonePresentationRequest(CardZoneActions.Draw, "draw", drawScope, removed, refilled,
                     replacements.Select(card => card.CardId)), new Markers());
-                Assert.AreEqual(PresentationStatus.Pending, discard.Status);
+                Assert.AreEqual(PresentationStatus.Pending, outgoing.Status);
                 Assert.AreEqual(PresentationStatus.Pending, draw.Status, draw.Error?.ToString());
-                Assert.Greater(hand.DepartingViews.Count, 0);
-                float gate = (count - 1) * hand.DiscardSettings.Interval + hand.DiscardSettings.FlightSeconds * Mathf.Pow(.92f, 1f / 3f);
-                hand.AdvanceMotion(gate - requestDelay - .01f); world.Tick();
-                Assert.IsFalse(launched, "Replacement cards wait until the last queued departure is visually near its destination.");
-                Assert.Greater(hand.DepartingViews.Count, 0);
-                hand.AdvanceMotion(.015f); world.Tick(); Assert.IsTrue(launched);
-                Assert.Less(hand.DepartingViews.Max(card => card.ExitSecondsRemaining), hand.DiscardSettings.FlightSeconds * .03f);
+                float exit = (count - 1) * hand.DiscardSettings.Interval + hand.DiscardSettings.FlightSeconds;
+                hand.RefreshLayout();
+                hand.SetLayout(hand.Layout, hand.MotionSettings, false);
+                hand.AdvanceMotion(exit - requestDelay - .01f); world.Tick();
+                Assert.IsFalse(compacted, "Survivors keep their original slots until EVERY outgoing card finishes.");
+                Assert.IsFalse(launched);
+                foreach (var view in hand.Views)
+                {
+                    Assert.AreSame(originals[view.ViewId], view);
+                    Assert.Less(Vector3.Distance(positions[view.ViewId], view.DisplayPose.Position), .00001f);
+                }
+                hand.AdvanceMotion(.015f); world.Tick();
+                Assert.IsEmpty(hand.DepartingViews);
+                if (removed.Cards.Count > 0)
+                {
+                    Assert.IsTrue(compacted);
+                    Assert.IsFalse(launched, "Drawing waits for compaction to land, not just begin.");
+                    CollectionAssert.AreEqual(removed.Cards.Select(card => card.ViewId), hand.Views.Select(card => card.ViewId));
+                    hand.AdvanceMotion(hand.TransitionSettings.ReflowSeconds * .5f); world.Tick();
+                    Assert.IsFalse(launched);
+                    hand.AdvanceMotion(hand.TransitionSettings.ReflowSeconds * .5f); world.Tick();
+                }
+                Assert.IsTrue(launched);
+                Assert.AreEqual(PresentationStatus.Completed, outgoing.Status);
+                CollectionAssert.AreEqual(refilled.Cards.Select(card => card.ViewId), hand.Views.Select(card => card.ViewId),
+                    "Draw order stays appended to the unsorted survivors until all replacement cards land.");
                 hand.AdvanceMotion(2); world.Tick();
                 Assert.AreEqual(PresentationStatus.Completed, draw.Status);
-                Assert.AreEqual(PresentationStatus.Completed, discard.Status);
+                Assert.IsFalse(hand.IsTransitioning);
+            }
+        }
+
+        [Test]
+        public void SynchronizeCancelsQueuedRefillAndDeferredCompaction()
+        {
+            var before = Zone(Card("a"), Card("b"), Card("c"));
+            var removed = Zone(Card("c"));
+            var after = Zone(Card("c"), Card("d"), Card("e"));
+            world.Synchronize(before);
+            using (var outgoingScope = new PresentationScope("outgoing"))
+            using (var drawScope = new PresentationScope("draw"))
+            {
+                var outgoing = world.Play(new CardZonePresentationRequest(CardZoneActions.Discard, "outgoing", outgoingScope,
+                    before, removed, new[] { "a", "b" }), new Markers());
+                var draw = world.Play(new CardZonePresentationRequest(CardZoneActions.Draw, "draw", drawScope,
+                    removed, after, new[] { "d", "e" }), new Markers());
+                world.Synchronize(before);
+                hand.AdvanceMotion(3); world.Tick();
+                Assert.AreEqual(PresentationStatus.Cancelled, outgoing.Status);
+                Assert.AreEqual(PresentationStatus.Cancelled, draw.Status);
                 Assert.IsEmpty(hand.DepartingViews);
+                Assert.IsFalse(world.IsPresenting);
+                CollectionAssert.AreEqual(before.Cards.Select(card => card.ViewId), hand.Views.Select(card => card.ViewId));
             }
         }
         private void Advance(bool isCanvas, float seconds = 2) { if (isCanvas) canvas.AdvanceMotion(seconds); else { hand.AdvanceMotion(seconds); world.Tick(); } }
@@ -127,6 +178,26 @@ namespace CardPresentation.Tests
                 Assert.IsTrue(custom.Released); Assert.AreEqual(PresentationStatus.Cancelled, op.Status);
                 Assert.IsFalse(custom.Sink.Emit("CustomPoint")); Assert.AreEqual("view-b", provider.Current.Cards.Single().ViewId);
             }
+        }
+        [TestCase(false)] [TestCase(true)]
+        public void TimelineSynchronizationUpdatesHandDataWithoutResettingObserverOrder(bool isCanvas)
+        {
+            var view = View(isCanvas);
+            view.Synchronize(Zone(Card("c"), Card("a"), Card("b")));
+            var action = root.AddComponent<CardZoneTimelineAction>();
+            action.Configure(isCanvas ? (MonoBehaviour)canvas : world, CardZoneActions.Prepare);
+            var incoming = Zone(Card("a", "spades_a"), Card("b"), Card("c"));
+            action.Synchronize(new ActionSyncContext(new BattleDisplaySnapshot("battle", "player", 2, "player", 1,
+                null, null, new[] { incoming }), null, 2));
+            CollectionAssert.AreEqual(new[] { "view-c", "view-a", "view-b" }, view.Current.Cards.Select(card => card.ViewId));
+            Assert.AreEqual("spades_a", view.Current.Cards[1].ArtKey, "Refresh values from the new rule snapshot.");
+            CollectionAssert.AreEqual(new[] { "view-a", "view-b", "view-c" }, incoming.Cards.Select(card => card.ViewId),
+                "Observer order must not mutate the rule snapshot.");
+            var recovery = Zone(Card("d"), Card("b"), Card("c"));
+            action.Synchronize(new ActionSyncContext(new BattleDisplaySnapshot("battle", "player", 3, "player", 1,
+                null, null, new[] { recovery }), null, 3));
+            CollectionAssert.AreEqual(new[] { "view-c", "view-b", "view-d" }, view.Current.Cards.Select(card => card.ViewId),
+                "Recovery removes missing cards and appends arrivals while preserving the surviving order.");
         }
         [TestCase(false)] [TestCase(true)]
         public void SameTimelineComponentResolvesBothFrontends(bool isCanvas)

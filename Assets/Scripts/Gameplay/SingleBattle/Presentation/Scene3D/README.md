@@ -71,7 +71,7 @@ XML 按策划文档 revision 1277 配置：高牌/一对/两对单体伤害，�
 
 场景首次自动开局在 BattleSceneHost.Start 中执行，等待各牌区完成 OnEnable 后，先绑定空手牌，再提交 Start 发牌并播放入列动画；避免 Host 较早的 OnEnable 在 HandZoneView 尚未激活时跳过动画。逻辑手牌一次性提交，逐张飞入属于表现；重新启用已有对局仍恢复当前状态，不再次发开局牌。
 
-手牌默认按点数理牌，开局发牌及后续补牌落位后自动执行；切换玩家也按当前选择的方式理牌。手动切换为花色理牌后，后续发牌沿用花色排序。排序只调整观察者的显示顺序，不改变权威牌区或洗牌状态。
+手牌默认按点数理牌，开局发牌及后续补牌落位后自动执行；切换玩家也按当前选择的方式理牌。手动切换为花色理牌后，后续发牌沿用花色排序。排序只调整观察者的显示顺序，不改变权威牌区或洗牌状态。时间线在新命令开始时同步最新规则值，但保留当前手牌的显示顺序，避免出牌／弃牌前跳回规则牌序。
 
 这不是联网多人功能：目前共享阶段中的命令由同一权威按 Revision 串行结算，本地输入一次控制一名玩家。规则层没有固定的玩家行动游标。
 
@@ -247,7 +247,7 @@ XML Player / Enemy 的 `attackTarget` 支持 `FirstLiving / LowestHealth / Highe
 - DOTween 使用不受 Time.timeScale 影响的时间：`FlightSeconds / CardInterval / ArcHeight` 控制逐张飞入，`DissolveSeconds / DissolveInterval` 控制逐张溶解。
 - 每张落地触发材质闪光、生成于卡牌底边中心的可选 `LandingEffect` 粒子（位置包含卡牌旋转与缩放）、`LandingSound` 与设备震动。当前落地音效复用手牌弃牌音效；当前场景粒子绑定 `Sword Slash 14 Hit Flashes`，`LandingEffectScale = 0.2`，实例按卡牌高度等比缩放，整组粒子只播放一次，位置仍在牌底；`BlockHitSound` 默认空，可自行配置。严格在实际播放非空且音量大于零的音效时请求一次震动；静默落地、Snap 和取消不会触发震动。手机与手柄能力沿用 `CardHapticsDriver`。
 
-盾牌容器是 Actor 根节点的子节点，配置时采用 Visual 的位置与朝向，保持独立于模型攻击前冲和受击晃动。当前弃牌按真实事实顺序调度：ActionStarted 先完成手牌准备，EffectSettled 启动 `GainBlock` 并在 `Revealed` 发布格挡；随后 CardsMoved 才提交离场，沿原 `DiscardAnchor / DiscardLocalPosition` 飞出，CardsDealt 提交补牌。盾牌飞入、离场与补牌可以重叠，Director 与 Host 等实际阻塞句柄及手牌过渡都结束后释放输入。该顺序不把规则移牌提前，也不要求先飞出再给盾；若需要其他编排，应使用事实节点的动作依赖/checkpoint 配置。
+盾牌容器是 Actor 根节点的子节点，配置时采用 Visual 的位置与朝向，保持独立于模型攻击前冲和受击晃动。当前弃牌按真实事实顺序调度：ActionStarted 先完成手牌准备，EffectSettled 启动 `GainBlock` 并在 `Revealed` 发布格挡；随后 CardsMoved 才提交离场，沿原 `DiscardAnchor / DiscardLocalPosition` 飞出，CardsDealt 提交补牌。手牌保持原 CardView 顺序和槽位直到出牌弹道／弃牌离场完成；剩余牌先按原相对顺序收拢，收拢落定后补牌，补牌落定后按当前排序方式整理。盾牌仍跟随规则事实播放。Director 与 Host 等实际阻塞句柄及最终理牌过渡都结束后释放输入。该顺序不把规则移牌提前，也不要求先飞出再给盾；若需要其他编排，应使用事实节点的动作依赖/checkpoint 配置。
 
 卡牌飞出和盾牌落地各自播放原有音效，每次实际发声请求一次震动；即时模式只同步最终状态。弃牌 View 不持有 Actor 引用，`CardActionViewOperation` 只报告本批离场卡牌（含错峰队列）的实际完成，不把剩余手牌理牌作为它自己的完成条件。取消、清空或禁用 View 会取消未完成句柄，由新调度链进入恢复同步。
 
@@ -297,3 +297,5 @@ Artwork 子节点以 0.12 秒淡出右移、0.18 秒淡入归位切换贴图，�
 HUD 上的 `BattleDemoRelicArt` 在 Inspector 配置规则 ID 与 Sprite，也可调整图标尺寸、间距；当前接入 `Assets/Art/UI/Relics` 的全部 12 张 PNG。未命名图片按已确认的映射：遗物1→13002 致命一击、遗物2→10002 急救药水、遗物3→10001 同花倍率、遗物4→13003 牌型倍率。其他图片按规则名称对应。图标同时供遗物栏与主动道具按钮使用；绑定图片不会自动授予遗物。
 
 当前场景的遗物栏仅常驻图标；有次数上限的主动道具在右下角显示规则快照中的剩余次数。悬浮图标展开效果说明与当前冷却，主动道具在同一面板提供使用按钮；六面骰需先选替换对象。移入说明面板可继续操作，离开图标和面板后关闭。按钮仍调用既有 `CanUseItem / UseItem`，演出门禁、次数与冷却均由规则和 Host 处理。未绑定 `BattleDemoRelicArt` 的其他场景保留原 UI。
+
+出牌／弃牌时序回归：`工具 > 卡牌战斗 > 表现时间线 > 验证出牌弃牌顺序`。覆盖原槽位保持、离场后收拢、收拢后补牌、最终排序和中途恢复；结果写入 `Library/BattlePresentationValidation/results.xml`。

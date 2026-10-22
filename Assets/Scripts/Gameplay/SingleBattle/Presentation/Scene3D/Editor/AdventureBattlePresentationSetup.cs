@@ -32,7 +32,7 @@ namespace Poker.SingleBattle.Editor
                 CopySettings(Find<BattleCardProjectileAction>(source), Find<BattleCardProjectileAction>(target),
                     "liftSeconds", "flightSeconds", "volleyInterval", "straightInterval", "arcHeight", "horizontalAt", "tailMaterial", "tailWidth", "tailSeconds", "tailColor");
                 CopySettings(Find<HandZoneView>(source), Find<HandZoneView>(target),
-                    "discardSettings", "discardLocalPosition", "discardOffscreen", "discardViewport", "refillDepartureWait", "transitionSettings");
+                    "discardSettings", "discardLocalPosition", "discardOffscreen", "discardViewport", "transitionSettings");
                 BattleDemoOutcomeAndRelicSetup.Configure(target);
                 EditorUtility.CopySerialized(Find<BattleDemoRelicArt>(source), Find<BattleDemoRelicArt>(target));
                 BattleDemoAshSetup.Configure(target);

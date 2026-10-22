@@ -74,7 +74,19 @@ namespace BattlePresentation.Unity
             var view = Resolve(source) ?? Resolve(context.Targets?.Resolve("cards", null));
             var id = string.IsNullOrEmpty(zoneId) ? view?.Current?.Id : zoneId;
             var snapshot = context.Snapshot.Zones.FirstOrDefault(x => id != null ? x.Id == id : x.Kind == "hand" && x.OwnerId == context.Snapshot.ObserverId);
-            if (view != null && snapshot != null) view.Synchronize(snapshot);
+            if (view == null || snapshot == null) return;
+            var current = view.Current;
+            if (snapshot.Kind == "hand" && current != null && current.Id == snapshot.Id)
+            {
+                // The timeline also synchronizes at each command boundary. Hand sorting belongs to the
+                // observer: refreshing rule data must not reset those CardViews to the engine's order.
+                var incoming = snapshot.Cards.ToDictionary(card => card.ViewId);
+                var existing = new System.Collections.Generic.HashSet<string>(current.Cards.Select(card => card.ViewId));
+                snapshot = new CardZoneDisplayData(snapshot.Id, snapshot.OwnerId, snapshot.Kind,
+                    current.Cards.Where(card => incoming.ContainsKey(card.ViewId)).Select(card => incoming[card.ViewId])
+                        .Concat(snapshot.Cards.Where(card => !existing.Contains(card.ViewId))));
+            }
+            view.Synchronize(snapshot);
         }
     }
 }

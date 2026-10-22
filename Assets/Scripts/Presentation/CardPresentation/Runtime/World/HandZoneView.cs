@@ -19,6 +19,7 @@ namespace CardPresentation
         [SerializeField] private Vector3 deckLocalPosition = new Vector3(0.38f, 0.035f, 0);
         [SerializeField] private Transform deckAnchor;
         private double nextDealTime;
+        private readonly Dictionary<CardInstanceView, CardZoneCardPose> pendingReflow = new Dictionary<CardInstanceView, CardZoneCardPose>();
         public override string DefaultZoneKind => CardZoneKinds.Hand;
         public Vector3 RaisedOffset => raisedOffset;
         public Vector3 SelectedOffset => raisedOffset;
@@ -49,7 +50,7 @@ namespace CardPresentation
                 return deckAnchor != null ? deckAnchor.position : transform.TransformPoint(deckLocalPosition * CardScale);
             }
         }
-        public override bool IsTransitioning => selectionAction?.Operation.keepWaiting == true || departing.Count > 0 || base.IsTransitioning;
+        public override bool IsTransitioning => selectionAction?.Operation.keepWaiting == true || departing.Count > 0 || pendingReflow.Count > 0 || base.IsTransitioning;
 
         protected override void ValidatePresentationSettings()
         {
@@ -86,7 +87,7 @@ namespace CardPresentation
         {
             private readonly HandZoneView hand;
             private readonly CardZoneViewData data;
-            private readonly bool animateInteraction, animate, reuse;
+            private readonly bool animateInteraction, animate, reuse, deferReflow;
             private readonly bool[] selections, deselections, arrivals;
             private readonly float[] delays;
             private readonly HashSet<string> discards;
@@ -108,6 +109,7 @@ namespace CardPresentation
                 animateInteraction = requestedAnimation && hand.isActiveAndEnabled;
                 animate = animateInteraction && hand.transitionSettings.Enabled;
                 reuse = hand.Data != null && hand.Data.ZoneId == data.ZoneId;
+                deferReflow = animate && reuse && (discards.Count > 0 || hand.departing.Count > 0 || hand.pendingReflow.Count > 0);
                 var previouslyUnselected = animateInteraction && reuse ? new HashSet<string>(
                     hand.Data.Cards.Where(card => !card.Interaction.IsSelected).Select(card => card.ViewId), StringComparer.Ordinal) : null;
                 var previouslySelected = animateInteraction && reuse ? new HashSet<string>(
@@ -115,7 +117,6 @@ namespace CardPresentation
                 selections = new bool[data.Cards.Count]; deselections = new bool[data.Cards.Count];
                 arrivals = new bool[data.Cards.Count]; delays = new float[data.Cards.Count];
                 queue = reuse ? hand.nextDealTime : hand.AnimationTime;
-                if (animate && reuse) queue = Math.Max(queue, hand.AnimationTime + hand.RefillDepartureDelay);
                 source = hand.transform.InverseTransformPoint(hand.DeckWorldPosition);
                 ValidateOffset(source);
                 for (int i = 0; i < data.Cards.Count; i++)
@@ -133,7 +134,11 @@ namespace CardPresentation
                 }
             }
 
-            public override void BeforeApply() => hand.PrepareDepartures(data, animate, reuse);
+            public override void BeforeApply()
+            {
+                hand.PrepareDepartures(data, animate, reuse);
+                if (!animate || !reuse) hand.pendingReflow.Clear();
+            }
             public override void PresentCard(CardInstanceView view, CardVisualData card, CardShaderAppearance appearance,
                 CardZoneCardPose pose, int index, bool created)
             {
@@ -142,11 +147,15 @@ namespace CardPresentation
                     (view.transform.localPosition != pose.Position || view.transform.localRotation != pose.Rotation))
                     reflowStarted = true;
                 view.Present(card, hand.hoveredOffset, hand.raisedOffset, appearance, hand.liftSettings, animateInteraction, hoverScaling: true);
+                // Preserve the old slots throughout the outgoing batch. Compaction is a separate phase.
+                if (deferReflow && !arrivals[index] && !created)
+                { hand.pendingReflow[view] = pose; return; }
                 // Lost visuals for an existing identity are restored without replaying the deal.
                 view.SetPose(pose, hand.transitionSettings, animate && (arrivals[index] || !created), arrivals[index], source, delays[index]);
             }
             public override void RemoveCard(CardInstanceView previous)
             {
+                hand.pendingReflow.Remove(previous);
                 if (animate && discards.Contains(previous.ViewId) && previous.IsTransitionVisible)
                 {
                     previous.BeginDiscard(discardDestination, discardDelay, hand.discardSettings);
@@ -173,13 +182,16 @@ namespace CardPresentation
                     if (selections[i] && view.Data.Interaction.IsSelected) hand.NotifyCardSelected(view);
                     else if (deselections[i] && !view.Data.Interaction.IsSelected) hand.NotifyCardDeselected(view);
                 }
-                if (reflowStarted && ReferenceEquals(hand.Data, data) && hand.isActiveAndEnabled) hand.NotifyReflowStarted();
+                if (deferReflow) hand.BeginPendingReflow();
+                else if (reflowStarted && ReferenceEquals(hand.Data, data) && hand.isActiveAndEnabled) hand.NotifyReflowStarted();
             }
             public override void Dispose() { foreach (var previous in immediateDiscards) Release(previous); }
         }
 
         protected override void ApplyLayoutPose(CardInstanceView view, CardZoneCardPose pose, bool animate)
         {
+            if (pendingReflow.ContainsKey(view)) { pendingReflow[view] = pose; return; }
+            pendingReflow.Remove(view);
             view.SetPose(pose, transitionSettings, animate && transitionSettings.Enabled && isActiveAndEnabled);
             view.ApplyInteractionOffset(hoveredOffset, raisedOffset, liftSettings, animate, hoverScaling: true);
         }
@@ -215,15 +227,33 @@ namespace CardPresentation
 
         public override void CompleteTransitions()
         {
-            CancelSelectionAction(); ClearDepartures(); base.CompleteTransitions(); nextDealTime = AnimationTime;
+            CancelSelectionAction(); ClearDepartures(); BeginPendingReflow(); base.CompleteTransitions(); nextDealTime = AnimationTime;
+        }
+        private void BeginPendingReflow(float elapsed = 0)
+        {
+            if (departing.Count > 0 || pendingReflow.Count == 0) return;
+            var poses = pendingReflow.ToArray(); pendingReflow.Clear();
+            bool moved = false;
+            foreach (var entry in poses)
+            {
+                var view = entry.Key;
+                if (view == null || !TryGetView(view.ViewId, out var current) || current != view) continue;
+                moved |= view.transform.localPosition != entry.Value.Position || view.transform.localRotation != entry.Value.Rotation;
+                view.SetPose(entry.Value, transitionSettings, transitionSettings.Enabled && isActiveAndEnabled);
+            }
+            if (moved && isActiveAndEnabled) NotifyReflowStarted();
+            // Preserve the manual clock's elapsed time even when a long frame crosses the phase boundary.
+            if (elapsed > 0) foreach (var entry in poses) if (entry.Key != null) entry.Key.AdvanceMotion(elapsed);
         }
         protected override void OnMotionAdvanced(float deltaTime)
         {
-            AdvanceSelectionAction(deltaTime); AdvanceDepartures(deltaTime); ConsumeDealSounds();
+            float departureRemaining = departing.Where(view => view != null).Select(view => view.ExitSecondsRemaining).DefaultIfEmpty(0).Max();
+            AdvanceSelectionAction(deltaTime); AdvanceDepartures(deltaTime);
+            BeginPendingReflow(Mathf.Max(0, deltaTime - departureRemaining)); ConsumeDealSounds();
         }
         public override void Clear()
         {
-            CancelSelectionAction(); ClearDepartures(); base.Clear(); nextDealTime = 0; StopCardAudio();
+            CancelSelectionAction(); ClearDepartures(); pendingReflow.Clear(); base.Clear(); nextDealTime = 0; StopCardAudio();
         }
         protected override void OnDisable() { CancelDiscardBatches(); base.OnDisable(); StopCardAudio(); }
         protected override void OnDestroy() { base.OnDestroy(); ReleaseCardAudio(); }

@@ -149,7 +149,12 @@ namespace Poker.SingleBattle
                 pendingPresentation = null;
             }
             busy = false;
-            if (State != null && match != null && actions != null && actions.Hand != null && ReferenceEquals(match.Commands, playerActor)) Project(false);
+            if (State != null && match != null && actions != null && actions.Hand != null && ReferenceEquals(match.Commands, playerActor))
+            {
+                Project(false);
+                // Start the final sort in this handoff, so the decision window includes its animation.
+                if (Application.isPlaying && !instant) actions.Hand.TryCompletePendingSort();
+            }
             if (presentationDirector.LastError != null) Debug.LogError("Battle presentation: " + presentationDirector.LastError, this);
             candidateKey = null; RefreshCandidate(); Publish();
         }

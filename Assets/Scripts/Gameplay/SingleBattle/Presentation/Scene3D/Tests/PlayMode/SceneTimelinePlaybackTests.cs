@@ -169,16 +169,38 @@ namespace Poker.SingleBattle.Tests
             Assert.IsNull(host.PresentationDirector.LastError);
             Select(host, 3);
             var handView = host.Actions.Hand.GetComponent<HandZoneView>();
-            float discardStarted = -1, refillStarted = -1;
-            System.Action<CardInstanceView> onDiscard = _ => discardStarted = Time.realtimeSinceStartup;
+            float discardStarted = -1, compactStarted = -1, refillStarted = -1;
+            var originalSlots = handView.Views.ToDictionary(card => card.ViewId, card => card.DisplayPose.Position);
+            var survivors = handView.Views.Where(card => !card.Data.Interaction.IsSelected).Select(card => card.ViewId).ToArray();
+            System.Action<CardInstanceView> onDiscard = _ =>
+            {
+                discardStarted = Time.realtimeSinceStartup;
+                foreach (var id in survivors)
+                {
+                    Assert.IsTrue(handView.TryGetView(id, out var card));
+                    Assert.Less(Vector3.Distance(originalSlots[id], card.DisplayPose.Position), .00001f,
+                        "Survivors must retain their slots while the outgoing batch is flying: " + id +
+                        " old=" + originalSlots[id] + " now=" + card.DisplayPose.Position +
+                        " departures=" + handView.DepartingViews.Count + " pendingSort=" + host.Actions.Hand.HasPendingSort);
+                }
+            };
+            System.Action onCompact = () =>
+            {
+                if (compactStarted >= 0) return;
+                compactStarted = Time.realtimeSinceStartup;
+                Assert.IsEmpty(handView.DepartingViews, "Compaction starts after the last discard has left.");
+                CollectionAssert.AreEqual(survivors, handView.Views.Select(card => card.ViewId), "Compaction preserves hand order.");
+            };
             System.Action<CardInstanceView> onDeal = _ => { if (refillStarted < 0) refillStarted = Time.realtimeSinceStartup; };
-            handView.CardDiscardStarted += onDiscard; handView.CardDealStarted += onDeal;
+            handView.CardDiscardStarted += onDiscard; handView.ReflowStarted += onCompact; handView.CardDealStarted += onDeal;
             Assert.AreEqual(3, host.Player.Discard(host.Actions.Hand.CaptureSelection(), true));
             yield return Idle(host);
-            handView.CardDiscardStarted -= onDiscard; handView.CardDealStarted -= onDeal;
+            handView.CardDiscardStarted -= onDiscard; handView.ReflowStarted -= onCompact; handView.CardDealStarted -= onDeal;
             Assert.GreaterOrEqual(discardStarted, 0);
-            Assert.GreaterOrEqual(refillStarted - discardStarted, handView.DiscardSettings.FlightSeconds * .9f,
-                "Refill starts only near the end of the LAST queued discard, after accounting for its acceleration.");
+            Assert.GreaterOrEqual(compactStarted - discardStarted, handView.DiscardSettings.FlightSeconds - .06f);
+            Assert.GreaterOrEqual(refillStarted - compactStarted, handView.TransitionSettings.ReflowSeconds - .06f,
+                "Refill starts only after the survivors finish compacting.");
+            Assert.IsFalse(host.Actions.Hand.HasPendingSort, "Replacement cards land before the final sort completes.");
             var discardViewport = handView.FacingCamera.WorldToViewportPoint(handView.DiscardWorldPosition);
             var handViewport = handView.FacingCamera.WorldToViewportPoint(handView.transform.position);
             Assert.AreEqual(handViewport.x, discardViewport.x, .001f, "Discard target stays directly below the hand center.");

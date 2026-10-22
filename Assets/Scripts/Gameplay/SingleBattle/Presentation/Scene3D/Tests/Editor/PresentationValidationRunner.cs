@@ -31,6 +31,14 @@ namespace Poker.SingleBattle.Tests
             Api.Execute(new ExecutionSettings(new Filter { testMode = TestMode.PlayMode,
                 assemblyNames = new[] { "Poker.SingleBattle.Tests.PlayMode", "Poker.Battle2DValidation.Tests.PlayMode" } }));
         }
+        [MenuItem("工具/卡牌战斗/表现时间线/验证出牌弃牌顺序")]
+        public static void RunCardSequence()
+        {
+            Directory.CreateDirectory(Folder);
+            File.WriteAllText(Folder + "/status.txt", "Running card sequence PlayMode");
+            Api.Execute(new ExecutionSettings(new Filter { testMode = TestMode.PlayMode,
+                testNames = new[] { "Poker.SingleBattle.Tests.SceneTimelinePlaybackTests.AuthoredSceneUsesTimelineForOpeningSelectionPlayDiscardAndCancellation" } }));
+        }
         public void RunStarted(ITestAdaptor testsToRun) { }
         public void TestStarted(ITestAdaptor test) { }
         public void TestFinished(ITestResultAdaptor result) { }

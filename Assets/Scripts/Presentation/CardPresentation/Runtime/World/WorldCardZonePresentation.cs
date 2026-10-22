@@ -14,7 +14,7 @@ namespace CardPresentation
     {
         private HandZoneView hand;
         private HandZoneView Hand => this == null ? null : hand != null ? hand : (hand = GetComponent<HandZoneView>());
-        public override bool IsPresenting => Hand != null && Hand.IsTransitioning;
+        public override bool IsPresenting => Hand != null && (Hand.IsTransitioning || retained.Any(run => !run.Request.ObserveProjection && run.Operation.Status == PresentationStatus.Pending));
         private Run active;
         private readonly List<Run> retained = new List<Run>();
         private sealed class Run
@@ -49,8 +49,8 @@ namespace CardPresentation
             {
                 if (active.Request.ActionKey == CardZoneActions.Prepare && active.Released)
                     active = null; // A released preparation may hand its instances to a later card fact.
-                else if (active.Request.ActionKey == CardZoneActions.Discard && active.Released && request.ActionKey == CardZoneActions.Draw)
-                    active = null; // Departing ghosts keep their own flight while the replacement batch queues its entrance.
+                else if ((active.Request.ActionKey == CardZoneActions.Discard || active.Request.ActionKey == CardZoneActions.Play) && active.Released && request.ActionKey == CardZoneActions.Draw)
+                    active = null; // Retain the outgoing operation; the draw waits for departure and compaction below.
                 else if (request.ActionKey == CardZoneActions.Selection && active.Request.ActionKey == CardZoneActions.Selection)
                 { active.Superseded = true; active.Operation.Cancel(); }
                 else return PresentationOperation.Failed("CardZoneBusy", request.ActionKey);
@@ -73,7 +73,7 @@ namespace CardPresentation
                 var request = run.Request;
                 if (!run.Started)
                 {
-                    if (request.ActionKey == CardZoneActions.Prepare && Hand.IsTransitioning && request.Mode != PlaybackMode.Instant) return;
+                    if ((request.ActionKey == CardZoneActions.Prepare || request.ActionKey == CardZoneActions.Draw) && Hand.IsTransitioning && request.Mode != PlaybackMode.Instant) return;
                     run.Started = true;
                     if (request.ActionKey == CardZoneActions.Prepare)
                     {
@@ -103,6 +103,7 @@ namespace CardPresentation
                     !Hand.Data.Cards.Select(x => x.ViewId).OrderBy(x => x).SequenceEqual(request.After.Cards.Select(x => x.ViewId).OrderBy(x => x)))) return;
                 bool departing = request.ActionKey == CardZoneActions.Play || request.ActionKey == CardZoneActions.Discard;
                 if (departing && !run.Released) { run.Released = true; run.Markers.Emit("Released"); }
+                if (request.ObserveProjection && retained.Any(other => !other.Started && !other.Request.ObserveProjection && other.Operation.Status == PresentationStatus.Pending)) return;
                 if (Hand.IsTransitioning || Hand.Views.Any(card => card.IsLifting || card.IsHoverScaling)) return;
                 run.Markers.Emit(departing || request.ActionKey == CardZoneActions.Draw ? "AllArrived" : "Settled");
                 run.Operation.TryComplete();

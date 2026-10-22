@@ -5272,7 +5272,6 @@ MonoBehaviour:
   discardAnchor: {fileID: 616028500}
   discardOffscreen: 0
   discardViewport: {x: 0.22, y: -0.12}
-  refillDepartureWait: 0.92
   hapticSettings:
     Enabled: 1
     GamepadSeconds: 0.045

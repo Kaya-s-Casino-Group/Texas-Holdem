@@ -42,7 +42,7 @@ namespace CardInteraction
             foreach (var previous in departureProjections.Where(item => item.operation.Status != PresentationStatus.Pending).ToArray())
             { previous.scope.Dispose(); departureProjections.Remove(previous); }
             bool drawing = removed.Length == 0 && after.Cards.Any(card => before.Cards.All(old => old.ViewId != card.ViewId));
-            if (animate && drawing && projectionAction == CardZoneActions.Discard && projectionOperation?.Status == PresentationStatus.Pending)
+            if (animate && drawing && (projectionAction == CardZoneActions.Discard || projectionAction == CardZoneActions.Play) && projectionOperation?.Status == PresentationStatus.Pending)
                 departureProjections.Add((projectionScope, projectionOperation));
             else projectionScope?.Dispose();
             projectionScope = null; projectionOperation = null; projectionAction = null;
