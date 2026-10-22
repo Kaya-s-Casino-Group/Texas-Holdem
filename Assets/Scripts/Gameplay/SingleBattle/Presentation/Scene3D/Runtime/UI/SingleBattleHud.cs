@@ -84,6 +84,7 @@ namespace Poker.SingleBattle
                 resultDelay.Reset();
                 if (resultPanel != null) resultPanel.SetActive(false);
                 if (message != null) message.text = host.Message;
+                HideWrathPrompts();
                 RefreshRuleFeedback(true); return;
             }
             if (player == null) return;
@@ -125,6 +126,7 @@ namespace Poker.SingleBattle
                         (discarding ? "弃牌阶段" : "出牌阶段") : "敌人行动");
             }
             RefreshEnemyIntents();
+            RefreshWrathPrompts(snapshot);
             message.text = "玩家 " + players.Count(unit => unit.IsAlive) + " · 怪物 " + enemies.Count(unit => unit.IsAlive) + " · 金币 " + ResourceValue(snapshot, hero.Id, "gold");
             long discardBudget = snapshot.Resource(hero.Id, "discards")?.Value ?? -1;
             counts.text = "牌库 " + ZoneCount(snapshot, hero.Id, "deck") + " · 弃牌堆 " + ZoneCount(snapshot, hero.Id, "discard") +
@@ -187,7 +189,7 @@ namespace Poker.SingleBattle
             if (endTurn != null) endTurn.onClick.RemoveListener(EndTurn);
         }
         private void OnEnable() { Subscribe(); Refresh(); if (Application.isPlaying) ScreenSafeArea.Ensure(GetComponent<Canvas>()); }
-        private void OnDisable() { Unsubscribe(); resultDelay.Reset(); HideEnemyIntents(); HideRelicHover(); HideWrathHud(); }
+        private void OnDisable() { Unsubscribe(); resultDelay.Reset(); HideEnemyIntents(); HideRelicHover(); HideWrathHud(); HideWrathPrompts(); }
         private void OnDestroy() => DestroyEnemyIntents();
         // Card landing can finish without a rules transition (e.g. opening deal or local sort).
         private void LateUpdate()

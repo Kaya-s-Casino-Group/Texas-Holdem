@@ -19,9 +19,9 @@ namespace Poker.SingleBattle
         private readonly List<WrathIntentView> wrathIntentViews = new List<WrathIntentView>();
         private readonly Dictionary<string, WrathHandMarker> wrathHandMarkers = new Dictionary<string, WrathHandMarker>();
         private RectTransform wrathOpening;
-        private TMP_Text wrathOpeningText, wrathRulesButtonText;
+        private TMP_Text wrathOpeningText, wrathRulesButtonText, wrathUltimatePrompt;
         private float wrathOpeningUntil;
-        private bool wrathOpeningPinned;
+        private bool wrathOpeningPinned, wrathPromptsVisible, wrathUltimateActive;
         private string wrathPromptBattle;
 
         private sealed class WrathIntentView
@@ -45,6 +45,28 @@ namespace Poker.SingleBattle
 
         private void EnsureWrathPromptViews()
         {
+            // The adventure keeps its authored world HUD; only transient prompts are shared.
+            if (wrathPanel != null) EnsureWrathDemoPromptViews();
+            if (wrathOpening != null) return;
+            wrathOpening = new GameObject("Wrath Opening Warning", typeof(RectTransform), typeof(Image)).GetComponent<RectTransform>();
+            wrathOpening.SetParent(transform, false); wrathOpening.gameObject.layer = gameObject.layer;
+            SetWrathRect(wrathOpening, new Vector2(.20f, .46f), new Vector2(.90f, .55f), Vector2.zero, Vector2.zero);
+            wrathOpening.GetComponent<Image>().color = new Color32(30, 9, 14, 240); wrathOpening.GetComponent<Image>().raycastTarget = false;
+            wrathOpeningText = WrathLabel(wrathOpening, "Warning", 24); wrathOpeningText.alignment = TextAlignmentOptions.Center;
+            wrathOpeningText.color = new Color32(255, 52, 65, 255);
+            SetWrathRect(wrathOpeningText.rectTransform, Vector2.zero, Vector2.one, new Vector2(12, 5), new Vector2(-12, -5));
+            wrathOpening.gameObject.SetActive(false);
+            wrathUltimatePrompt = WrathLabel(transform, "Wrath Ultimate Warning", 24);
+            wrathUltimatePrompt.text = WrathPromptText.Ultimate;
+            wrathUltimatePrompt.alignment = TextAlignmentOptions.Center;
+            wrathUltimatePrompt.color = new Color32(255, 52, 65, 255);
+            wrathUltimatePrompt.outlineWidth = .18f; wrathUltimatePrompt.outlineColor = new Color32(45, 0, 4, 255);
+            SetWrathRect(wrathUltimatePrompt.rectTransform, new Vector2(.20f, .77f), new Vector2(.90f, .84f), Vector2.zero, Vector2.zero);
+            wrathUltimatePrompt.gameObject.SetActive(false);
+        }
+
+        private void EnsureWrathDemoPromptViews()
+        {
             if (wrathIntentViews.Count == 0)
                 for (int i = 0; i < 8; i++)
                 {
@@ -62,7 +84,7 @@ namespace Poker.SingleBattle
                     SetWrathRect(label.rectTransform, new Vector2(.4f, 0), Vector2.one, Vector2.zero, Vector2.zero);
                     wrathIntentViews.Add(new WrathIntentView { Frame = root, Artwork = artwork, Placeholder = placeholder, Label = label });
                 }
-            if (wrathOpening != null) return;
+            if (wrathRulesButtonText != null) return;
             var rules = new GameObject("Wrath Rules", typeof(RectTransform), typeof(Image), typeof(Button)).GetComponent<Button>();
             rules.transform.SetParent(wrathPanel, false); rules.gameObject.layer = gameObject.layer;
             rules.targetGraphic = rules.GetComponent<Image>(); rules.targetGraphic.color = new Color32(80, 40, 45, 255);
@@ -76,14 +98,6 @@ namespace Poker.SingleBattle
                 wrathOpeningText.text = WrathPromptText.Opening;
                 UpdateWrathPromptViews();
             });
-            wrathOpening = new GameObject("Wrath Opening Warning", typeof(RectTransform), typeof(Image)).GetComponent<RectTransform>();
-            wrathOpening.SetParent(transform, false); wrathOpening.gameObject.layer = gameObject.layer;
-            SetWrathRect(wrathOpening, new Vector2(.20f, .46f), new Vector2(.90f, .55f), Vector2.zero, Vector2.zero);
-            wrathOpening.GetComponent<Image>().color = new Color32(30, 9, 14, 240); wrathOpening.GetComponent<Image>().raycastTarget = false;
-            wrathOpeningText = WrathLabel(wrathOpening, "Warning", 24); wrathOpeningText.alignment = TextAlignmentOptions.Center;
-            wrathOpeningText.color = new Color32(255, 52, 65, 255);
-            SetWrathRect(wrathOpeningText.rectTransform, Vector2.zero, Vector2.one, new Vector2(12, 5), new Vector2(-12, -5));
-            wrathOpening.gameObject.SetActive(false);
         }
 
         private void RefreshWrathIntentIcons(BattleDisplaySnapshot snapshot)
@@ -105,7 +119,12 @@ namespace Poker.SingleBattle
 
         private void RefreshWrathPrompts(BattleDisplaySnapshot snapshot)
         {
-            EnsureWrathPromptViews(); RefreshWrathIntentIcons(snapshot);
+            var body = WrathBody(snapshot);
+            wrathPromptsVisible = snapshot != null && snapshot.HasStarted && !snapshot.IsFinished && body?.IsAlive == true;
+            wrathUltimateActive = wrathPromptsVisible && snapshot.Resource(body.Id, "wrath.warning")?.Value == 1;
+            if (!wrathPromptsVisible) { HideWrathPrompts(); return; }
+            EnsureWrathPromptViews();
+            if (UsesWrathDemoPresentation) RefreshWrathIntentIcons(snapshot);
             if (wrathPromptBattle != snapshot.BattleId)
             {
                 wrathPromptBattle = snapshot.BattleId; wrathOpeningPinned = false; wrathOpeningUntil = float.NegativeInfinity;
@@ -134,15 +153,22 @@ namespace Poker.SingleBattle
 
         private WrathHandMarker CreateWrathHandMarker(string id)
         {
-            var root = new GameObject("Wrath Regeneration " + id, typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler)).GetComponent<RectTransform>();
-            root.SetParent(EnsureWorldUIRoot(), false); root.gameObject.layer = gameObject.layer; root.sizeDelta = new Vector2(160, 90);
-            var canvas = root.GetComponent<Canvas>(); canvas.renderMode = RenderMode.WorldSpace;
-            root.GetComponent<CanvasScaler>().dynamicPixelsPerUnit = 10;
+            bool adventure = host.UsesExternalCommands;
+            var root = new GameObject("Wrath Regeneration " + id, typeof(RectTransform)).GetComponent<RectTransform>();
+            root.SetParent(adventure ? transform : EnsureWorldUIRoot(), false); root.gameObject.layer = gameObject.layer;
+            root.sizeDelta = adventure ? new Vector2(220, 90) : new Vector2(160, 90);
+            if (!adventure)
+            {
+                var canvas = root.gameObject.AddComponent<Canvas>(); canvas.renderMode = RenderMode.WorldSpace;
+                root.gameObject.AddComponent<CanvasScaler>().dynamicPixelsPerUnit = 10;
+            }
             var number = WrathLabel(root, "Countdown", 34); number.color = new Color32(255, 34, 48, 255); number.alignment = TextAlignmentOptions.Center;
             number.outlineWidth = .18f; number.outlineColor = new Color32(45, 0, 4, 255);
             SetWrathRect(number.rectTransform, new Vector2(0, .25f), new Vector2(1, .8f), Vector2.zero, Vector2.zero);
-            var text = WrathLabel(root, "Regeneration Float", 13); text.alignment = TextAlignmentOptions.Center;
+            number.gameObject.SetActive(!adventure); // The adventure's existing world HUD owns its countdown.
+            var text = WrathLabel(root, "Regeneration Float", adventure ? 20 : 13); text.alignment = TextAlignmentOptions.Center;
             text.color = new Color32(255, 55, 65, 255);
+            text.outlineWidth = .18f; text.outlineColor = new Color32(45, 0, 4, 255);
             SetWrathRect(text.rectTransform, new Vector2(0, .7f), new Vector2(1, 1), Vector2.zero, Vector2.zero);
             text.gameObject.SetActive(false);
             return new WrathHandMarker { Root = root, Number = number, Float = text };
@@ -150,8 +176,10 @@ namespace Poker.SingleBattle
 
         private void UpdateWrathPromptViews()
         {
-            bool visible = wrathPanel != null && wrathPanel.gameObject.activeInHierarchy;
+            bool adventure = host != null && host.UsesExternalCommands;
+            bool visible = isActiveAndEnabled && (adventure ? wrathPromptsVisible : wrathPanel != null && wrathPanel.gameObject.activeInHierarchy);
             if (wrathOpening != null) wrathOpening.gameObject.SetActive(visible && Time.unscaledTime < wrathOpeningUntil);
+            if (wrathUltimatePrompt != null) wrathUltimatePrompt.gameObject.SetActive(visible && adventure && wrathUltimateActive);
             if (wrathRulesButtonText != null) wrathRulesButtonText.text = wrathOpeningPinned ? "收起说明" : "规则说明";
             var camera = ResolveIntentCamera();
             foreach (var marker in wrathHandMarkers.Values)
@@ -159,15 +187,45 @@ namespace Poker.SingleBattle
                 if (marker.Root == null) continue;
                 bool show = visible && marker.Visible && marker.Actor != null && camera != null;
                 marker.Root.gameObject.SetActive(show); if (!show) continue;
-                // The logical actor remains stable even when its animated artwork collapses or becomes hidden.
-                marker.Root.position = marker.Actor.transform.position;
-                marker.Root.rotation = camera.transform.rotation; marker.Root.localScale = Vector3.one * intentWorldUnitsPerPixel;
-                marker.Root.GetComponent<Canvas>().worldCamera = camera;
+                if (adventure) PositionAdventureWrathPrompt(marker, camera);
+                else
+                {
+                    // The logical actor remains stable even when its animated artwork collapses or becomes hidden.
+                    marker.Root.position = marker.Actor.transform.position;
+                    marker.Root.rotation = camera.transform.rotation; marker.Root.localScale = Vector3.one * intentWorldUnitsPerPixel;
+                    marker.Root.GetComponent<Canvas>().worldCamera = camera;
+                }
                 float progress = (Time.unscaledTime - marker.FloatStarted) / wrathRegenerationFloatSeconds;
                 marker.Float.gameObject.SetActive(progress >= 0 && progress < 1);
                 marker.Float.rectTransform.anchoredPosition = new Vector2(0, Mathf.Clamp01(progress) * 24);
                 marker.Float.alpha = 1 - Mathf.Clamp01(progress);
             }
+        }
+
+        private void PositionAdventureWrathPrompt(WrathHandMarker marker, Camera camera)
+        {
+            Vector3 anchor = marker.Actor.transform.position;
+            var composition = host.GetComponent<WrathBossArtworkLayout>();
+            var part = composition != null && composition.IsComposed ? composition.PartFor(marker.Actor) : null;
+            var surface = marker.Actor.Visual != null ? marker.Actor.Visual.Find("Artwork") : null;
+            if (part != null && surface != null)
+                anchor = surface.TransformPoint(new Vector3((part.HudPixel.x - part.Pixels.x) / part.Pixels.width - .5f,
+                    .5f - (part.HudPixel.y - part.Pixels.y) / part.Pixels.height, 0));
+            var canvas = GetComponentInParent<Canvas>();
+            var uiCamera = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay ? canvas.worldCamera : null;
+            if (RectTransformUtility.ScreenPointToLocalPointInRectangle((RectTransform)transform,
+                camera.WorldToScreenPoint(anchor), uiCamera, out var position))
+                marker.Root.localPosition = new Vector3(position.x, position.y, 0);
+        }
+
+        private void HideWrathPrompts()
+        {
+            wrathPromptsVisible = wrathUltimateActive = false;
+            wrathOpeningPinned = false; wrathOpeningUntil = float.NegativeInfinity;
+            foreach (var marker in wrathHandMarkers.Values)
+            { marker.Visible = false; marker.FloatStarted = float.NegativeInfinity; }
+            // Keep the tracker's per-battle/round memory when returning to the same adventure battle.
+            UpdateWrathPromptViews();
         }
 
         private static void SetWrathRect(RectTransform rect, Vector2 min, Vector2 max, Vector2 insetMin, Vector2 insetMax)

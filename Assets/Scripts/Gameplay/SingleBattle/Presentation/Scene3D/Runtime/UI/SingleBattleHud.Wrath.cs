@@ -70,7 +70,6 @@ namespace Poker.SingleBattle
                 }
             }
             RefreshWrathTargetAvailability();
-            RefreshWrathPrompts(snapshot);
             return true;
         }
 
