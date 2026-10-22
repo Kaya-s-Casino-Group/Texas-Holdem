@@ -42,7 +42,9 @@ namespace Poker.SingleBattle
         public override void SynchronizeDisplay(UnitDisplayData unit)
         {
             if (unit == null) return;
-            if (!unit.IsAlive) { CancelPresentation(); return; }
+            // A revealed lethal checkpoint may repeat while Hit/Death is still playing.
+            // Finish only the phase portrait; the timeline owns the actor animation's lifetime.
+            if (!unit.IsAlive) { CompletePoseTransition(); return; }
             if (unit.Labels.TryGetValue("portraitPose", out var pose))
                 PresentPose(pose, Application.isPlaying);
         }
@@ -104,10 +106,14 @@ namespace Poker.SingleBattle
         }
 
         private void Update() => Advance(Time.unscaledDeltaTime);
+        private void CompletePoseTransition()
+        {
+            leg = 0;
+            if (targetTexture != null) SetVisual(targetTexture, 1, 0);
+        }
         public override void CancelPresentation()
         {
-            base.CancelPresentation(); leg = 0;
-            if (targetTexture != null) SetVisual(targetTexture, 1, 0);
+            base.CancelPresentation(); CompletePoseTransition();
         }
         public override void ResetPresentation()
         {
