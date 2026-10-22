@@ -13,6 +13,7 @@ namespace CardInteraction
         private PresentationScope projectionScope;
         private IPresentationOperation projectionOperation;
         private string projectionAction;
+        private CardZoneDisplayData projectionTarget;
         private readonly List<(PresentationScope scope, IPresentationOperation operation)> departureProjections =
             new List<(PresentationScope, IPresentationOperation)>();
         public ICardZonePresentation Presentation => GetComponents<MonoBehaviour>().OfType<ICardZonePresentation>().SingleOrDefault()
@@ -30,13 +31,25 @@ namespace CardInteraction
                     ["effects"] = ((int)card.Effects).ToString(), ["selected"] = card.Interaction.IsSelected.ToString(),
                     ["hovered"] = card.Interaction.IsHovered.ToString() })));
         private sealed class ProjectionSignals : IMarkerSink { public bool Emit(string marker) => true; }
+        private static bool SameProjection(CardZoneDisplayData before, CardZoneDisplayData after) =>
+            before != null && before.Id == after.Id && before.Cards.Count == after.Cards.Count &&
+            before.Cards.Zip(after.Cards, (a, b) => a.ViewId == b.ViewId && a.CardId == b.CardId &&
+                a.FaceKey == b.FaceKey && a.ArtKey == b.ArtKey && a.Hidden == b.Hidden && a.DisabledReason == b.DisabledReason &&
+                a.Properties.Count == b.Properties.Count && a.Properties.All(pair => b.Properties.TryGetValue(pair.Key, out var value) && value == pair.Value)).All(same => same);
         /// <summary>Commits an already prepared observer update only after the frontend accepts its display projection.</summary>
         public void PresentProjection(CardMatchUpdate update, IEnumerable<string> discarded, bool animate)
         {
             if (update == null || update.Owner != match) throw new ArgumentException("Foreign card projection.");
             var frontend = Presentation;
-            var before = frontend.Current ?? new CardZoneDisplayData(Zone.Id.Value, null, "hand", null);
+            var before = (projectionOperation?.Status == PresentationStatus.Pending ? projectionTarget : null) ??
+                frontend.Current ?? new CardZoneDisplayData(Zone.Id.Value, null, "hand", null);
             var after = Display(update.Project(Zone.Id));
+            // Played -> discard collection and deck recycling can publish an unchanged hand. Keep the
+            // current compaction / queued draw alive instead of cancelling its tween and snapping to target.
+            if (animate && SameProjection(before, after))
+            {
+                match.Commit(update); match.Notify(update, GetComponent<CardZoneView>().Data); return;
+            }
             var removed = before.Cards.Where(card => after.Cards.All(next => next.ViewId != card.ViewId)).Select(card => card.ViewId).ToArray();
             var discardedIds = new HashSet<string>(discarded ?? Enumerable.Empty<string>(), StringComparer.Ordinal);
             foreach (var previous in departureProjections.Where(item => item.operation.Status != PresentationStatus.Pending).ToArray())
@@ -61,13 +74,15 @@ namespace CardInteraction
                     if (operation.Status == PresentationStatus.Cancelled) throw new InvalidOperationException("Card projection was cancelled before commit.");
                 }
                 match.Commit(update);
+                projectionTarget = after;
             }
-            catch { projectionScope?.Dispose(); projectionScope = null; frontend.Synchronize(before); throw; }
+            catch { projectionScope?.Dispose(); projectionScope = null; projectionTarget = null; frontend.Synchronize(before); throw; }
             match.Notify(update, GetComponent<CardZoneView>().Data);
         }
         private void StopProjection()
         {
             projectionScope?.Dispose(); projectionScope = null; projectionOperation = null; projectionAction = null;
+            projectionTarget = null;
             foreach (var previous in departureProjections) previous.scope.Dispose();
             departureProjections.Clear();
         }

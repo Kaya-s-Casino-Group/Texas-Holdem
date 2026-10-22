@@ -247,7 +247,7 @@ XML Player / Enemy 的 `attackTarget` 支持 `FirstLiving / LowestHealth / Highe
 - DOTween 使用不受 Time.timeScale 影响的时间：`FlightSeconds / CardInterval / ArcHeight` 控制逐张飞入，`DissolveSeconds / DissolveInterval` 控制逐张溶解。
 - 每张落地触发材质闪光、生成于卡牌底边中心的可选 `LandingEffect` 粒子（位置包含卡牌旋转与缩放）、`LandingSound` 与设备震动。当前落地音效复用手牌弃牌音效；当前场景粒子绑定 `Sword Slash 14 Hit Flashes`，`LandingEffectScale = 0.2`，实例按卡牌高度等比缩放，整组粒子只播放一次，位置仍在牌底；`BlockHitSound` 默认空，可自行配置。严格在实际播放非空且音量大于零的音效时请求一次震动；静默落地、Snap 和取消不会触发震动。手机与手柄能力沿用 `CardHapticsDriver`。
 
-盾牌容器是 Actor 根节点的子节点，配置时采用 Visual 的位置与朝向，保持独立于模型攻击前冲和受击晃动。当前弃牌按真实事实顺序调度：ActionStarted 先完成手牌准备，EffectSettled 启动 `GainBlock` 并在 `Revealed` 发布格挡；随后 CardsMoved 才提交离场，沿原 `DiscardAnchor / DiscardLocalPosition` 飞出，CardsDealt 提交补牌。手牌保持原 CardView 顺序和槽位直到出牌弹道／弃牌离场完成；剩余牌先按原相对顺序收拢，收拢落定后补牌，补牌落定后按当前排序方式整理。盾牌仍跟随规则事实播放。Director 与 Host 等实际阻塞句柄及最终理牌过渡都结束后释放输入。该顺序不把规则移牌提前，也不要求先飞出再给盾；若需要其他编排，应使用事实节点的动作依赖/checkpoint 配置。
+盾牌容器是 Actor 根节点的子节点，配置时采用 Visual 的位置与朝向，保持独立于模型攻击前冲和受击晃动。当前弃牌按真实事实顺序调度：ActionStarted 先完成手牌准备，EffectSettled 启动 `GainBlock` 并在 `Revealed` 发布格挡；随后 CardsMoved 才提交离场，沿原 `DiscardAnchor / DiscardLocalPosition` 飞出，CardsDealt 提交补牌。手牌保持原 CardView 顺序和槽位直到出牌弹道／弃牌离场完成；剩余牌先按原相对顺序收拢，使用 DOTween `OutBack` 惯性缓动；Demo 与冒险场景的理牌时间为 0.35 秒，包含过冲与回稳。收拢落定后补牌，补牌落定后按当前排序方式整理。重复发布相同手牌的收牌／洗牌事实不会中断当前动画。盾牌仍跟随规则事实播放。Director 与 Host 等实际阻塞句柄及最终理牌过渡都结束后释放输入。该顺序不把规则移牌提前，也不要求先飞出再给盾；若需要其他编排，应使用事实节点的动作依赖/checkpoint 配置。
 
 卡牌飞出和盾牌落地各自播放原有音效，每次实际发声请求一次震动；即时模式只同步最终状态。弃牌 View 不持有 Actor 引用，`CardActionViewOperation` 只报告本批离场卡牌（含错峰队列）的实际完成，不把剩余手牌理牌作为它自己的完成条件。取消、清空或禁用 View 会取消未完成句柄，由新调度链进入恢复同步。
 

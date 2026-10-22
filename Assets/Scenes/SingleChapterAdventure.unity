@@ -5257,7 +5257,7 @@ MonoBehaviour:
     FlightSeconds: 0.25
     DealInterval: 0.08
     SettleSeconds: 0.65
-    ReflowSeconds: 0.25
+    ReflowSeconds: 0.35
     ReflowOvershoot: 1.768
     FlightLift: 0.025
     OvershootDistance: 0.01
