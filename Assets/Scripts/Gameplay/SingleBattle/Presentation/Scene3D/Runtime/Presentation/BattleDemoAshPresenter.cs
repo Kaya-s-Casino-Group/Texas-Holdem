@@ -57,6 +57,7 @@ namespace Poker.SingleBattle
             ashMesh = CreateAshMesh(artwork.GetComponent<MeshFilter>().sharedMesh.bounds);
             go.GetComponent<MeshFilter>().sharedMesh = ashMesh;
             fragments = go.GetComponent<MeshRenderer>(); fragments.sharedMaterial = ashMaterial;
+            fragments.sortingLayerID = artwork.sortingLayerID; fragments.sortingOrder = artwork.sortingOrder;
             fragments.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             fragments.receiveShadows = false;
         }
@@ -87,6 +88,7 @@ namespace Poker.SingleBattle
         {
             Progress = value; EnsureSurface();
             if (properties == null || artwork == null) return;
+            if (fragments != null) fragments.sortingOrder = artwork.sortingOrder;
             properties.SetFloat("_AshProgress", value); properties.SetFloat("_AshMode", 0); artwork.SetPropertyBlock(properties);
             if (fragments == null) return;
             properties.SetFloat("_AshMode", 1); fragments.SetPropertyBlock(properties);

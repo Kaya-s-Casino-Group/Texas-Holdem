@@ -119,11 +119,10 @@ namespace CardPresentation
                 if (elapsed >= delay && !hasStarted) { hasStarted = true; pendingDiscardStart = true; }
                 float progress = Mathf.Clamp01((elapsed - delay) / flight);
                 // Reverse of the arrival's OutCubic: accelerate away, with no landing rebound.
-                float exitTravel = progress * progress * progress;
-                float flip = Mathf.SmoothStep(0, 1, progress);
-                var position = Vector3.Lerp(start.Position, target.Position, exitTravel);
-                float arc = Mathf.Sin(progress * Mathf.PI);
-                position.y += arc * arc * discardSettings.FlightLift * view.PresentationScale;
+                float exitTravel = CardDiscardMotion.Travel(progress);
+                float flip = CardDiscardMotion.Flip(progress);
+                var position = CardDiscardMotion.Position(start.Position, target.Position,
+                    Vector3.up * discardSettings.FlightLift * view.PresentationScale, progress);
                 view.SetDiscardPose(exitOffset * (1 - exitTravel), exitSway * (1 - flip));
                 view.SetDealFlipAngle(Mathf.Lerp(startFlipAngle, 180, flip));
                 view.ApplyDisplayPose(new CardZoneCardPose(position, Quaternion.Slerp(start.Rotation, target.Rotation, flip)));

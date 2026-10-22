@@ -7,6 +7,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using UIFoundation;
 
 namespace Poker.SingleBattle
 {
@@ -151,7 +152,8 @@ namespace Poker.SingleBattle
                 view.Root.gameObject.SetActive(visible); if (!visible) continue;
                 view.Health.gameObject.SetActive(!regenerating);
                 view.StatusRow.gameObject.SetActive(!regenerating);
-                view.HealthText.text = unit.Health + " / " + unit.MaxHealth;
+                bool bossBody = host.UsesExternalCommands && previous.Labels.TryGetValue("wrath.body", out var bodyId) && bodyId == unit.Id;
+                view.HealthText.text = (bossBody ? "暴怒  " : "") + unit.Health + " / " + unit.MaxHealth;
                 float fraction = unit.MaxHealth > 0 ? Mathf.Clamp01((float)unit.Health / unit.MaxHealth) : 0;
                 view.Fill.anchorMin = new Vector2(1f / 184, 1f / 17);
                 view.Fill.anchorMax = new Vector2((1 + 182 * fraction) / 184, 16f / 17);
@@ -219,6 +221,7 @@ namespace Poker.SingleBattle
         {
             if (host == null || viewCamera == null || uiRoot == null) return;
             if (!ReferenceEquals(previous, host.Display)) Refresh();
+            var composition = host.GetComponent<WrathBossArtworkLayout>();
             foreach (var view in views)
             {
                 if (view.Surface == null || !view.Root.gameObject.activeSelf) continue;
@@ -226,14 +229,57 @@ namespace Poker.SingleBattle
                 float width = mesh.size.x * Mathf.Abs(view.Surface.lossyScale.x);
                 float height = mesh.size.y * Mathf.Abs(view.Surface.lossyScale.y);
                 float scale = Mathf.Max(.0001f, width / 240);
-                view.Root.SetPositionAndRotation(view.Surface.TransformPoint(mesh.center) - viewCamera.transform.forward * .025f, viewCamera.transform.rotation);
+                bool body = host.UsesExternalCommands && previous != null &&
+                    previous.Labels.TryGetValue("wrath.body", out var bodyId) && bodyId == view.Actor.DisplayId;
+                if (body)
+                {
+                    PositionBossHeader(view);
+                    continue;
+                }
+                var part = composition != null && composition.IsComposed ? composition.PartFor(view.Actor) : null;
+                bool hand = part != null && part.Name != "Body";
+                var center = mesh.center;
+                if (hand)
+                {
+                    // Place the familiar enemy UI around the palm, rather than the long arm's
+                    // rectangular crop. Compensate for the larger artwork to retain the compact HUD.
+                    center = new Vector3((part.HudPixel.x - part.Pixels.x) / part.Pixels.width - .5f,
+                        .5f - (part.HudPixel.y - part.Pixels.y) / part.Pixels.height, 0);
+                    scale *= .60f * (.76f / 1.08f);
+                }
+                view.Root.SetPositionAndRotation(view.Surface.TransformPoint(center) - viewCamera.transform.forward * .025f, viewCamera.transform.rotation);
                 view.Root.localScale = Vector3.one * scale;
-                float halfHeight = height / scale * .5f;
+                view.Health.sizeDelta = new Vector2(184, 17);
+                view.HealthText.rectTransform.sizeDelta = new Vector2(180, 21);
+                view.HealthText.fontSize = hand ? 18 : 13;
+                float halfHeight = hand ? 42 : height / scale * .5f;
                 view.Health.anchoredPosition = new Vector2(0, -halfHeight - 17);
                 view.Block.Root.anchoredPosition = new Vector2(-120, -halfHeight - 17);
                 view.StatusRow.anchoredPosition = new Vector2(0, -halfHeight - 46);
                 view.IntentRow.anchoredPosition = new Vector2(0, halfHeight + 28);
             }
+        }
+
+        private void PositionBossHeader(View view)
+        {
+            var pixels = viewCamera.pixelRect;
+            var safe = ScreenSafeArea.CameraRect(viewCamera);
+            var screen = new Vector2((safe.x - pixels.x + safe.width * .64f) / pixels.width,
+                (safe.y - pixels.y + safe.height * .90f) / pixels.height);
+            const float depth = 3;
+            float worldHeight = viewCamera.orthographic ? 2 * viewCamera.orthographicSize :
+                2 * depth * Mathf.Tan(viewCamera.fieldOfView * Mathf.Deg2Rad * .5f);
+            float scale = worldHeight / 720 * safe.height / pixels.height;
+            float barWidth = .40f * 720 * viewCamera.aspect * (safe.width / pixels.width) / (safe.height / pixels.height);
+            view.Root.SetPositionAndRotation(viewCamera.ViewportToWorldPoint(new Vector3(screen.x, screen.y, depth)), viewCamera.transform.rotation);
+            view.Root.localScale = Vector3.one * scale;
+            view.Health.anchoredPosition = Vector2.zero;
+            view.Health.sizeDelta = new Vector2(barWidth, 22);
+            view.HealthText.rectTransform.sizeDelta = new Vector2(barWidth - 4, 27);
+            view.HealthText.fontSize = 18;
+            view.Block.Root.anchoredPosition = new Vector2(-barWidth * .5f - 22, 0);
+            view.StatusRow.anchoredPosition = new Vector2(-barWidth * .5f + 95, -32);
+            view.IntentRow.anchoredPosition = new Vector2(barWidth * .5f - 80, -32);
         }
         private void OnDisable()
         {

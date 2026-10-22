@@ -63,6 +63,11 @@ namespace Poker.SingleBattle.Tests
                 host.Enemies.Select(actor => actor.ParticipantId.Value));
             Assert.AreEqual(6, host.Enemies.Select(actor => actor.gameObject).Distinct().Count());
             Assert.AreEqual(6, host.Enemies.Select(actor => actor.transform.position).Distinct().Count());
+            var composition = host.GetComponent<WrathBossArtworkLayout>();
+            Assert.IsTrue(composition.IsComposed);
+            CollectionAssert.AreEqual(new[] { "Body", "Hand1", "Hand2", "Hand3", "Hand4", "Hand5" },
+                host.Enemies.Select(actor => composition.PartFor(actor).Name));
+            Assert.IsFalse(composition.WarningVisible);
             Assert.IsTrue(host.Enemies.All(actor => actor.IsBound && actor.Battle == host && actor.Visual != null));
             Assert.AreEqual(1500, host.Display.Unit("enemy").Health);
             Assert.IsTrue(host.Enemies.Skip(1).All(actor => actor.DisplayUnit.Health == 1 && actor.DisplayUnit.MaxHealth == 1));
@@ -91,6 +96,9 @@ namespace Poker.SingleBattle.Tests
             Assert.AreEqual(6, host.PlayTargetChoices.Single().Candidates.Count);
             Assert.IsTrue(host.Enemies.All(actor => Target(actor.ParticipantId.Value).interactable));
             AssertSynchronized();
+            Directory.CreateDirectory("Library/WrathBossArtwork");
+            ScreenCapture.CaptureScreenshot("Library/WrathBossArtwork/assembled.png");
+            yield return new WaitForEndOfFrame();
         }
 
         [UnityTest]
@@ -164,6 +172,9 @@ namespace Poker.SingleBattle.Tests
             Assert.AreEqual(1, Resource("enemy", "wrath.warning"));
             Assert.AreEqual(6, Resource("enemy", "wrath.releaseRound"));
             AssertWarningVisible(true);
+            Directory.CreateDirectory("Library/WrathBossArtwork");
+            ScreenCapture.CaptureScreenshot("Library/WrathBossArtwork/warning.png");
+            yield return new WaitForEndOfFrame();
             var sameHud = hud;
             string previousBattle = host.Display.BattleId;
             yield return PrepareCards("standard:1:2");
@@ -173,6 +184,8 @@ namespace Poker.SingleBattle.Tests
             yield return Idle();
             AssertWarningVisible(false);
             Assert.IsTrue(Marker("hand-1").gameObject.activeInHierarchy);
+            ScreenCapture.CaptureScreenshot("Library/WrathBossArtwork/severed.png");
+            yield return new WaitForEndOfFrame();
             Assert.AreEqual("8", Marker("hand-1").Find("Countdown").GetComponent<TMP_Text>().text);
             Assert.AreEqual(38, Resource("enemy", "wrath.attack"));
             yield return EndTurn();
@@ -550,6 +563,8 @@ namespace Poker.SingleBattle.Tests
 
         private void AssertWarningVisible(bool active)
         {
+            Assert.AreEqual(active, host.GetComponent<WrathBossArtworkLayout>().WarningVisible,
+                "The PSD red-glow layer must follow the displayed warning and clear after interruption/restart.");
             var root = Find("Wrath Boss/Ultimate Warning");
             Assert.AreEqual(active, root.GetComponent<Outline>().enabled);
             if (active) StringAssert.Contains(UltimateText, root.Find("Warning").GetComponent<TMP_Text>().text);

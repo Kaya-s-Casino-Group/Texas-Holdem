@@ -270,7 +270,7 @@ namespace Poker.Adventure.Tests
         }
 
         [UnityTest]
-        public IEnumerator SevenStationBossSeversAndRegeneratesFiveOriginalActorsWithRemoteAshAndArtwork()
+        public IEnumerator SevenStationBossSeversAndRegeneratesFiveOriginalActorsWithPsdArtwork()
         {
             yield return ReachBattle("boss");
             var view = host.BattleView;
@@ -338,6 +338,25 @@ namespace Poker.Adventure.Tests
                 .SelectMany(root => root.GetComponentsInChildren<Transform>(true))
                 .Any(item => item.name == "Wrath Boss" && item.gameObject.activeInHierarchy),
                 "The standalone validation panel must not replace the authored adventure UI.");
+            var view = host.BattleView;
+            if (view.Display.Labels.TryGetValue("wrath.body", out var bodyId))
+            {
+                var camera = view.gameObject.scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<Camera>(true))
+                    .Single(item => item.CompareTag("MainCamera"));
+                var body = view.Enemies.Single(actor => actor.DisplayId == bodyId);
+                var health = FindEnemyWorldHud(body).Find("Health Bar").GetComponent<RectTransform>();
+                Assert.Greater(camera.WorldToViewportPoint(health.position).y, .87f,
+                    "The boss health bar belongs at the top of the battle view, not below its feet.");
+                float ScreenWidth(RectTransform rect)
+                {
+                    var corners = new Vector3[4]; rect.GetWorldCorners(corners);
+                    return Vector3.Distance(camera.WorldToScreenPoint(corners[0]), camera.WorldToScreenPoint(corners[3]));
+                }
+                float bossWidth = ScreenWidth(health);
+                foreach (var hand in view.Enemies.Where(actor => actor != body))
+                    Assert.Less(ScreenWidth(FindEnemyWorldHud(hand).Find("Health Bar").GetComponent<RectTransform>()), bossWidth * .20f,
+                        "Hands retain compact ordinary-enemy UI beneath the large boss header.");
+            }
         }
 
         private Transform FindEnemyWorldHud(EnemyBattleActor actor) =>
@@ -475,16 +494,29 @@ namespace Poker.Adventure.Tests
                 var ash = (BattleDemoAshPresenter)actor.Presentation; Assert.AreEqual(0, ash.Progress);
                 var block = new MaterialPropertyBlock(); ash.Artwork.GetPropertyBlock(block); Assert.NotNull(block.GetTexture("_BaseMap"));
                 var enemy = host.BattleView.PresentedState.Duel.Enemies.Single(unit => unit.Id == actor.ParticipantId);
-                string portrait = host.Adventure.CurrentNode.Kind == AdventureNodeKind.Boss ? "Enemy.png" :
-                    host.Adventure.CurrentNode.Kind == AdventureNodeKind.Elite && !enemy.SummonerId.HasValue ? "Elite-Updated.png" : "Minion-Updated.png";
-                Assert.AreEqual("Assets/Art/Characters/BattleBillboards/" + portrait,
-                    AssetDatabase.GetAssetPath(block.GetTexture("_BaseMap")), "Encounter artwork must survive reuse and summoning: " + actor.name);
+                var composition = host.BattleView.GetComponent<WrathBossArtworkLayout>();
+                string expectedTexture;
+                if (composition != null && composition.IsComposed)
+                {
+                    var part = composition.PartFor(actor);
+                    Assert.IsNotNull(part, "Each boss participant keeps its own PSD layer.");
+                    expectedTexture = AssetDatabase.GetAssetPath(part.Texture);
+                }
+                else
+                {
+                    string portrait = host.Adventure.CurrentNode.Kind == AdventureNodeKind.Elite && !enemy.SummonerId.HasValue
+                        ? "Elite-Updated.png" : "Minion-Updated.png";
+                    expectedTexture = "Assets/Art/Characters/BattleBillboards/" + portrait;
+                }
+                Assert.AreEqual(expectedTexture, AssetDatabase.GetAssetPath(block.GetTexture("_BaseMap")),
+                    "Encounter artwork must survive reuse and summoning: " + actor.name);
                 Assert.AreEqual(1, ash.Artwork.GetComponentsInChildren<MeshRenderer>(true).Count(renderer => renderer.name == "Enemy Ash Fragments"));
             }
             Assert.AreEqual(count, ActiveEnemyHudCount(), "Inactive actors and previous encounters must not leave visible HUDs.");
             var layouts = host.BattleView.Enemies.Select(actor => actor.GetComponentInChildren<BattleBillboardLayout>(true)).ToArray();
             Assert.IsTrue(layouts.All(layout => layout != null), "Each enemy needs a viewport layout.");
-            for (int i = 0; i < layouts.Length; i++)
+            bool composedBoss = host.BattleView.GetComponent<WrathBossArtworkLayout>()?.IsComposed == true;
+            for (int i = 0; !composedBoss && i < layouts.Length; i++)
                 for (int j = i + 1; j < layouts.Length; j++)
                     Assert.IsFalse(layouts[i].ViewportArea.Overlaps(layouts[j].ViewportArea),
                         "Enemy viewports overlap: " + host.BattleView.Enemies[i].ParticipantId + " / " + host.BattleView.Enemies[j].ParticipantId);

@@ -288,7 +288,7 @@ Artwork 子节点以 0.12 秒淡出右移、0.18 秒淡入归位切换贴图，�
 
 ### BattleDemo 出牌、灰烬与遗物美术
 
-出牌桥接直接使用规则结果的 `SubmittedCards / ScoringCards`：非计分牌只在首波攻击时同步向手牌区正下方飞出，不创建拖尾；计分牌沿原牌型弹道命中目标，随后触发受击。`BattleCardProjectileAction` Inspector 的“计分牌拖尾宽度比例”当前为 0.55，拖尾沿长度逐渐变细，横向颜色保持一致。
+出牌桥接直接使用规则结果的 `SubmittedCards / ScoringCards`：非计分牌只在首波攻击时离场，按当前手牌顺序播放与普通弃牌相同的加速飞出、翻面和轻微抬升，不创建攻击拖尾。两者共用 `CardDiscardMotion` 曲线和手牌区的 `DiscardSettings`（飞行时长、逐张间隔、抬升幅度），飞向同一弃牌位置。最后一张非计分牌离场后才允许后续收拢、补牌和整理。计分牌继续沿原牌型弹道命中目标，随后触发受击。`BattleCardProjectileAction` Inspector 的“计分牌拖尾宽度比例”当前为 0.55，拖尾沿长度逐渐变细，横向颜色保持一致。
 
 三个小怪使用场景专用 `BattleDemoAshPresenter` 与 `BattleDemoAsh.shader`。死亡时灰化并逐步剥落为上飘灰烬；Inspector 的“灰烬消散时长”默认为 0.85 秒。进度通过每个 Renderer 的属性块驱动，重开、同步与复活恢复显示，禁用时还原原始材质。其他场景继续使用原来的死亡表现。
 

@@ -635,7 +635,7 @@ namespace Poker.SingleBattle.Tests
                 var scoring = all.Where(renderer => renderer.name.StartsWith("Card Projectile ") && renderer.enabled).ToArray();
                 if (drops.Length > 0)
                 {
-                    Assert.AreEqual(3, drops.Length); Assert.IsTrue(drops.All(renderer => renderer.GetComponentInChildren<TrailRenderer>() == null));
+                    Assert.LessOrEqual(drops.Length, 3); Assert.IsTrue(drops.All(renderer => renderer.GetComponentInChildren<TrailRenderer>() == null));
                     sawConcurrent |= scoring.Length == 2;
                     foreach (var drop in drops)
                     {
@@ -658,7 +658,7 @@ namespace Poker.SingleBattle.Tests
                 }
                 yield return null;
             }
-            Assert.IsFalse(host.IsPresenting); Assert.IsTrue(sawConcurrent); Assert.IsTrue(sawDownward); Assert.IsTrue(sawAsh);
+            Assert.IsFalse(host.IsPresenting); Assert.AreEqual(3, starts.Count); Assert.IsTrue(sawConcurrent); Assert.IsTrue(sawDownward); Assert.IsTrue(sawAsh);
             Assert.AreEqual(1, ash.Progress); Assert.IsFalse(host.Enemies[1].IsAlive);
             host.SnapToState(); Assert.AreEqual(1, ash.Progress);
             host.RestartBattle(); yield return Idle(host);
