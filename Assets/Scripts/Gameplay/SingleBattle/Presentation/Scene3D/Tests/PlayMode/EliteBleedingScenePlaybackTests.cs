@@ -53,7 +53,7 @@ namespace Poker.SingleBattle.Tests
             Assert.AreEqual(2, Stacks());
             Assert.AreEqual(796, host.Player.DisplayUnit.Health);
             AssertSynchronized();
-            Preview(36, "普攻", 18);
+            Preview(20, "普攻", 13);
             MeasureHud("two-stacks-strike", true, layoutFailures);
             yield return Ready();
 
@@ -62,9 +62,9 @@ namespace Poker.SingleBattle.Tests
             yield return FinishRound();
             CollectionAssert.Contains(frames, 1L);
             Assert.AreEqual(1, Stacks());
-            Assert.AreEqual(760, host.Player.DisplayUnit.Health);
+            Assert.AreEqual(776, host.Player.DisplayUnit.Health);
             AssertSynchronized();
-            Preview(21, "施法", 28);
+            Preview(11, "施法", 18);
 
             frames.Clear();
             Assert.IsTrue(host.EndTurn(true));
@@ -72,7 +72,7 @@ namespace Poker.SingleBattle.Tests
             CollectionAssert.Contains(frames, 4L, "Existing 1 + cast 3 layers are displayed before decay.");
             CollectionAssert.Contains(frames, 3L);
             Assert.AreEqual(3, Stacks());
-            Assert.AreEqual(739, host.Player.DisplayUnit.Health);
+            Assert.AreEqual(765, host.Player.DisplayUnit.Health);
             Assert.AreEqual(3, host.State.Duel.CompletedRounds);
             AssertSynchronized();
             MeasureHud("three-stacks-strike", true, layoutFailures);
@@ -115,7 +115,7 @@ namespace Poker.SingleBattle.Tests
             Assert.AreEqual(intent.SequenceCursor, host.State.Duel.Enemies.Single().BehaviorState.SequenceCursor);
             Assert.AreEqual("strike", host.State.Duel.Enemies.Single().BehaviorState.Intent.Id);
             Assert.AreEqual(2, host.State.Duel.CompletedRounds);
-            Preview(28, "普攻", 28);
+            Preview(18, "普攻", 18);
             AssertSynchronized();
         }
 
@@ -171,7 +171,7 @@ namespace Poker.SingleBattle.Tests
             yield return Idle();
             Assert.AreEqual(2, Stacks(), "Admin changes only HP and inventory; existing bleeding must remain.");
             Assert.AreEqual(2, DisplayStacks(host.Display));
-            Preview(36, "普攻", 18);
+            Preview(20, "普攻", 13);
             var strikeIntent = host.State.Duel.Enemies.Single().BehaviorState;
             var healthFrames = new List<long>();
             long? layersAtFirstRevival = null;
@@ -189,7 +189,7 @@ namespace Poker.SingleBattle.Tests
             CollectionAssert.Contains(healthFrames, 480L, "The real reviver must restore 60% of 800 HP.");
             Assert.Less(healthFrames.IndexOf(0), healthFrames.IndexOf(480));
             Assert.AreEqual(0L, layersAtFirstRevival, "The first revived display checkpoint must already have cleared existing bleeding.");
-            Assert.AreEqual(36, EnemyHits().Single().SettledDamage);
+            Assert.AreEqual(20, EnemyHits().Single().SettledDamage);
             Assert.AreEqual(480, host.Player.DisplayUnit.Health);
             Assert.AreEqual(0, Stacks());
             Assert.AreEqual(0, DisplayStacks(host.Display));
@@ -202,16 +202,16 @@ namespace Poker.SingleBattle.Tests
             Assert.AreEqual(strikeIntent.SequenceCursor, host.State.Duel.Enemies.Single().BehaviorState.SequenceCursor,
                 "Revival aborts completion, so the interrupted enemy intent is retained.");
             Assert.AreEqual("strike", host.State.Duel.Enemies.Single().BehaviorState.Intent.Id);
-            Preview(28, "普攻", 28);
+            Preview(18, "普攻", 18);
             AssertSynchronized();
             yield return Ready();
             Assert.IsTrue(host.EndTurn(true));
             yield return FinishRound();
-            Assert.AreEqual(28, EnemyHits().Single().SettledDamage, "The retained strike must no longer receive the old bleeding bonus.");
-            Assert.AreEqual(452, host.Player.DisplayUnit.Health);
+            Assert.AreEqual(18, EnemyHits().Single().SettledDamage, "The retained strike must no longer receive the old bleeding bonus.");
+            Assert.AreEqual(462, host.Player.DisplayUnit.Health);
             Assert.AreEqual(0, Stacks());
             Assert.AreEqual(0, DisplayStacks(host.Display));
-            Preview(19, "施法", 38);
+            Preview(11, "施法", 23);
             AssertSynchronized();
         }
 
@@ -223,20 +223,20 @@ namespace Poker.SingleBattle.Tests
             yield return FinishRound();
             Apply(new BattleAdminPatch(vitals: new[] { new BattleAdminVitals(host.Player.ParticipantId, block: 10) }, reason: "Shield scene fixture"));
             yield return Idle();
-            var preview = Preview(36, "普攻", 18);
+            var preview = Preview(20, "普攻", 13);
             Assert.AreEqual(10, preview.BlockAbsorbed);
-            Assert.AreEqual(26, preview.DamageToHealth);
+            Assert.AreEqual(10, preview.DamageToHealth);
             Assert.IsTrue(host.EndTurn(true));
             yield return FinishRound();
             var hits = EnemyHits();
             Assert.AreEqual(1, hits.Length, "Bleeding amplifies the primary hit instead of issuing a second damage event.");
-            Assert.AreEqual(36, hits[0].SettledDamage);
+            Assert.AreEqual(20, hits[0].SettledDamage);
             Assert.AreEqual(10, hits[0].BlockAbsorbed);
-            Assert.AreEqual(26, hits[0].DamageToHealth);
+            Assert.AreEqual(10, hits[0].DamageToHealth);
             var contribution = hits[0].IncomingModification.Triggers.Single(t => t.SourceId == "incoming.attack-per-stack");
-            StringAssert.Contains("18→36", contribution.Reason);
-            StringAssert.Contains("+18", contribution.Reason);
-            Assert.AreEqual(770, host.Player.DisplayUnit.Health);
+            StringAssert.Contains("13→20", contribution.Reason);
+            StringAssert.Contains("+7", contribution.Reason);
+            Assert.AreEqual(786, host.Player.DisplayUnit.Health);
             Assert.AreEqual(0, host.Player.DisplayUnit.Block);
             Assert.AreEqual(1, Stacks());
             AssertSynchronized();
@@ -253,7 +253,7 @@ namespace Poker.SingleBattle.Tests
             host.RestartBattle();
             yield return Idle();
             Assert.IsTrue(host.PresentationDirector.HasConfiguredTimeline);
-            Assert.AreEqual(400, host.Enemy.Unit.Health);
+            Assert.AreEqual(500, host.Enemy.Unit.Health);
             Assert.AreEqual(0, host.State.Duel.CompletedRounds);
             AssertSynchronized();
         }
@@ -311,7 +311,7 @@ namespace Poker.SingleBattle.Tests
             string text = host.Display.Labels["intent/" + host.Enemy.ParticipantId.Value];
             StringAssert.Contains(skill, text);
             StringAssert.Contains("攻击力 " + attack, text);
-            StringAssert.Contains("每回合结束 +10", text);
+            StringAssert.Contains("每回合结束 +5", text);
             StringAssert.Contains("伤害 " + damage, text);
             return hit;
         }
@@ -369,11 +369,11 @@ namespace Poker.SingleBattle.Tests
                 if (field == "intent")
                 {
                     bool opening = stage == "opening-cast";
-                    long damage = opening ? 4 : stage == "two-stacks-strike" ? 36 : 95;
+                    long damage = opening ? 4 : stage == "two-stacks-strike" ? 20 : 43;
                     StringAssert.Contains(opening ? "施法" : "普攻", label.text);
                     StringAssert.Contains("伤害 " + damage, label.text);
                     StringAssert.Contains("流血", label.text);
-                    if (!opening) StringAssert.Contains(stage == "two-stacks-strike" ? "+18" : "+57", label.text);
+                    if (!opening) StringAssert.Contains(stage == "two-stacks-strike" ? "+7" : "+20", label.text);
                 }
                 else
                 {

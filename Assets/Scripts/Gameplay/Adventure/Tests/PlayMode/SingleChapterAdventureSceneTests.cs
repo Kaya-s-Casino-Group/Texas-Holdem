@@ -263,7 +263,7 @@ namespace Poker.Adventure.Tests
                 vitals: new[] { new BattleAdminVitals(host.Adventure.PlayerId, 100000, 100000) })).Accepted);
             yield return Idle();
             Assert.IsFalse(view.Display.Labels.ContainsKey("wrath.body"));
-            long[] damage = { 4, 36, 21, 95 };
+            long[] damage = { 4, 20, 11, 43 };
             for (int i = 0; i < damage.Length; i++)
             {
                 long before = view.Player.DisplayUnit.Health;
@@ -417,10 +417,10 @@ namespace Poker.Adventure.Tests
             Assert.AreEqual(expectedReward, host.Adventure.LastRewardGold);
             Assert.AreEqual(beforeGold + expectedReward, host.Adventure.Gold);
             Assert.IsTrue(host.IsBusy, "The lethal card's visuals must finish before reward navigation becomes available.");
-            Assert.IsTrue(host.BattleView.isActiveAndEnabled); Assert.IsFalse(VisibleText("战斗胜利"));
+            Assert.IsTrue(host.BattleView.isActiveAndEnabled); Assert.IsFalse(VisibleVictory());
             Assert.IsFalse(host.ExecuteAdventure(new AdventureCommand(AdventureCommandKind.Continue)));
             yield return AssertResultDelay();
-            yield return Idle(); Assert.IsTrue(VisibleText("战斗胜利")); Assert.AreEqual(0, ActiveEnemyHudCount());
+            yield return Idle(); Assert.IsTrue(VisibleVictory()); Assert.AreEqual(0, ActiveEnemyHudCount());
             long settledRevision = host.Revision; long settledGold = host.Adventure.Gold;
             host.BattleView.SynchronizeBattle(); host.BattleView.SynchronizeBattle();
             Assert.AreEqual(settledRevision, host.Revision); Assert.AreEqual(settledGold, host.Adventure.Gold);
@@ -448,7 +448,7 @@ namespace Poker.Adventure.Tests
             Assert.AreEqual(0, host.Adventure.LastRewardGold);
             yield return AssertResultDelay();
             yield return Idle();
-            Assert.IsTrue(VisibleText("战斗胜利")); Assert.AreEqual(0, ActiveEnemyHudCount());
+            Assert.IsTrue(VisibleVictory()); Assert.AreEqual(0, ActiveEnemyHudCount());
         }
 
         private IEnumerator AssertResultDelay()
@@ -462,7 +462,7 @@ namespace Poker.Adventure.Tests
             {
                 Assert.IsTrue(host.IsBusy);
                 Assert.IsTrue(host.BattleView.isActiveAndEnabled);
-                Assert.IsFalse(VisibleText("战斗胜利"));
+                Assert.IsFalse(VisibleVictory());
                 host.ReturnToMenu(); Assert.IsFalse(host.IsAtMenu);
                 yield return null;
             }
@@ -470,7 +470,7 @@ namespace Poker.Adventure.Tests
             while (host.IsBusy && Time.realtimeSinceStartup < deadline) yield return null;
             Assert.IsFalse(host.IsBusy);
             Assert.GreaterOrEqual(Time.unscaledTimeAsDouble - finishedAt, 1.4, "Result UI appeared before the 1.5 second delay (one frame tolerance).");
-            Assert.IsTrue(VisibleText("战斗胜利"));
+            Assert.IsTrue(VisibleVictory());
         }
 
         private IEnumerator Idle()
@@ -528,6 +528,8 @@ namespace Poker.Adventure.Tests
                     Assert.IsFalse(layouts[i].ViewportArea.Overlaps(layouts[j].ViewportArea),
                         "Enemy viewports overlap: " + host.BattleView.Enemies[i].ParticipantId + " / " + host.BattleView.Enemies[j].ParticipantId);
         }
+        private bool VisibleVictory() => VisibleText("战斗胜利") || screen.GetComponentsInChildren<Image>().Any(image =>
+            image.isActiveAndEnabled && image.name == "Victory" && image.sprite != null && image.sprite == DeskUISkin.Get("VictoryLogo"));
         private bool VisibleText(string text) => screen.GetComponentsInChildren<TMP_Text>().Any(label => label.isActiveAndEnabled && label.text == text);
         private void AssertOverlayClosed()
         {

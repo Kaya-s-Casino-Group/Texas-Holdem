@@ -97,10 +97,12 @@ namespace Poker.BattlePresentation.Tests
             var display = BattleDisplayProjector.Build(before, session.Engine, player);
             string text = display.Labels["intent/enemy"];
 
+            Assert.AreEqual(500, before.Duel.Combat.Get(new ParticipantId("enemy")).MaxHealth);
             StringAssert.Contains("施法", text);
             StringAssert.Contains("攻击力 8", text);
-            StringAssert.Contains("每回合结束 +10", text);
+            StringAssert.Contains("每回合结束 +5", text);
             StringAssert.Contains("伤害 4", text);
+            StringAssert.Contains("30%", text);
             StringAssert.Contains("×3", text);
             StringAssert.Contains("3→2 层", text);
             Assert.AreSame(before, session.State);
