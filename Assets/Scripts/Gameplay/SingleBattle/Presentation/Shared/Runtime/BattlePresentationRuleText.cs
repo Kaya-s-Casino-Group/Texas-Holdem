@@ -31,6 +31,16 @@ namespace Poker.BattlePresentation
             if (behavior is ReflectBlockedDamageSpec) return "盾反 " + Percent(((ReflectBlockedDamageSpec)behavior).Ratio);
             if (behavior is LifeStealSpec) return "吸血 " + Percent(((LifeStealSpec)behavior).Ratio);
             if (behavior is OverhealDamageSpec) return "溢出治疗转伤 " + Percent(((OverhealDamageSpec)behavior).Ratio);
+            if (behavior is DamageImmunitySpec) return "伤害免疫：每层抵挡一段正数伤害（含毒和反伤，不免疫状态）";
+            if (behavior is IncomingAttackDamagePerStackSpec bleeding)
+                return "流血：每层使敌人攻击伤害 +" + Percent(bleeding.Rate) + "（护盾前，不影响道具自伤）";
+            if (behavior is StackDecaySpec decay)
+            {
+                string owner = decay.TimingSubject == PeriodicTimingSubject.Applier ? "施加者" : "持有者";
+                string when = decay.Timing == CombatTimingKind.ActionCompleted ? "每次有效行动后" :
+                    decay.Timing == CombatTimingKind.TurnStarted ? "回合开始" : "所属阵营阶段结束";
+                return owner + when + "移除 " + decay.Stacks + " 层";
+            }
             var periodic = behavior as PeriodicDamageSpec;
             if (periodic == null) return behavior.GetType().Name;
             string subject = periodic.TimingSubject == PeriodicTimingSubject.Applier ? "施加者" : "持有者";
@@ -58,7 +68,9 @@ namespace Poker.BattlePresentation
         }
 
         public static string Status(StatusInstance status, CombatStatusCatalog catalog) =>
-            StatusName(status.DefinitionId, catalog) + (status.Stacks > 1 ? " ×" + status.Stacks : "") + "（" + Duration(status.Duration) + "）";
+            StatusName(status.DefinitionId, catalog) + (status.Stacks > 1 ||
+                catalog?.Find(status.DefinitionId)?.Behaviors.Any(b => b is IncomingAttackDamagePerStackSpec || b is DamageImmunitySpec) == true ? " ×" + status.Stacks : "") +
+            "（" + Duration(status.Duration) + "）";
 
         public static string Snapshot(CardDuelState state, ParticipantId playerId, CombatStatusCatalog catalog, Func<string, string> name = null)
         {
@@ -169,7 +181,11 @@ namespace Poker.BattlePresentation
                 string reason = changed.Reason == CombatStatusChangeReason.Cleansed ? "净化" : changed.Reason == CombatStatusChangeReason.Expired ? "到期" :
                     changed.Reason == CombatStatusChangeReason.Refreshed ? "刷新" : changed.StatusAfter == null ? "耗尽" : "消耗";
                 string owner = status.Target.Kind == EntityKind.Participant ? Participant(state, new ParticipantId(status.Target.Id)) : status.Target.Id;
+                string layers = catalog?.Find(status.DefinitionId)?.Behaviors.Any(b => b is StackDecaySpec) == true &&
+                    changed.StatusBefore.Stacks != (changed.StatusAfter?.Stacks ?? 0) ?
+                    "（" + changed.StatusBefore.Stacks + "→" + (changed.StatusAfter?.Stacks ?? 0) + " 层）" : "";
                 return owner + "：" + StatusName(status.DefinitionId, catalog) + " " + reason +
+                    layers +
                     (changed.StatusAfter == null ? "" : "（" + Duration(changed.StatusAfter.Duration) + "）");
             }
             var effect = item.Effect;
@@ -183,8 +199,11 @@ namespace Poker.BattlePresentation
             switch (effect.Kind)
             {
                 case CombatEffectKind.Damage:
+                    string bleeding = string.Join("；", fact.IncomingModification?.Triggers
+                        .Where(t => t.SourceId == "incoming.attack-per-stack").Select(t => t.Reason) ?? Enumerable.Empty<string>());
                     return target + origin + "伤害 " + fact.SettledDamage + (compact ? "" :
-                        "（扣血 " + fact.DamageToHealth + " · 护盾吸收 " + fact.BlockAbsorbed + "）") + (fact.Died ? " · 击败" : "");
+                        "（扣血 " + fact.DamageToHealth + " · 护盾吸收 " + fact.BlockAbsorbed + "）") +
+                        (bleeding.Length == 0 ? "" : " · 流血增伤：" + bleeding) + (fact.Died ? " · 击败" : "");
                 case CombatEffectKind.Revive: return target + "复活 · 生命 " + fact.After.Health + " / " + fact.After.MaxHealth + " · 护盾和状态清空";
                 case CombatEffectKind.LoseHealth: return target + "失去生命 " + (fact.Before.Health - fact.After.Health) + (fact.Died ? " · 阵亡" : "");
                 case CombatEffectKind.Heal:

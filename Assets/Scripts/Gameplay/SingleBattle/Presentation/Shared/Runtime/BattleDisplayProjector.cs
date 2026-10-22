@@ -36,12 +36,26 @@ namespace Poker.BattlePresentation
                     .Where(s => s.Target.Kind == EntityKind.Participant && s.Target.Id == unit.Id.Value)
                     .Select(s => BattlePresentationRuleText.Status(s, engine.Duel.Definition.StatusCatalog)));
             labels["relics"] = BattlePresentationRuleText.Relics(state, observer);
+            var wrath = BattleWrathDisplayProjector.Add(duel, engine.Duel, resources, labels);
             foreach (var enemy in duel.Enemies)
             {
-                if (!duel.Combat.Get(enemy.Id).IsAlive || duel.IsFinished) continue;
-                var preview = engine.Duel.PreviewEnemyAction(duel, enemy.Id);
+                if (!duel.Combat.Get(enemy.Id).IsAlive || duel.IsFinished ||
+                    !duel.Players.Any(player => duel.Combat.Get(player.Id).IsAlive)) continue;
+                var preview = engine.Duel.PreviewEnemyAction(duel, enemy.Id, includeWrathUltimate: wrath == null || enemy.Id != wrath.BodyId);
+                string skill = enemy.BehaviorState?.Intent?.Name;
                 labels["intent/" + enemy.Id.Value] = preview == null || !preview.Accepted ? "意图不可用" : preview.IsSkipped ? "眩晕 · 跳过行动" :
+                    (string.IsNullOrEmpty(skill) ? "" : skill + "\n") +
+                    (wrath != null && enemy.Id == wrath.BodyId ? "攻击力 " + wrath.Attack + "\n" : AttackGrowth(enemy, duel.CompletedRounds)) +
                     string.Join("\n", BattlePresentationRuleText.Events(preview.RuleEvents, duel, engine.Duel.Definition.StatusCatalog, true));
+                if (wrath != null && enemy.Id == wrath.BodyId)
+                {
+                    var hits = preview?.Hits.Where(hit => hit.Effect.Source == enemy.Id &&
+                        duel.Players.Any(player => player.Id == hit.Effect.Target)).ToArray();
+                    labels["wrath.current"] = preview == null || !preview.Accepted ? "当前常规动作预览不可用" :
+                        preview.IsSkipped ? "眩晕 · 本轮跳过行动" : hits.Length == 0 ? "当前常规动作：" + skill :
+                        "当前常规动作：" + skill + " · " + string.Join(" + ", hits.Select(hit =>
+                            "伤害 " + hit.SettledDamage + "（扣血 " + hit.HealthLost + " / 护盾 " + hit.BlockAbsorbed + "）"));
+                }
             }
             if (duel.Scores.Count > 0) {
                 labels["lastScorePattern"] = HandName(duel.Scores.Last().Category);
@@ -63,6 +77,16 @@ namespace Poker.BattlePresentation
                 duel.CompletedRounds, duel.IsFinished ? (duel.Phase == ScoredDuelPhase.Won ? "Won" : "Lost") : null,
                 duel.Combat.Combatants.Select(unit => Unit(unit, duel, state)), zones, resources, cursor,
                 hasStarted: state.HasStarted, completedRounds: duel.CompletedRounds, labels: labels);
+        }
+        private static string AttackGrowth(BattleEnemySetup enemy, int completedRounds)
+        {
+            if (!(enemy.Behavior?.Attack > 0)) return "";
+            try
+            {
+                return "攻击力 " + enemy.AttackAtRound(completedRounds) +
+                    (enemy.Behavior.AttackPerRound > 0 ? " · 每回合结束 +" + enemy.Behavior.AttackPerRound : "") + "\n";
+            }
+            catch (OverflowException) { return ""; }
         }
         public static UnitDisplayData Unit(CombatantState unit, TeamBattleState duel, CardDuelState state = null)
         {

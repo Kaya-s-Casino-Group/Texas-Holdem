@@ -1,0 +1,10 @@
+test_bleeding_audit_uses_its_stage_and_still_settles_as_one_shielded_hit (test_elite_projection.EliteProjectionHttpTests) ... ok
+test_cast_status_and_damage_contribution_are_authoritative_and_visible (test_elite_projection.EliteProjectionHttpTests) ... ok
+test_configured_turn_start_decay_keeps_its_actual_intent_timing (test_elite_projection.EliteProjectionHttpTests) ... ok
+test_growth_overflow_is_safe_even_when_action_has_no_damage (test_elite_projection.EliteProjectionHttpTests) ... ok
+test_unpreviewable_attack_growth_does_not_break_snapshot (test_elite_projection.EliteProjectionHttpTests) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.168s
+
+OK

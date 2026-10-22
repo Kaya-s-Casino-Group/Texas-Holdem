@@ -1,0 +1,856 @@
+{
+  "format_version": 1,
+  "captured_at": "2026-10-22T01:49:04.031936+00:00",
+  "scope": "Current tracked differences, untracked non-ignored files, and selected environment references. Excludes this manifest, ignored caches, and the parent gitlink directory. Not a source backup or a full-project inventory.",
+  "repositories": [
+    {
+      "path": ".",
+      "branch": "codex/wrath-boss-20261022",
+      "head": "1500cb1223dc8cc968256563d9420f7784893634",
+      "status_porcelain": " M Assets/Fonts/NotoSansCJK/TMP/NotoSansCJKSCRegular.asset\n M Assets/Scenes/BattleDemo.unity\n M Assets/Scripts/Gameplay/SingleBattle/Presentation/Scene3D/Runtime/UI/SingleBattleHud.Intent.cs\n M Assets/Scripts/Gameplay/SingleBattle/Presentation/Scene3D/Runtime/UI/SingleBattleHud.cs\n M Assets/Scripts/Gameplay/SingleBattle/Presentation/Scene3D/Tests/Editor/SingleBattleXmlHostTests.cs\n M Assets/Scripts/Gameplay/SingleBattle/Presentation/Scene3D/Tests/PlayMode/Poker.SingleBattle.Tests.PlayMode.asmdef\n M Assets/Scripts/Gameplay/SingleBattle/Presentation/Shared/Runtime/BattleDisplayProjector.cs\n M Assets/Scripts/Gameplay/SingleBattle/Presentation/Shared/Runtime/BattlePresentationRuleText.cs\n M Assets/Settings/BattleForwardRenderer.asset\n M External/BattleToolkit\n?? Assets/Scripts/Gameplay/SingleBattle/Presentation/Scene3D/Editor/WrathBossSetup.cs\n?? Assets/Scripts/Gameplay/SingleBattle/Presentation/Scene3D/Editor/WrathBossSetup.cs.meta\n?? Assets/Scripts/Gameplay/SingleBattle/Presentation/Scene3D/Runtime/UI/SingleBattleHud.Wrath.cs\n?? Assets/Scripts/Gameplay/SingleBattle/Presentation/Scene3D/Runtime/UI/SingleBattleHud.Wrath.cs.meta\n?? Assets/Scripts/Gameplay/SingleBattle/Presentation/Scene3D/Runtime/UI/SingleBattleHud.WrathPrompts.cs\n?? Assets/Scripts/Gameplay/SingleBattle/Presentation/Scene3D/Runtime/UI/SingleBattleHud.WrathPrompts.cs.meta\n?? Assets/Scripts/Gameplay/SingleBattle/Presentation/Scene3D/Runtime/UI/WrathIntentPlaceholderGraphic.cs\n?? Assets/Scripts/Gameplay/SingleBattle/Presentation/Scene3D/Runtime/UI/WrathIntentPlaceholderGraphic.cs.meta\n?? Assets/Scripts/Gameplay/SingleBattle/Presentation/Scene3D/Tests/Editor/WrathBossSceneTests.cs\n?? Assets/Scripts/Gameplay/SingleBattle/Presentation/Scene3D/Tests/Editor/WrathBossSceneTests.cs.meta\n?? Assets/Scripts/Gameplay/SingleBattle/Presentation/Scene3D/Tests/Editor/WrathHudPromptTests.cs\n?? Assets/Scripts/Gameplay/SingleBattle/Presentation/Scene3D/Tests/Editor/WrathHudPromptTests.cs.meta\n?? Assets/Scripts/Gameplay/SingleBattle/Presentation/Scene3D/Tests/PlayMode/EliteBleedingScenePlaybackTests.cs\n?? Assets/Scripts/Gameplay/SingleBattle/Presentation/Scene3D/Tests/PlayMode/EliteBleedingScenePlaybackTests.cs.meta\n?? Assets/Scripts/Gameplay/SingleBattle/Presentation/Shared/Runtime/BattleWrathDisplayProjector.cs\n?? Assets/Scripts/Gameplay/SingleBattle/Presentation/Shared/Runtime/BattleWrathDisplayProjector.cs.meta\n?? Assets/Scripts/Gameplay/SingleBattle/Presentation/Shared/Runtime/WrathPromptTracker.cs\n?? Assets/Scripts/Gameplay/SingleBattle/Presentation/Shared/Runtime/WrathPromptTracker.cs.meta\n?? Assets/Scripts/Gameplay/SingleBattle/Presentation/Shared/Tests/Editor/BattleElitePresentationTests.cs\n?? Assets/Scripts/Gameplay/SingleBattle/Presentation/Shared/Tests/Editor/BattleElitePresentationTests.cs.meta\n?? Assets/Scripts/Gameplay/SingleBattle/Presentation/Shared/Tests/Editor/BattleWrathPresentationTests.cs\n?? Assets/Scripts/Gameplay/SingleBattle/Presentation/Shared/Tests/Editor/BattleWrathPresentationTests.cs.meta\n?? Assets/Scripts/Gameplay/SingleBattle/Presentation/Shared/Tests/Editor/WrathPromptPresentationTests.cs\n?? Assets/Scripts/Gameplay/SingleBattle/Presentation/Shared/Tests/Editor/WrathPromptPresentationTests.cs.meta\n?? Tools/Validation/2026-10-21-elite-bleeding.md\n?? Tools/Validation/2026-10-22-wrath-boss.md\n?? Tools/Validation/2026-10-22-wrath-prompts.md\n?? docs/handoffs/2026-10-22-wrath-boss-evidence/test-results-summary.json\n?? docs/handoffs/2026-10-22-wrath-boss-evidence/verify-migration.py\n?? docs/handoffs/2026-10-22-wrath-boss-evidence/wrath-prompts-iab.png\n?? docs/handoffs/2026-10-22-wrath-boss-unity-handoff.md\n?? docs/superpowers/plans/2026-10-22-wrath-boss-prompts.md\n?? docs/superpowers/plans/2026-10-22-wrath-boss.md\n?? docs/superpowers/specs/2026-10-22-wrath-boss-design.md\n",
+      "files": [
+        {
+          "path": ".gitmodules",
+          "kind": "file",
+          "origin": "environment-reference",
+          "size": 132,
+          "sha256": "ecb97d2bdaa382326029c5a4d2cda54ff3ea9b6d7f7df7eb29fe4af568cbddaf"
+        },
+        {
+          "path": "Assets/Fonts/NotoSansCJK/TMP/NotoSansCJKSCRegular.asset",
+          "kind": "file",
+          "origin": "modified",
+          "size": 8614428,
+          "sha256": "b8c206a322b6145f7607506927b05ffcdcebfdf42205b1031d0545fd934f0fa4"
+        },
+        {
+          "path": "Assets/Scenes/BattleDemo.unity",
+          "kind": "file",
+          "origin": "modified",
+          "size": 695077,
+          "sha256": "196848bde65c37a0f5369a33cd794fa161837bee08031d8fbf5477aa528a1954"
+        },
+        {
+          "path": "Assets/Scripts/Gameplay/SingleBattle/Presentation/Scene3D/Editor/WrathBossSetup.cs",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 5823,
+          "sha256": "fd45b19b71362488497ee8c4ffd93527509d3f14511f7599670db254727aa2e8"
+        },
+        {
+          "path": "Assets/Scripts/Gameplay/SingleBattle/Presentation/Scene3D/Editor/WrathBossSetup.cs.meta",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 60,
+          "sha256": "49064592c040a23b80ff3cda8340b8698d84cb6972658854bcc061f826c61f45"
+        },
+        {
+          "path": "Assets/Scripts/Gameplay/SingleBattle/Presentation/Scene3D/Runtime/UI/SingleBattleHud.Intent.cs",
+          "kind": "file",
+          "origin": "modified",
+          "size": 14259,
+          "sha256": "c2503e570a27a373bbcaaf289adb4e65803d6f042e72370085c2872130d09170"
+        },
+        {
+          "path": "Assets/Scripts/Gameplay/SingleBattle/Presentation/Scene3D/Runtime/UI/SingleBattleHud.Wrath.cs",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 9203,
+          "sha256": "1312a10acbffd775253dd28d3381c665bcb8dc2f82b0f58d418726d04fdca2f5"
+        },
+        {
+          "path": "Assets/Scripts/Gameplay/SingleBattle/Presentation/Scene3D/Runtime/UI/SingleBattleHud.Wrath.cs.meta",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 60,
+          "sha256": "7a9fedf82409bb08cd7eb01f09f6839fcd73644338156f6ce4e6ba19ec8e48e8"
+        },
+        {
+          "path": "Assets/Scripts/Gameplay/SingleBattle/Presentation/Scene3D/Runtime/UI/SingleBattleHud.WrathPrompts.cs",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 12109,
+          "sha256": "99bc58b9f1a2d515584c2ee395e36f21693322fa2ddb5809a4986e0dd277ff91"
+        },
+        {
+          "path": "Assets/Scripts/Gameplay/SingleBattle/Presentation/Scene3D/Runtime/UI/SingleBattleHud.WrathPrompts.cs.meta",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 60,
+          "sha256": "99794844186f296fc680be975968d687b4ca8340474f34b29953a7a083ab47fc"
+        },
+        {
+          "path": "Assets/Scripts/Gameplay/SingleBattle/Presentation/Scene3D/Runtime/UI/SingleBattleHud.cs",
+          "kind": "file",
+          "origin": "modified",
+          "size": 13463,
+          "sha256": "ff83ab84c1ec4a5659f264cbe6398ebd257e53fabd717af2ed67ead1ccaef21b"
+        },
+        {
+          "path": "Assets/Scripts/Gameplay/SingleBattle/Presentation/Scene3D/Runtime/UI/WrathIntentPlaceholderGraphic.cs",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 2205,
+          "sha256": "81ed5dc901074dbd548de497f49d9ec583c36774507f11ed8d8bfc7c05b4bc26"
+        },
+        {
+          "path": "Assets/Scripts/Gameplay/SingleBattle/Presentation/Scene3D/Runtime/UI/WrathIntentPlaceholderGraphic.cs.meta",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 60,
+          "sha256": "339c133f7f8af12a01f0c41463466037907d548b7afe41367059218093805c13"
+        },
+        {
+          "path": "Assets/Scripts/Gameplay/SingleBattle/Presentation/Scene3D/Tests/Editor/SingleBattleXmlHostTests.cs",
+          "kind": "file",
+          "origin": "modified",
+          "size": 35149,
+          "sha256": "fbc9a559b3714be96b07f0a0ba1f23a778b8595f9ffc4667a6762ae2a058275a"
+        },
+        {
+          "path": "Assets/Scripts/Gameplay/SingleBattle/Presentation/Scene3D/Tests/Editor/WrathBossSceneTests.cs",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 3315,
+          "sha256": "619c6098c7008ace3edf7f5521d2194449872a0e672bd13f1a1eab844239b5d9"
+        },
+        {
+          "path": "Assets/Scripts/Gameplay/SingleBattle/Presentation/Scene3D/Tests/Editor/WrathBossSceneTests.cs.meta",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 60,
+          "sha256": "53259b642669fdf337fced08ec6f98db4314a2ea035e974e75abf034f9e10b05"
+        },
+        {
+          "path": "Assets/Scripts/Gameplay/SingleBattle/Presentation/Scene3D/Tests/Editor/WrathHudPromptTests.cs",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 3570,
+          "sha256": "baa62279454b7db3f11d2e09ba04162c598fbb59461b358d8c8c6262f0a5c18c"
+        },
+        {
+          "path": "Assets/Scripts/Gameplay/SingleBattle/Presentation/Scene3D/Tests/Editor/WrathHudPromptTests.cs.meta",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 60,
+          "sha256": "9b937adbacf70fe6ac77ac87dcadfb2dd936d8a9acb3d54e51c1166e1c616502"
+        },
+        {
+          "path": "Assets/Scripts/Gameplay/SingleBattle/Presentation/Scene3D/Tests/PlayMode/EliteBleedingScenePlaybackTests.cs",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 25348,
+          "sha256": "4e23b199ff2d7ae351271644b55818040fb6544ba92db45af35ee5a50799e98f"
+        },
+        {
+          "path": "Assets/Scripts/Gameplay/SingleBattle/Presentation/Scene3D/Tests/PlayMode/EliteBleedingScenePlaybackTests.cs.meta",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 60,
+          "sha256": "aa25b6205b0bc913a6218417dd1a7f7f31fcb91408286dbf4a12a6d3bf91ec3d"
+        },
+        {
+          "path": "Assets/Scripts/Gameplay/SingleBattle/Presentation/Scene3D/Tests/PlayMode/Poker.SingleBattle.Tests.PlayMode.asmdef",
+          "kind": "file",
+          "origin": "modified",
+          "size": 688,
+          "sha256": "a0481d54031c558ce1200af3be75f3a78c2e29ad69f859afc03957db80431ec3"
+        },
+        {
+          "path": "Assets/Scripts/Gameplay/SingleBattle/Presentation/Shared/Runtime/BattleDisplayProjector.cs",
+          "kind": "file",
+          "origin": "modified",
+          "size": 8553,
+          "sha256": "25b525594b9b7a688500e9f0d94942f056e4543956fe5ed7bb7dac2085f99f98"
+        },
+        {
+          "path": "Assets/Scripts/Gameplay/SingleBattle/Presentation/Shared/Runtime/BattlePresentationRuleText.cs",
+          "kind": "file",
+          "origin": "modified",
+          "size": 17860,
+          "sha256": "861fa666a7120cfc68a44d9083adfd8d22f1ec7d11b090980a8e97b8fd6e65dc"
+        },
+        {
+          "path": "Assets/Scripts/Gameplay/SingleBattle/Presentation/Shared/Runtime/BattleWrathDisplayProjector.cs",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 4057,
+          "sha256": "0fac0b027984c194c47ed85db98bd683786a5120c06a55ec4700a4fb7a707da1"
+        },
+        {
+          "path": "Assets/Scripts/Gameplay/SingleBattle/Presentation/Shared/Runtime/BattleWrathDisplayProjector.cs.meta",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 60,
+          "sha256": "fe569121925bd3280819011f0b51987ac9a5bb4525cbf23b546d004960394dff"
+        },
+        {
+          "path": "Assets/Scripts/Gameplay/SingleBattle/Presentation/Shared/Runtime/WrathPromptTracker.cs",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 2982,
+          "sha256": "a68336a2118a0da89bdf9e6156f9a8ce25f89297b3c622a026ccbab105ddb6b5"
+        },
+        {
+          "path": "Assets/Scripts/Gameplay/SingleBattle/Presentation/Shared/Runtime/WrathPromptTracker.cs.meta",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 60,
+          "sha256": "5418bc37c712aa064251571108cfc1fba09c77dac5b4eb4a2e1207c8caeb1f78"
+        },
+        {
+          "path": "Assets/Scripts/Gameplay/SingleBattle/Presentation/Shared/Tests/Editor/BattleElitePresentationTests.cs",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 9882,
+          "sha256": "b0b9959ed12b761ad626f34dbda583a6cb91a86b014db02653b13d3382ea7e71"
+        },
+        {
+          "path": "Assets/Scripts/Gameplay/SingleBattle/Presentation/Shared/Tests/Editor/BattleElitePresentationTests.cs.meta",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 60,
+          "sha256": "496addac2b4f9e154df9c1d05c8f1c989db2d8c42f0d293429640b4413f8ab5e"
+        },
+        {
+          "path": "Assets/Scripts/Gameplay/SingleBattle/Presentation/Shared/Tests/Editor/BattleWrathPresentationTests.cs",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 13436,
+          "sha256": "db0095e5955ded15cb3ec473ebabb8fe026add8382f99fd725ad67649e729720"
+        },
+        {
+          "path": "Assets/Scripts/Gameplay/SingleBattle/Presentation/Shared/Tests/Editor/BattleWrathPresentationTests.cs.meta",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 60,
+          "sha256": "778fb03d134b9219515cebef6896a116c2fa3cf063982632b8e625bd4b1fa948"
+        },
+        {
+          "path": "Assets/Scripts/Gameplay/SingleBattle/Presentation/Shared/Tests/Editor/WrathPromptPresentationTests.cs",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 4748,
+          "sha256": "a09cc239bd8d0da454c1816c831758f667b4d0cf4396b5d80955676978e2d6ff"
+        },
+        {
+          "path": "Assets/Scripts/Gameplay/SingleBattle/Presentation/Shared/Tests/Editor/WrathPromptPresentationTests.cs.meta",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 60,
+          "sha256": "5486f3e977021fa1da8faf316df6ea2717081ddd69ef5737d49c137f15294651"
+        },
+        {
+          "path": "Assets/Settings/BattleForwardRenderer.asset",
+          "kind": "file",
+          "origin": "modified",
+          "size": 2857,
+          "sha256": "be2b62544872db72451e87485c9aac2779c7a29124ff0b4f9967e17a1bc38b83"
+        },
+        {
+          "path": "Packages/manifest.json",
+          "kind": "file",
+          "origin": "environment-reference",
+          "size": 2325,
+          "sha256": "4fe9e141a38cbd1cad36512f1f050c252d1afbbcb8cb08555e187866d5d4ca0d"
+        },
+        {
+          "path": "Packages/packages-lock.json",
+          "kind": "file",
+          "origin": "environment-reference",
+          "size": 15452,
+          "sha256": "e1926686a7903cca86b8392dac46eceba920dd094834da2faa3b191a1de6671f"
+        },
+        {
+          "path": "ProjectSettings/ProjectVersion.txt",
+          "kind": "file",
+          "origin": "environment-reference",
+          "size": 85,
+          "sha256": "b51164d22c4d2716ba8aee7f0b59d6b7dd0efa8552fd1db2a8c3b123fae3a1ec"
+        },
+        {
+          "path": "Tools/Validation/2026-10-21-elite-bleeding.md",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 14144,
+          "sha256": "c6b6fdd4ce17d52dceb1dafe1e76021a6ba15c5d0b6a9081daeec356a6d45bd0"
+        },
+        {
+          "path": "Tools/Validation/2026-10-22-wrath-boss.md",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 8569,
+          "sha256": "d1662cf7cd5df7f1b9f496950868411333db6e082e5e221c9f65236f76467529"
+        },
+        {
+          "path": "Tools/Validation/2026-10-22-wrath-prompts.md",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 4509,
+          "sha256": "151e5c85aaf6c7a6d9fc1fa010a33a2ba9280bb72f3ebf19fccbb8ce88bbc97d"
+        },
+        {
+          "path": "docs/handoffs/2026-10-22-wrath-boss-evidence/test-results-summary.json",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 11079,
+          "sha256": "792d76cede8725c155be25261300ed9023078acf6d1ad3d6e47912304426a480"
+        },
+        {
+          "path": "docs/handoffs/2026-10-22-wrath-boss-evidence/verify-migration.py",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 2484,
+          "sha256": "180a5df05713bfab329480a0478ee90070e569b4044d05cde008b1fec984ac85"
+        },
+        {
+          "path": "docs/handoffs/2026-10-22-wrath-boss-evidence/wrath-prompts-iab.png",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 61501,
+          "sha256": "8fd85c02d737c7d36b666aa40b4458820be7ce88c9b7a7da5da39c5186011f9f"
+        },
+        {
+          "path": "docs/handoffs/2026-10-22-wrath-boss-unity-handoff.md",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 25173,
+          "sha256": "40308d343e4ad8e0288ca69c10f6716332f66f155a8113d638745ca84bb50543"
+        },
+        {
+          "path": "docs/superpowers/plans/2026-10-22-wrath-boss-prompts.md",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 4376,
+          "sha256": "79d6e7b0925d75cd48717de3a52d1f49dfe0f8931a96c8ae8cb8e48ac622dc94"
+        },
+        {
+          "path": "docs/superpowers/plans/2026-10-22-wrath-boss.md",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 7160,
+          "sha256": "0c56fb352bc69700d174b01647e1fa94a67e36db17ef47736ca6facb624ce04c"
+        },
+        {
+          "path": "docs/superpowers/specs/2026-10-22-wrath-boss-design.md",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 7237,
+          "sha256": "004dcb543c455319064f96449f8b8cd67ebe24f43a4cffbf6771c2ce1dd2c84f"
+        }
+      ]
+    },
+    {
+      "path": "External/BattleToolkit",
+      "branch": "codex/wrath-boss-20261022",
+      "head": "2228665bf9d8afa8b5c0807db32e933653a0c463",
+      "status_porcelain": " M Engine/Content/StandardSingleBattle-2026-10-21.xml\n M Engine/Content/Templates/10_WrathThousandHands.xml\n M Engine/Runtime/Combat/CombatEngine.cs\n M Engine/Runtime/Combat/CombatInteractions.cs\n M Engine/Runtime/Combat/CombatStatusDefinition.cs\n M Engine/Runtime/Combat/CombatStatusLifecycle.cs\n M Engine/Runtime/Combat/CombatTiming.cs\n M Engine/Runtime/Composition/Adventure/BattleAdventureSession.cs\n M Engine/Runtime/Composition/Content/BattleContentCompiler.cs\n M Engine/Runtime/Composition/Content/BattleContentDefinitions.cs\n M Engine/Runtime/Composition/Content/BattleContentEffects.cs\n M Engine/Runtime/Composition/Content/BattleContentEnemyBehavior.cs\n M Engine/Runtime/Composition/Content/BattleContentModels.cs\n M Engine/Runtime/Composition/Content/ConfiguredBattleEffects.cs\n M Engine/Runtime/Composition/Content/EnemyBehavior.md\n M Engine/Runtime/Composition/Content/README.md\n M Engine/Runtime/Composition/Encounters/BattleEffectBinder.cs\n M Engine/Runtime/Composition/Encounters/BattleEffectSequence.cs\n M Engine/Runtime/Composition/Encounters/BattleTimeline.cs\n M Engine/Runtime/Composition/Encounters/EnemyBehavior.cs\n M Engine/Runtime/Composition/Encounters/RelicNumericModifiers.cs\n M Engine/Runtime/Composition/Encounters/TeamBattleEngine.cs\n M Tools/BattleContentEditor/AdventureBattleProjection.cs\n M Tools/BattleContentEditor/NativeServer.cs\n M Tools/BattleContentEditor/PlaytestBridge.cs\n M Tools/BattleContentEditor/PlaytestProjection.cs\n M Tools/BattleContentEditor/README.md\n M Tools/BattleContentEditor/package.json\n M Tools/BattleContentEditor/server.py\n M Tools/BattleContentEditor/tests/h5-scene-browser.cjs\n M Tools/BattleContentEditor/tests/run_browser.py\n M Tools/BattleContentEditor/web/app.js\n M Tools/BattleContentEditor/web/model.js\n M Tools/BattleContentEditor/web/playtest.css\n M Tools/BattleContentEditor/web/playtest.js\n M Tools/BattleContentEditor/web/schema.js\n?? Engine/Content/Templates/11_BleedingElite.xml\n?? Engine/Content/Templates/11_BleedingElite.xml.meta\n?? Engine/Runtime/Composition/Encounters/TeamBattleWrathBoss.cs\n?? Engine/Runtime/Composition/Encounters/TeamBattleWrathBoss.cs.meta\n?? Engine/Runtime/Composition/Encounters/WrathBoss.cs\n?? Engine/Runtime/Composition/Encounters/WrathBoss.cs.meta\n?? Engine/Runtime/Composition/Encounters/WrathHandEffectRestrictions.cs\n?? Engine/Runtime/Composition/Encounters/WrathHandEffectRestrictions.cs.meta\n?? Engine/Tests/Editor/CombatEliteBleedingTests.cs\n?? Engine/Tests/Editor/CombatEliteBleedingTests.cs.meta\n?? Engine/Tests/Editor/CombatWrathImmunityTests.cs\n?? Engine/Tests/Editor/CombatWrathImmunityTests.cs.meta\n?? Engine/Tests/Editor/EliteBleedingIntegrationTests.cs\n?? Engine/Tests/Editor/EliteBleedingIntegrationTests.cs.meta\n?? Engine/Tests/Editor/EliteBleedingInteractionTests.cs\n?? Engine/Tests/Editor/EliteBleedingInteractionTests.cs.meta\n?? Engine/Tests/Editor/WrathAdventureHealthTests.cs\n?? Engine/Tests/Editor/WrathAdventureHealthTests.cs.meta\n?? Engine/Tests/Editor/WrathAdventureReplayTests.cs\n?? Engine/Tests/Editor/WrathAdventureReplayTests.cs.meta\n?? Engine/Tests/Editor/WrathBossRulesTests.cs\n?? Engine/Tests/Editor/WrathBossRulesTests.cs.meta\n?? Engine/Tests/Editor/WrathHandEffectRestrictionsTests.cs\n?? Engine/Tests/Editor/WrathHandEffectRestrictionsTests.cs.meta\n?? Tools/BattleContentEditor/PlaytestWrathPresentation.cs\n?? Tools/BattleContentEditor/tests/elite-ui-browser.cjs\n?? Tools/BattleContentEditor/tests/test_elite_projection.py\n?? Tools/BattleContentEditor/tests/test_wrath_projection.py\n?? Tools/BattleContentEditor/tests/wrath-interaction-browser.cjs\n?? Tools/BattleContentEditor/tests/wrath-ui-browser.cjs\n?? Tools/BattleContentEditor/web/wrath-presentation.js\n",
+      "files": [
+        {
+          "path": "Engine/Content/StandardSingleBattle-2026-10-21.xml",
+          "kind": "file",
+          "origin": "modified",
+          "size": 22163,
+          "sha256": "795abe1b56f1f4b83fd4d64d0c006197dc84fc1c6e41829925687b7f566ea70e"
+        },
+        {
+          "path": "Engine/Content/Templates/10_WrathThousandHands.xml",
+          "kind": "file",
+          "origin": "modified",
+          "size": 21185,
+          "sha256": "c0edfd8b072c773276b49c6508acba628746314897cd4eabecb27d4623ace538"
+        },
+        {
+          "path": "Engine/Content/Templates/11_BleedingElite.xml",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 14743,
+          "sha256": "62f432d46930f5aff7914dc74fbd424182107b4e3f3b56974ebbc97ab4abe103"
+        },
+        {
+          "path": "Engine/Content/Templates/11_BleedingElite.xml.meta",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 155,
+          "sha256": "29a8741b365487b4d78d7fe93925ba19789d388d348d1fff6fab34b7c29bfcd2"
+        },
+        {
+          "path": "Engine/Runtime/Combat/CombatEngine.cs",
+          "kind": "file",
+          "origin": "modified",
+          "size": 51292,
+          "sha256": "1e92fae7eefd2cd7ec5f0829218fbf1220dfa0ed10e5a4b8897ea81c11001b21"
+        },
+        {
+          "path": "Engine/Runtime/Combat/CombatInteractions.cs",
+          "kind": "file",
+          "origin": "modified",
+          "size": 808,
+          "sha256": "633bdaf83c18817f93d8cb89876586eec6f09df4db0cc37a18eb56942692dde1"
+        },
+        {
+          "path": "Engine/Runtime/Combat/CombatStatusDefinition.cs",
+          "kind": "file",
+          "origin": "modified",
+          "size": 7590,
+          "sha256": "86435b0787fa813ac0d0d23e8a367d71e74a3b1661dc90d0175213d28c7eec38"
+        },
+        {
+          "path": "Engine/Runtime/Combat/CombatStatusLifecycle.cs",
+          "kind": "file",
+          "origin": "modified",
+          "size": 13198,
+          "sha256": "8483bd4f96314366afc9d06f743da30cdbd2c9ff1b87373d6a4927aff5503091"
+        },
+        {
+          "path": "Engine/Runtime/Combat/CombatTiming.cs",
+          "kind": "file",
+          "origin": "modified",
+          "size": 6602,
+          "sha256": "a1a1e28d8b0478af497b3002d30ca1d6c36c3beb6eca5eee4b624324b91fe754"
+        },
+        {
+          "path": "Engine/Runtime/Composition/Adventure/BattleAdventureSession.cs",
+          "kind": "file",
+          "origin": "modified",
+          "size": 23927,
+          "sha256": "961698c3daa55723de46e57190d01b987b683f691c72a9fdd77f67adb22848bf"
+        },
+        {
+          "path": "Engine/Runtime/Composition/Content/BattleContentCompiler.cs",
+          "kind": "file",
+          "origin": "modified",
+          "size": 14713,
+          "sha256": "5ae0837a75d1f2fc7f0604c42ebf5b0bb8f89fc87790cd66f2f16c9fba3098cf"
+        },
+        {
+          "path": "Engine/Runtime/Composition/Content/BattleContentDefinitions.cs",
+          "kind": "file",
+          "origin": "modified",
+          "size": 12251,
+          "sha256": "1d19da3b0107355a4142621b3ba66ec11bb733b87c1998fb38de5814785025e7"
+        },
+        {
+          "path": "Engine/Runtime/Composition/Content/BattleContentEffects.cs",
+          "kind": "file",
+          "origin": "modified",
+          "size": 17984,
+          "sha256": "be8bfe2b3e84939a4737a8386d334a4c595653351a5bfb31f10976574e734d3a"
+        },
+        {
+          "path": "Engine/Runtime/Composition/Content/BattleContentEnemyBehavior.cs",
+          "kind": "file",
+          "origin": "modified",
+          "size": 7728,
+          "sha256": "80760fa049df5765dbd875463d28adb58e1a52c3887b02d35f1d9c774ef01ca0"
+        },
+        {
+          "path": "Engine/Runtime/Composition/Content/BattleContentModels.cs",
+          "kind": "file",
+          "origin": "modified",
+          "size": 8645,
+          "sha256": "9c62f4bf13942279bd4bcc479c4963376377d5124b49d721c5a62af88b451a44"
+        },
+        {
+          "path": "Engine/Runtime/Composition/Content/ConfiguredBattleEffects.cs",
+          "kind": "file",
+          "origin": "modified",
+          "size": 16865,
+          "sha256": "aa165d0a3709eee40aa93a7ea1915d4bc433753c379ad6740e693bde31f24056"
+        },
+        {
+          "path": "Engine/Runtime/Composition/Content/EnemyBehavior.md",
+          "kind": "file",
+          "origin": "modified",
+          "size": 11434,
+          "sha256": "2c60613131628e3f8cbf363cd0c66e155b56d7a25cd9fa085570a5ab4a9a73b6"
+        },
+        {
+          "path": "Engine/Runtime/Composition/Content/README.md",
+          "kind": "file",
+          "origin": "modified",
+          "size": 29511,
+          "sha256": "40c6f4a926f3aa6cb627a8d2692985e250981f7a41099a4955734fabf2ec5881"
+        },
+        {
+          "path": "Engine/Runtime/Composition/Encounters/BattleEffectBinder.cs",
+          "kind": "file",
+          "origin": "modified",
+          "size": 8938,
+          "sha256": "dd78db402d46eb60b28722445eb3b490bddf13258b5d05760af7f5036975598d"
+        },
+        {
+          "path": "Engine/Runtime/Composition/Encounters/BattleEffectSequence.cs",
+          "kind": "file",
+          "origin": "modified",
+          "size": 7869,
+          "sha256": "a4beaf78f2404b8275f0bd7b38fa6602b58d00540a13a5a46c590df0fd6bf7c8"
+        },
+        {
+          "path": "Engine/Runtime/Composition/Encounters/BattleTimeline.cs",
+          "kind": "file",
+          "origin": "modified",
+          "size": 11627,
+          "sha256": "1a9326edc2c35e2c6947423fc1a3667e3dc83143ae168cc8f89c554c3747da45"
+        },
+        {
+          "path": "Engine/Runtime/Composition/Encounters/EnemyBehavior.cs",
+          "kind": "file",
+          "origin": "modified",
+          "size": 18862,
+          "sha256": "24676211155aa1b229f712c1af88a96e58875dc74255ec5bfbe69cecbec33ce1"
+        },
+        {
+          "path": "Engine/Runtime/Composition/Encounters/RelicNumericModifiers.cs",
+          "kind": "file",
+          "origin": "modified",
+          "size": 17294,
+          "sha256": "78baf474ee7791f6cc87ce2d1c1fcd696b671f7563c17168c94d2adf03679f98"
+        },
+        {
+          "path": "Engine/Runtime/Composition/Encounters/TeamBattleEngine.cs",
+          "kind": "file",
+          "origin": "modified",
+          "size": 82232,
+          "sha256": "6424f315f8a3aff2eaa4289e466c1faa5ad8bac9229ac4735eba442409b6c35d"
+        },
+        {
+          "path": "Engine/Runtime/Composition/Encounters/TeamBattleWrathBoss.cs",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 5395,
+          "sha256": "7af5689cae823716d22bf11dfece5f75edafcf154c1e24ae2611ec76f8e6ef36"
+        },
+        {
+          "path": "Engine/Runtime/Composition/Encounters/TeamBattleWrathBoss.cs.meta",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 60,
+          "sha256": "0bd763b476d518b3f39e08747a8ecd16135f4f4d476a8cd21b4a600d0436ce1e"
+        },
+        {
+          "path": "Engine/Runtime/Composition/Encounters/WrathBoss.cs",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 8863,
+          "sha256": "619c4f2bff8ee085ba846d49fbdc821e04696afc9b990870804385e84e0c6d51"
+        },
+        {
+          "path": "Engine/Runtime/Composition/Encounters/WrathBoss.cs.meta",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 60,
+          "sha256": "7df0333fe21040a4496ea9116b058d24d9411a80ab19e178b790d7ee939a413f"
+        },
+        {
+          "path": "Engine/Runtime/Composition/Encounters/WrathHandEffectRestrictions.cs",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 2149,
+          "sha256": "8d08ac8370d0324e0119c0956d36e4627ea9ad3076c18854a613d645ac68ab78"
+        },
+        {
+          "path": "Engine/Runtime/Composition/Encounters/WrathHandEffectRestrictions.cs.meta",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 60,
+          "sha256": "5e6b8a1bd05197812deb73a2bc2d95c94cf7ebc2be22cf5dde261269f9df6fe8"
+        },
+        {
+          "path": "Engine/Tests/Editor/CombatEliteBleedingTests.cs",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 17434,
+          "sha256": "3819daf91659825dd363a56488c42c43e796f153b7a0ca69395110c58de526cc"
+        },
+        {
+          "path": "Engine/Tests/Editor/CombatEliteBleedingTests.cs.meta",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 60,
+          "sha256": "7bd9dbc696f5091688406d32eb27b7c12faa36f0d6b3071759519bce90ca9602"
+        },
+        {
+          "path": "Engine/Tests/Editor/CombatWrathImmunityTests.cs",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 8323,
+          "sha256": "8528595bbc974dbe1f8605c0a6b7dc1a376ccdefde1c7db14773d28c260c10e9"
+        },
+        {
+          "path": "Engine/Tests/Editor/CombatWrathImmunityTests.cs.meta",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 60,
+          "sha256": "f55271981761c6bbfa3c73d342fc285c52ee24492c7631ead15be4ba8ca4efd2"
+        },
+        {
+          "path": "Engine/Tests/Editor/EliteBleedingIntegrationTests.cs",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 8945,
+          "sha256": "e83b64a8828ffedc8835c6d823f26c964839a408ca0ab199866d9c59e68edb11"
+        },
+        {
+          "path": "Engine/Tests/Editor/EliteBleedingIntegrationTests.cs.meta",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 240,
+          "sha256": "882018484d401b87cd53a9ec8a3d01180015b0049522e4ed5b3dfd84fa8e5aad"
+        },
+        {
+          "path": "Engine/Tests/Editor/EliteBleedingInteractionTests.cs",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 13116,
+          "sha256": "4acfd34aaf285ea7aa1f9bcbe5320e48f29df15853074b1d17b0b32f7fdd9700"
+        },
+        {
+          "path": "Engine/Tests/Editor/EliteBleedingInteractionTests.cs.meta",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 60,
+          "sha256": "522c9ed7ca5023ca8354472de935b6fe4ad430f847acf27dd2be68c5bffc6d74"
+        },
+        {
+          "path": "Engine/Tests/Editor/WrathAdventureHealthTests.cs",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 1884,
+          "sha256": "519ce88007c6d51bbac72f1c5f23cd2867b8511ccfeaa681a2a3fca2cf1425f1"
+        },
+        {
+          "path": "Engine/Tests/Editor/WrathAdventureHealthTests.cs.meta",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 61,
+          "sha256": "8849d05204b043f835839bb09f114d969db3fcf550ac88d712f6e6e9a05b7b1f"
+        },
+        {
+          "path": "Engine/Tests/Editor/WrathAdventureReplayTests.cs",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 5768,
+          "sha256": "a1f9805d3253e3175e2e68fb76ca2466832badf98ad5f827a3fa76d2008399f4"
+        },
+        {
+          "path": "Engine/Tests/Editor/WrathAdventureReplayTests.cs.meta",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 60,
+          "sha256": "9164b34b16487cf549e785a52280c8d38e7c84e2b96f5ab32f2496438c41590a"
+        },
+        {
+          "path": "Engine/Tests/Editor/WrathBossRulesTests.cs",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 35972,
+          "sha256": "72145ec866084bc25490c26e0fca92408adbbc07c72e0745949fb61d6f4f0950"
+        },
+        {
+          "path": "Engine/Tests/Editor/WrathBossRulesTests.cs.meta",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 60,
+          "sha256": "40895535e1985e675b8a7ddd7bd5fc4cfa8c4a4aa2b53670126c616671d490da"
+        },
+        {
+          "path": "Engine/Tests/Editor/WrathHandEffectRestrictionsTests.cs",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 15910,
+          "sha256": "655c5a9c6dca0e6546d08ed5a7ac6fa2d9cf924b810ee74dfaf0fd1088d6b8ba"
+        },
+        {
+          "path": "Engine/Tests/Editor/WrathHandEffectRestrictionsTests.cs.meta",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 60,
+          "sha256": "7a13a93119ca03424c6a26977676ecd37e44f4df99c388e8299b1577b20b8e0d"
+        },
+        {
+          "path": "Engine/package.json",
+          "kind": "file",
+          "origin": "environment-reference",
+          "size": 270,
+          "sha256": "e6c4afc5a4d87b6101935db443ec2ff7f5884111446896bd964cfb4402181816"
+        },
+        {
+          "path": "Tests/BattleToolkit.Tests.csproj",
+          "kind": "file",
+          "origin": "environment-reference",
+          "size": 1608,
+          "sha256": "180666ac8c8c607adbfc71ef2f623f3805b0f69259c9d05513f9287246d605d4"
+        },
+        {
+          "path": "Tools/BattleContentEditor/AdventureBattleProjection.cs",
+          "kind": "file",
+          "origin": "modified",
+          "size": 2741,
+          "sha256": "e692b3d5f899fbee3d60deea38caa7171c14ff82155a4ee1ea294647243f3c01"
+        },
+        {
+          "path": "Tools/BattleContentEditor/NativeServer.cs",
+          "kind": "file",
+          "origin": "modified",
+          "size": 24089,
+          "sha256": "918148c311c8c20fdba777c6542b6306d2e8faaf9b5162558125793de01df12f"
+        },
+        {
+          "path": "Tools/BattleContentEditor/PlaytestBridge.cs",
+          "kind": "file",
+          "origin": "modified",
+          "size": 18195,
+          "sha256": "7b7ff5bfe38d9e3f3e69cbdb1a4acb18b369077e15a7cd958d8b7efccc0470d3"
+        },
+        {
+          "path": "Tools/BattleContentEditor/PlaytestProjection.cs",
+          "kind": "file",
+          "origin": "modified",
+          "size": 39863,
+          "sha256": "c83ba2894cc1801364c8db2d4cd1d31e03f885b3f6116bf7c3d1d8249f7111e4"
+        },
+        {
+          "path": "Tools/BattleContentEditor/PlaytestWrathPresentation.cs",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 1047,
+          "sha256": "c2d368acbfb6bfb589534c88da5558ed84c3f72f92f98a89a41d142539e30d4d"
+        },
+        {
+          "path": "Tools/BattleContentEditor/README.md",
+          "kind": "file",
+          "origin": "modified",
+          "size": 20460,
+          "sha256": "60f06f17643a0a1be3667dd734e4d23f6fd61f2a3c231ae069d5a69f012590a4"
+        },
+        {
+          "path": "Tools/BattleContentEditor/package.json",
+          "kind": "file",
+          "origin": "modified",
+          "size": 584,
+          "sha256": "ffbfdc87bcd7fba5663ed8611df8cbed4ecdcea25d383a2ce02e842829878714"
+        },
+        {
+          "path": "Tools/BattleContentEditor/server.py",
+          "kind": "file",
+          "origin": "modified",
+          "size": 12164,
+          "sha256": "9e9c4523502e6ebc6ba9d3133dd25592fc0a6b895c1fbd87b1160d37e7ca5ea1"
+        },
+        {
+          "path": "Tools/BattleContentEditor/tests/elite-ui-browser.cjs",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 6752,
+          "sha256": "940ae560187e677d32d1b3531a96995005799377c5bb3cb9112abc9a985a64de"
+        },
+        {
+          "path": "Tools/BattleContentEditor/tests/h5-scene-browser.cjs",
+          "kind": "file",
+          "origin": "modified",
+          "size": 31439,
+          "sha256": "76bfe4c125bdc90e7586cbabc910c34aff470e95a4be7087f8e3f69a536f27b1"
+        },
+        {
+          "path": "Tools/BattleContentEditor/tests/run_browser.py",
+          "kind": "file",
+          "origin": "modified",
+          "size": 655,
+          "sha256": "51acacd45057a239d305f5d45e9b7eefd696b33f497f6443d777e675c5da7599"
+        },
+        {
+          "path": "Tools/BattleContentEditor/tests/test_elite_projection.py",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 8484,
+          "sha256": "49dfe94373c5cc79b1f1f5fc8ce8fdf2c7631d5b6ebf8cf13f421163adc916dc"
+        },
+        {
+          "path": "Tools/BattleContentEditor/tests/test_wrath_projection.py",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 12087,
+          "sha256": "69419a9cae04dfa901566d1a7b820d94beff84eb9394d715313eacf33f11ae88"
+        },
+        {
+          "path": "Tools/BattleContentEditor/tests/wrath-interaction-browser.cjs",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 13050,
+          "sha256": "80c4d19c06d1ff0ffcac30d10c2d0733d48d00f6a695815fa70ff0b27b826826"
+        },
+        {
+          "path": "Tools/BattleContentEditor/tests/wrath-ui-browser.cjs",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 9816,
+          "sha256": "fd299ae33ee6fe830be194703732f33cd4ccddb1180a33f20d92e02bd409bbd3"
+        },
+        {
+          "path": "Tools/BattleContentEditor/web/app.js",
+          "kind": "file",
+          "origin": "modified",
+          "size": 33554,
+          "sha256": "2fcc02b98d99a6c120be35dc08e2daf3d890f04d93affa65ee4d8bbd21f33a3f"
+        },
+        {
+          "path": "Tools/BattleContentEditor/web/model.js",
+          "kind": "file",
+          "origin": "modified",
+          "size": 8895,
+          "sha256": "962e9676865b6ae77d2e9337f90f204263ff8fe03e434e38ded86a3ab6f93281"
+        },
+        {
+          "path": "Tools/BattleContentEditor/web/playtest.css",
+          "kind": "file",
+          "origin": "modified",
+          "size": 36253,
+          "sha256": "159bea93f06e60eda603dcdc4a9c6f88d7d0d17088fd1ddadc74d8200091b895"
+        },
+        {
+          "path": "Tools/BattleContentEditor/web/playtest.js",
+          "kind": "file",
+          "origin": "modified",
+          "size": 49572,
+          "sha256": "13923257315d0d66511eae901d57b2a820a6ede09927f3dd3cf2b1e1a16df92f"
+        },
+        {
+          "path": "Tools/BattleContentEditor/web/schema.js",
+          "kind": "file",
+          "origin": "modified",
+          "size": 37997,
+          "sha256": "1ffd3d84db4e833bc78431f17c4830fa4c513bc3da8fdbc85ef85f92b1db3c28"
+        },
+        {
+          "path": "Tools/BattleContentEditor/web/wrath-presentation.js",
+          "kind": "file",
+          "origin": "untracked",
+          "size": 3317,
+          "sha256": "f7d7d5479cc181affc8830e5ecbe03c45a6aaf9a9955059bb1a8f9f82a408416"
+        },
+        {
+          "path": "global.json",
+          "kind": "file",
+          "origin": "environment-reference",
+          "size": 111,
+          "sha256": "20c93ca7812d0a9825eef71217156f95ab2f4fe5aadfeb22ebc1c24b630018d3"
+        },
+        {
+          "path": "package-lock.json",
+          "kind": "file",
+          "origin": "environment-reference",
+          "size": 1749,
+          "sha256": "4ef17abfc108d133ddf7aaad1adc51e39d1a2cb95b7ab1bb71515495edcba324"
+        },
+        {
+          "path": "package.json",
+          "kind": "file",
+          "origin": "environment-reference",
+          "size": 662,
+          "sha256": "de4d1aeeae0d8c42fef814bd3290e2cd2d068c4535de2ba70b545268e4e104ae"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,72 @@
+{
+  "source": "Library/SevenStationDotnet/results/seven-station-full.trx",
+  "sha256": "d097bac742b383ae4701a45d10e933072dc5cdfe080e6a1ba807fd485ca213d7",
+  "counters": {
+    "total": "1692",
+    "executed": "1692",
+    "passed": "1680",
+    "failed": "12",
+    "error": "0",
+    "timeout": "0",
+    "aborted": "0",
+    "inconclusive": "0",
+    "passedButRunAborted": "0",
+    "notRunnable": "0",
+    "notExecuted": "0",
+    "disconnected": "0",
+    "warning": "0",
+    "completed": "0",
+    "inProgress": "0",
+    "pending": "0"
+  },
+  "failed": [
+    {
+      "name": "TriggerEffectOverflowRollsBackHealthCardsBudgetAndReports",
+      "message": "  Expected: Overflow\n  But was:  None\n"
+    },
+    {
+      "name": "LaterFailureRollsBackImmunityConsumptionAndEarlierDamage",
+      "message": "  Expected: Overflow\n  But was:  None\n"
+    },
+    {
+      "name": "InvalidBoundaryBatchRollsBackTheEntireStart(True)",
+      "message": "  Expected: Overflow\n  But was:  None\n"
+    },
+    {
+      "name": "LateFailureRollsBackExpiryControlConsumptionDamageEnergyScoreAndCardMovement",
+      "message": "  Expected: Overflow\n  But was:  None\n"
+    },
+    {
+      "name": "AppendedOverflowRollsBackDamageCardsAndResources",
+      "message": "  Expected: Overflow\n  But was:  None\n"
+    },
+    {
+      "name": "FailureInALaterEnemyReactionRollsBackTheEntireSessionIncludingEarlierReactions",
+      "message": "  Expected: Overflow\n  But was:  None\n"
+    },
+    {
+      "name": "RewardOverflowRollsBackCostsCardsAndRandomState",
+      "message": "  Expected: Overflow\n  But was:  None\n"
+    },
+    {
+      "name": "PrimaryOutgoingUsesBatchStartAndIncomingUsesLatestStateExactlyOnce",
+      "message": "  Expected is <System.Int32[2]>, actual is <System.Linq.Enumerable+ListWhereSelectIterator`2[PokerEngine.CombatAmountContext,System.Int64]>\n  Values differ at index [1]\n  Expected: 100\n  But was:  90\n"
+    },
+    {
+      "name": "InvalidEffectiveCapacityFailsAtBattleCreation(HandLimit,-8)",
+      "message": "  Expected: <System.ArgumentException>\n  But was:  null\n"
+    },
+    {
+      "name": "InvalidCompletionBatchRollsBackEarlierDamageAndActionPayment(True)",
+      "message": "  Expected: Overflow\n  But was:  None\n"
+    },
+    {
+      "name": "NumericOverflowInTheProviderOrAReactionRollsBackEveryFact(False)",
+      "message": "  Expected: False\n  But was:  True\n"
+    },
+    {
+      "name": "CreationHasNoHandAndFirstTurnDealsExactlyOnceWithoutSpendingEnergy",
+      "message": "  Expected: same as <PokerEngine.TeamBattleState>\n  But was:  <PokerEngine.TeamBattleState>\n"
+    }
+  ]
+}

@@ -23,6 +23,9 @@ namespace Poker.SingleBattle
         }
         private readonly Dictionary<EnemyBattleActor, IntentView> enemyIntents = new Dictionary<EnemyBattleActor, IntentView>();
         private Transform worldUIRoot;
+        private RectTransform fittedIntentPanel;
+        private Vector2 authoredIntentSize, authoredIntentPosition, authoredIntentTextSize, intentParentSize;
+        private readonly Vector3[] intentCorners = new Vector3[4];
 
         private Transform EnsureWorldUIRoot()
         {
@@ -37,6 +40,8 @@ namespace Poker.SingleBattle
         private void RefreshEnemyIntents()
         {
             if (intent == null) return;
+            if (RefreshWrathHud()) return;
+            HideWrathHud();
             if (compactLayout)
             {
                 HideEnemyIntents();
@@ -50,6 +55,7 @@ namespace Poker.SingleBattle
                     // Only one player in BattleDemo; retain self-targeted enemy effects.
                     intent.text = intent.text.Replace("玩家 1：", "");
                     if (intentPanel != null) intentPanel.SetActive(!string.IsNullOrEmpty(intent.text));
+                    FitRitualIntent();
                 }
                 intent.gameObject.SetActive(!string.IsNullOrEmpty(intent.text));
                 return;
@@ -92,6 +98,65 @@ namespace Poker.SingleBattle
             }
             intent.gameObject.SetActive(false);
             UpdateEnemyIntentBillboards();
+        }
+
+        private void FitRitualIntent()
+        {
+            if (host.UsesExternalCommands || !ritualLayout || intent == null || intentPanel == null || string.IsNullOrEmpty(intent.text)) return;
+            var panel = intentPanel.transform as RectTransform;
+            var parent = panel != null ? panel.parent as RectTransform : null;
+            if (parent == null || intent.transform.parent != panel) return;
+            if (fittedIntentPanel != panel)
+            {
+                fittedIntentPanel = panel;
+                authoredIntentSize = panel.sizeDelta;
+                authoredIntentPosition = panel.anchoredPosition;
+                authoredIntentTextSize = intent.rectTransform.sizeDelta;
+            }
+            // Refit from the authored placement so changing previews cannot progressively move the panel.
+            panel.sizeDelta = authoredIntentSize;
+            panel.anchoredPosition = authoredIntentPosition;
+            var textRect = intent.rectTransform;
+            float height = Mathf.Max(authoredIntentTextSize.y,
+                Mathf.Ceil(intent.GetPreferredValues(intent.text, textRect.rect.width, Mathf.Infinity).y));
+            textRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, height);
+            Vector3 topLeft = panel.TransformPoint(new Vector3(panel.rect.xMin, panel.rect.yMax));
+            panel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal,
+                Mathf.Max(panel.rect.width, textRect.anchoredPosition.x + textRect.rect.width + 24));
+            panel.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,
+                Mathf.Max(panel.rect.height, -textRect.anchoredPosition.y + height + 16));
+            panel.position += topLeft - panel.TransformPoint(new Vector3(panel.rect.xMin, panel.rect.yMax));
+
+            // Include the plate's authored tilt when keeping it inside the canvas and beside the relic rail.
+            Rect bounds = IntentBounds(parent, panel);
+            float right = parent.rect.xMax - 12;
+            if (feedbackContainer != null && feedbackContainer.parent == parent)
+                right = Mathf.Min(right, IntentBounds(parent, feedbackContainer).xMin - 12);
+            float x = Mathf.Min(0, right - bounds.xMax);
+            x = Mathf.Max(x, parent.rect.xMin + 12 - bounds.xMin);
+            float y = Mathf.Min(0, parent.rect.yMax - 12 - bounds.yMax);
+            y = Mathf.Max(y, parent.rect.yMin + 12 - bounds.yMin);
+            panel.localPosition += new Vector3(x, y);
+            intentParentSize = parent.rect.size;
+        }
+
+        private Rect IntentBounds(RectTransform parent, RectTransform rect)
+        {
+            rect.GetWorldCorners(intentCorners);
+            Vector2 min = new Vector2(float.PositiveInfinity, float.PositiveInfinity);
+            Vector2 max = new Vector2(float.NegativeInfinity, float.NegativeInfinity);
+            foreach (var corner in intentCorners)
+            {
+                Vector2 point = parent.InverseTransformPoint(corner);
+                min = Vector2.Min(min, point); max = Vector2.Max(max, point);
+            }
+            return Rect.MinMaxRect(min.x, min.y, max.x, max.y);
+        }
+
+        private void UpdateRitualIntentLayout()
+        {
+            if (fittedIntentPanel != null && intentPanel.activeInHierarchy && fittedIntentPanel.parent is RectTransform parent &&
+                parent.rect.size != intentParentSize) FitRitualIntent();
         }
 
         private void UpdateEnemyIntentBillboards()

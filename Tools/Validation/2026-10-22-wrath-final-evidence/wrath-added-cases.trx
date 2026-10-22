@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="49fefd67-510a-4382-9d12-1d069e8f8c90" name="@mtdeMacBook-Pro 2026-10-22 13:25:33" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-22T13:25:33.6583390+08:00" queuing="2026-10-22T13:25:33.6583400+08:00" start="2026-10-22T13:25:31.7456310+08:00" finish="2026-10-22T13:25:33.6618710+08:00" />
+  <TestSettings name="default" id="fd674b7a-de14-4389-bf63-56814af6101d">
+    <Deployment runDeploymentRoot="_mtdeMacBook-Pro_2026-10-22_13_25_33" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="18b94b1a-76f6-485f-9030-ae41f44208b2" testId="815604ad-8b00-ad88-e134-d12f277cbc41" testName="StunnedBloodHandDoesNotHealTheInjuredBodyButStillContributesAttack" computerName="mtdeMacBook-Pro" duration="00:00:00.0137630" startTime="2026-10-22T13:25:33.4060690+08:00" endTime="2026-10-22T13:25:33.4198320+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="18b94b1a-76f6-485f-9030-ae41f44208b2" />
+    <UnitTestResult executionId="f89dbacc-b8c7-40f9-b702-c74913ada0d6" testId="11f17418-b21e-bc4e-ffc7-8609816e848f" testName="MultiLayerHandAndBodyPoisonEachTickOnceAndConsumeOnlyOneBodyShellLayer" computerName="mtdeMacBook-Pro" duration="00:00:00.3680379" startTime="2026-10-22T13:25:33.0367210+08:00" endTime="2026-10-22T13:25:33.4047170+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f89dbacc-b8c7-40f9-b702-c74913ada0d6" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="StunnedBloodHandDoesNotHealTheInjuredBodyButStillContributesAttack" storage="/users/mt/code-yang/texas-holdem/library/wrathfollowup-20261022/engine-boss/artifacts/bin/battletoolkit.tests/debug/pokerengine.tests.editor.dll" id="815604ad-8b00-ad88-e134-d12f277cbc41">
+      <Execution id="18b94b1a-76f6-485f-9030-ae41f44208b2" />
+      <TestMethod codeBase="/Users/mt/code-yang/Texas-Holdem/Library/WrathFollowup-20261022/engine-boss/artifacts/bin/BattleToolkit.Tests/debug/PokerEngine.Tests.Editor.dll" adapterTypeName="executor://nunit3testexecutor/" className="PokerEngine.Tests.WrathBossRulesTests" name="StunnedBloodHandDoesNotHealTheInjuredBodyButStillContributesAttack" />
+    </UnitTest>
+    <UnitTest name="MultiLayerHandAndBodyPoisonEachTickOnceAndConsumeOnlyOneBodyShellLayer" storage="/users/mt/code-yang/texas-holdem/library/wrathfollowup-20261022/engine-boss/artifacts/bin/battletoolkit.tests/debug/pokerengine.tests.editor.dll" id="11f17418-b21e-bc4e-ffc7-8609816e848f">
+      <Execution id="f89dbacc-b8c7-40f9-b702-c74913ada0d6" />
+      <TestMethod codeBase="/Users/mt/code-yang/Texas-Holdem/Library/WrathFollowup-20261022/engine-boss/artifacts/bin/BattleToolkit.Tests/debug/PokerEngine.Tests.Editor.dll" adapterTypeName="executor://nunit3testexecutor/" className="PokerEngine.Tests.WrathBossRulesTests" name="MultiLayerHandAndBodyPoisonEachTickOnceAndConsumeOnlyOneBodyShellLayer" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="815604ad-8b00-ad88-e134-d12f277cbc41" executionId="18b94b1a-76f6-485f-9030-ae41f44208b2" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="11f17418-b21e-bc4e-ffc7-8609816e848f" executionId="f89dbacc-b8c7-40f9-b702-c74913ada0d6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="列表中未列出的结果" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="所有已加载的结果" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="2" executed="2" passed="2" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>NUnit Adapter 4.6.0.0: Test execution started
+Running selected tests in /Users/mt/code-yang/Texas-Holdem/Library/WrathFollowup-20261022/engine-boss/artifacts/bin/BattleToolkit.Tests/debug/PokerEngine.Tests.Editor.dll
+   NUnit3TestExecutor discovered 2 of 2 NUnit test cases using Current Discovery mode, Non-Explicit run
+NUnit Adapter 4.6.0.0: Test execution complete
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

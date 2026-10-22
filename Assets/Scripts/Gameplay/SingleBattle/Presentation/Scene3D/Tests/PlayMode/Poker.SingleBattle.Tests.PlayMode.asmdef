@@ -1,8 +1,8 @@
 {
   "name": "Poker.SingleBattle.Tests.PlayMode",
   "references": [
-    "Poker.SingleBattle.Runtime",
     "Unity.TextMeshPro",
+    "Poker.SingleBattle.Runtime",
     "Poker.BattlePresentation.Shared",
     "CardArt.Runtime",
     "CardPresentation.Runtime",

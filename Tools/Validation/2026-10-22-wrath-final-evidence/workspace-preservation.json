@@ -1,0 +1,24 @@
+{
+  "backup": "/Users/mt/.codex/backups/Texas-Holdem/push-wrath-20261022-132420",
+  "fontRestoredToPreexistingDirtyBytes": true,
+  "temporaryDriverRemoved": true,
+  "repositories": {
+    "main": {
+      "originalFiles": 76,
+      "missing": [],
+      "intentionalEdits": [
+        "Tools/Validation/2026-10-22-seven-station-enemies.md",
+        "docs/handoffs/2026-10-22-wrath-boss-unity-handoff.md"
+      ],
+      "allOtherOriginalFilesByteIdentical": true
+    },
+    "BattleToolkit": {
+      "originalFiles": 71,
+      "missing": [],
+      "intentionalEdits": [
+        "Engine/Tests/Editor/WrathBossRulesTests.cs"
+      ],
+      "allOtherOriginalFilesByteIdentical": true
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "buildLog": "h5-build.txt",
+  "hostStopped": true,
+  "results": [
+    {
+      "pattern": "test_wrath_projection.py",
+      "exitCode": 0,
+      "tests": 8,
+      "durationSeconds": 1.551,
+      "log": "h5-wrath-projection.txt"
+    },
+    {
+      "pattern": "test_elite_projection.py",
+      "exitCode": 0,
+      "tests": 5,
+      "durationSeconds": 0.345,
+      "log": "h5-elite-projection.txt"
+    }
+  ],
+  "browserLaunched": false,
+  "sdkVersion": "10.0.402"
+}

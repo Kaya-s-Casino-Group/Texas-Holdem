@@ -223,7 +223,8 @@ namespace Poker.Adventure.Tests
             Assert.IsTrue(host.BattleView.EndTurn(true)); yield return Idle();
             if (host.Session.State.FlowFor(host.Adventure.PlayerId).Window == BattlePlayerWindow.Ending)
             { Assert.IsTrue(host.BattleView.EndTurn(true)); yield return Idle(); }
-            AssertRoster(3); Assert.AreEqual(2, host.Session.State.Duel.Enemies.Count(enemy => enemy.SummonerId.HasValue));
+            AssertRoster(1); Assert.IsFalse(host.Session.State.Duel.Enemies.Any(enemy => enemy.SummonerId.HasValue));
+            Assert.AreEqual(18, host.Session.State.Duel.Enemies.Single().AttackAtRound(host.Session.State.Duel.CompletedRounds));
             yield return Capture("elite");
             yield return WinBattle(injurePlayer: true); yield return Click("继续旅程");
             long beforeRestHealth = host.Adventure.Health;
@@ -244,7 +245,127 @@ namespace Poker.Adventure.Tests
             Assert.AreEqual(0, ActiveEnemyHudCount()); AssertOverlayClosed();
             yield return Capture("result");
             Assert.IsEmpty(errors, string.Join("\n", errors));
-            File.WriteAllText(Path.Combine(Output, "single-chapter-flow.txt"), "PASS\nSeven stops; actual card wins award 50/60 gold exactly once; battle/reward menu resume; stable shop stock; permanent delete; summoned roster; rest skip; six-unit boss; completion. Elite/boss use explicit admin shortcuts without node gold.\n");
+            File.WriteAllText(Path.Combine(Output, "single-chapter-flow.txt"), "PASS\nSeven stops; actual card wins award 50/60 gold exactly once; battle/reward menu resume; stable shop stock; permanent delete; growing bleeding elite; rest skip; six-unit boss; completion. Elite/boss completion uses explicit admin shortcuts without node gold; their actual rules have dedicated regressions.\n");
+        }
+
+        [UnityTest]
+        public IEnumerator SevenStationEliteUsesGrowingBleedingAttacksAndKeepsRemoteArtwork()
+        {
+            yield return ReachBattle("elite");
+            AssertRoster(1);
+            AssertRemotePresentation();
+            yield return Capture("elite");
+            var view = host.BattleView;
+            Assert.AreEqual(400, view.Enemies.Single().DisplayUnit.MaxHealth);
+            Assert.IsFalse(view.Display.Labels.ContainsKey("wrath.body"));
+            long[] damage = { 4, 36, 21, 95 };
+            for (int i = 0; i < damage.Length; i++)
+            {
+                long before = view.Player.DisplayUnit.Health;
+                yield return EndAdventureRound();
+                Assert.AreEqual(damage[i], before - view.Player.DisplayUnit.Health, "Actual elite round " + (i + 1));
+                Assert.AreEqual(i + 1, view.State.Duel.CompletedRounds);
+                AssertRoster(1);
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator SevenStationBossSeversAndRegeneratesFiveOriginalActorsWithRemoteAshAndArtwork()
+        {
+            yield return ReachBattle("boss");
+            var view = host.BattleView;
+            AssertRoster(6);
+            AssertRemotePresentation();
+            yield return Capture("boss");
+            Assert.AreEqual(1500, view.Enemies[0].DisplayUnit.MaxHealth);
+            Assert.AreEqual(33, WrathBossQuery.Read(view.State.Duel).Attack);
+            Assert.IsTrue(view.GetComponent<BattleDemoTargetSelection>().ChooseTarget(view.Enemies[0]));
+            var hands = view.Enemies.Skip(1).ToArray();
+            var positions = hands.Select(actor => actor.transform.position).ToArray();
+            Assert.IsTrue(view.Playback.ApplyAdmin(host.Revision, new BattleAdminPatch(
+                relics: new[] { new BattleAdminRelics(host.Adventure.PlayerId, new[] { new BattleAdminRelic("11004", charges: 3) }) })).Accepted);
+            yield return Idle();
+            string grenade = view.State.Duel.Player(host.Adventure.PlayerId).Relics.Relics.Single().InstanceId;
+            Assert.IsTrue(view.Playback.UseItem(host.Revision, host.Adventure.PlayerId, grenade).Accepted);
+            Assert.IsTrue(view.IsPresenting);
+            yield return Idle();
+            foreach (var hand in hands)
+            {
+                Assert.AreEqual(0, hand.DisplayUnit.Health);
+                Assert.AreEqual(1, ((BattleDemoAshPresenter)hand.Presentation).Progress);
+                var world = FindEnemyWorldHud(hand);
+                Assert.IsTrue(world.gameObject.activeInHierarchy);
+                var badge = world.Find("Intents").GetComponentsInChildren<BattleDemoEnemyBadgeTooltip>().Single();
+                StringAssert.Contains("再生", badge.Description);
+                Assert.AreEqual("8", badge.GetComponentInChildren<TMP_Text>().text);
+                Assert.IsFalse(world.Find("Health Bar").gameObject.activeSelf);
+            }
+            Assert.AreEqual(8, WrathBossQuery.Read(view.State.Duel).Attack);
+            Assert.AreEqual(6, ActiveEnemyHudCount());
+            yield return Capture("boss-severed");
+            host.ReturnToMenu(); Assert.IsTrue(host.IsAtMenu);
+            Assert.IsTrue(host.Resume()); yield return Idle();
+            CollectionAssert.AreEqual(hands, view.Enemies.Skip(1), "Menu/resume must not replace dead actors.");
+            while (view.State.Duel.CompletedRounds < 8) yield return EndAdventureRound();
+            Assert.IsTrue(hands.All(actor => !actor.DisplayUnit.IsAlive));
+            yield return EndAdventureRound();
+            Assert.AreEqual(9, view.State.Duel.CompletedRounds);
+            CollectionAssert.AreEqual(hands, view.Enemies.Skip(1));
+            for (int i = 0; i < hands.Length; i++)
+            {
+                Assert.AreEqual(1, hands[i].DisplayUnit.Health);
+                Assert.AreEqual(0, ((BattleDemoAshPresenter)hands[i].Presentation).Progress);
+                Assert.Less(Vector3.Distance(positions[i], hands[i].transform.position), .0001f);
+                var world = FindEnemyWorldHud(hands[i]);
+                Assert.IsTrue(world.Find("Health Bar").gameObject.activeSelf);
+                Assert.IsFalse(world.Find("Intents").GetComponentsInChildren<BattleDemoEnemyBadgeTooltip>()
+                    .Any(badge => badge.Description.Contains("再生")));
+            }
+            Assert.AreEqual(53, WrathBossQuery.Read(view.State.Duel).Attack);
+            foreach (var hand in hands)
+                Assert.IsTrue(view.GetComponent<BattleDemoTargetSelection>().ChooseTarget(hand),
+                    "Regenerated hands retain the remote target selection path.");
+            AssertRoster(6);
+            AssertRemotePresentation();
+            yield return Capture("boss-regenerated");
+        }
+
+        private void AssertRemotePresentation()
+        {
+            Assert.IsTrue(host.BattleView.UsesExternalCommands);
+            Assert.IsTrue(host.BattleView.GetComponent<BattleDemoEnemyWorldHud>().enabled);
+            Assert.IsFalse(host.BattleView.gameObject.scene.GetRootGameObjects()
+                .SelectMany(root => root.GetComponentsInChildren<Transform>(true))
+                .Any(item => item.name == "Wrath Boss" && item.gameObject.activeInHierarchy),
+                "The standalone validation panel must not replace the authored adventure UI.");
+        }
+
+        private Transform FindEnemyWorldHud(EnemyBattleActor actor) =>
+            host.BattleView.gameObject.scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<Transform>(true))
+                .Single(item => item.name == "Enemy World HUD " + actor.name);
+
+        private IEnumerator ReachBattle(string target)
+        {
+            Assert.IsTrue(host.NewRun(host.AvailableTarots.First().Id, 312));
+            foreach (string id in new[] { "battle-1", "chest", "battle-2", "rest-1", "elite", "rest-2", "boss" })
+            {
+                Assert.IsTrue(host.ExecuteAdventure(new AdventureCommand(AdventureCommandKind.EnterNode, id)), host.Message);
+                yield return Idle();
+                if (id == target) yield break;
+                if (host.Adventure.Phase == AdventurePhase.Battle) yield return WinBattle();
+                while (host.Adventure.PendingRelicRewards.Count > 0)
+                    Assert.IsTrue(host.ExecuteAdventure(new AdventureCommand(AdventureCommandKind.SkipRelicReward)), host.Message);
+                Assert.IsTrue(host.ExecuteAdventure(new AdventureCommand(AdventureCommandKind.Continue)), host.Message);
+                yield return Idle();
+            }
+            Assert.Fail("Target battle was not reached: " + target);
+        }
+
+        private IEnumerator EndAdventureRound()
+        {
+            Assert.IsTrue(host.BattleView.EndTurn(true)); yield return Idle();
+            if (host.Session.State.FlowFor(host.Adventure.PlayerId).Window == BattlePlayerWindow.Ending)
+            { Assert.IsTrue(host.BattleView.EndTurn(true)); yield return Idle(); }
         }
 
         private IEnumerator WinBattleWithCard(long expectedReward, bool injurePlayer = false)
