@@ -32,7 +32,7 @@ namespace Poker.SingleBattle.Editor
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);
             Selection.activeObject = host;
-            Debug.Log("暴怒测试场景已生成。点击 Play 开战；五手暂复用缩小的敌人美术，目标和倒计时在独立 Boss 面板中显示。", host);
+            Debug.Log("暴怒测试场景已生成。点击 Play 开战；本体与五手按 PSD 图层拼装，目标和倒计时在独立 Boss 面板中显示。", host);
         }
 
         [MenuItem("工具/卡牌战斗/示例场景/更新暴怒示例布局")]
@@ -103,6 +103,7 @@ namespace Poker.SingleBattle.Editor
             }
             // Validate compilation and roster before the generated scene is saved or played.
             host.BuildConfiguredSession("wrath-scene-validation");
+            WrathBossArtworkSetup.Configure(host);
             EditorUtility.SetDirty(body); EditorUtility.SetDirty(host);
             return host;
         }

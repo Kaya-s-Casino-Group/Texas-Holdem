@@ -81,7 +81,8 @@ namespace Poker.SingleBattle.Tests
             {
                 var text = Target(id).GetComponentInChildren<TMP_Text>();
                 text.ForceMeshUpdate();
-                Assert.IsFalse(text.isTextOverflowing, "The complete hand state and intent must fit its 720p target control: " + text.text);
+                Assert.IsFalse(text.isTextOverflowing, "The complete hand state and intent must fit its 720p target control: " + text.text +
+                    " rect=" + text.rectTransform.rect + " font=" + text.fontSize + " preferred=" + text.preferredHeight);
                 Assert.GreaterOrEqual(text.fontSize, 9);
             }
             public void Dispose()

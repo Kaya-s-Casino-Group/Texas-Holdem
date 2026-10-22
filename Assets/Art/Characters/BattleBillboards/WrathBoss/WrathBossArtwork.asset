@@ -1,0 +1,87 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1fc21231884f4605b7feb9d2fdb9eb4, type: 3}
+  m_Name: WrathBossArtwork
+  m_EditorClassIdentifier: 
+  canvasSize: {x: 5000, y: 5000}
+  parts:
+  - Name: Body
+    Pixels:
+      serializedVersion: 2
+      x: 1281
+      y: 443
+      width: 2447
+      height: 4026
+    Order: 10
+    HudPixel: {x: 2504.5, y: 2456}
+    Material: {fileID: 2100000, guid: 0966c0671b6fc430ebfb94d23de9365e, type: 2}
+  - Name: Hand1
+    Pixels:
+      serializedVersion: 2
+      x: 957
+      y: 2012
+      width: 1262
+      height: 1878
+    Order: 12
+    HudPixel: {x: 1700, y: 2850}
+    Material: {fileID: 2100000, guid: f42b0b7c90b6f4bf5a20a9ff85b9ad15, type: 2}
+  - Name: Hand2
+    Pixels:
+      serializedVersion: 2
+      x: 3062
+      y: 1591
+      width: 1513
+      height: 1683
+    Order: 8
+    HudPixel: {x: 4200, y: 2700}
+    Material: {fileID: 2100000, guid: 5c420b236acce4f9e821155d2bdae5da, type: 2}
+  - Name: Hand3
+    Pixels:
+      serializedVersion: 2
+      x: 2812
+      y: 443
+      width: 1415
+      height: 1410
+    Order: 6
+    HudPixel: {x: 3240, y: 900}
+    Material: {fileID: 2100000, guid: d01d041a7fa66405c906ea0cc9b96887, type: 2}
+  - Name: Hand4
+    Pixels:
+      serializedVersion: 2
+      x: 2764
+      y: 2107
+      width: 985
+      height: 1350
+    Order: 4
+    HudPixel: {x: 3150, y: 2530}
+    Material: {fileID: 2100000, guid: c8c64815ac1084b2a90a4699165364f1, type: 2}
+  - Name: Hand5
+    Pixels:
+      serializedVersion: 2
+      x: 799
+      y: 576
+      width: 1211
+      height: 1667
+    Order: 2
+    HudPixel: {x: 1250, y: 1760}
+    Material: {fileID: 2100000, guid: b98871c319a054785a76fc2890eb3d0b, type: 2}
+  warning:
+    Name: WarningGlow
+    Pixels:
+      serializedVersion: 2
+      x: 671
+      y: 351
+      width: 4030
+      height: 4228
+    Order: 0
+    HudPixel: {x: 2686, y: 2465}
+    Material: {fileID: 2100000, guid: b05f3fc330a204bbeaf77e8abd446ceb, type: 2}

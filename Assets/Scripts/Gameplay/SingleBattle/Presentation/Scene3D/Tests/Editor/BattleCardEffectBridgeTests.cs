@@ -201,5 +201,83 @@ namespace Poker.SingleBattle.Tests
                 }
             }
         }
+
+        [TestCase(false)][TestCase(true)]
+        public void NonScoringCardsMatchHandDiscardPoseTimingAndOrderBeforeReleasingThePlay(bool prepared)
+        {
+            using (var fixture = new Fixture(new[] { 7, 7, 2, 4, 9 }))
+            {
+                var cameraRoot = new GameObject("Camera"); cameraRoot.transform.SetParent(fixture.Root.transform);
+                cameraRoot.transform.position = new Vector3(0, 0, -10);
+                var camera = cameraRoot.AddComponent<Camera>();
+                var prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/GameAssets/CardArt/Prefabs/Card.prefab");
+                HandZoneView CreateHand(string name)
+                {
+                    var root = new GameObject(name); root.transform.SetParent(fixture.Root.transform);
+                    root.transform.position = new Vector3(1, 2, 3); root.transform.localScale = Vector3.one * 1.7f;
+                    var result = root.AddComponent<HandZoneView>(); result.Configure(prefab, CardZoneLayoutSettings.Default);
+                    var motion = result.MotionSettings; motion.Enabled = false; result.SetMotionSettings(motion);
+                    result.SetCameraFacing(true, camera);
+                    result.SetDiscardSettings(new CardZoneDiscardSettings { FlightSeconds = .6f, Interval = .15f, FlightLift = .035f });
+                    return result;
+                }
+                var hand = CreateHand("Played hand"); var reference = CreateHand("Ordinary discard");
+                var world = hand.gameObject.AddComponent<WorldCardZonePresentation>();
+                var zone = fixture.Batch.Initial.Zones.Single(item => item.Kind == "hand" && item.OwnerId == "player");
+                world.Synchronize(new CardZoneDisplayData(zone.Id, zone.OwnerId, zone.Kind, zone.Cards.Reverse()));
+                if (prepared)
+                    hand.Present(new CardZoneViewData(hand.Data.ZoneId, hand.Data.Cards.Select(card => new CardVisualData(
+                        card.ViewId, card.FaceArtId, card.CardId, card.Tint, card.Effects, card.IsDisabled,
+                        new CardInteractionState(isSelected: true), card.ArtBindings))), false);
+                reference.Present(hand.Data, false);
+                if (prepared)
+                {
+                    var ids = hand.Data.Cards.Select(card => card.ViewId).ToArray();
+                    hand.PresentSelectionAction(ids, _ => { }); reference.PresentSelectionAction(ids, _ => { });
+                    hand.AdvanceMotion(.09f); reference.AdvanceMotion(.09f);
+                    Assert.Greater(hand.Views[0].InteractionOffset.magnitude, 0);
+                }
+                fixture.Bridge.TryGet(fixture.Attacks[0].Sequence, out var cue);
+                var unscored = hand.Views.Where(card => cue.Flight.UnscoredCards.Contains(card.Data.CardId.Value.Value)).Select(card => card.ViewId).ToArray();
+                Assert.AreEqual(3, unscored.Length);
+                var remaining = new CardZoneViewData(hand.Data.ZoneId, hand.Data.Cards.Where(card => !unscored.Contains(card.ViewId)));
+                var flight = new GameObject("Flight"); flight.transform.SetParent(fixture.Root.transform);
+                var action = flight.AddComponent<BattleCardProjectileAction>();
+                action.Configure(world, AssetDatabase.LoadAssetAtPath<Material>("Assets/GameAssets/SingleBattle/Presentation/Scene3D/CardProjectileTail.mat"));
+                var routines = new List<IEnumerator>(); action.DeltaTimeProvider = () => .02f;
+                action.StartPresentationRoutine = routine => { routines.Add(routine); return () => routines.Remove(routine); };
+                var target = new GameObject("Target"); target.transform.SetParent(fixture.Root.transform); target.transform.position = Vector3.up * 2;
+                var resolver = new DictionaryTargetResolver(); resolver.Bind("enemy", target.transform);
+                using (var scope = new PresentationScope("unscored-discard"))
+                {
+                    var attack = fixture.Attacks[0]; var markers = new Markers();
+                    var operation = action.Play(new ActionContext(fixture.Batch.Id, 1, "play", attack, attack.Before, resolver, scope), markers);
+                    Assert.AreEqual(PresentationStatus.Pending, operation.Status, operation.Error?.ToString());
+                    reference.Present(remaining, unscored, true);
+                    var ghosts = action.GetComponentsInChildren<MeshRenderer>().Where(renderer => renderer.name.StartsWith("Unscored Card "))
+                        .ToDictionary(renderer => renderer.name.Substring("Unscored Card ".Length));
+                    CollectionAssert.AreEqual(unscored, ghosts.Keys);
+                    Assert.AreEqual(2, action.GetComponentsInChildren<TrailRenderer>().Length);
+                    for (int frame = 0; frame < 48; frame++)
+                    {
+                        foreach (var routine in routines.ToArray()) if (!routine.MoveNext()) routines.Remove(routine);
+                        reference.AdvanceMotion(frame == 0 ? 0 : .02f);
+                        foreach (var card in reference.DepartingViews)
+                        {
+                            var ghost = ghosts[card.ViewId];
+                            Assert.IsTrue(ghost.enabled);
+                            Assert.Less(Vector3.Distance(card.Surface.transform.position, ghost.transform.position), .0001f, "Discard position: frame " + frame);
+                            Assert.Less(Quaternion.Angle(card.Surface.transform.rotation, ghost.transform.rotation), .05f, "Discard flip: frame " + frame);
+                        }
+                        if (frame < 44) CollectionAssert.DoesNotContain(markers.Values, "Impact", "The slow final discard must finish before the hand can compact.");
+                    }
+                    CollectionAssert.Contains(markers.Values, "Impact");
+                    Assert.IsEmpty(reference.DepartingViews);
+                    world.Synchronize(zone);
+                    Assert.IsEmpty(action.GetComponentsInChildren<MeshRenderer>());
+                    Assert.IsTrue(hand.Views.All(card => !card.Surface.GetComponent<Renderer>().forceRenderingOff));
+                }
+            }
+        }
     }
 }

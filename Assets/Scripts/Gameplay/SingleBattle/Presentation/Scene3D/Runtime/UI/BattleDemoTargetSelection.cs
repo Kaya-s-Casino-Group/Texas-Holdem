@@ -18,12 +18,14 @@ namespace Poker.SingleBattle
         private readonly List<Entry> entries = new List<Entry>();
         private string preferred;
         private bool pendingChoice;
+        private MaterialPropertyBlock contourProperties;
         private sealed class Entry
         {
             internal EnemyBattleActor Actor;
             internal RectTransform Rect;
             internal Button Button;
             internal MeshRenderer Artwork, Outline;
+            internal BattleArtworkRaycastFilter HitFilter;
         }
         public void Configure(SingleBattleSceneAdapter owner, Canvas ui, Camera camera, TMP_FontAsset typeface, Material outline)
         { host = owner; canvas = ui; viewCamera = camera; font = typeface; outlineMaterial = outline; }
@@ -65,7 +67,8 @@ namespace Poker.SingleBattle
                     if (texture != null) properties.SetTexture("_MainTex", texture);
                     outline.SetPropertyBlock(properties);
                 }
-                entries.Add(new Entry { Actor = actor, Rect = rect, Button = button, Artwork = artwork, Outline = outline });
+                entries.Add(new Entry { Actor = actor, Rect = rect, Button = button, Artwork = artwork, Outline = outline,
+                    HitFilter = go.AddComponent<BattleArtworkRaycastFilter>() });
             }
         }
 
@@ -91,8 +94,17 @@ namespace Poker.SingleBattle
                 if (choices.Length > 0) pendingChoice = false;
             }
             var uiCamera = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
+            var composition = host.GetComponent<WrathBossArtworkLayout>();
+            if (composition != null && composition.IsComposed && entries.Count > 0)
+            {
+                int first = entries.Min(entry => entry.Rect.GetSiblingIndex());
+                foreach (var entry in entries.OrderBy(entry => composition.PartFor(entry.Actor)?.Order ?? 0))
+                    entry.Rect.SetSiblingIndex(first++);
+            }
             foreach (var entry in entries)
             {
+                var part = composition != null && composition.IsComposed ? composition.PartFor(entry.Actor) : null;
+                entry.HitFilter.Configure(entry.Artwork != null ? entry.Artwork.transform : null, part?.Texture, viewCamera);
                 var unit = entry.Actor.DisplayUnit;
                 bool alive = host.Enemies.Contains(entry.Actor) && entry.Actor.isActiveAndEnabled && unit != null && unit.IsAlive;
                 entry.Rect.gameObject.SetActive(alive);
@@ -107,7 +119,18 @@ namespace Poker.SingleBattle
                 var choice = host.PlayTargetChoices.FirstOrDefault(item => item.Candidates.Any(candidate => candidate.Id == unit.Id));
                 bool selected = choice?.SelectedId == unit.Id || host.Candidate?.State == CandidateState.Empty && preferred == unit.Id;
                 entry.Button.interactable = host.CanChoosePlayTarget && (choice != null || host.Candidate?.State == CandidateState.Empty);
-                if (entry.Outline != null) entry.Outline.enabled = selected;
+                if (entry.Outline != null)
+                {
+                    // Encounter swaps and separate boss hands each need their own alpha silhouette.
+                    var properties = contourProperties ?? (contourProperties = new MaterialPropertyBlock());
+                    entry.Artwork.GetPropertyBlock(properties);
+                    var texture = properties.GetTexture("_BaseMap");
+                    if (texture == null) texture = entry.Artwork.sharedMaterial.GetTexture("_BaseMap");
+                    properties.Clear(); properties.SetTexture("_MainTex", texture);
+                    entry.Outline.SetPropertyBlock(properties);
+                    entry.Outline.sortingOrder = entry.Artwork.sortingOrder + 1;
+                    entry.Outline.enabled = selected;
+                }
 
             }
         }

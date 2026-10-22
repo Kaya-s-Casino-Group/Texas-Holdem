@@ -118,28 +118,27 @@ namespace Poker.Adventure.Tests
 
         [TestCase(false)]
         [TestCase(true)]
-        public void WrathRosterUsesRemoteGridAndBossArtworkRegardlessOfRosterOrder(bool bodyLast)
+        public void WrathRosterUsesPsdCompositionRegardlessOfRosterOrder(bool bodyLast)
         {
             using (var fixture = new Fixture(bodyLast: bodyLast))
             {
                 var boss = WrathBossQuery.Read(fixture.View.PresentedState.Duel);
                 Assert.IsNotNull(boss);
-                var expected = new[] {
-                    new Rect(.40f, .60f, .15f, .22f), new Rect(.56f, .60f, .15f, .22f), new Rect(.72f, .60f, .15f, .22f),
-                    new Rect(.40f, .32f, .15f, .22f), new Rect(.56f, .32f, .15f, .22f), new Rect(.72f, .32f, .15f, .22f) };
-                var artwork = AssetDatabase.LoadAssetAtPath<Material>("Assets/Art/Characters/BattleBillboards/Enemy.mat");
-                for (int i = 0; i < fixture.View.Enemies.Count; i++)
+                var composition = fixture.View.GetComponent<WrathBossArtworkLayout>();
+                Assert.IsNotNull(composition);
+                Assert.IsTrue(composition.IsComposed);
+                Assert.AreEqual("Body", composition.PartFor(fixture.Actor(boss.BodyId)).Name);
+                int blood = 0;
+                foreach (var hand in boss.Hands)
                 {
-                    var actor = fixture.View.Enemies[i];
-                    var actual = Fixture.Area(actor);
-                    string slot = "Remote six-enemy grid slot " + i + " (" + actor.ParticipantId + ")";
-                    Assert.That(actual.x, Is.EqualTo(expected[i].x).Within(.000001f), slot + " x");
-                    Assert.That(actual.y, Is.EqualTo(expected[i].y).Within(.000001f), slot + " y");
-                    Assert.That(actual.width, Is.EqualTo(expected[i].width).Within(.000001f), slot + " width");
-                    Assert.That(actual.height, Is.EqualTo(expected[i].height).Within(.000001f), slot + " height");
-                    Assert.AreSame(artwork, actor.GetComponentInChildren<BattleDemoAshPresenter>().Artwork.sharedMaterial,
-                        "Each boss participant retains the authored remote artwork.");
+                    var actor = fixture.Actor(hand.Id);
+                    var part = composition.PartFor(actor);
+                    Assert.AreEqual("Hand" + (hand.Role == WrathHandRole.Binding ? 5 : ++blood), part.Name);
+                    Assert.AreEqual(composition.Artwork.PartViewport(part, composition.CanvasViewport), Fixture.Area(actor));
+                    Assert.IsTrue(part.Material == actor.GetComponentInChildren<BattleDemoAshPresenter>().Artwork.sharedMaterial);
+                    Assert.AreEqual(part.Order, actor.GetComponentInChildren<BattleDemoAshPresenter>().Artwork.sortingOrder);
                 }
+                Assert.AreEqual(6, fixture.View.Enemies.Select(actor => composition.PartFor(actor).Material).Distinct().Count());
             }
         }
 

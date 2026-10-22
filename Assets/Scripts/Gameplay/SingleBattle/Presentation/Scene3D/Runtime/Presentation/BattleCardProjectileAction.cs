@@ -42,6 +42,9 @@ namespace Poker.SingleBattle
             internal Renderer Original;
             internal Vector3 Start;
             internal Quaternion Rotation;
+            internal Quaternion DiscardStartRotation, DiscardEndRotation, DiscardArtworkRotation;
+            internal Vector3 DiscardLift;
+            internal CardZoneDiscardSettings DiscardSettings;
             internal float Size, Delay;
             internal Shot Shot;
             internal float ArrivedAt;
@@ -97,10 +100,12 @@ namespace Poker.SingleBattle
                             ViewId = before.Cards.Single(card => card.CardId == shot.CardId || card.ViewId == shot.CardId).ViewId,
                             TargetId = shot.TargetId, CueId = shot.CueId, Order = shot.Order, Destination = Destination(context, shot.TargetId)
                         }).ToArray();
+                        var handOrder = source.Current.Cards.Select((card, index) => new { card.ViewId, Index = index })
+                            .ToDictionary(card => card.ViewId, card => card.Index);
                         shots = shots.Concat(cue.Flight.UnscoredCards.Select(id => new Shot {
                             ViewId = before.Cards.Single(card => card.CardId == id || card.ViewId == id).ViewId,
                             CueId = "unscored", Unscored = true, Destination = source.GetComponent<HandZoneView>().DiscardWorldPosition
-                        })).ToArray();
+                        }).OrderBy(shot => handOrder[shot.ViewId])).ToArray();
                         foreach (var group in shots.GroupBy(shot => shot.CueId))
                         { int lane = 0; foreach (var shot in group) { shot.Lane = lane++; shot.Count = group.Count(); } }
                         bindings.Add(key, binding = new Binding { Id = key, Category = cue.Flight.Category, Royal = cue.Flight.Royal, Sequential = cue.Flight.Sequential, Shots = shots });
@@ -199,7 +204,15 @@ namespace Poker.SingleBattle
                 1 / transform.lossyScale.x, 1 / transform.lossyScale.y, 1 / transform.lossyScale.z));
             var ghost = new Ghost { Object = go, Original = original, Start = go.transform.position, Shot = shot,
                 Rotation = go.transform.rotation, Size = Mathf.Max(original.bounds.size.x, original.bounds.size.y, original.bounds.size.z),
-                Delay = shot.Unscored ? 0 : run.Binding.Sequential ? shot.Order * straightInterval : LaunchDelay(run.Binding.Category, shot.Lane) * volleyInterval };
+                Delay = shot.Unscored ? shot.Lane * hand.DiscardSettings.Interval : run.Binding.Sequential ? shot.Order * straightInterval : LaunchDelay(run.Binding.Category, shot.Lane) * volleyInterval };
+            if (shot.Unscored)
+            {
+                ghost.DiscardSettings = hand.DiscardSettings;
+                ghost.DiscardLift = hand.transform.TransformVector(Vector3.up * hand.DiscardSettings.FlightLift * card.PresentationScale);
+                ghost.DiscardStartRotation = hand.transform.rotation * card.DisplayPose.Rotation;
+                ghost.DiscardEndRotation = hand.transform.rotation;
+                ghost.DiscardArtworkRotation = Quaternion.Inverse(ghost.DiscardStartRotation) * ghost.Rotation;
+            }
             run.Cards.Add(ghost);
             go.GetComponent<MeshFilter>().sharedMesh = card.Surface.GetComponent<MeshFilter>().sharedMesh;
             ghost.Mesh = go.GetComponent<MeshRenderer>(); ghost.Mesh.sharedMaterials = original.sharedMaterials;
@@ -228,7 +241,7 @@ namespace Poker.SingleBattle
             if (!waiter.Request.Scope.IsActive) { waiter.Operation.Cancel(); return; }
             var cards = run.Cards.Where(card => card.Shot.CueId == waiter.CueId).ToArray();
             if (cards.Length == 0) throw new InvalidOperationException("The projectile cue has no visual cards.");
-            if (cards.Any(card => !card.Arrived)) return;
+            if (cards.Any(card => !card.Arrived) || run.Cards.Any(card => card.Shot.Unscored && !card.Arrived)) return;
             if (!waiter.Hit) { waiter.Hit = true; waiter.Markers.Emit("Impact"); waiter.Markers.Emit("AllArrived"); }
             if (run.Clock - cards.Max(card => card.ArrivedAt) >= tailSeconds) waiter.Operation.TryComplete();
         }
@@ -279,13 +292,15 @@ namespace Poker.SingleBattle
                     {
                         if (card.Arrived) continue;
                         float time = run.Clock - card.Delay;
-                        card.Mesh.enabled = time >= 0;
+                        card.Mesh.enabled = card.Shot.Unscored || time >= 0;
                         if (card.Shot.Unscored)
                         {
-                            float fall = Mathf.Clamp01(time / (liftSeconds + flightSeconds));
-                            card.Object.transform.position = Vector3.Lerp(card.Start, card.Shot.Destination, fall * fall);
-                            card.Object.transform.rotation = card.Rotation * Quaternion.Euler(0, 0, fall * (card.Shot.Lane % 2 == 0 ? 16 : -16));
-                            if (fall >= 1) { card.Arrived = true; card.ArrivedAt = run.Clock; card.Mesh.enabled = false; }
+                            float progress = Mathf.Clamp01(time / card.DiscardSettings.FlightSeconds);
+                            float flip = CardDiscardMotion.Flip(progress);
+                            card.Object.transform.position = CardDiscardMotion.Position(card.Start, card.Shot.Destination, card.DiscardLift, progress);
+                            card.Object.transform.rotation = Quaternion.Slerp(card.DiscardStartRotation, card.DiscardEndRotation, flip) *
+                                Quaternion.Euler(0, 0, 180 * flip) * card.DiscardArtworkRotation;
+                            if (progress >= 1) { card.Arrived = true; card.ArrivedAt = run.Clock; card.Mesh.enabled = false; }
                             continue;
                         }
                         var raised = card.Start + camera.transform.up * card.Size * .65f;

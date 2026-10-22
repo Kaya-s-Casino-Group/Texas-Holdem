@@ -105,6 +105,17 @@ namespace Poker.SingleBattle.Tests
             long oldEnemy = host.Enemy.Unit.Health;
             var cameraPosition = cameraTarget.localPosition;
             var cameraRotation = cameraTarget.localRotation;
+            var playHand = host.Actions.Hand.GetComponent<HandZoneView>();
+            var compactCard = playHand.Views.First(card => !card.Data.Interaction.IsSelected);
+            Vector3 compactFrom = default, compactTravel = default;
+            bool compacting = false, sawCompactionTravel = false, sawCompactionOvershoot = false;
+            System.Action onPlayReflow = () =>
+            {
+                if (compacting) return;
+                compacting = true; compactFrom = compactCard.DisplayPose.Position;
+                compactTravel = compactCard.transform.localPosition - compactFrom;
+            };
+            playHand.ReflowStarted += onPlayReflow;
             Assert.AreEqual(1, host.Player.Play(host.Actions.Hand.CaptureSelection(), true));
             var settledPlay = host.AuthorityState;
             Assert.IsTrue(host.IsPresenting);
@@ -120,6 +131,12 @@ namespace Poker.SingleBattle.Tests
             float playDeadline = Time.realtimeSinceStartup + 15;
             while (host.IsPresenting && Time.realtimeSinceStartup < playDeadline)
             {
+                if (compacting && compactTravel.sqrMagnitude > .00000001f)
+                {
+                    float progress = Vector3.Dot(compactCard.DisplayPose.Position - compactFrom, compactTravel) / compactTravel.sqrMagnitude;
+                    sawCompactionTravel |= progress > .01f && progress < .99f;
+                    sawCompactionOvershoot |= progress > 1.001f;
+                }
                 var damageVisible = uiActions.Any(action => action.Kind == UiFeedbackKind.Damage && action.ActiveViewCount > 0);
                 var projectiles = host.GetComponentsInChildren<TrailRenderer>().Where(tail => tail.transform.parent.name.StartsWith("Card Projectile ")).ToArray();
                 sawHorizontalFlight |= projectiles.Any(tail => tail.emitting &&
@@ -152,7 +169,11 @@ namespace Poker.SingleBattle.Tests
                     Quaternion.Angle(cameraRotation, cameraTarget.localRotation) > .001f;
                 yield return null;
             }
+            playHand.ReflowStarted -= onPlayReflow;
             Assert.IsFalse(host.IsPresenting);
+            Assert.IsTrue(sawCompactionTravel, "The post-play hand closes with a visible tween, even when later facts repeat the same hand.");
+            Assert.IsTrue(sawCompactionOvershoot, "The compaction must play its OutBack overshoot before settling.");
+            Assert.Less(Vector3.Distance(compactCard.DisplayPose.Position, compactFrom + compactTravel), .00001f);
             Assert.IsTrue(sawDamageUi, "The configured damage UI action must actually reveal its owned text.");
             Assert.IsTrue(sawProjectileTail, "Each played card must carry an emitting tail during its projectile flight.");
             Assert.IsTrue(sawHorizontalFlight, "Played cards must turn onto the horizontal world plane during flight.");
@@ -614,7 +635,7 @@ namespace Poker.SingleBattle.Tests
                 var scoring = all.Where(renderer => renderer.name.StartsWith("Card Projectile ") && renderer.enabled).ToArray();
                 if (drops.Length > 0)
                 {
-                    Assert.AreEqual(3, drops.Length); Assert.IsTrue(drops.All(renderer => renderer.GetComponentInChildren<TrailRenderer>() == null));
+                    Assert.LessOrEqual(drops.Length, 3); Assert.IsTrue(drops.All(renderer => renderer.GetComponentInChildren<TrailRenderer>() == null));
                     sawConcurrent |= scoring.Length == 2;
                     foreach (var drop in drops)
                     {
@@ -637,7 +658,7 @@ namespace Poker.SingleBattle.Tests
                 }
                 yield return null;
             }
-            Assert.IsFalse(host.IsPresenting); Assert.IsTrue(sawConcurrent); Assert.IsTrue(sawDownward); Assert.IsTrue(sawAsh);
+            Assert.IsFalse(host.IsPresenting); Assert.AreEqual(3, starts.Count); Assert.IsTrue(sawConcurrent); Assert.IsTrue(sawDownward); Assert.IsTrue(sawAsh);
             Assert.AreEqual(1, ash.Progress); Assert.IsFalse(host.Enemies[1].IsAlive);
             host.SnapToState(); Assert.AreEqual(1, ash.Progress);
             host.RestartBattle(); yield return Idle(host);

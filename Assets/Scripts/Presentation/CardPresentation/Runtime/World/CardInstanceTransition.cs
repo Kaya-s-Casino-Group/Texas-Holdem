@@ -65,7 +65,7 @@ namespace CardPresentation
             else
             {
                 start = displayed; delay = 0; flight = settings.ReflowSeconds;
-                StartClock(flight);
+                StartReflow();
             }
         }
 
@@ -84,15 +84,32 @@ namespace CardPresentation
         private void StartClock(float duration)
         {
             elapsed = 0;
-            tween = DOTween.To(() => elapsed, value => { elapsed = value; ApplyFrame(); }, duration, duration)
-                .SetEase(Ease.Linear).SetUpdate(UpdateType.Manual).SetAutoKill(true).SetRecyclable(false)
+            OwnTween(DOTween.To(() => elapsed, value => { elapsed = value; ApplyFrame(); }, duration, duration).SetEase(Ease.Linear));
+            tween.ForceInit(); ApplyFrame();
+        }
+
+        private void StartReflow()
+        {
+            float progress = 0;
+            var destination = new CardZoneCardPose(target.Position, CardInstanceView.UprightRotation(target.Rotation));
+            OwnTween(DOTween.To(() => progress, value => {
+                progress = value;
+                view.ApplyDisplayPose(new CardZoneCardPose(Vector3.LerpUnclamped(start.Position, destination.Position, value),
+                    Quaternion.SlerpUnclamped(start.Rotation, destination.Rotation, value)));
+            }, 1, settings.ReflowSeconds).SetEase(Ease.OutBack, settings.ReflowOvershoot));
+            view.SetDealFlipAngle(0); view.SetTransitionVisible(true);
+            tween.ForceInit(); view.ApplyDisplayPose(start);
+        }
+
+        private void OwnTween(Tween animation)
+        {
+            tween = animation.SetUpdate(UpdateType.Manual).SetAutoKill(true).SetRecyclable(false)
                 .SetTarget(view.TransitionRoot).SetId(tweenId)
                 .OnComplete(() => {
                     tween = null; IsEntering = false;
                     // The owner releases departures at the destination, without a reset/settle frame.
                     if (!IsExiting) view.ResetTransition();
                 });
-            tween.ForceInit(); ApplyFrame();
         }
 
         private void ApplyFrame()
@@ -102,11 +119,10 @@ namespace CardPresentation
                 if (elapsed >= delay && !hasStarted) { hasStarted = true; pendingDiscardStart = true; }
                 float progress = Mathf.Clamp01((elapsed - delay) / flight);
                 // Reverse of the arrival's OutCubic: accelerate away, with no landing rebound.
-                float exitTravel = progress * progress * progress;
-                float flip = Mathf.SmoothStep(0, 1, progress);
-                var position = Vector3.Lerp(start.Position, target.Position, exitTravel);
-                float arc = Mathf.Sin(progress * Mathf.PI);
-                position.y += arc * arc * discardSettings.FlightLift * view.PresentationScale;
+                float exitTravel = CardDiscardMotion.Travel(progress);
+                float flip = CardDiscardMotion.Flip(progress);
+                var position = CardDiscardMotion.Position(start.Position, target.Position,
+                    Vector3.up * discardSettings.FlightLift * view.PresentationScale, progress);
                 view.SetDiscardPose(exitOffset * (1 - exitTravel), exitSway * (1 - flip));
                 view.SetDealFlipAngle(Mathf.Lerp(startFlipAngle, 180, flip));
                 view.ApplyDisplayPose(new CardZoneCardPose(position, Quaternion.Slerp(start.Rotation, target.Rotation, flip)));
@@ -122,17 +138,6 @@ namespace CardPresentation
             float eased = 1 - Mathf.Pow(1 - t, 3);
             // Flip only during flight, with zero angular speed at launch/landing. Hidden faces need no extra turn.
             view.SetDealFlipAngle(IsEntering ? Mathf.Lerp(startFlipAngle, 0, Mathf.SmoothStep(0, 1, t)) : 0);
-            if (!IsEntering)
-            {
-                // OutBack includes the overshoot and return in ReflowSeconds. Zero strength is exactly OutCubic.
-                // Interpolate the full displacement so inertia naturally follows card/zone sizing.
-                float remaining = t - 1;
-                eased = 1 + (settings.ReflowOvershoot + 1) * remaining * remaining * remaining +
-                    settings.ReflowOvershoot * remaining * remaining;
-                view.ApplyDisplayPose(new CardZoneCardPose(Vector3.LerpUnclamped(start.Position, destination.Position, eased),
-                    Quaternion.SlerpUnclamped(start.Rotation, destination.Rotation, eased)));
-                return;
-            }
             var travel = destination.Position - start.Position; travel.y = 0;
             var overshoot = travel.normalized * settings.OvershootDistance * view.PresentationScale;
             float yaw = (travel.x <= 0 ? -1 : 1) * settings.LandingYaw;

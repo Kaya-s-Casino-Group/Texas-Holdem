@@ -61,6 +61,7 @@ namespace Poker.Adventure
                 if (backgrounds != null) backgrounds.Select(node.Kind == AdventureNodeKind.Boss ? BattleBackground.Boss :
                     node.Kind == AdventureNodeKind.Elite ? BattleBackground.Elite : BattleBackground.Minion);
             }
+            if (view.GetComponent<WrathBossArtworkLayout>()?.TryApply(view.Display) == true) return;
             int count = view.Enemies.Count;
             for (int i = 0; i < count; i++)
             {

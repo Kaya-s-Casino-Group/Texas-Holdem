@@ -1,0 +1,138 @@
+{
+  "width": 5000,
+  "height": 5000,
+  "layers": [
+    {
+      "name": "背景",
+      "left": 0,
+      "top": 0,
+      "right": 5000,
+      "bottom": 5000,
+      "opacity": 255,
+      "blend": "norm",
+      "visible": true
+    },
+    {
+      "name": "</Layer group>",
+      "left": 0,
+      "top": 0,
+      "right": 0,
+      "bottom": 0,
+      "opacity": 255,
+      "blend": "norm",
+      "visible": true
+    },
+    {
+      "name": "组 10 拷贝",
+      "left": 671,
+      "top": 351,
+      "right": 4701,
+      "bottom": 4579,
+      "opacity": 255,
+      "blend": "norm",
+      "visible": true
+    },
+    {
+      "name": "图层 79",
+      "left": 799,
+      "top": 576,
+      "right": 2010,
+      "bottom": 2243,
+      "opacity": 255,
+      "blend": "norm",
+      "visible": true
+    },
+    {
+      "name": "图层 76",
+      "left": 2764,
+      "top": 2107,
+      "right": 3749,
+      "bottom": 3457,
+      "opacity": 255,
+      "blend": "norm",
+      "visible": true
+    },
+    {
+      "name": "图层 72",
+      "left": 2812,
+      "top": 443,
+      "right": 4227,
+      "bottom": 1853,
+      "opacity": 255,
+      "blend": "norm",
+      "visible": true
+    },
+    {
+      "name": "图层 71",
+      "left": 3062,
+      "top": 1591,
+      "right": 4575,
+      "bottom": 3274,
+      "opacity": 255,
+      "blend": "norm",
+      "visible": true
+    },
+    {
+      "name": "组 9",
+      "left": 1281,
+      "top": 443,
+      "right": 3728,
+      "bottom": 4469,
+      "opacity": 255,
+      "blend": "norm",
+      "visible": true
+    },
+    {
+      "name": "图层 74",
+      "left": 957,
+      "top": 2012,
+      "right": 2219,
+      "bottom": 3890,
+      "opacity": 255,
+      "blend": "norm",
+      "visible": true
+    },
+    {
+      "name": "组 10",
+      "left": 0,
+      "top": 0,
+      "right": 0,
+      "bottom": 0,
+      "opacity": 255,
+      "blend": "norm",
+      "visible": true
+    }
+  ],
+  "sourcePsd": "boss.psd",
+  "sourcePsdSha256": "0fb00d5b9b6ffef1a163fa0751a26021d52a26601c98dd3749cf4e2135babd69",
+  "pngFiles": {
+    "Body": {
+      "source": "身体.png",
+      "sha256": "5bd1112f0f13ff63156744e208d421f4ed0e8187ce0b9f5296ea71a8b886a246"
+    },
+    "Hand1": {
+      "source": "手1.png",
+      "sha256": "48a4bc2f34f95aebe1f218b2812d8328488d38b9f745577e1878bd3f9d97a4f2"
+    },
+    "Hand2": {
+      "source": "手2.png",
+      "sha256": "e092585b87669db0d34f6ca5573935f695b9136449784066a7608290dc49c350"
+    },
+    "Hand3": {
+      "source": "手3.png",
+      "sha256": "1d2944c6a13e59651e52261087d23d5c680227bfbe669d037e786ab0f06c2ce4"
+    },
+    "Hand4": {
+      "source": "手4.png",
+      "sha256": "253ea5edcedd1e3687d41237b79668381e2f8104d3d298a5df2db5fb8d255700"
+    },
+    "Hand5": {
+      "source": "手5.png",
+      "sha256": "43d4692fa8ee0420ad848ee922f2fc65ee6a458b60d3db4c9243f660404ea6c2"
+    },
+    "WarningGlow": {
+      "source": "预警红光.png",
+      "sha256": "377e1567dc0f0a7c3c68cc4ab9cee95887b061305a40577e976cca97f9279cf6"
+    }
+  }
+}

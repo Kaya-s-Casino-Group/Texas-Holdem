@@ -50,7 +50,7 @@ namespace Poker.SingleBattle
                 {
                     var root = new GameObject("Regular Intent " + i, typeof(RectTransform), typeof(Image)).GetComponent<Image>();
                     root.transform.SetParent(wrathPanel, false); root.gameObject.layer = gameObject.layer; root.raycastTarget = false;
-                    SetWrathRect(root.rectTransform, new Vector2(i / 8f, .59f), new Vector2((i + 1) / 8f, .74f), new Vector2(3, 0), new Vector2(-3, 0));
+                    SetWrathRect(root.rectTransform, new Vector2(i / 8f, .66f), new Vector2((i + 1) / 8f, .79f), new Vector2(3, 0), new Vector2(-3, 0));
                     var artwork = new GameObject("Icon", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
                     artwork.transform.SetParent(root.transform, false); artwork.gameObject.layer = gameObject.layer;
                     artwork.preserveAspect = true; artwork.raycastTarget = false;
