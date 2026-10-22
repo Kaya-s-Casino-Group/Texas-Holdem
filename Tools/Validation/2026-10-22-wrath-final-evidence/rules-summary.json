@@ -1,0 +1,149 @@
+{
+  "sdk": "10.0.402",
+  "productionModified": false,
+  "sourceChanges": [
+    "External/BattleToolkit/Engine/Tests/Editor/WrathBossRulesTests.cs"
+  ],
+  "groups": [
+    {
+      "name": "wrath-added-cases",
+      "trx": "wrath-added-cases.trx",
+      "total": 2,
+      "outcomes": {
+        "Passed": 2
+      },
+      "classes": {
+        "PokerEngine.Tests.WrathBossRulesTests": 2
+      },
+      "failures": []
+    },
+    {
+      "name": "wrath-core-final",
+      "trx": "wrath-core-final.trx",
+      "total": 124,
+      "outcomes": {
+        "Passed": 124
+      },
+      "classes": {
+        "PokerEngine.Tests.CombatEliteBleedingTests": 23,
+        "PokerEngine.Tests.CombatWrathImmunityTests": 9,
+        "PokerEngine.Tests.WrathBossRulesTests": 34,
+        "PokerEngine.Tests.SingleChapterEnemyRulesTests": 5,
+        "PokerEngine.Tests.AdventureEconomyTests": 13,
+        "PokerEngine.Tests.EliteBleedingIntegrationTests": 11,
+        "PokerEngine.Tests.EliteBleedingInteractionTests": 6,
+        "PokerEngine.Tests.WrathAdventureHealthTests": 2,
+        "PokerEngine.Tests.SingleChapterContentTests": 5,
+        "PokerEngine.Tests.WrathHandEffectRestrictionsTests": 15,
+        "PokerEngine.Tests.WrathAdventureReplayTests": 1
+      },
+      "failures": []
+    },
+    {
+      "name": "wrath-compat",
+      "trx": "wrath-compat.trx",
+      "total": 476,
+      "outcomes": {
+        "Passed": 468,
+        "Failed": 8
+      },
+      "classes": {
+        "PokerEngine.Tests.PerEffectTargetTests": 26,
+        "PokerEngine.Tests.BattleItemPlaybackTests": 3,
+        "PokerEngine.Tests.BattleAdventureTests": 24,
+        "PokerEngine.Tests.BattleAdventureAdminTests": 6,
+        "PokerEngine.Tests.CombatReactionTests": 31,
+        "PokerEngine.Tests.RelicHandEffectTests": 13,
+        "PokerEngine.Tests.DiscardRewardTests": 14,
+        "PokerEngine.Tests.CombatStatusBehaviorTests": 15,
+        "PokerEngine.Tests.DesignAdventure2951Tests": 6,
+        "PokerEngine.Tests.CompatibleHandMechanismTests": 16,
+        "PokerEngine.Tests.DesignRevision1563Tests": 19,
+        "PokerEngine.Tests.RelicHandEffectBattleTests": 15,
+        "PokerEngine.Tests.BattleSessionPlaybackTests": 19,
+        "PokerEngine.Tests.EnemyBehaviorTests": 39,
+        "PokerEngine.Tests.CombatReactionIntegrationTests": 10,
+        "PokerEngine.Tests.ScoredHandDamageTests": 21,
+        "PokerEngine.Tests.StatusReactionBattleTests": 11,
+        "PokerEngine.Tests.RelicRuleTests": 16,
+        "PokerEngine.Tests.BattleSessionTests": 16,
+        "PokerEngine.Tests.DesignRevision1582Tests": 19,
+        "PokerEngine.Tests.CardDuelTests": 18,
+        "PokerEngine.Tests.CombatStatusReactionTests": 27,
+        "PokerEngine.Tests.DesignRevision1726Tests": 3,
+        "PokerEngine.Tests.WrathThousandHandsTests": 7,
+        "PokerEngine.Tests.DesignItem2951Tests": 16,
+        "PokerEngine.Tests.StatusBattleIntegrationTests": 11,
+        "PokerEngine.Tests.PokerHandEffectRuleTests": 38,
+        "PokerEngine.Tests.PokerHandEffectIntegrationTests": 10,
+        "PokerEngine.Tests.StatusBattleSessionTests": 7
+      },
+      "failures": [
+        {
+          "className": "PokerEngine.Tests.RelicHandEffectBattleTests",
+          "testName": "AppendedOverflowRollsBackDamageCardsAndResources",
+          "outcome": "Failed",
+          "message": "  Expected: Overflow\n  But was:  None\n",
+          "stackTrace": "   at PokerEngine.Tests.RelicHandEffectBattleTests.AppendedOverflowRollsBackDamageCardsAndResources() in /Users/mt/code-yang/Texas-Holdem/External/BattleToolkit/Engine/Tests/Editor/RelicHandEffectBattleTests.cs:line 191\n\n1)    at PokerEngine.Tests.RelicHandEffectBattleTests.AppendedOverflowRollsBackDamageCardsAndResources() in /Users/mt/code-yang/Texas-Holdem/External/BattleToolkit/Engine/Tests/Editor/RelicHandEffectBattleTests.cs:line 191\n\n",
+          "existingInPreviousFullRun": true
+        },
+        {
+          "className": "PokerEngine.Tests.CardDuelTests",
+          "testName": "CreationHasNoHandAndFirstTurnDealsExactlyOnceWithoutSpendingEnergy",
+          "outcome": "Failed",
+          "message": "  Expected: same as <PokerEngine.TeamBattleState>\n  But was:  <PokerEngine.TeamBattleState>\n",
+          "stackTrace": "   at PokerEngine.Tests.CardDuelTests.CreationHasNoHandAndFirstTurnDealsExactlyOnceWithoutSpendingEnergy() in /Users/mt/code-yang/Texas-Holdem/External/BattleToolkit/Engine/Tests/Editor/CardDuelTests.cs:line 37\n\n1)    at PokerEngine.Tests.CardDuelTests.CreationHasNoHandAndFirstTurnDealsExactlyOnceWithoutSpendingEnergy() in /Users/mt/code-yang/Texas-Holdem/External/BattleToolkit/Engine/Tests/Editor/CardDuelTests.cs:line 37\n\n",
+          "existingInPreviousFullRun": true
+        },
+        {
+          "className": "PokerEngine.Tests.CombatReactionIntegrationTests",
+          "testName": "FailureInALaterEnemyReactionRollsBackTheEntireSessionIncludingEarlierReactions",
+          "outcome": "Failed",
+          "message": "  Expected: Overflow\n  But was:  None\n",
+          "stackTrace": "   at PokerEngine.Tests.CombatReactionIntegrationTests.FailureInALaterEnemyReactionRollsBackTheEntireSessionIncludingEarlierReactions() in /Users/mt/code-yang/Texas-Holdem/External/BattleToolkit/Engine/Tests/Editor/CombatReactionIntegrationTests.cs:line 216\n\n1)    at PokerEngine.Tests.CombatReactionIntegrationTests.FailureInALaterEnemyReactionRollsBackTheEntireSessionIncludingEarlierReactions() in /Users/mt/code-yang/Texas-Holdem/External/BattleToolkit/Engine/Tests/Editor/CombatReactionIntegrationTests.cs:line 216\n\n",
+          "existingInPreviousFullRun": true
+        },
+        {
+          "className": "PokerEngine.Tests.DiscardRewardTests",
+          "testName": "RewardOverflowRollsBackCostsCardsAndRandomState",
+          "outcome": "Failed",
+          "message": "  Expected: Overflow\n  But was:  None\n",
+          "stackTrace": "   at PokerEngine.Tests.DiscardRewardTests.RewardOverflowRollsBackCostsCardsAndRandomState() in /Users/mt/code-yang/Texas-Holdem/External/BattleToolkit/Engine/Tests/Editor/DiscardRewardTests.cs:line 101\n\n1)    at PokerEngine.Tests.DiscardRewardTests.RewardOverflowRollsBackCostsCardsAndRandomState() in /Users/mt/code-yang/Texas-Holdem/External/BattleToolkit/Engine/Tests/Editor/DiscardRewardTests.cs:line 101\n\n",
+          "existingInPreviousFullRun": true
+        },
+        {
+          "className": "PokerEngine.Tests.StatusBattleIntegrationTests",
+          "testName": "LateFailureRollsBackExpiryControlConsumptionDamageEnergyScoreAndCardMovement",
+          "outcome": "Failed",
+          "message": "  Expected: Overflow\n  But was:  None\n",
+          "stackTrace": "   at PokerEngine.Tests.StatusBattleIntegrationTests.LateFailureRollsBackExpiryControlConsumptionDamageEnergyScoreAndCardMovement() in /Users/mt/code-yang/Texas-Holdem/External/BattleToolkit/Engine/Tests/Editor/StatusBattleIntegrationTests.cs:line 290\n\n1)    at PokerEngine.Tests.StatusBattleIntegrationTests.LateFailureRollsBackExpiryControlConsumptionDamageEnergyScoreAndCardMovement() in /Users/mt/code-yang/Texas-Holdem/External/BattleToolkit/Engine/Tests/Editor/StatusBattleIntegrationTests.cs:line 290\n\n",
+          "existingInPreviousFullRun": true
+        },
+        {
+          "className": "PokerEngine.Tests.CombatReactionTests",
+          "testName": "NumericOverflowInTheProviderOrAReactionRollsBackEveryFact(False)",
+          "outcome": "Failed",
+          "message": "  Expected: False\n  But was:  True\n",
+          "stackTrace": "   at PokerEngine.Tests.CombatReactionTests.Rejected(CombatState initial, CombatTransition result, Nullable`1 error) in /Users/mt/code-yang/Texas-Holdem/External/BattleToolkit/Engine/Tests/Editor/CombatReactionTests.cs:line 50\n   at PokerEngine.Tests.CombatReactionTests.NumericOverflowInTheProviderOrAReactionRollsBackEveryFact(Boolean insideProvider) in /Users/mt/code-yang/Texas-Holdem/External/BattleToolkit/Engine/Tests/Editor/CombatReactionTests.cs:line 302\n\n1)    at PokerEngine.Tests.CombatReactionTests.Rejected(CombatState initial, CombatTransition result, Nullable`1 error) in /Users/mt/code-yang/Texas-Holdem/External/BattleToolkit/Engine/Tests/Editor/CombatReactionTests.cs:line 50\n   at PokerEngine.Tests.CombatReactionTests.NumericOverflowInTheProviderOrAReactionRollsBackEveryFact(Boolean insideProvider) in /Users/mt/code-yang/Texas-Holdem/External/BattleToolkit/Engine/Tests/Editor/CombatReactionTests.cs:line 302\n\n",
+          "existingInPreviousFullRun": true
+        },
+        {
+          "className": "PokerEngine.Tests.CombatStatusBehaviorTests",
+          "testName": "LaterFailureRollsBackImmunityConsumptionAndEarlierDamage",
+          "outcome": "Failed",
+          "message": "  Expected: Overflow\n  But was:  None\n",
+          "stackTrace": "   at PokerEngine.Tests.CombatStatusBehaviorTests.LaterFailureRollsBackImmunityConsumptionAndEarlierDamage() in /Users/mt/code-yang/Texas-Holdem/External/BattleToolkit/Engine/Tests/Editor/CombatStatusBehaviorTests.cs:line 218\n\n1)    at PokerEngine.Tests.CombatStatusBehaviorTests.LaterFailureRollsBackImmunityConsumptionAndEarlierDamage() in /Users/mt/code-yang/Texas-Holdem/External/BattleToolkit/Engine/Tests/Editor/CombatStatusBehaviorTests.cs:line 218\n\n",
+          "existingInPreviousFullRun": true
+        },
+        {
+          "className": "PokerEngine.Tests.RelicRuleTests",
+          "testName": "InvalidEffectiveCapacityFailsAtBattleCreation(HandLimit,-8)",
+          "outcome": "Failed",
+          "message": "  Expected: <System.ArgumentException>\n  But was:  null\n",
+          "stackTrace": "   at PokerEngine.Tests.RelicRuleTests.InvalidEffectiveCapacityFailsAtBattleCreation(BattleRuleValueKey key, Int32 delta) in /Users/mt/code-yang/Texas-Holdem/External/BattleToolkit/Engine/Tests/Editor/RelicRuleTests.cs:line 73\n   at InvokeStub_RelicRuleTests.InvalidEffectiveCapacityFailsAtBattleCreation(Object, Span`1)\n\n1)    at PokerEngine.Tests.RelicRuleTests.InvalidEffectiveCapacityFailsAtBattleCreation(BattleRuleValueKey key, Int32 delta) in /Users/mt/code-yang/Texas-Holdem/External/BattleToolkit/Engine/Tests/Editor/RelicRuleTests.cs:line 73\n   at InvokeStub_RelicRuleTests.InvalidEffectiveCapacityFailsAtBattleCreation(Object, Span`1)\n\n",
+          "existingInPreviousFullRun": true
+        }
+      ]
+    }
+  ]
+}

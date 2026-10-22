@@ -29,6 +29,7 @@ namespace Poker.SingleBattle
             internal RectTransform Root, Fill, Health, StatusRow, IntentRow, Tooltip;
             internal TMP_Text HealthText, TooltipText;
             internal IconView Block;
+            internal BattleDemoEnemyBadgeTooltip OpenTooltip;
             internal readonly List<IconView> Intents = new List<IconView>(), Statuses = new List<IconView>();
         }
         public void Configure(SingleBattleSceneAdapter owner, Camera camera, TMP_FontAsset typeface)
@@ -107,17 +108,31 @@ namespace Poker.SingleBattle
             var tooltip = rect.gameObject.AddComponent<BattleDemoEnemyBadgeTooltip>();
             tooltip.Show = description =>
             {
+                owner.OpenTooltip = tooltip;
                 owner.TooltipText.text = description;
                 owner.Tooltip.gameObject.SetActive(true); owner.Tooltip.SetAsLastSibling();
                 owner.Tooltip.anchoredPosition = rect.parent == owner.IntentRow ? owner.IntentRow.anchoredPosition + new Vector2(0, -73) : owner.StatusRow.anchoredPosition + new Vector2(0, 70);
             };
-            tooltip.Hide = () => { if (owner.Tooltip != null) owner.Tooltip.gameObject.SetActive(false); };
+            tooltip.Hide = () =>
+            {
+                if (owner.OpenTooltip != tooltip) return;
+                owner.OpenTooltip = null;
+                if (owner.Tooltip != null) owner.Tooltip.gameObject.SetActive(false);
+            };
             return new IconView { Root = rect, Icon = icon, Value = value, Tooltip = tooltip };
         }
         private static void Set(IconView view, BattleDemoEnemyHudModel.Badge badge, string detail = null)
         {
             view.Icon.Set(badge.Symbol, badge.Color); view.Value.text = badge.Value; view.Value.color = badge.Color;
-            view.Tooltip.Description = detail ?? badge.Description;
+            string description = detail ?? badge.Description;
+            if (view.Tooltip.Description != description) view.Tooltip.Hide?.Invoke();
+            view.Tooltip.Description = description;
+        }
+        private static void SetVisible(IconView view, bool visible)
+        {
+            // Editor refreshes and pooled badges cannot rely on MonoBehaviour.OnDisable alone.
+            if (!visible) view.Tooltip.Hide?.Invoke();
+            view.Root.gameObject.SetActive(visible);
         }
         private void Refresh()
         {
@@ -127,27 +142,64 @@ namespace Poker.SingleBattle
             foreach (var view in views)
             {
                 var unit = previous.Unit(view.Actor.DisplayId);
-                bool visible = host.Enemies.Contains(view.Actor) && view.Actor.isActiveAndEnabled && unit != null && unit.IsAlive;
+                var regeneration = unit == null ? null : previous.Resource(unit.Id, "wrath.reviveRemaining");
+                bool regenerating = unit != null && !unit.IsAlive && !previous.IsFinished && regeneration != null &&
+                    previous.Labels.ContainsKey("wrath.hand/" + unit.Id);
+                bool visible = host.Enemies.Contains(view.Actor) && view.Actor.isActiveAndEnabled && unit != null &&
+                    (unit.IsAlive || regenerating);
+                if (!visible) view.OpenTooltip?.Hide?.Invoke();
                 view.Root.gameObject.SetActive(visible); if (!visible) continue;
+                view.Health.gameObject.SetActive(!regenerating);
+                view.StatusRow.gameObject.SetActive(!regenerating);
                 view.HealthText.text = unit.Health + " / " + unit.MaxHealth;
                 float fraction = unit.MaxHealth > 0 ? Mathf.Clamp01((float)unit.Health / unit.MaxHealth) : 0;
                 view.Fill.anchorMin = new Vector2(1f / 184, 1f / 17);
                 view.Fill.anchorMax = new Vector2((1 + 182 * fraction) / 184, 16f / 17);
                 view.Fill.offsetMin = view.Fill.offsetMax = Vector2.zero;
-                view.Block.Root.gameObject.SetActive(unit.Block > 0);
+                SetVisible(view.Block, !regenerating && unit.Block > 0);
                 Set(view.Block, new BattleDemoEnemyHudModel.Badge(BattleDemoEnemySymbol.Shield, BattleDemoEnemyHudModel.ShieldColor, unit.Block.ToString(), "当前护盾：" + unit.Block));
-                var intents = previous.IsFinished ? new BattleDemoEnemyHudModel.Badge[0] : BattleDemoEnemyHudModel.Intents(view.Actor.ReadIntent()?.Action);
+                IReadOnlyList<BattleDemoEnemyHudModel.Badge> intents;
+                if (regenerating)
+                {
+                    // Keep the original actor's world UI; the resolver owns the countdown and revival.
+                    string remaining = regeneration.Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                    intents = new[] { new BattleDemoEnemyHudModel.Badge(BattleDemoEnemySymbol.Heal,
+                        BattleDemoEnemyHudModel.AttackColor, remaining, regeneration.Value == 0
+                            ? "再生：本轮敌方阶段再生" : "再生：剩余 " + remaining + " 轮") };
+                }
+                else
+                {
+                    var enemy = host.PresentedState.Duel.Enemies.FirstOrDefault(actor => actor.Id.Value == unit.Id);
+                    var wrath = enemy?.Behavior?.Wrath;
+                    long? charge = wrath != null && enemy.BehaviorState?.Intent?.Id == wrath.ChargeActionId
+                        ? wrath.AttackPerCharge : (long?)null;
+                    intents = previous.IsFinished ? new BattleDemoEnemyHudModel.Badge[0]
+                        : BattleDemoEnemyHudModel.Intents(view.Actor.ReadIntent()?.Action, charge);
+                    if (!previous.IsFinished && previous.Resource(unit.Id, "wrath.warning")?.Value == 1)
+                    {
+                        long release = previous.Resource(unit.Id, "wrath.releaseRound")?.Value ?? -1;
+                        long damage = previous.Resource(unit.Id, "wrath.ultimateDamage")?.Value ?? 0;
+                        intents = intents.Concat(new[] { new BattleDemoEnemyHudModel.Badge(BattleDemoEnemySymbol.Sword,
+                            BattleDemoEnemyHudModel.AttackColor, "!", "大招预警：第 " + release +
+                            " 轮常规动作后追加\n当前预计基础伤害 " + damage + "\n断手或眩晕本体可打断") }).ToArray();
+                    }
+                }
                 while (view.Intents.Count < intents.Count) view.Intents.Add(Icon("Intent " + view.Intents.Count, view.IntentRow, false, view));
                 for (int i = 0; i < view.Intents.Count; i++)
                 {
-                    var badge = view.Intents[i]; badge.Root.gameObject.SetActive(i < intents.Count);
+                    var badge = view.Intents[i]; SetVisible(badge, i < intents.Count);
                     if (i >= intents.Count) continue;
                     Set(badge, intents[i]); badge.Root.anchoredPosition = new Vector2((i - (intents.Count - 1) * .5f) * 75, 0);
+                }
+                if (regenerating)
+                {
+                    foreach (var badge in view.Statuses) SetVisible(badge, false);
+                    continue;
                 }
                 while (view.Statuses.Count < unit.Statuses.Count) view.Statuses.Add(Icon("Status " + view.Statuses.Count, view.StatusRow, true, view));
                 for (int i = 0; i < view.Statuses.Count; i++)
                 {
-                    var badge = view.Statuses[i]; badge.Root.gameObject.SetActive(i < unit.Statuses.Count);
+                    var badge = view.Statuses[i]; SetVisible(badge, i < unit.Statuses.Count);
                     if (i >= unit.Statuses.Count) continue;
                     var status = unit.Statuses[i]; var model = BattleDemoEnemyHudModel.Status(status.Id, status.Stacks);
                     var instance = host.PresentedState.Duel.Combat.Statuses.FirstOrDefault(item => item.DefinitionId.Value == status.Id && item.Target.Id == unit.Id);
@@ -183,7 +235,11 @@ namespace Poker.SingleBattle
                 view.IntentRow.anchoredPosition = new Vector2(0, halfHeight + 28);
             }
         }
-        private void OnDisable() { if (uiRoot != null) uiRoot.gameObject.SetActive(false); }
+        private void OnDisable()
+        {
+            foreach (var view in views) view.OpenTooltip?.Hide?.Invoke();
+            if (uiRoot != null) uiRoot.gameObject.SetActive(false);
+        }
         private void OnEnable() { if (uiRoot != null) { uiRoot.gameObject.SetActive(true); previous = null; } }
         private void OnDestroy() { if (uiRoot != null) Destroy(uiRoot.gameObject); }
     }

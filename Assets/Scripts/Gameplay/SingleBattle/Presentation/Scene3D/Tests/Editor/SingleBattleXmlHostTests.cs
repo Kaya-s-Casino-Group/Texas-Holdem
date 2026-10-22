@@ -210,10 +210,14 @@ namespace Poker.SingleBattle.Tests
                     "Assets/GameAssets/SingleBattle/Presentation/Scene3D/BattleDemoValidation.xml")));
                 Assert.That(host.Enemies.Count, Is.EqualTo(3));
                 Assert.That(host.ContentEncounterId, Is.EqualTo("standard-single-battle"));
+                var declared = XDocument.Parse(host.ContentXml.text).Root.Element("Encounters").Elements("Encounter")
+                    .Single(encounter => (string)encounter.Attribute("id") == host.ContentEncounterId);
                 var built = host.BuildConfiguredSession("scene-validation", HmacDeckShuffler.FromSeed(new byte[32]));
                 Assert.That(built.State.HasStarted, Is.False);
                 Assert.That(built.State.Duel.Players.Count, Is.EqualTo(host.Players.Count));
                 Assert.That(built.State.Duel.Enemies.Count, Is.EqualTo(host.Enemies.Count));
+                CollectionAssert.AreEqual(declared.Elements("Enemy").Select(enemy => (string)enemy.Attribute("ref")),
+                    built.State.Duel.Enemies.Select(enemy => enemy.Definition.Id), "Build the encounter selected in the scene.");
                 Assert.That(host.Session, Is.Null);
                 Assert.That(SceneManager.GetActiveScene(), Is.EqualTo(active));
             }

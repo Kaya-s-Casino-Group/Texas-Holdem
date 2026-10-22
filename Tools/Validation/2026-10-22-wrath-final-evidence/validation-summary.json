@@ -1,0 +1,165 @@
+{
+  "unityVersion": "2022.3.62f3",
+  "remoteMainBase": "2a22e79c2ecbc6bad5e55ee29ce9f9ea87163a9e",
+  "battleToolkitCommit": "60722a05a62f9a89815d836ad69fbb49ad348fff",
+  "editMode": {
+    "total": 286,
+    "passed": 286
+  },
+  "playMode": {
+    "distinctTests": 30,
+    "latestPassed": 30,
+    "singleRunAllGreen": false,
+    "initial": {
+      "total": 30,
+      "passed": 29,
+      "failed": 1
+    },
+    "ordinaryFinal": {
+      "total": 9,
+      "passed": 9
+    },
+    "excludedByUser": [
+      "Poker.SingleBattle.Tests.WrathBossScenePlaybackTests.DurableHeroFixtureCompletesDefaultTwentyRoundsThenLosesWithoutSpendingReviver"
+    ],
+    "latestTests": {
+      "Poker.Adventure.Tests.SingleChapterAdventureSceneTests.AdventureBattleUsesOutcomeRelicsKickerFlightsAndAshBeforeReturningToRewards": {
+        "result": "Passed",
+        "evidence": "unity-playmode-initial.xml"
+      },
+      "Poker.Adventure.Tests.SingleChapterAdventureSceneTests.AuthoredSceneCompletesSevenStopsThroughActualButtonsAndBattleAuthority": {
+        "result": "Passed",
+        "evidence": "unity-playmode-initial.xml"
+      },
+      "Poker.Adventure.Tests.SingleChapterAdventureSceneTests.SevenStationBossSeversAndRegeneratesFiveOriginalActorsWithRemoteAshAndArtwork": {
+        "result": "Passed",
+        "evidence": "unity-playmode-initial.xml"
+      },
+      "Poker.Adventure.Tests.SingleChapterAdventureSceneTests.SevenStationEliteUsesGrowingBleedingAttacksAndKeepsRemoteArtwork": {
+        "result": "Passed",
+        "evidence": "unity-playmode-initial.xml"
+      },
+      "Poker.SingleBattle.Tests.DiscardShieldPlaybackTests.CancelStopsQueuedLandingsAndSnapDoesNotReplayFeedback": {
+        "result": "Passed",
+        "evidence": "unity-playmode-initial.xml"
+      },
+      "Poker.SingleBattle.Tests.DiscardShieldPlaybackTests.CardsLandInOrderAndOneWholeCardDissolvesWhilePausedTime": {
+        "result": "Passed",
+        "evidence": "unity-playmode-initial.xml"
+      },
+      "Poker.SingleBattle.Tests.DiscardShieldPlaybackTests.LandingParticlesSpawnAtEachRotatedScaledCardBottom": {
+        "result": "Passed",
+        "evidence": "unity-playmode-initial.xml"
+      },
+      "Poker.SingleBattle.Tests.EliteBleedingScenePlaybackTests.BleedingMergesBeforeShieldIntoOneAuthoritativeDamageFact": {
+        "result": "Passed",
+        "evidence": "unity-playmode-initial.xml"
+      },
+      "Poker.SingleBattle.Tests.EliteBleedingScenePlaybackTests.CastStrikeCastPreviewsMatchRealImpactsAndVisibleStatusCheckpoints": {
+        "result": "Passed",
+        "evidence": "unity-playmode-initial.xml"
+      },
+      "Poker.SingleBattle.Tests.EliteBleedingScenePlaybackTests.RealFullHouseCleansesBleedingAndStunPreservesIntentWhileAttackGrows": {
+        "result": "Passed",
+        "evidence": "unity-playmode-initial.xml"
+      },
+      "Poker.SingleBattle.Tests.EliteBleedingScenePlaybackTests.RealReviverCancelsLaterCastBleedingAndCannotBeOverwrittenByLateDeathPlayback": {
+        "result": "Passed",
+        "evidence": "unity-playmode-initial.xml"
+      },
+      "Poker.SingleBattle.Tests.EliteBleedingScenePlaybackTests.RealReviverClearsExistingBleedingBeforeNextIntent": {
+        "result": "Passed",
+        "evidence": "unity-playmode-initial.xml"
+      },
+      "Poker.SingleBattle.Tests.SceneTimelinePlaybackTests.AuthoredSceneUsesTimelineForOpeningSelectionPlayDiscardAndCancellation": {
+        "result": "Passed",
+        "evidence": "unity-ordinary-final.xml"
+      },
+      "Poker.SingleBattle.Tests.SceneTimelinePlaybackTests.EnemyWorldHudShowsIndependentIntentsStatusesAndDisplayHealth": {
+        "result": "Passed",
+        "evidence": "unity-ordinary-final.xml"
+      },
+      "Poker.SingleBattle.Tests.SceneTimelinePlaybackTests.MinimalPrefabAutoStartsTwoIndependentBattlesWithoutSceneBindings": {
+        "result": "Passed",
+        "evidence": "unity-ordinary-final.xml"
+      },
+      "Poker.SingleBattle.Tests.SceneTimelinePlaybackTests.OutcomePreviewAndRelicArtUseActualResultsAndAllImportedSprites": {
+        "result": "Passed",
+        "evidence": "unity-ordinary-final.xml"
+      },
+      "Poker.SingleBattle.Tests.SceneTimelinePlaybackTests.PairDropsKickersWithoutTailsAndKillsThroughAshShaderWithRecovery": {
+        "result": "Passed",
+        "evidence": "unity-ordinary-final.xml"
+      },
+      "Poker.SingleBattle.Tests.SceneTimelinePlaybackTests.RelicHoverOwnsDescriptionsUseButtonsAndLimitedActiveChargeBadges": {
+        "result": "Passed",
+        "evidence": "unity-ordinary-final.xml"
+      },
+      "Poker.SingleBattle.Tests.SceneTimelinePlaybackTests.RevivalStopsAnActiveDeathCoroutineAndItsLatePoseWrite": {
+        "result": "Passed",
+        "evidence": "unity-ordinary-final.xml"
+      },
+      "Poker.SingleBattle.Tests.SceneTimelinePlaybackTests.SavedScenePlaysStraightCardByCardAndRoyalEliminationBeforeDeath": {
+        "result": "Passed",
+        "evidence": "unity-ordinary-final.xml"
+      },
+      "Poker.SingleBattle.Tests.SceneTimelinePlaybackTests.SavedScenePortraitClicksChooseRuleTargetsAndGroupVolleyReachesThreeEnemies": {
+        "result": "Passed",
+        "evidence": "unity-ordinary-final.xml"
+      },
+      "Poker.SingleBattle.Tests.WrathBossScenePlaybackTests.BindingAtTwentyFixtureLetsRealHandPlayCancelWarningAndRestartClearsOldHud": {
+        "result": "Passed",
+        "evidence": "unity-playmode-initial.xml"
+      },
+      "Poker.SingleBattle.Tests.WrathBossScenePlaybackTests.DefaultBindingShowsRoundFiveWarningBeforeRoundSixRegularAndExtraUltimateImpacts": {
+        "result": "Passed",
+        "evidence": "unity-playmode-initial.xml"
+      },
+      "Poker.SingleBattle.Tests.WrathBossScenePlaybackTests.HudGrenadeSeversFiveHandsWithoutActionsConsumesTwoShellLayersAndRegeneratesSameFiveActorsTogether": {
+        "result": "Passed",
+        "evidence": "unity-playmode-initial.xml"
+      },
+      "Poker.SingleBattle.Tests.WrathBossScenePlaybackTests.HudSelectedHandDiesAtImpactShowsRedEightAndEnemyEntryFloatThenRegeneratesAsSameActor": {
+        "result": "Passed",
+        "evidence": "unity-playmode-initial.xml"
+      },
+      "Poker.SingleBattle.Tests.WrathBossScenePlaybackTests.RealFullHouseBeforeDefaultFifthBindingShowsControlAndImmunityAndKeepsTheNextPlayerWindow": {
+        "result": "Passed",
+        "evidence": "unity-playmode-initial.xml"
+      },
+      "Poker.SingleBattle.Tests.WrathBossScenePlaybackTests.RealLethalFlushWinsWithFiveLivingHandsAndStillPlaysItsAttachedHealing": {
+        "result": "Passed",
+        "evidence": "unity-playmode-initial.xml"
+      },
+      "Poker.SingleBattle.Tests.WrathBossScenePlaybackTests.RealReviverDuringRoundSixNormalAttackStopsThePendingUltimateAndLateDeathPose": {
+        "result": "Passed",
+        "evidence": "unity-playmode-initial.xml"
+      },
+      "Poker.SingleBattle.Tests.WrathBossScenePlaybackTests.RealStraightConsumesTwoBodyImmunitiesAndRoyalEliminationStillWinsThroughFreshShell": {
+        "result": "Passed",
+        "evidence": "unity-playmode-initial.xml"
+      },
+      "Poker.SingleBattle.Tests.WrathBossScenePlaybackTests.SavedSceneBindsSixActorsAndShowsInitialAttackEightIntentsAndOneOpening": {
+        "result": "Passed",
+        "evidence": "unity-playmode-initial.xml"
+      }
+    }
+  },
+  "rules": {
+    "core": {
+      "total": 124,
+      "passed": 124
+    },
+    "compatibility": {
+      "total": 476,
+      "passed": 468,
+      "existingFailures": 8,
+      "newFailures": 0
+    }
+  },
+  "httpProjection": {
+    "total": 13,
+    "passed": 13
+  },
+  "standalonePlayerBuilt": false
+}

@@ -51,9 +51,13 @@
 
 - `Engine/Content/SingleChapterAdventure.xml`：路线、经济版本、回血、货架、改牌价格。
 - `Engine/Content/SingleChapterBattle.xml`：战斗遭遇与十二件道具品质。
-- `Engine/Content/SingleChapter.md`：数值、设计快照和未纳入的战斗技能。
+- `Engine/Content/SingleChapter.md`：数值、设计快照和战斗技能边界。
 
-地图/经济按本次核对的主案单章七站实现；守门人与暴怒仍沿用现有 `final.xml` 战斗机制作为整局接入基线。主案后续新增的流血、攻击增长、手部再生等技能需另行实现，不能将流程联通当作这些技能已完成。
+地图与经济沿用单章七站实现。精英接入已确认的 400 血流血与攻击增长规则；首领接入 1500 血暴怒、四饮血手和一束缚手，包含龟缩、独立大招、断手 R+8 再生及 20 轮判负。沿用七站原有遭遇与单位 ID、远端精英/Boss 美术和灰烬消散。普通战、牌型、道具、经济配置不变；旧三章 `StandardAdventure.xml` 继续使用暴食节点。战斗内容指纹变化后旧七站存档仍按既有校验拒绝载入，并保留原文件。
+
+七站继续使用远端 FourBeasts 牌面、三列两行通用六敌布局及既有 World HUD。独立 WrathBossDemo 的本地验证面板不在冒险启用；五手再生读数复用原图标行，当前立绘仍来自远端 Enemy.png，尚非正式五手造型。
+
+本次规则及实际 Unity 验证记录见 `Tools/Validation/2026-10-22-seven-station-enemies.md`；流程通关、真实技能结算和视觉验收分别记录。
 
 规则测试 `SingleChapterContentTests` 覆盖四条路线及逐节点恢复，`AdventureEconomyTests` 覆盖随机、价格、满栏、获得历史和休息。Unity 的 `AdventureSceneHostTests` 覆盖存档、菜单续玩、恢复奖励、保存失败回滚；`BattleActorTests` 覆盖外部命令、首次开局和跨战斗动态阵容。实际场景 PlayMode 测试位于本目录 `Tests/PlayMode`，使用临时存档，避免改写玩家的旅程。
 

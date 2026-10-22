@@ -35,11 +35,12 @@ namespace Poker.SingleBattle
                 case "life-steal": symbol = BattleDemoEnemySymbol.LifeSteal; color = AttackColor; name = "吸血"; break;
                 case "overheal-damage": symbol = BattleDemoEnemySymbol.Overheal; color = Green; name = "溢出治疗转伤"; break;
                 case "layer-armor": symbol = BattleDemoEnemySymbol.Armor; color = Gold; name = "多段护甲"; break;
+                case "wrath-shell": symbol = BattleDemoEnemySymbol.Immunity; color = ShieldColor; name = "龟缩·伤害免疫"; break;
                 default: symbol = BattleDemoEnemySymbol.Unknown; color = Purple; name = id; break;
             }
             return new Badge(symbol, color, Number(stacks), name);
         }
-        public static IReadOnlyList<Badge> Intents(EnemyActionPreview preview)
+        public static IReadOnlyList<Badge> Intents(EnemyActionPreview preview, long? wrathChargeIncrease = null)
         {
             if (preview == null || !preview.Accepted) return new[] { new Badge(BattleDemoEnemySymbol.Unknown, Gold, "?", "意图不可用") };
             if (preview.IsSkipped) return new[] { new Badge(BattleDemoEnemySymbol.Stun, Gold, "", "眩晕：跳过本次行动") };
@@ -55,7 +56,12 @@ namespace Poker.SingleBattle
                 switch (group.Key.Kind)
                 {
                     case CombatEffectKind.Damage: badge = new Badge(BattleDemoEnemySymbol.Sword, AttackColor, value, "攻击：" + value + " 伤害"); break;
-                    case CombatEffectKind.GainBlock: badge = new Badge(BattleDemoEnemySymbol.Shield, ShieldColor, value, "防御：获得 " + value + " 护盾"); break;
+                    case CombatEffectKind.GainBlock:
+                        badge = wrathChargeIncrease.HasValue && amount == 0 && group.Key.Target == preview.Source
+                            ? new Badge(BattleDemoEnemySymbol.Buff, Gold, "+" + Number(wrathChargeIncrease.Value),
+                                "蓄力：攻击力永久增加 " + Number(wrathChargeIncrease.Value))
+                            : new Badge(BattleDemoEnemySymbol.Shield, ShieldColor, value, "防御：获得 " + value + " 护盾");
+                        break;
                     case CombatEffectKind.Heal: case CombatEffectKind.Revive: badge = new Badge(BattleDemoEnemySymbol.Heal, Green, value, "治疗 / 复活：" + value); break;
                     case CombatEffectKind.ApplyStatus:
                         var status = Status(group.Key.Status, amount); badge = new Badge(status.Symbol, status.Color, status.Value, "施加状态：" + status.Description + " ×" + status.Value); break;

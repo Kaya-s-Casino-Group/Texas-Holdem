@@ -1,0 +1,165 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="55c4413f-8e3a-4a06-98e8-3c77d6d10be4" name="@mtdeMacBook-Pro 2026-10-22 11:28:26" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-22T11:28:26.8466310+08:00" queuing="2026-10-22T11:28:26.8466310+08:00" start="2026-10-22T11:28:25.5365440+08:00" finish="2026-10-22T11:28:27.1949840+08:00" />
+  <TestSettings name="default" id="2c5f6095-356c-4229-8d75-7e4947c2e350">
+    <Deployment runDeploymentRoot="_mtdeMacBook-Pro_2026-10-22_11_28_26" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="672b1e05-9e0b-45fa-ad2c-04f0acfd5fd7" testId="af3af562-78db-acbd-07ae-95a8efbc4d9e" testName="DeclinedChestOfferIsNotAnAcquisitionAndCanBeOfferedAtALaterChest" computerName="mtdeMacBook-Pro" duration="00:00:00.0020050" startTime="2026-10-22T11:28:26.6077540+08:00" endTime="2026-10-22T11:28:26.6097580+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="672b1e05-9e0b-45fa-ad2c-04f0acfd5fd7" />
+    <UnitTestResult executionId="5b70caaf-9514-43e8-8877-774f366a671e" testId="66f21087-857c-b27e-7507-67f33dbf4412" testName="RestHealsOnEntryOnceAndLotteryIsOptional" computerName="mtdeMacBook-Pro" duration="00:00:00.0032600" startTime="2026-10-22T11:28:26.6462590+08:00" endTime="2026-10-22T11:28:26.6495190+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5b70caaf-9514-43e8-8877-774f366a671e" />
+    <UnitTestResult executionId="76423a9b-5350-4c82-bfff-2cd40800a7e8" testId="fea93d33-ab4f-e98f-094d-906113b244cd" testName="ShippedContentCompilesWithOneChapterSevenRowsAndExplicitItemQualities" computerName="mtdeMacBook-Pro" duration="00:00:00.0053670" startTime="2026-10-22T11:28:27.0016360+08:00" endTime="2026-10-22T11:28:27.0070020+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="76423a9b-5350-4c82-bfff-2cd40800a7e8" />
+    <UnitTestResult executionId="e43ce478-0154-4fe6-a4ad-5b187952dbaf" testId="b70a16ad-b5d2-de64-3fca-b9e7a50624ea" testName="PendingUniqueRewardCannotStackAfterInventoryChanges" computerName="mtdeMacBook-Pro" duration="00:00:00.0015930" startTime="2026-10-22T11:28:26.6418980+08:00" endTime="2026-10-22T11:28:26.6434910+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e43ce478-0154-4fe6-a4ad-5b187952dbaf" />
+    <UnitTestResult executionId="d2728453-b497-4308-87c9-b9093111a296" testId="fed7459c-2dd4-21a7-891d-8c0b4bccba8a" testName="ShopFiltersOwnedUniqueItemsAndNeverRefillsPurchasedSlots" computerName="mtdeMacBook-Pro" duration="00:00:00.0025920" startTime="2026-10-22T11:28:26.6549960+08:00" endTime="2026-10-22T11:28:26.6575890+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d2728453-b497-4308-87c9-b9093111a296" />
+    <UnitTestResult executionId="55d8d8f1-828d-4eaf-8341-2461f9f0f920" testId="81cedada-3efe-e488-142b-a85343d58f42" testName="ChestPaysOnceAndFullInventoryCanReplaceOrSkipWithoutReroll" computerName="mtdeMacBook-Pro" duration="00:00:00.0079790" startTime="2026-10-22T11:28:26.5997290+08:00" endTime="2026-10-22T11:28:26.6077070+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="55d8d8f1-828d-4eaf-8341-2461f9f0f920" />
+    <UnitTestResult executionId="38700bc6-e822-4130-ae88-de9ff367f862" testId="739ba14b-c7fc-fd95-045e-978af0fb0f44" testName="QualityIsExplicitAndIndependentOfInstanceLevel" computerName="mtdeMacBook-Pro" duration="00:00:00.0027230" startTime="2026-10-22T11:28:26.6435120+08:00" endTime="2026-10-22T11:28:26.6462350+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="38700bc6-e822-4130-ae88-de9ff367f862" />
+    <UnitTestResult executionId="f308579f-30d0-43ba-8af5-6b3fbb221843" testId="61340ca6-5e18-ad23-09d8-a10320e26f17" testName="ShippedGatekeeperAlternatesGrowingAttacksAndBleedingWithoutSummoning" computerName="mtdeMacBook-Pro" duration="00:00:00.0062179" startTime="2026-10-22T11:28:27.1514120+08:00" endTime="2026-10-22T11:28:27.1576300+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f308579f-30d0-43ba-8af5-6b3fbb221843" />
+    <UnitTestResult executionId="90176955-2a47-498e-b1c6-395115dd2f22" testId="1b7b575d-117d-1ec3-3114-0ccecfb94a9c" testName="AllSupplyCombinationsCompleteSevenStopsAndReplayEveryCheckpoint(&quot;rest-1&quot;,&quot;shop-2&quot;)" computerName="mtdeMacBook-Pro" duration="00:00:00.0601680" startTime="2026-10-22T11:28:26.8861050+08:00" endTime="2026-10-22T11:28:26.9462720+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="90176955-2a47-498e-b1c6-395115dd2f22" />
+    <UnitTestResult executionId="d5d6be54-1270-483d-b1cc-a52d63f14062" testId="61b0f98b-f559-6b58-765c-c8a3ae5af09d" testName="AllSupplyCombinationsCompleteSevenStopsAndReplayEveryCheckpoint(&quot;rest-1&quot;,&quot;rest-2&quot;)" computerName="mtdeMacBook-Pro" duration="00:00:00.0552690" startTime="2026-10-22T11:28:26.9463010+08:00" endTime="2026-10-22T11:28:27.0015690+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d5d6be54-1270-483d-b1cc-a52d63f14062" />
+    <UnitTestResult executionId="9104c61a-9277-4215-b02c-4b4f79bea5c3" testId="f49fd633-e615-f571-f8db-7deca3a6ec05" testName="RealSevenStationBossSeverRegenerationAndUltimateSurviveAdventureRestore" computerName="mtdeMacBook-Pro" duration="00:00:00.0344090" startTime="2026-10-22T11:28:27.1055420+08:00" endTime="2026-10-22T11:28:27.1399510+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9104c61a-9277-4215-b02c-4b4f79bea5c3" />
+    <UnitTestResult executionId="9a3d8fcf-7489-4844-a50e-3f6f4a794652" testId="836e47c0-b428-899e-e7e2-efdd5fb39c21" testName="AllSupplyCombinationsCompleteSevenStopsAndReplayEveryCheckpoint(&quot;shop-1&quot;,&quot;rest-2&quot;)" computerName="mtdeMacBook-Pro" duration="00:00:00.0580360" startTime="2026-10-22T11:28:26.8280380+08:00" endTime="2026-10-22T11:28:26.8860740+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9a3d8fcf-7489-4844-a50e-3f6f4a794652" />
+    <UnitTestResult executionId="3dc1894d-3b5d-41e4-8d1e-0d29204e2cf9" testId="63de4a2e-5a74-19ca-f8b1-cfeb327fbca3" testName="ShopPricesUseQualityAndRandomPriceIsStableThroughRestore" computerName="mtdeMacBook-Pro" duration="00:00:00.0037940" startTime="2026-10-22T11:28:26.6576060+08:00" endTime="2026-10-22T11:28:26.6614000+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3dc1894d-3b5d-41e4-8d1e-0d29204e2cf9" />
+    <UnitTestResult executionId="1794ea05-638e-42d8-823a-6a942600d74c" testId="22858424-ce0e-32ce-08aa-ac2d3fdffba7" testName="HighRelicLossFallsBackToHighestOwnedQualityAndDoesNotForgetHistory" computerName="mtdeMacBook-Pro" duration="00:00:00.0015260" startTime="2026-10-22T11:28:26.6097830+08:00" endTime="2026-10-22T11:28:26.6113090+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1794ea05-638e-42d8-823a-6a942600d74c" />
+    <UnitTestResult executionId="3a33ee00-a0e9-4ff3-96e4-02f694691fa2" testId="b5177a21-35a9-d4d6-da4b-c84d8762a979" testName="ZeroCapacityRewardCanBeDeclinedWithoutLosingTheOutcome" computerName="mtdeMacBook-Pro" duration="00:00:00.0008170" startTime="2026-10-22T11:28:26.6627620+08:00" endTime="2026-10-22T11:28:26.6635790+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3a33ee00-a0e9-4ff3-96e4-02f694691fa2" />
+    <UnitTestResult executionId="bc8ef0d3-9773-4794-8b56-1c8f25d7dff4" testId="6450f153-35e2-14d1-e5c9-4b28d178f4bd" testName="ShippedWrathKeepsItsOrdinarySequenceAndAddsTheSixthAndTwelfthRoundUltimate" computerName="mtdeMacBook-Pro" duration="00:00:00.0110650" startTime="2026-10-22T11:28:27.1576650+08:00" endTime="2026-10-22T11:28:27.1687300+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="bc8ef0d3-9773-4794-8b56-1c8f25d7dff4" />
+    <UnitTestResult executionId="6d66d280-a3b1-4850-9803-43d4f4eac95a" testId="9d7b67b2-4469-c49d-9df6-767a24dc8951" testName="ServicesMatchTwentyPurchaseCurveAndCountIndependentlyAcrossVisits" computerName="mtdeMacBook-Pro" duration="00:00:00.0053760" startTime="2026-10-22T11:28:26.6495440+08:00" endTime="2026-10-22T11:28:26.6549210+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="6d66d280-a3b1-4850-9803-43d4f4eac95a" />
+    <UnitTestResult executionId="82057ecf-e12a-45dc-89af-57bcd22204fc" testId="73b3e628-7b7c-12f7-9fd0-2d0478c5a45f" testName="LotteryHasAllOutcomesAndPreviewReplayCannotRerollOrRepeat" computerName="mtdeMacBook-Pro" duration="00:00:00.0305390" startTime="2026-10-22T11:28:26.6113270+08:00" endTime="2026-10-22T11:28:26.6418660+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="82057ecf-e12a-45dc-89af-57bcd22204fc" />
+    <UnitTestResult executionId="48b5be7d-3ffa-448f-8f1b-ee810720f373" testId="4dff0907-ed13-1fe5-a5df-bc30a18825fd" testName="TwoLowRewardsAtZeroCapacityCanBothBeDeclinedAfterRestore" computerName="mtdeMacBook-Pro" duration="00:00:00.0013400" startTime="2026-10-22T11:28:26.6614150+08:00" endTime="2026-10-22T11:28:26.6627550+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="48b5be7d-3ffa-448f-8f1b-ee810720f373" />
+    <UnitTestResult executionId="64a4bde5-b6f3-409e-bda8-fc0a1ea23a01" testId="89387790-4e81-8436-0765-33fc12fb5f65" testName="ChestExcludesPreviouslyLostItemsAndExhaustedPoolStillGrantsGold" computerName="mtdeMacBook-Pro" duration="00:00:00.0927719" startTime="2026-10-22T11:28:26.5062970+08:00" endTime="2026-10-22T11:28:26.5990400+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="64a4bde5-b6f3-409e-bda8-fc0a1ea23a01" />
+    <UnitTestResult executionId="70155ddb-d1f5-4f72-9158-9b2edecb97e2" testId="1ab7eea5-e0a1-d1d3-a3d5-a950b904177f" testName="AllSupplyCombinationsCompleteSevenStopsAndReplayEveryCheckpoint(&quot;shop-1&quot;,&quot;shop-2&quot;)" computerName="mtdeMacBook-Pro" duration="00:00:00.1629340" startTime="2026-10-22T11:28:26.6649060+08:00" endTime="2026-10-22T11:28:26.8278400+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="70155ddb-d1f5-4f72-9158-9b2edecb97e2" />
+    <UnitTestResult executionId="77a2420d-68ca-432c-a05e-41ace4d2e5e6" testId="1e550036-8050-4a91-fbff-148002d66adb" testName="RealSevenStationBossCompletesTwentyRoundsThenLosesWithoutSpendingReviver" computerName="mtdeMacBook-Pro" duration="00:00:00.0982940" startTime="2026-10-22T11:28:27.0071740+08:00" endTime="2026-10-22T11:28:27.1054670+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="77a2420d-68ca-432c-a05e-41ace4d2e5e6" />
+    <UnitTestResult executionId="b6caa983-402c-4ebd-bde0-fad8f9462b3b" testId="39bc46f8-270a-e75d-7c5c-21cd40eac60c" testName="RealSevenStationEliteBleedingAndGrowthSurviveAdventureRestore" computerName="mtdeMacBook-Pro" duration="00:00:00.0113950" startTime="2026-10-22T11:28:27.1399860+08:00" endTime="2026-10-22T11:28:27.1513810+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b6caa983-402c-4ebd-bde0-fad8f9462b3b" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="AllSupplyCombinationsCompleteSevenStopsAndReplayEveryCheckpoint(&quot;rest-1&quot;,&quot;rest-2&quot;)" storage="/users/mt/code-yang/texas-holdem/library/sevenstationdotnet/bin/battletoolkit.tests/release/pokerengine.tests.editor.dll" id="61b0f98b-f559-6b58-765c-c8a3ae5af09d">
+      <Execution id="d5d6be54-1270-483d-b1cc-a52d63f14062" />
+      <TestMethod codeBase="/Users/mt/code-yang/Texas-Holdem/Library/SevenStationDotnet/bin/BattleToolkit.Tests/release/PokerEngine.Tests.Editor.dll" adapterTypeName="executor://nunit3testexecutor/" className="PokerEngine.Tests.SingleChapterContentTests" name="AllSupplyCombinationsCompleteSevenStopsAndReplayEveryCheckpoint(&quot;rest-1&quot;,&quot;rest-2&quot;)" />
+    </UnitTest>
+    <UnitTest name="AllSupplyCombinationsCompleteSevenStopsAndReplayEveryCheckpoint(&quot;shop-1&quot;,&quot;rest-2&quot;)" storage="/users/mt/code-yang/texas-holdem/library/sevenstationdotnet/bin/battletoolkit.tests/release/pokerengine.tests.editor.dll" id="836e47c0-b428-899e-e7e2-efdd5fb39c21">
+      <Execution id="9a3d8fcf-7489-4844-a50e-3f6f4a794652" />
+      <TestMethod codeBase="/Users/mt/code-yang/Texas-Holdem/Library/SevenStationDotnet/bin/BattleToolkit.Tests/release/PokerEngine.Tests.Editor.dll" adapterTypeName="executor://nunit3testexecutor/" className="PokerEngine.Tests.SingleChapterContentTests" name="AllSupplyCombinationsCompleteSevenStopsAndReplayEveryCheckpoint(&quot;shop-1&quot;,&quot;rest-2&quot;)" />
+    </UnitTest>
+    <UnitTest name="ShopFiltersOwnedUniqueItemsAndNeverRefillsPurchasedSlots" storage="/users/mt/code-yang/texas-holdem/library/sevenstationdotnet/bin/battletoolkit.tests/release/pokerengine.tests.editor.dll" id="fed7459c-2dd4-21a7-891d-8c0b4bccba8a">
+      <Execution id="d2728453-b497-4308-87c9-b9093111a296" />
+      <TestMethod codeBase="/Users/mt/code-yang/Texas-Holdem/Library/SevenStationDotnet/bin/BattleToolkit.Tests/release/PokerEngine.Tests.Editor.dll" adapterTypeName="executor://nunit3testexecutor/" className="PokerEngine.Tests.AdventureEconomyTests" name="ShopFiltersOwnedUniqueItemsAndNeverRefillsPurchasedSlots" />
+    </UnitTest>
+    <UnitTest name="ServicesMatchTwentyPurchaseCurveAndCountIndependentlyAcrossVisits" storage="/users/mt/code-yang/texas-holdem/library/sevenstationdotnet/bin/battletoolkit.tests/release/pokerengine.tests.editor.dll" id="9d7b67b2-4469-c49d-9df6-767a24dc8951">
+      <Execution id="6d66d280-a3b1-4850-9803-43d4f4eac95a" />
+      <TestMethod codeBase="/Users/mt/code-yang/Texas-Holdem/Library/SevenStationDotnet/bin/BattleToolkit.Tests/release/PokerEngine.Tests.Editor.dll" adapterTypeName="executor://nunit3testexecutor/" className="PokerEngine.Tests.AdventureEconomyTests" name="ServicesMatchTwentyPurchaseCurveAndCountIndependentlyAcrossVisits" />
+    </UnitTest>
+    <UnitTest name="ZeroCapacityRewardCanBeDeclinedWithoutLosingTheOutcome" storage="/users/mt/code-yang/texas-holdem/library/sevenstationdotnet/bin/battletoolkit.tests/release/pokerengine.tests.editor.dll" id="b5177a21-35a9-d4d6-da4b-c84d8762a979">
+      <Execution id="3a33ee00-a0e9-4ff3-96e4-02f694691fa2" />
+      <TestMethod codeBase="/Users/mt/code-yang/Texas-Holdem/Library/SevenStationDotnet/bin/BattleToolkit.Tests/release/PokerEngine.Tests.Editor.dll" adapterTypeName="executor://nunit3testexecutor/" className="PokerEngine.Tests.AdventureEconomyTests" name="ZeroCapacityRewardCanBeDeclinedWithoutLosingTheOutcome" />
+    </UnitTest>
+    <UnitTest name="ChestPaysOnceAndFullInventoryCanReplaceOrSkipWithoutReroll" storage="/users/mt/code-yang/texas-holdem/library/sevenstationdotnet/bin/battletoolkit.tests/release/pokerengine.tests.editor.dll" id="81cedada-3efe-e488-142b-a85343d58f42">
+      <Execution id="55d8d8f1-828d-4eaf-8341-2461f9f0f920" />
+      <TestMethod codeBase="/Users/mt/code-yang/Texas-Holdem/Library/SevenStationDotnet/bin/BattleToolkit.Tests/release/PokerEngine.Tests.Editor.dll" adapterTypeName="executor://nunit3testexecutor/" className="PokerEngine.Tests.AdventureEconomyTests" name="ChestPaysOnceAndFullInventoryCanReplaceOrSkipWithoutReroll" />
+    </UnitTest>
+    <UnitTest name="RealSevenStationEliteBleedingAndGrowthSurviveAdventureRestore" storage="/users/mt/code-yang/texas-holdem/library/sevenstationdotnet/bin/battletoolkit.tests/release/pokerengine.tests.editor.dll" id="39bc46f8-270a-e75d-7c5c-21cd40eac60c">
+      <Execution id="b6caa983-402c-4ebd-bde0-fad8f9462b3b" />
+      <TestMethod codeBase="/Users/mt/code-yang/Texas-Holdem/Library/SevenStationDotnet/bin/BattleToolkit.Tests/release/PokerEngine.Tests.Editor.dll" adapterTypeName="executor://nunit3testexecutor/" className="PokerEngine.Tests.SingleChapterEnemyRulesTests" name="RealSevenStationEliteBleedingAndGrowthSurviveAdventureRestore" />
+    </UnitTest>
+    <UnitTest name="ChestExcludesPreviouslyLostItemsAndExhaustedPoolStillGrantsGold" storage="/users/mt/code-yang/texas-holdem/library/sevenstationdotnet/bin/battletoolkit.tests/release/pokerengine.tests.editor.dll" id="89387790-4e81-8436-0765-33fc12fb5f65">
+      <Execution id="64a4bde5-b6f3-409e-bda8-fc0a1ea23a01" />
+      <TestMethod codeBase="/Users/mt/code-yang/Texas-Holdem/Library/SevenStationDotnet/bin/BattleToolkit.Tests/release/PokerEngine.Tests.Editor.dll" adapterTypeName="executor://nunit3testexecutor/" className="PokerEngine.Tests.AdventureEconomyTests" name="ChestExcludesPreviouslyLostItemsAndExhaustedPoolStillGrantsGold" />
+    </UnitTest>
+    <UnitTest name="TwoLowRewardsAtZeroCapacityCanBothBeDeclinedAfterRestore" storage="/users/mt/code-yang/texas-holdem/library/sevenstationdotnet/bin/battletoolkit.tests/release/pokerengine.tests.editor.dll" id="4dff0907-ed13-1fe5-a5df-bc30a18825fd">
+      <Execution id="48b5be7d-3ffa-448f-8f1b-ee810720f373" />
+      <TestMethod codeBase="/Users/mt/code-yang/Texas-Holdem/Library/SevenStationDotnet/bin/BattleToolkit.Tests/release/PokerEngine.Tests.Editor.dll" adapterTypeName="executor://nunit3testexecutor/" className="PokerEngine.Tests.AdventureEconomyTests" name="TwoLowRewardsAtZeroCapacityCanBothBeDeclinedAfterRestore" />
+    </UnitTest>
+    <UnitTest name="AllSupplyCombinationsCompleteSevenStopsAndReplayEveryCheckpoint(&quot;shop-1&quot;,&quot;shop-2&quot;)" storage="/users/mt/code-yang/texas-holdem/library/sevenstationdotnet/bin/battletoolkit.tests/release/pokerengine.tests.editor.dll" id="1ab7eea5-e0a1-d1d3-a3d5-a950b904177f">
+      <Execution id="70155ddb-d1f5-4f72-9158-9b2edecb97e2" />
+      <TestMethod codeBase="/Users/mt/code-yang/Texas-Holdem/Library/SevenStationDotnet/bin/BattleToolkit.Tests/release/PokerEngine.Tests.Editor.dll" adapterTypeName="executor://nunit3testexecutor/" className="PokerEngine.Tests.SingleChapterContentTests" name="AllSupplyCombinationsCompleteSevenStopsAndReplayEveryCheckpoint(&quot;shop-1&quot;,&quot;shop-2&quot;)" />
+    </UnitTest>
+    <UnitTest name="RealSevenStationBossCompletesTwentyRoundsThenLosesWithoutSpendingReviver" storage="/users/mt/code-yang/texas-holdem/library/sevenstationdotnet/bin/battletoolkit.tests/release/pokerengine.tests.editor.dll" id="1e550036-8050-4a91-fbff-148002d66adb">
+      <Execution id="77a2420d-68ca-432c-a05e-41ace4d2e5e6" />
+      <TestMethod codeBase="/Users/mt/code-yang/Texas-Holdem/Library/SevenStationDotnet/bin/BattleToolkit.Tests/release/PokerEngine.Tests.Editor.dll" adapterTypeName="executor://nunit3testexecutor/" className="PokerEngine.Tests.SingleChapterEnemyRulesTests" name="RealSevenStationBossCompletesTwentyRoundsThenLosesWithoutSpendingReviver" />
+    </UnitTest>
+    <UnitTest name="QualityIsExplicitAndIndependentOfInstanceLevel" storage="/users/mt/code-yang/texas-holdem/library/sevenstationdotnet/bin/battletoolkit.tests/release/pokerengine.tests.editor.dll" id="739ba14b-c7fc-fd95-045e-978af0fb0f44">
+      <Execution id="38700bc6-e822-4130-ae88-de9ff367f862" />
+      <TestMethod codeBase="/Users/mt/code-yang/Texas-Holdem/Library/SevenStationDotnet/bin/BattleToolkit.Tests/release/PokerEngine.Tests.Editor.dll" adapterTypeName="executor://nunit3testexecutor/" className="PokerEngine.Tests.AdventureEconomyTests" name="QualityIsExplicitAndIndependentOfInstanceLevel" />
+    </UnitTest>
+    <UnitTest name="ShopPricesUseQualityAndRandomPriceIsStableThroughRestore" storage="/users/mt/code-yang/texas-holdem/library/sevenstationdotnet/bin/battletoolkit.tests/release/pokerengine.tests.editor.dll" id="63de4a2e-5a74-19ca-f8b1-cfeb327fbca3">
+      <Execution id="3dc1894d-3b5d-41e4-8d1e-0d29204e2cf9" />
+      <TestMethod codeBase="/Users/mt/code-yang/Texas-Holdem/Library/SevenStationDotnet/bin/BattleToolkit.Tests/release/PokerEngine.Tests.Editor.dll" adapterTypeName="executor://nunit3testexecutor/" className="PokerEngine.Tests.AdventureEconomyTests" name="ShopPricesUseQualityAndRandomPriceIsStableThroughRestore" />
+    </UnitTest>
+    <UnitTest name="LotteryHasAllOutcomesAndPreviewReplayCannotRerollOrRepeat" storage="/users/mt/code-yang/texas-holdem/library/sevenstationdotnet/bin/battletoolkit.tests/release/pokerengine.tests.editor.dll" id="73b3e628-7b7c-12f7-9fd0-2d0478c5a45f">
+      <Execution id="82057ecf-e12a-45dc-89af-57bcd22204fc" />
+      <TestMethod codeBase="/Users/mt/code-yang/Texas-Holdem/Library/SevenStationDotnet/bin/BattleToolkit.Tests/release/PokerEngine.Tests.Editor.dll" adapterTypeName="executor://nunit3testexecutor/" className="PokerEngine.Tests.AdventureEconomyTests" name="LotteryHasAllOutcomesAndPreviewReplayCannotRerollOrRepeat" />
+    </UnitTest>
+    <UnitTest name="HighRelicLossFallsBackToHighestOwnedQualityAndDoesNotForgetHistory" storage="/users/mt/code-yang/texas-holdem/library/sevenstationdotnet/bin/battletoolkit.tests/release/pokerengine.tests.editor.dll" id="22858424-ce0e-32ce-08aa-ac2d3fdffba7">
+      <Execution id="1794ea05-638e-42d8-823a-6a942600d74c" />
+      <TestMethod codeBase="/Users/mt/code-yang/Texas-Holdem/Library/SevenStationDotnet/bin/BattleToolkit.Tests/release/PokerEngine.Tests.Editor.dll" adapterTypeName="executor://nunit3testexecutor/" className="PokerEngine.Tests.AdventureEconomyTests" name="HighRelicLossFallsBackToHighestOwnedQualityAndDoesNotForgetHistory" />
+    </UnitTest>
+    <UnitTest name="ShippedGatekeeperAlternatesGrowingAttacksAndBleedingWithoutSummoning" storage="/users/mt/code-yang/texas-holdem/library/sevenstationdotnet/bin/battletoolkit.tests/release/pokerengine.tests.editor.dll" id="61340ca6-5e18-ad23-09d8-a10320e26f17">
+      <Execution id="f308579f-30d0-43ba-8af5-6b3fbb221843" />
+      <TestMethod codeBase="/Users/mt/code-yang/Texas-Holdem/Library/SevenStationDotnet/bin/BattleToolkit.Tests/release/PokerEngine.Tests.Editor.dll" adapterTypeName="executor://nunit3testexecutor/" className="PokerEngine.Tests.SingleChapterEnemyRulesTests" name="ShippedGatekeeperAlternatesGrowingAttacksAndBleedingWithoutSummoning" />
+    </UnitTest>
+    <UnitTest name="ShippedContentCompilesWithOneChapterSevenRowsAndExplicitItemQualities" storage="/users/mt/code-yang/texas-holdem/library/sevenstationdotnet/bin/battletoolkit.tests/release/pokerengine.tests.editor.dll" id="fea93d33-ab4f-e98f-094d-906113b244cd">
+      <Execution id="76423a9b-5350-4c82-bfff-2cd40800a7e8" />
+      <TestMethod codeBase="/Users/mt/code-yang/Texas-Holdem/Library/SevenStationDotnet/bin/BattleToolkit.Tests/release/PokerEngine.Tests.Editor.dll" adapterTypeName="executor://nunit3testexecutor/" className="PokerEngine.Tests.SingleChapterContentTests" name="ShippedContentCompilesWithOneChapterSevenRowsAndExplicitItemQualities" />
+    </UnitTest>
+    <UnitTest name="ShippedWrathKeepsItsOrdinarySequenceAndAddsTheSixthAndTwelfthRoundUltimate" storage="/users/mt/code-yang/texas-holdem/library/sevenstationdotnet/bin/battletoolkit.tests/release/pokerengine.tests.editor.dll" id="6450f153-35e2-14d1-e5c9-4b28d178f4bd">
+      <Execution id="bc8ef0d3-9773-4794-8b56-1c8f25d7dff4" />
+      <TestMethod codeBase="/Users/mt/code-yang/Texas-Holdem/Library/SevenStationDotnet/bin/BattleToolkit.Tests/release/PokerEngine.Tests.Editor.dll" adapterTypeName="executor://nunit3testexecutor/" className="PokerEngine.Tests.SingleChapterEnemyRulesTests" name="ShippedWrathKeepsItsOrdinarySequenceAndAddsTheSixthAndTwelfthRoundUltimate" />
+    </UnitTest>
+    <UnitTest name="AllSupplyCombinationsCompleteSevenStopsAndReplayEveryCheckpoint(&quot;rest-1&quot;,&quot;shop-2&quot;)" storage="/users/mt/code-yang/texas-holdem/library/sevenstationdotnet/bin/battletoolkit.tests/release/pokerengine.tests.editor.dll" id="1b7b575d-117d-1ec3-3114-0ccecfb94a9c">
+      <Execution id="90176955-2a47-498e-b1c6-395115dd2f22" />
+      <TestMethod codeBase="/Users/mt/code-yang/Texas-Holdem/Library/SevenStationDotnet/bin/BattleToolkit.Tests/release/PokerEngine.Tests.Editor.dll" adapterTypeName="executor://nunit3testexecutor/" className="PokerEngine.Tests.SingleChapterContentTests" name="AllSupplyCombinationsCompleteSevenStopsAndReplayEveryCheckpoint(&quot;rest-1&quot;,&quot;shop-2&quot;)" />
+    </UnitTest>
+    <UnitTest name="PendingUniqueRewardCannotStackAfterInventoryChanges" storage="/users/mt/code-yang/texas-holdem/library/sevenstationdotnet/bin/battletoolkit.tests/release/pokerengine.tests.editor.dll" id="b70a16ad-b5d2-de64-3fca-b9e7a50624ea">
+      <Execution id="e43ce478-0154-4fe6-a4ad-5b187952dbaf" />
+      <TestMethod codeBase="/Users/mt/code-yang/Texas-Holdem/Library/SevenStationDotnet/bin/BattleToolkit.Tests/release/PokerEngine.Tests.Editor.dll" adapterTypeName="executor://nunit3testexecutor/" className="PokerEngine.Tests.AdventureEconomyTests" name="PendingUniqueRewardCannotStackAfterInventoryChanges" />
+    </UnitTest>
+    <UnitTest name="RestHealsOnEntryOnceAndLotteryIsOptional" storage="/users/mt/code-yang/texas-holdem/library/sevenstationdotnet/bin/battletoolkit.tests/release/pokerengine.tests.editor.dll" id="66f21087-857c-b27e-7507-67f33dbf4412">
+      <Execution id="5b70caaf-9514-43e8-8877-774f366a671e" />
+      <TestMethod codeBase="/Users/mt/code-yang/Texas-Holdem/Library/SevenStationDotnet/bin/BattleToolkit.Tests/release/PokerEngine.Tests.Editor.dll" adapterTypeName="executor://nunit3testexecutor/" className="PokerEngine.Tests.AdventureEconomyTests" name="RestHealsOnEntryOnceAndLotteryIsOptional" />
+    </UnitTest>
+    <UnitTest name="DeclinedChestOfferIsNotAnAcquisitionAndCanBeOfferedAtALaterChest" storage="/users/mt/code-yang/texas-holdem/library/sevenstationdotnet/bin/battletoolkit.tests/release/pokerengine.tests.editor.dll" id="af3af562-78db-acbd-07ae-95a8efbc4d9e">
+      <Execution id="672b1e05-9e0b-45fa-ad2c-04f0acfd5fd7" />
+      <TestMethod codeBase="/Users/mt/code-yang/Texas-Holdem/Library/SevenStationDotnet/bin/BattleToolkit.Tests/release/PokerEngine.Tests.Editor.dll" adapterTypeName="executor://nunit3testexecutor/" className="PokerEngine.Tests.AdventureEconomyTests" name="DeclinedChestOfferIsNotAnAcquisitionAndCanBeOfferedAtALaterChest" />
+    </UnitTest>
+    <UnitTest name="RealSevenStationBossSeverRegenerationAndUltimateSurviveAdventureRestore" storage="/users/mt/code-yang/texas-holdem/library/sevenstationdotnet/bin/battletoolkit.tests/release/pokerengine.tests.editor.dll" id="f49fd633-e615-f571-f8db-7deca3a6ec05">
+      <Execution id="9104c61a-9277-4215-b02c-4b4f79bea5c3" />
+      <TestMethod codeBase="/Users/mt/code-yang/Texas-Holdem/Library/SevenStationDotnet/bin/BattleToolkit.Tests/release/PokerEngine.Tests.Editor.dll" adapterTypeName="executor://nunit3testexecutor/" className="PokerEngine.Tests.SingleChapterEnemyRulesTests" name="RealSevenStationBossSeverRegenerationAndUltimateSurviveAdventureRestore" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="af3af562-78db-acbd-07ae-95a8efbc4d9e" executionId="672b1e05-9e0b-45fa-ad2c-04f0acfd5fd7" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="66f21087-857c-b27e-7507-67f33dbf4412" executionId="5b70caaf-9514-43e8-8877-774f366a671e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="fea93d33-ab4f-e98f-094d-906113b244cd" executionId="76423a9b-5350-4c82-bfff-2cd40800a7e8" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b70a16ad-b5d2-de64-3fca-b9e7a50624ea" executionId="e43ce478-0154-4fe6-a4ad-5b187952dbaf" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="fed7459c-2dd4-21a7-891d-8c0b4bccba8a" executionId="d2728453-b497-4308-87c9-b9093111a296" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="81cedada-3efe-e488-142b-a85343d58f42" executionId="55d8d8f1-828d-4eaf-8341-2461f9f0f920" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="739ba14b-c7fc-fd95-045e-978af0fb0f44" executionId="38700bc6-e822-4130-ae88-de9ff367f862" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="61340ca6-5e18-ad23-09d8-a10320e26f17" executionId="f308579f-30d0-43ba-8af5-6b3fbb221843" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1b7b575d-117d-1ec3-3114-0ccecfb94a9c" executionId="90176955-2a47-498e-b1c6-395115dd2f22" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="61b0f98b-f559-6b58-765c-c8a3ae5af09d" executionId="d5d6be54-1270-483d-b1cc-a52d63f14062" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f49fd633-e615-f571-f8db-7deca3a6ec05" executionId="9104c61a-9277-4215-b02c-4b4f79bea5c3" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="836e47c0-b428-899e-e7e2-efdd5fb39c21" executionId="9a3d8fcf-7489-4844-a50e-3f6f4a794652" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="63de4a2e-5a74-19ca-f8b1-cfeb327fbca3" executionId="3dc1894d-3b5d-41e4-8d1e-0d29204e2cf9" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="22858424-ce0e-32ce-08aa-ac2d3fdffba7" executionId="1794ea05-638e-42d8-823a-6a942600d74c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b5177a21-35a9-d4d6-da4b-c84d8762a979" executionId="3a33ee00-a0e9-4ff3-96e4-02f694691fa2" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="6450f153-35e2-14d1-e5c9-4b28d178f4bd" executionId="bc8ef0d3-9773-4794-8b56-1c8f25d7dff4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="9d7b67b2-4469-c49d-9df6-767a24dc8951" executionId="6d66d280-a3b1-4850-9803-43d4f4eac95a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="73b3e628-7b7c-12f7-9fd0-2d0478c5a45f" executionId="82057ecf-e12a-45dc-89af-57bcd22204fc" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4dff0907-ed13-1fe5-a5df-bc30a18825fd" executionId="48b5be7d-3ffa-448f-8f1b-ee810720f373" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="89387790-4e81-8436-0765-33fc12fb5f65" executionId="64a4bde5-b6f3-409e-bda8-fc0a1ea23a01" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1ab7eea5-e0a1-d1d3-a3d5-a950b904177f" executionId="70155ddb-d1f5-4f72-9158-9b2edecb97e2" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1e550036-8050-4a91-fbff-148002d66adb" executionId="77a2420d-68ca-432c-a05e-41ace4d2e5e6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="39bc46f8-270a-e75d-7c5c-21cd40eac60c" executionId="b6caa983-402c-4ebd-bde0-fad8f9462b3b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="列表中未列出的结果" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="所有已加载的结果" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="23" executed="23" passed="23" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>NUnit Adapter 4.6.0.0: Test execution started
+Running selected tests in /Users/mt/code-yang/Texas-Holdem/Library/SevenStationDotnet/bin/BattleToolkit.Tests/release/PokerEngine.Tests.Editor.dll
+   NUnit3TestExecutor discovered 23 of 23 NUnit test cases using Current Discovery mode, Non-Explicit run
+NUnit Adapter 4.6.0.0: Test execution complete
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

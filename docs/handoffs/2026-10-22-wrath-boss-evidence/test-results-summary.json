@@ -1,0 +1,253 @@
+{
+  "baseline-rules-full.trx": {
+    "source": "Library/WrathValidation/baseline-rules-full.trx",
+    "counters": {
+      "total": "1568",
+      "executed": "1568",
+      "passed": "1555",
+      "failed": "13",
+      "error": "0",
+      "timeout": "0",
+      "aborted": "0",
+      "inconclusive": "0",
+      "passedButRunAborted": "0",
+      "notRunnable": "0",
+      "notExecuted": "0",
+      "disconnected": "0",
+      "warning": "0",
+      "completed": "0",
+      "inProgress": "0",
+      "pending": "0"
+    },
+    "failed": [
+      {
+        "name": "InvalidEffectiveCapacityFailsAtBattleCreation(HandLimit,-8)",
+        "message": "  Expected: <System.ArgumentException>\n  But was:  null\n"
+      },
+      {
+        "name": "AppendedOverflowRollsBackDamageCardsAndResources",
+        "message": "  Expected: Overflow\n  But was:  None\n"
+      },
+      {
+        "name": "InvalidBoundaryBatchRollsBackTheEntireStart(True)",
+        "message": "  Expected: Overflow\n  But was:  None\n"
+      },
+      {
+        "name": "NumericOverflowInTheProviderOrAReactionRollsBackEveryFact(False)",
+        "message": "  Expected: False\n  But was:  True\n"
+      },
+      {
+        "name": "LaterFailureRollsBackImmunityConsumptionAndEarlierDamage",
+        "message": "  Expected: Overflow\n  But was:  None\n"
+      },
+      {
+        "name": "CreationHasNoHandAndFirstTurnDealsExactlyOnceWithoutSpendingEnergy",
+        "message": "  Expected: same as <PokerEngine.TeamBattleState>\n  But was:  <PokerEngine.TeamBattleState>\n"
+      },
+      {
+        "name": "FailureInALaterEnemyReactionRollsBackTheEntireSessionIncludingEarlierReactions",
+        "message": "  Expected: Overflow\n  But was:  None\n"
+      },
+      {
+        "name": "SnapshotRejectsChangedContentRevisionDigestAndIllegalBattleAction",
+        "message": "  Expected: <PokerEngine.SnapshotException>\n  But was:  null\n"
+      },
+      {
+        "name": "RewardOverflowRollsBackCostsCardsAndRandomState",
+        "message": "  Expected: Overflow\n  But was:  None\n"
+      },
+      {
+        "name": "PrimaryOutgoingUsesBatchStartAndIncomingUsesLatestStateExactlyOnce",
+        "message": "  Expected is <System.Int32[2]>, actual is <System.Linq.Enumerable+ListWhereSelectIterator`2[PokerEngine.CombatAmountContext,System.Int64]>\n  Values differ at index [1]\n  Expected: 100\n  But was:  90\n"
+      },
+      {
+        "name": "LateFailureRollsBackExpiryControlConsumptionDamageEnergyScoreAndCardMovement",
+        "message": "  Expected: Overflow\n  But was:  None\n"
+      },
+      {
+        "name": "InvalidCompletionBatchRollsBackEarlierDamageAndActionPayment(True)",
+        "message": "  Expected: Overflow\n  But was:  None\n"
+      },
+      {
+        "name": "TriggerEffectOverflowRollsBackHealthCardsBudgetAndReports",
+        "message": "  Expected: Overflow\n  But was:  None\n"
+      }
+    ],
+    "test_names": null
+  },
+  "wrath-hand-restrictions-scoped.trx": {
+    "source": "Library/WrathValidation/wrath-hand-restrictions-scoped.trx",
+    "counters": {
+      "total": "1667",
+      "executed": "1667",
+      "passed": "1654",
+      "failed": "13",
+      "error": "0",
+      "timeout": "0",
+      "aborted": "0",
+      "inconclusive": "0",
+      "passedButRunAborted": "0",
+      "notRunnable": "0",
+      "notExecuted": "0",
+      "disconnected": "0",
+      "warning": "0",
+      "completed": "0",
+      "inProgress": "0",
+      "pending": "0"
+    },
+    "failed": [
+      {
+        "name": "CreationHasNoHandAndFirstTurnDealsExactlyOnceWithoutSpendingEnergy",
+        "message": "  Expected: same as <PokerEngine.TeamBattleState>\n  But was:  <PokerEngine.TeamBattleState>\n"
+      },
+      {
+        "name": "LateFailureRollsBackExpiryControlConsumptionDamageEnergyScoreAndCardMovement",
+        "message": "  Expected: Overflow\n  But was:  None\n"
+      },
+      {
+        "name": "SnapshotRejectsChangedContentRevisionDigestAndIllegalBattleAction",
+        "message": "  Expected: <PokerEngine.SnapshotException>\n  But was:  null\n"
+      },
+      {
+        "name": "InvalidCompletionBatchRollsBackEarlierDamageAndActionPayment(True)",
+        "message": "  Expected: Overflow\n  But was:  None\n"
+      },
+      {
+        "name": "TriggerEffectOverflowRollsBackHealthCardsBudgetAndReports",
+        "message": "  Expected: Overflow\n  But was:  None\n"
+      },
+      {
+        "name": "InvalidBoundaryBatchRollsBackTheEntireStart(True)",
+        "message": "  Expected: Overflow\n  But was:  None\n"
+      },
+      {
+        "name": "AppendedOverflowRollsBackDamageCardsAndResources",
+        "message": "  Expected: Overflow\n  But was:  None\n"
+      },
+      {
+        "name": "RewardOverflowRollsBackCostsCardsAndRandomState",
+        "message": "  Expected: Overflow\n  But was:  None\n"
+      },
+      {
+        "name": "PrimaryOutgoingUsesBatchStartAndIncomingUsesLatestStateExactlyOnce",
+        "message": "  Expected is <System.Int32[2]>, actual is <System.Linq.Enumerable+ListWhereSelectIterator`2[PokerEngine.CombatAmountContext,System.Int64]>\n  Values differ at index [1]\n  Expected: 100\n  But was:  90\n"
+      },
+      {
+        "name": "LaterFailureRollsBackImmunityConsumptionAndEarlierDamage",
+        "message": "  Expected: Overflow\n  But was:  None\n"
+      },
+      {
+        "name": "FailureInALaterEnemyReactionRollsBackTheEntireSessionIncludingEarlierReactions",
+        "message": "  Expected: Overflow\n  But was:  None\n"
+      },
+      {
+        "name": "InvalidEffectiveCapacityFailsAtBattleCreation(HandLimit,-8)",
+        "message": "  Expected: <System.ArgumentException>\n  But was:  null\n"
+      },
+      {
+        "name": "NumericOverflowInTheProviderOrAReactionRollsBackEveryFact(False)",
+        "message": "  Expected: False\n  But was:  True\n"
+      }
+    ],
+    "test_names": null
+  },
+  "wrath-prompts-shared-review.trx": {
+    "source": "Library/WrathValidation/wrath-prompts-shared-review.trx",
+    "counters": {
+      "total": "18",
+      "executed": "18",
+      "passed": "18",
+      "failed": "0",
+      "error": "0",
+      "timeout": "0",
+      "aborted": "0",
+      "inconclusive": "0",
+      "passedButRunAborted": "0",
+      "notRunnable": "0",
+      "notExecuted": "0",
+      "disconnected": "0",
+      "warning": "0",
+      "completed": "0",
+      "inProgress": "0",
+      "pending": "0"
+    },
+    "failed": [],
+    "test_names": [
+      "OtherEncountersDoNotReceiveBossLayoutOrBossResources(\"standard-armored-summoner\")",
+      "RealTimelineEmitsOneRegenerationPromptPerHandAtEntryAndNoneAtRoundRefreshOrRevival",
+      "PlaceholderIconsUseStableActionIdentity(\"wrath-ultimate\",Unknown)",
+      "RegenerationFloatUsesAuthorityOncePerEnemyPhaseAndIgnoresRefreshAndRollback",
+      "OtherEncountersDoNotReceiveBossLayoutOrBossResources(\"standard-single-battle\")",
+      "OpeningProjectsBodyIdentityDynamicAttackAndEightRegularIntentsWithoutMutation",
+      "PlaceholderIconsUseStableActionIdentity(\"strike\",Attack)",
+      "PlaceholderIconsUseStableActionIdentity(\"charge\",Charge)",
+      "PlaceholderIconsUseStableActionIdentity(\"strike-2\",Attack)",
+      "PreviewUnstartedAndOrdinarySnapshotsDoNotConsumeTheOpening",
+      "OpeningUsesTheApprovedRedWarningTextOnceForEachBattle",
+      "ShellStatusExplainsDamageOnlyImmunityAndShowsItsLastRemainingLayer",
+      "DeadHandCountdownBecomesOneBeforeRegenerationAndReturnsToAliveOnTheSameIdentity",
+      "PlaceholderIconsUseStableActionIdentity(\"guard\",Defense)",
+      "LivingAndFinishedUnitsNeverReceiveRegenerationFloats",
+      "RoundRefreshDoesNotPretendToStartAnotherEnemyPhase",
+      "WarningIsIndependentFromRegularIntentsAndDisappearsImmediatelyWhenAHandDies",
+      "GrenadeLeavesFiveDeadHandCountdownsVisibleAndReducesBodyAttack"
+    ]
+  },
+  "wrath-shared-final.trx": {
+    "source": "Library/WrathValidation/wrath-shared-final.trx",
+    "counters": {
+      "total": "28",
+      "executed": "28",
+      "passed": "27",
+      "failed": "1",
+      "error": "0",
+      "timeout": "0",
+      "aborted": "0",
+      "inconclusive": "0",
+      "passedButRunAborted": "0",
+      "notRunnable": "0",
+      "notExecuted": "0",
+      "disconnected": "0",
+      "warning": "0",
+      "completed": "0",
+      "inProgress": "0",
+      "pending": "0"
+    },
+    "failed": [
+      {
+        "name": "ConfiguredElitePreviewShowsGrowthAndDamageThenBleedingDecay",
+        "message": "  Expected: String containing \"攻击力 90\"\n  But was:  \"施法·半攻伤害后叠加3层流血\n攻击力 8 · 每回合结束 +10\n玩家 1：伤害 4\n玩家 1：获得 流血：每层使敌人攻击伤害 +50%（护盾前，不影响道具自伤） + 施加者每次有效行动后移除 1 层 ×3（持续生效）\n玩家 1：流血：每层使敌人攻击伤害 +50%（护盾前，不影响道具自伤） + 施加者每次有效行动后移除 1 层 消耗（3→2 层）（持续生效）\"\n"
+      }
+    ],
+    "test_names": [
+      "UnknownStatusUsesItsConfiguredIdentityAndErrorsRemainExplicit",
+      "DamageFeedbackExplainsBleedingContributionWithOneDamageSettlement",
+      "CandidateRecognizesPatternIndependentlyOfCostAndDoesNotCommitPreview",
+      "WarningIsIndependentFromRegularIntentsAndDisappearsImmediatelyWhenAHandDies",
+      "FullHousePreviewReportsControlAndSelfImmunityWithoutDamageOrStateMutation",
+      "OtherEncountersDoNotReceiveBossLayoutOrBossResources(\"standard-armored-summoner\")",
+      "BleedingDescriptionExplainsEnemyAttacksShieldAndApplierDecay",
+      "SnapshotDisplaysEffectiveHandLimitAndActualRelicRuntime",
+      "DeadHandCountdownBecomesOneBeforeRegenerationAndReturnsToAliveOnTheSameIdentity",
+      "RecyclePayloadMayNameVisibleSourceCardsButNeverTheirPrivateShuffleOrder",
+      "FactResolutionNeverUsesTheFinalFallbackForAnInitialOrUnknownCursor",
+      "GrenadeLeavesFiveDeadHandCountdownsVisibleAndReducesBodyAttack",
+      "OverflowingGrowthDoesNotBreakAnAcceptedNonDamageIntentDisplay",
+      "OtherEncountersDoNotReceiveBossLayoutOrBossResources(\"standard-single-battle\")",
+      "CandidateRejectsDuplicateForeignAndUnavailableCardsInsteadOfRepairingInput",
+      "EnemyIntentIncludesDeclaredSkillNameWithoutMutatingBattle",
+      "MixedVitalsKeepDamageHealingBlockAndEliminationSeparate",
+      "ConfiguredElitePreviewShowsGrowthAndDamageThenBleedingDecay",
+      "HiddenDeckAndOtherHandDiscloseNoFaceOrRuleIdentityOrAttributes",
+      "SynchronizeCancelsPlaybackAndReplacesDisplayWithCommittedSnapshot",
+      "RejectDoesNotInvokeFrontendOrAcceptedHandoff",
+      "ShellStatusExplainsDamageOnlyImmunityAndShowsItsLastRemainingLayer",
+      "ReactionsAndPeriodicDamageRetainTheirOriginInsteadOfBecomingPrimaryDamage",
+      "OpeningProjectsBodyIdentityDynamicAttackAndEightRegularIntentsWithoutMutation",
+      "DecayFeedbackDisplaysPreviousAndRemainingLayers",
+      "PresentBuildsContinuousImmutableCheckpointsWithoutPublishingFinalStateEarly",
+      "HiddenDealActionPayloadDoesNotDiscloseOtherPlayersCardIdentities",
+      "StatusFeedbackIncludesAppliedImmunityPreventionSkipConsumptionAndExpiry"
+    ]
+  }
+}

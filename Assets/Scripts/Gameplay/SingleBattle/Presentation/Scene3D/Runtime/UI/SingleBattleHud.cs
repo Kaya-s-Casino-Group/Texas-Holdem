@@ -90,17 +90,19 @@ namespace Poker.SingleBattle
             var hero = snapshot.Unit(snapshot.ObserverId);
             var enemies = snapshot.Units.Where(unit => unit.Team == "enemy").ToArray();
             if (hero == null || enemies.Length == 0) return;
+            var bossBody = UsesWrathDemoPresentation ? WrathBody(snapshot) : null;
+            var primaryEnemy = bossBody ?? enemies[0];
             var players = snapshot.Units.Where(unit => unit.Team == "player").ToList();
             EnsurePlayerSwitch();
             player.text = compactLayout ? "生命 " + hero.Health + " / " + hero.MaxHealth + "   护盾 " + hero.Block :
                 "玩家 " + (players.FindIndex(unit => unit.Id == hero.Id) + 1) + "   " + hero.Health + " / " + hero.MaxHealth + "\n格挡 " + hero.Block;
             enemy.text = string.Join("\n", enemies.Select((unit, i) => "怪物 " + (i + 1) + "  " + unit.Health + " / " + unit.MaxHealth));
-            if (ritualLayout)
+            if (ritualLayout || bossBody != null)
             {
-                enemy.text = "生命 " + enemies[0].Health + " / " + enemies[0].MaxHealth +
-                    (enemies[0].Block > 0 ? " · 护盾 " + enemies[0].Block : "");
+                enemy.text = (bossBody != null ? "暴怒  " : "生命 ") + primaryEnemy.Health + " / " + primaryEnemy.MaxHealth +
+                    (primaryEnemy.Block > 0 ? " · 护盾 " + primaryEnemy.Block : "");
                 snapshot.Labels.TryGetValue("status/" + hero.Id, out var heroStatus);
-                snapshot.Labels.TryGetValue("status/" + enemies[0].Id, out var monsterStatus);
+                snapshot.Labels.TryGetValue("status/" + primaryEnemy.Id, out var monsterStatus);
                 PresentActorStatuses(playerStatuses, heroStatus);
                 PresentActorStatuses(enemyStatuses, monsterStatus);
             }
@@ -108,8 +110,9 @@ namespace Poker.SingleBattle
                 "\n出牌 " + ResourceValue(snapshot, hero.Id, "playCost") + " · 弃牌 " + ResourceValue(snapshot, hero.Id, "discardCost");
             if (endTurn != null) endTurn.interactable = host.CanEndTurn;
             playerBar.rectTransform.anchorMax = new Vector2(hero.MaxHealth > 0 ? Mathf.Clamp01((float)hero.Health / hero.MaxHealth) : 0, 1);
-            double enemyMaximum = enemies.Sum(unit => (double)unit.MaxHealth);
-            enemyBar.rectTransform.anchorMax = new Vector2(enemyMaximum > 0 ? Mathf.Clamp01((float)(enemies.Sum(unit => (double)unit.Health) / enemyMaximum)) : 0, 1);
+            double enemyMaximum = bossBody != null ? bossBody.MaxHealth : enemies.Sum(unit => (double)unit.MaxHealth);
+            double enemyHealth = bossBody != null ? bossBody.Health : enemies.Sum(unit => (double)unit.Health);
+            enemyBar.rectTransform.anchorMax = new Vector2(enemyMaximum > 0 ? Mathf.Clamp01((float)(enemyHealth / enemyMaximum)) : 0, 1);
             long round = snapshot.IsFinished ? snapshot.CompletedRounds : snapshot.CompletedRounds + 1;
             turn.text = "回合 " + round + " / " + ResourceValue(snapshot, "", "roundLimit") + "\n" + (snapshot.IsFinished ? "战斗结束" :
                 snapshot.Phase == "player" ? "玩家行动 · 剩余 " + players.Count(unit => ResourceValue(snapshot, unit.Id, "canAct") == 1) : "敌人行动");
@@ -144,7 +147,7 @@ namespace Poker.SingleBattle
                 resultTitle.text = won ? "战斗胜利" : "战斗失败";
                 resultTitle.color = won ? new Color32(233, 193, 112, 255) : new Color32(237, 125, 123, 255);
                 bool roundLimit = snapshot.Labels.TryGetValue("resultReason", out var reason) && reason == "RoundLimit";
-                resultDetails.text = (won ? "全部怪物已被击败" : roundLimit ? "回合已用尽" : "全部玩家已阵亡") +
+                resultDetails.text = (won ? bossBody != null ? "暴怒已被击败" : "全部怪物已被击败" : roundLimit ? "回合已用尽" : "全部玩家已阵亡") +
                     "\n完成回合 " + snapshot.CompletedRounds + "\n总得分 " + ResourceValue(snapshot, "", "totalScore");
             }
         }
@@ -184,18 +187,21 @@ namespace Poker.SingleBattle
             if (endTurn != null) endTurn.onClick.RemoveListener(EndTurn);
         }
         private void OnEnable() { Subscribe(); Refresh(); if (Application.isPlaying) ScreenSafeArea.Ensure(GetComponent<Canvas>()); }
-        private void OnDisable() { Unsubscribe(); resultDelay.Reset(); HideEnemyIntents(); HideRelicHover(); }
+        private void OnDisable() { Unsubscribe(); resultDelay.Reset(); HideEnemyIntents(); HideRelicHover(); HideWrathHud(); }
         private void OnDestroy() => DestroyEnemyIntents();
         // Card landing can finish without a rules transition (e.g. opening deal or local sort).
         private void LateUpdate()
         {
             if (host != null && !host.UsesExternalCommands && host.Display?.IsFinished == true &&
                 resultPanel != null && !resultPanel.activeSelf) Refresh();
+            UpdateRitualIntentLayout();
             UpdateEnemyIntentBillboards();
             RefreshTurnFlow();
             RefreshRuleFeedback();
             RefreshBattleTools();
             RefreshRelicHover();
+            RefreshWrathTargetAvailability();
+            UpdateWrathPromptViews();
             RefreshAdminEntry();
             if (host != null && endTurn != null) endTurn.interactable = host.CanEndTurn;
             if (switchPlayer != null) switchPlayer.interactable = host.CanSwitchPlayer && host.Display != null && host.Display.Units.Count(unit => unit.Team == "player" && ResourceValue(host.Display, unit.Id, "canAct") == 1) > 1;

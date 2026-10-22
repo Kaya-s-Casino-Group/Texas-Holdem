@@ -1,0 +1,23 @@
+{
+  "main": {
+    "original_files": 55,
+    "missing": [],
+    "intentionally_updated_existing_files": [
+      "Assets/Scripts/Gameplay/SingleBattle/Presentation/Shared/Runtime/BattleDisplayProjector.cs",
+      "Assets/Scripts/Gameplay/SingleBattle/Presentation/Shared/Tests/Editor/BattleWrathPresentationTests.cs",
+      "Assets/Scripts/Gameplay/SingleBattle/Presentation/Scene3D/Tests/PlayMode/WrathBossScenePlaybackTests.cs",
+      "Assets/Scripts/Gameplay/SingleBattle/Presentation/Scene3D/Runtime/UI/SingleBattleHud.Intent.cs",
+      "Assets/Scripts/Gameplay/SingleBattle/Presentation/Scene3D/Runtime/UI/SingleBattleHud.Wrath.cs",
+      "Assets/Scripts/Gameplay/SingleBattle/Presentation/Scene3D/Runtime/UI/SingleBattleHud.cs",
+      "docs/superpowers/specs/2026-10-22-wrath-boss-design.md",
+      "docs/handoffs/2026-10-22-wrath-boss-unity-handoff.md",
+      "Assets/Scripts/Gameplay/SingleBattle/Presentation/Shared/Runtime/BattleWrathDisplayProjector.cs",
+      "Assets/Scripts/Gameplay/SingleBattle/Presentation/Shared/Tests/Editor/BattleElitePresentationTests.cs"
+    ]
+  },
+  "BattleToolkit": {
+    "original_files": 67,
+    "missing": [],
+    "intentionally_updated_existing_files": []
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "status": "cancelled_by_user",
+  "reason": "用户要求无需实际场景跑满20轮",
+  "passed_before_cancellation": [
+    "Poker.Adventure.Tests.SingleChapterAdventureSceneTests.AdventureBattleUsesOutcomeRelicsKickerFlightsAndAshBeforeReturningToRewards",
+    "Poker.Adventure.Tests.SingleChapterAdventureSceneTests.AuthoredSceneCompletesSevenStopsThroughActualButtonsAndBattleAuthority",
+    "Poker.Adventure.Tests.SingleChapterAdventureSceneTests.SevenStationBossSeversAndRegeneratesFiveOriginalActorsWithRemoteAshAndArtwork",
+    "Poker.Adventure.Tests.SingleChapterAdventureSceneTests.SevenStationEliteUsesGrowingBleedingAttacksAndKeepsRemoteArtwork",
+    "Poker.SingleBattle.Tests.DiscardShieldPlaybackTests.CancelStopsQueuedLandingsAndSnapDoesNotReplayFeedback",
+    "Poker.SingleBattle.Tests.DiscardShieldPlaybackTests.CardsLandInOrderAndOneWholeCardDissolvesWhilePausedTime",
+    "Poker.SingleBattle.Tests.DiscardShieldPlaybackTests.LandingParticlesSpawnAtEachRotatedScaledCardBottom",
+    "Poker.SingleBattle.Tests.EliteBleedingScenePlaybackTests.BleedingMergesBeforeShieldIntoOneAuthoritativeDamageFact",
+    "Poker.SingleBattle.Tests.EliteBleedingScenePlaybackTests.CastStrikeCastPreviewsMatchRealImpactsAndVisibleStatusCheckpoints",
+    "Poker.SingleBattle.Tests.EliteBleedingScenePlaybackTests.RealFullHouseCleansesBleedingAndStunPreservesIntentWhileAttackGrows",
+    "Poker.SingleBattle.Tests.EliteBleedingScenePlaybackTests.RealReviverCancelsLaterCastBleedingAndCannotBeOverwrittenByLateDeathPlayback",
+    "Poker.SingleBattle.Tests.EliteBleedingScenePlaybackTests.RealReviverClearsExistingBleedingBeforeNextIntent",
+    "Poker.SingleBattle.Tests.SceneTimelinePlaybackTests.AuthoredSceneUsesTimelineForOpeningSelectionPlayDiscardAndCancellation",
+    "Poker.SingleBattle.Tests.SceneTimelinePlaybackTests.EnemyWorldHudShowsIndependentIntentsStatusesAndDisplayHealth",
+    "Poker.SingleBattle.Tests.SceneTimelinePlaybackTests.MinimalPrefabAutoStartsTwoIndependentBattlesWithoutSceneBindings",
+    "Poker.SingleBattle.Tests.SceneTimelinePlaybackTests.OutcomePreviewAndRelicArtUseActualResultsAndAllImportedSprites",
+    "Poker.SingleBattle.Tests.SceneTimelinePlaybackTests.PairDropsKickersWithoutTailsAndKillsThroughAshShaderWithRecovery",
+    "Poker.SingleBattle.Tests.SceneTimelinePlaybackTests.RelicHoverOwnsDescriptionsUseButtonsAndLimitedActiveChargeBadges",
+    "Poker.SingleBattle.Tests.SceneTimelinePlaybackTests.RevivalStopsAnActiveDeathCoroutineAndItsLatePoseWrite",
+    "Poker.SingleBattle.Tests.SceneTimelinePlaybackTests.SavedScenePlaysStraightCardByCardAndRoyalEliminationBeforeDeath",
+    "Poker.SingleBattle.Tests.SceneTimelinePlaybackTests.SavedScenePortraitClicksChooseRuleTargetsAndGroupVolleyReachesThreeEnemies",
+    "Poker.SingleBattle.Tests.WrathBossScenePlaybackTests.BindingAtTwentyFixtureLetsRealHandPlayCancelWarningAndRestartClearsOldHud",
+    "Poker.SingleBattle.Tests.WrathBossScenePlaybackTests.DefaultBindingShowsRoundFiveWarningBeforeRoundSixRegularAndExtraUltimateImpacts"
+  ],
+  "passed_count": 23,
+  "interrupted_test": "Poker.SingleBattle.Tests.WrathBossScenePlaybackTests.DurableHeroFixtureCompletesDefaultTwentyRoundsThenLosesWithoutSpendingReviver",
+  "total_selected": 31,
+  "not_completed": 8
+}

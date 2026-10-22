@@ -330,11 +330,21 @@ namespace Poker.SingleBattle.Tests
             yield return EditorSceneManager.LoadSceneAsyncInPlayMode("Assets/Scenes/BattleDemo.unity", new LoadSceneParameters(LoadSceneMode.Single));
             var host = Object.FindObjectsOfType<SingleBattleSceneAdapter>().Single();
             yield return Idle(host);
+            // Final sorting settles in Update; candidate and target buttons refresh in LateUpdate.
+            yield return new WaitForEndOfFrame();
             var selector = host.GetComponent<BattleDemoTargetSelection>();
             Assert.AreEqual(3, host.Enemies.Count);
             CollectionAssert.AreEqual(new long[] { 600, 4, 6 }, host.Enemies.Select(actor => actor.Unit.Health));
             var original = host.AuthorityState;
-            Assert.IsTrue(selector.ChooseTarget(host.Enemies[2]), "A target can be picked before selecting cards.");
+            string targetReadiness = "input=" + host.CanChoosePlayTarget + " presenting=" + host.IsPresenting +
+                " candidate=" + host.Candidate?.State + " choices=" + host.PlayTargetChoices.Count +
+                " selected=" + host.Actions.Hand.CaptureSelection().Cards.Count +
+                " moving=" + host.Actions.Hand.GetComponent<HandZoneView>().IsTransitioning +
+                " pendingSort=" + host.Actions.Hand.HasPendingSort +
+                " authority=" + ReferenceEquals(host.State, host.AuthorityState) +
+                " error=" + host.PresentationDirector.LastError;
+            TestContext.WriteLine("Target readiness: " + targetReadiness);
+            Assert.IsTrue(selector.ChooseTarget(host.Enemies[2]), "A target can be picked before selecting cards: " + targetReadiness);
             Assert.AreSame(original, host.AuthorityState);
             Select(host, 1); host.RefreshCandidate();
             yield return Idle(host);

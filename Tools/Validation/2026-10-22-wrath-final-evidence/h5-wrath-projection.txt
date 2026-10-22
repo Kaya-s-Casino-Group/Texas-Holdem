@@ -1,0 +1,13 @@
+test_binding_skip_preserves_warning_in_committed_intermediate_frames (test_wrath_projection.WrathProjectionHttpTests) ... ok
+test_broken_hand_keeps_identity_and_countdown_but_leaves_target_candidates (test_wrath_projection.WrathProjectionHttpTests) ... ok
+test_enemy_phase_regeneration_frames_use_authoritative_entry_state (test_wrath_projection.WrathProjectionHttpTests) ... ok
+test_existing_elite_has_no_boss_fields (test_wrath_projection.WrathProjectionHttpTests) ... ok
+test_six_units_have_separate_boss_state_and_eight_regular_intents (test_wrath_projection.WrathProjectionHttpTests) ... ok
+test_target_candidates_use_friendly_unit_names (test_wrath_projection.WrathProjectionHttpTests) ... ok
+test_warning_before_charge_projects_the_next_charge_only_into_extra_damage (test_wrath_projection.WrathProjectionHttpTests) ... ok
+test_warning_cancellation_updates_attack_without_replacing_regular_intent (test_wrath_projection.WrathProjectionHttpTests) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.962s
+
+OK
