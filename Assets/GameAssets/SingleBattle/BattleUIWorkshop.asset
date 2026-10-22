@@ -1,0 +1,6468 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e98e2eeed1ae42f59e65d4fa2a60d44, type: 3}
+  m_Name: BattleUIWorkshop
+  m_EditorClassIdentifier: 
+  nodes:
+  - root: Battle HUD
+    pose:
+      path: Player
+      anchorMin: {x: 0.072, y: 0.866}
+      anchorMax: {x: 0.282, y: 0.971}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: -11.422989}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Player/Health Bar
+      anchorMin: {x: 0.07, y: 0.060000002}
+      anchorMax: {x: 0.77, y: 0.37}
+      pivot: {x: 0, y: 1}
+      sizeDelta: {x: 193.4644, y: 21.3467}
+      position: {x: 12.146172, y: 32.854, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Player/Health Bar/Concept Track
+      anchorMin: {x: 0.05816135, y: 0.33971292}
+      anchorMax: {x: 0.9423077, y: 0.6602871}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Player/Health Bar/Concept Fill
+      anchorMin: {x: 0.05816135, y: 0.33971292}
+      anchorMax: {x: 0.9423077, y: 0.6602871}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Player/Health Bar/Concept Frame
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Player/Actor Status
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 0}
+      pivot: {x: 0.5, y: 1}
+      sizeDelta: {x: -28, y: 65}
+      position: {x: 0, y: -4, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 13
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 257
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Player/Block Icon
+      anchorMin: {x: 0.79, y: 0.07999998}
+      anchorMax: {x: 0.865, y: 0.51}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: -1.1241608, y: 0}
+      position: {x: 202.9, y: 15.955, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Player/Block Count
+      anchorMin: {x: 0.875, y: 0.15999997}
+      anchorMax: {x: 0.97, y: 0.49999997}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 195.95099, y: 13.231, z: 0}
+      scale: {x: 1.44, y: 1.44, z: 1.44}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 1
+      fontSize: 18.25
+      fontMin: 14
+      fontMax: 20
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Player/Health
+      anchorMin: {x: 0.09, y: 0.059999943}
+      anchorMax: {x: 0.76, y: 0.38999996}
+      pivot: {x: 0, y: 1}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 106.95, y: 21.792, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 1
+      fontSize: 16
+      fontMin: 11.2
+      fontMax: 16
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Turn
+      anchorMin: {x: 0.43, y: 0.9}
+      anchorMax: {x: 0.565, y: 0.97499996}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: -10.937958, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1.02, y: 1.02, z: 1.02}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Turn/Round
+      anchorMin: {x: 0.12, y: 0.18}
+      anchorMax: {x: 0.88, y: 0.82}
+      pivot: {x: 0, y: 1}
+      sizeDelta: {x: -16.4756, y: -3.7258}
+      position: {x: 8.2378, y: 0.73666, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 1
+      fontSize: 25
+      fontMin: 17.5
+      fontMax: 25
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Turn/Restart
+      anchorMin: {x: 0.84, y: 0.25}
+      anchorMax: {x: 0.96999997, y: 0.75}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 753.2, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Turn/Restart/Label
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0, y: 1}
+      sizeDelta: {x: -6, y: -4}
+      position: {x: 3, y: -2, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 1
+      fontSize: 10
+      fontMin: 10
+      fontMax: 12
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: End Turn
+      anchorMin: {x: 0.7895, y: 0.024999976}
+      anchorMax: {x: 0.9605, y: 0.097999975}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: -36.242096, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: End Turn/Label
+      anchorMin: {x: 0.12, y: 0.120000005}
+      anchorMax: {x: 0.88, y: 0.88}
+      pivot: {x: 0, y: 1}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 1
+      fontSize: 25
+      fontMin: 17.5
+      fontMax: 25
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Result
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 440, y: 240}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Result/Painted Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Result/Title
+      anchorMin: {x: 0, y: 1}
+      anchorMax: {x: 0, y: 1}
+      pivot: {x: 0, y: 1}
+      sizeDelta: {x: 392, y: 50}
+      position: {x: 24, y: -24, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 30
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 257
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Result/Details
+      anchorMin: {x: 0, y: 1}
+      anchorMax: {x: 0, y: 1}
+      pivot: {x: 0, y: 1}
+      sizeDelta: {x: 392, y: 84}
+      position: {x: 24, y: -80, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 18
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 257
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Result/Again
+      anchorMin: {x: 0.5, y: 0}
+      anchorMax: {x: 0.5, y: 0}
+      pivot: {x: 0.5, y: 0}
+      sizeDelta: {x: 170, y: 28}
+      position: {x: 0, y: 10, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Result/Again/Painted Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Result/Again/Label
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0, y: 1}
+      sizeDelta: {x: -8, y: -4}
+      position: {x: 4, y: -2, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 14
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Result/Again/Gold Fillet
+      anchorMin: {x: 0.025, y: 0.97}
+      anchorMax: {x: 0.97499996, y: 0.97800004}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Result/Gold Fillet
+      anchorMin: {x: 0.025, y: 0.97}
+      anchorMax: {x: 0.97499996, y: 0.97800004}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Hand Candidate
+      anchorMin: {x: 0.44, y: 0.036000013}
+      anchorMax: {x: 0.612, y: 0.08700001}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: -1.8087463}
+      position: {x: 0, y: -0.000061035156, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Hand Candidate/Outcome Value
+      anchorMin: {x: 0.07, y: 0.15999997}
+      anchorMax: {x: 0.93, y: 0.84}
+      pivot: {x: 0, y: 1}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 1
+      fontSize: 19
+      fontMin: 13.3
+      fontMax: 19
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Hand Candidate/Outcome Calculation
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 0, y: 0}
+      pivot: {x: 0, y: 0}
+      sizeDelta: {x: 360, y: 150}
+      position: {x: 0, y: 52, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Hand Candidate/Outcome Calculation/Calculation Text
+      anchorMin: {x: 0, y: 1}
+      anchorMax: {x: 0, y: 1}
+      pivot: {x: 0, y: 1}
+      sizeDelta: {x: 336, y: 130}
+      position: {x: 12, y: -10, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 13
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 257
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Draw Controls
+      anchorMin: {x: 0.76, y: 0.13999999}
+      anchorMax: {x: 0.98, y: 0.35999998}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Status Rail
+      anchorMin: {x: 0.897, y: 0.36299998}
+      anchorMax: {x: 0.982, y: 0.898}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Status Rail/Concept Relic Backing
+      anchorMin: {x: -0.055, y: -0.06500006}
+      anchorMax: {x: 1.0550001, y: 1.025}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: -0.7892914, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Status Rail/Rules Feedback
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 1, y: 1}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Status Rail/Rules Feedback/Concept Relic Slot 11
+      anchorMin: {x: 0, y: 1}
+      anchorMax: {x: 0, y: 1}
+      pivot: {x: 0, y: 1}
+      sizeDelta: {x: 62.073376, y: 62.073376}
+      position: {x: 80.661095, y: -386.67392, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Status Rail/Rules Feedback/Concept Relic Slot 10
+      anchorMin: {x: 0, y: 1}
+      anchorMax: {x: 0, y: 1}
+      pivot: {x: 0, y: 1}
+      sizeDelta: {x: 62.073376, y: 62.073376}
+      position: {x: 13.621851, y: -386.67392, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Status Rail/Rules Feedback/Concept Relic Slot 9
+      anchorMin: {x: 0, y: 1}
+      anchorMax: {x: 0, y: 1}
+      pivot: {x: 0, y: 1}
+      sizeDelta: {x: 62.073376, y: 62.073376}
+      position: {x: 80.661095, y: -319.63467, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Status Rail/Rules Feedback/Concept Relic Slot 8
+      anchorMin: {x: 0, y: 1}
+      anchorMax: {x: 0, y: 1}
+      pivot: {x: 0, y: 1}
+      sizeDelta: {x: 62.073376, y: 62.073376}
+      position: {x: 13.621851, y: -319.63467, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Status Rail/Rules Feedback/Concept Relic Slot 7
+      anchorMin: {x: 0, y: 1}
+      anchorMax: {x: 0, y: 1}
+      pivot: {x: 0, y: 1}
+      sizeDelta: {x: 62.073376, y: 62.073376}
+      position: {x: 80.661095, y: -252.59543, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Status Rail/Rules Feedback/Concept Relic Slot 6
+      anchorMin: {x: 0, y: 1}
+      anchorMax: {x: 0, y: 1}
+      pivot: {x: 0, y: 1}
+      sizeDelta: {x: 62.073376, y: 62.073376}
+      position: {x: 13.621851, y: -252.59543, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Status Rail/Rules Feedback/Concept Relic Slot 5
+      anchorMin: {x: 0, y: 1}
+      anchorMax: {x: 0, y: 1}
+      pivot: {x: 0, y: 1}
+      sizeDelta: {x: 62.073376, y: 62.073376}
+      position: {x: 80.661095, y: -185.55618, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Status Rail/Rules Feedback/Concept Relic Slot 4
+      anchorMin: {x: 0, y: 1}
+      anchorMax: {x: 0, y: 1}
+      pivot: {x: 0, y: 1}
+      sizeDelta: {x: 62.073376, y: 62.073376}
+      position: {x: 13.621851, y: -185.55618, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Status Rail/Rules Feedback/Concept Relic Slot 3
+      anchorMin: {x: 0, y: 1}
+      anchorMax: {x: 0, y: 1}
+      pivot: {x: 0, y: 1}
+      sizeDelta: {x: 62.073376, y: 62.073376}
+      position: {x: 80.661095, y: -118.516945, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Status Rail/Rules Feedback/Concept Relic Slot 2
+      anchorMin: {x: 0, y: 1}
+      anchorMax: {x: 0, y: 1}
+      pivot: {x: 0, y: 1}
+      sizeDelta: {x: 62.073376, y: 62.073376}
+      position: {x: 13.621851, y: -118.516945, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Status Rail/Rules Feedback/Concept Relic Slot 1
+      anchorMin: {x: 0, y: 1}
+      anchorMax: {x: 0, y: 1}
+      pivot: {x: 0, y: 1}
+      sizeDelta: {x: 62.073376, y: 62.073376}
+      position: {x: 80.661095, y: -51.477695, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Status Rail/Rules Feedback/Concept Relic Slot 0
+      anchorMin: {x: 0, y: 1}
+      anchorMax: {x: 0, y: 1}
+      pivot: {x: 0, y: 1}
+      sizeDelta: {x: 62.073376, y: 62.073376}
+      position: {x: 13.621851, y: -51.477695, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Status Rail/Rules Feedback/Viewport
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: -32, y: -162}
+      position: {x: 0, y: -63, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Status Rail/Rules Feedback/Viewport/Text
+      anchorMin: {x: 0, y: 1}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0, y: 1}
+      sizeDelta: {x: 0, y: 292.75}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 12
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 3
+      alignment: 257
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Status Rail/Rules Feedback/Relic Heading Frame
+      anchorMin: {x: 0, y: 0.913}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: -1.5065689}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Status Rail/Rules Feedback/Relic Icons
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 0.9}
+      pivot: {x: 0, y: 1}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Status Rail/Rules Feedback/Heading
+      anchorMin: {x: 0.08, y: 0.919}
+      anchorMax: {x: 0.91999996, y: 0.995}
+      pivot: {x: 0, y: 1}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 1
+      fontSize: 19
+      fontMin: 13.3
+      fontMax: 19
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Concept Action Points
+      anchorMin: {x: 0.8485, y: 0.13499999}
+      anchorMax: {x: 0.9015, y: 0.23999998}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: -8.461563, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Concept Action Points/Reservoir Background
+      anchorMin: {x: 0.16, y: 0.15999997}
+      anchorMax: {x: 0.84000003, y: 0.84}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 1
+    orbColor: {r: 0.1882353, g: 0.10980392, b: 0.07058824, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Concept Action Points/Action Liquid
+      anchorMin: {x: 0.16, y: 0.15999997}
+      anchorMax: {x: 0.84000003, y: 0.84}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 1
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Concept Action Points/Action Frame Overlay
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Concept Action Points/Energy
+      anchorMin: {x: 0.16, y: 0.17999995}
+      anchorMax: {x: 0.84000003, y: 0.84}
+      pivot: {x: 0, y: 1}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 1
+      fontSize: 38
+      fontMin: 26.6
+      fontMax: 38
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Action Caption
+      anchorMin: {x: 0.8445, y: 0.11199999}
+      anchorMax: {x: 0.9055, y: 0.13999999}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 1
+      fontSize: 16.4
+      fontMin: 12.599999
+      fontMax: 18
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Idle Portrait
+      anchorMin: {x: 0.012, y: 0.84000003}
+      anchorMax: {x: 0.078, y: 0.98200005}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: -0.7060547, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Idle Portrait Frame
+      anchorMin: {x: 0.007, y: 0.831}
+      anchorMax: {x: 0.083, y: 0.99099994}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: -2.380951, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Discard Pile Art
+      anchorMin: {x: 0.386, y: 0.023999989}
+      anchorMax: {x: 0.42000002, y: 0.09799999}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: -15.99778, y: 0}
+      position: {x: 14, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Concept Hand Tray
+      anchorMin: {x: 0.295, y: 0.07499999}
+      anchorMax: {x: 0.75699997, y: 0.14999999}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: -0.19336319}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Discard Count Frame
+      anchorMin: {x: 0.409, y: 0.018000007}
+      anchorMax: {x: 0.43, y: 0.057000007}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: -4.056656, y: 0}
+      position: {x: 14.0000305, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Discard Count Frame/Discard Pile Count
+      anchorMin: {x: 0.1, y: 0.03999996}
+      anchorMax: {x: 0.90000004, y: 0.96}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 1
+      fontSize: 19
+      fontMin: 13.3
+      fontMax: 19
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Battle Tools
+      anchorMin: {x: 0.868, y: 0.907}
+      anchorMax: {x: 0.93999994, y: 0.968}
+      pivot: {x: 0, y: 1}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: "Battle Tools/\u9009\u654C \xB7 \u7ED3\u7B97\u9884\u89C8"
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0, y: 1}
+      sizeDelta: {x: 0, y: -19.613724}
+      position: {x: 0, y: -9.806862, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: "Battle Tools/\u9009\u654C \xB7 \u7ED3\u7B97\u9884\u89C8/Label"
+      anchorMin: {x: 0.37, y: 0.15999997}
+      anchorMax: {x: 0.9, y: 0.84}
+      pivot: {x: 0, y: 1}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 1
+      fontSize: 15.4
+      fontMin: 15.4
+      fontMax: 22
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: "Battle Tools/\u9009\u654C \xB7 \u7ED3\u7B97\u9884\u89C8/Coin Icon"
+      anchorMin: {x: 0.1, y: 0.18}
+      anchorMax: {x: 0.33, y: 0.82}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: -11.326672, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Battle Tools/Details
+      anchorMin: {x: 1, y: 0}
+      anchorMax: {x: 1, y: 0}
+      pivot: {x: 1, y: 1}
+      sizeDelta: {x: 480, y: 490}
+      position: {x: 0, y: -8, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Battle Tools/Details/Viewport
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: -24, y: -50}
+      position: {x: 0, y: -17, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Battle Tools/Details/Viewport/Content
+      anchorMin: {x: 0, y: 1}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0, y: 1}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Battle Tools/Details/Open Battle Administrator
+      anchorMin: {x: 0.76, y: 0.923}
+      anchorMax: {x: 0.98, y: 0.988}
+      pivot: {x: 0, y: 1}
+      sizeDelta: {x: 0, y: -6.147253}
+      position: {x: 0, y: -3.0736265, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Battle HUD
+    pose:
+      path: Battle Tools/Details/Open Battle Administrator/Label
+      anchorMin: {x: 0.12, y: 0.120000005}
+      anchorMax: {x: 0.88, y: 0.88}
+      pivot: {x: 0, y: 1}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 1
+      fontSize: 15
+      fontMin: 10.5
+      fontMax: 15
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: HandActionPanel
+    pose:
+      path: Actions
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: HandActionPanel
+    pose:
+      path: Actions/Concept Sort Frame
+      anchorMin: {x: 0.627, y: 0.036000013}
+      anchorMax: {x: 0.73899996, y: 0.08700001}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: -4.3624306}
+      position: {x: 0, y: -0.000061035156, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: HandActionPanel
+    pose:
+      path: Actions/Concept Sort Frame/Rank Arrow
+      anchorMin: {x: 0.06, y: 0.31}
+      anchorMax: {x: 0.12, y: 0.69}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: -4.5141516}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: HandActionPanel
+    pose:
+      path: Actions/Concept Sort Frame/Suit Arrow
+      anchorMin: {x: 0.88, y: 0.31}
+      anchorMax: {x: 0.94, y: 0.69}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: -4.514146}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 1, w: -0.00000004371139}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: HandActionPanel
+    pose:
+      path: Actions/Concept Sort Frame/Divider
+      anchorMin: {x: 0.47, y: 0.120000005}
+      anchorMax: {x: 0.53, y: 0.88}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 1
+      fontSize: 17
+      fontMin: 11.9
+      fontMax: 17
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: HandActionPanel
+    pose:
+      path: Actions/Concept Sort Frame/RankSort
+      anchorMin: {x: 0.1, y: 0.08000004}
+      anchorMax: {x: 0.48999998, y: 0.92}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: HandActionPanel
+    pose:
+      path: Actions/Concept Sort Frame/RankSort/Label
+      anchorMin: {x: 0, y: 0.099999964}
+      anchorMax: {x: 1, y: 0.9}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 1
+      fontSize: 16
+      fontMin: 11.2
+      fontMax: 16
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: HandActionPanel
+    pose:
+      path: Actions/Concept Sort Frame/SuitSort
+      anchorMin: {x: 0.51, y: 0.08000004}
+      anchorMax: {x: 0.9, y: 0.92}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: HandActionPanel
+    pose:
+      path: Actions/Concept Sort Frame/SuitSort/Label
+      anchorMin: {x: 0, y: 0.099999964}
+      anchorMax: {x: 1, y: 0.9}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 1
+      fontSize: 16
+      fontMin: 11.2
+      fontMax: 16
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: HandActionPanel
+    pose:
+      path: Actions/Play
+      anchorMin: {x: 0.769, y: 0.14500004}
+      anchorMax: {x: 0.848, y: 0.23000005}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: -23.625412}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: HandActionPanel
+    pose:
+      path: Actions/Play/Label
+      anchorMin: {x: 0.12, y: 0.120000005}
+      anchorMax: {x: 0.88, y: 0.88}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 1
+      fontSize: 25.5
+      fontMin: 18.9
+      fontMax: 27
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: HandActionPanel
+    pose:
+      path: Actions/Discard
+      anchorMin: {x: 0.902, y: 0.14500004}
+      anchorMax: {x: 0.981, y: 0.23000005}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: -21.989704}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: HandActionPanel
+    pose:
+      path: Actions/Discard/Label
+      anchorMin: {x: 0.12, y: 0.120000005}
+      anchorMax: {x: 0.88, y: 0.88}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 1
+      fontSize: 26.35
+      fontMin: 18.9
+      fontMax: 27
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: HandActionPanel
+    pose:
+      path: Actions/Discard/Discard Shield Preview
+      anchorMin: {x: 0.2, y: -0.47000003}
+      anchorMax: {x: 0.8, y: -0.07000002}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: HandActionPanel
+    pose:
+      path: Actions/Discard/Discard Shield Preview/Shield Icon
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 0.38, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: -17.160631, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: HandActionPanel
+    pose:
+      path: Actions/Discard/Discard Shield Preview/Shield Count
+      anchorMin: {x: 0.42, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 1
+      fontSize: 14
+      fontMin: 14
+      fontMax: 20
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 513
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DrawPileIcon
+    pose:
+      path: Icon
+      anchorMin: {x: 0.326, y: 0.023999989}
+      anchorMax: {x: 0.36, y: 0.09799999}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 47.946, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DrawPileIcon
+    pose:
+      path: Icon/Deck
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 64, y: 96}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DrawPileIcon
+    pose:
+      path: Icon/Deck/Shadow
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 68, y: 100}
+      position: {x: 3, y: -5, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DrawPileIcon
+    pose:
+      path: Icon/Deck/CardBack0
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 64, y: 96}
+      position: {x: -10.5, y: 12.599999, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DrawPileIcon
+    pose:
+      path: Icon/Deck/CardBack1
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 64, y: 96}
+      position: {x: -9, y: 10.799999, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DrawPileIcon
+    pose:
+      path: Icon/Deck/CardBack2
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 64, y: 96}
+      position: {x: -7.5, y: 9, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DrawPileIcon
+    pose:
+      path: Icon/Deck/CardBack3
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 64, y: 96}
+      position: {x: -6, y: 7.2, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DrawPileIcon
+    pose:
+      path: Icon/Deck/CardBack4
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 64, y: 96}
+      position: {x: -4.5, y: 5.3999996, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DrawPileIcon
+    pose:
+      path: Icon/Deck/CardBack5
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 64, y: 96}
+      position: {x: -3, y: 3.6, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DrawPileIcon
+    pose:
+      path: Icon/Deck/CardBack6
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 64, y: 96}
+      position: {x: -1.5, y: 1.8, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DrawPileIcon
+    pose:
+      path: Icon/Deck/TopCard
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 64, y: 96}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DrawPileIcon
+    pose:
+      path: Icon/Concept Draw Art
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: -0.6346626, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DrawPileIcon
+    pose:
+      path: Icon/Draw Count Frame
+      anchorMin: {x: 0.6764706, y: -0.08108115}
+      anchorMax: {x: 1.2941176, y: 0.44594586}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: -4.056652, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DrawPileIcon
+    pose:
+      path: Icon/Draw Count Frame/Count
+      anchorMin: {x: 0.1, y: 0.03999996}
+      anchorMax: {x: 0.90000004, y: 0.96}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 1
+      fontSize: 19
+      fontMin: 13.3
+      fontMax: 19
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 1
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Backdrop
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 1180, y: 632}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 1172, y: 624}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/Painted Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/Title
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 680, y: 42}
+      position: {x: 140, y: 278, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 24
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 4098
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/StatisticsPanel
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 236, y: 526}
+      position: {x: -452, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/StatisticsPanel/Painted Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/StatisticsPanel/Deck Header
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 224, y: 70}
+      position: {x: 0, y: 222, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/StatisticsPanel/Deck Header/Deck Name
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 210, y: 38.5}
+      position: {x: 0, y: 10, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 22
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 4098
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/StatisticsPanel/Deck Header/Deck Type
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 210, y: 24.5}
+      position: {x: 0, y: -20, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 14
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 4098
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/StatisticsPanel/Categories
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 210, y: 31.5}
+      position: {x: 0, y: 160, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 18
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 4098
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/StatisticsPanel/Icon A
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 52, y: 52}
+      position: {x: -70, y: 110, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/StatisticsPanel/Total A
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 60, y: 45.5}
+      position: {x: -70, y: 64, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 26
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 4098
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: "Frame/Panel/StatisticsPanel/Icon \u4EBA\u5934\u724C"
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 52, y: 52}
+      position: {x: 0, y: 110, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: "Frame/Panel/StatisticsPanel/Total \u4EBA\u5934\u724C"
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 60, y: 45.5}
+      position: {x: 0, y: 64, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 26
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 4098
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: "Frame/Panel/StatisticsPanel/Icon \u6570\u5B57\u724C"
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 52, y: 52}
+      position: {x: 70, y: 110, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: "Frame/Panel/StatisticsPanel/Total \u6570\u5B57\u724C"
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 60, y: 45.5}
+      position: {x: 70, y: 64, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 26
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 4098
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/StatisticsPanel/Count Header 0
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 34, y: 26}
+      position: {x: -33, y: 24, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 13
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 4098
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/StatisticsPanel/Count Header 1
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 34, y: 26}
+      position: {x: 1, y: 24, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 13
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 4098
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/StatisticsPanel/Count Header 2
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 34, y: 26}
+      position: {x: 35, y: 24, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 13
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 4098
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/StatisticsPanel/Count Header 3
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 34, y: 26}
+      position: {x: 69, y: 24, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 13
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 4098
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/StatisticsPanel/Count Row 0
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 222, y: 50}
+      position: {x: 0, y: -20, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/StatisticsPanel/Count Row 0/Suit 0
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 34, y: 45.5}
+      position: {x: -90, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 26
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 4098
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/StatisticsPanel/Count Row 0/Counts 0
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 152, y: 30}
+      position: {x: 18, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 16
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 4097
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/StatisticsPanel/Count Row 1
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 222, y: 50}
+      position: {x: 0, y: -80, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/StatisticsPanel/Count Row 1/Suit 1
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 34, y: 45.5}
+      position: {x: -90, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 26
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 4098
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/StatisticsPanel/Count Row 1/Counts 1
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 152, y: 30}
+      position: {x: 18, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 16
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 4097
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/StatisticsPanel/Count Row 2
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 222, y: 50}
+      position: {x: 0, y: -140, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/StatisticsPanel/Count Row 2/Suit 2
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 34, y: 45.5}
+      position: {x: -90, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 26
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 4098
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/StatisticsPanel/Count Row 2/Counts 2
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 152, y: 30}
+      position: {x: 18, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 16
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 4097
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/StatisticsPanel/Count Row 3
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 222, y: 50}
+      position: {x: 0, y: -200, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/StatisticsPanel/Count Row 3/Suit 3
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 34, y: 45.5}
+      position: {x: -90, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 26
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 4098
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/StatisticsPanel/Count Row 3/Counts 3
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 152, y: 30}
+      position: {x: 18, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 16
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 4097
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/StatisticsPanel/Note
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 220, y: 28}
+      position: {x: 0, y: -250, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 16
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 4098
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/StatisticsPanel/Gold Fillet
+      anchorMin: {x: 0.025, y: 0.97}
+      anchorMax: {x: 0.97499996, y: 0.97800004}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/Rank Token A
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 28, y: 26}
+      position: {x: -310, y: 220, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/Rank A
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 28, y: 28}
+      position: {x: -310, y: 220, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 16
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 4098
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/Rank Count A
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 30, y: 28}
+      position: {x: -275, y: 220, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 16
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 4098
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/Rank Token K
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 28, y: 26}
+      position: {x: -310, y: 186, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/Rank K
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 28, y: 28}
+      position: {x: -310, y: 186, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 16
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 4098
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/Rank Count K
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 30, y: 28}
+      position: {x: -275, y: 186, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 16
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 4098
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/Rank Token Q
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 28, y: 26}
+      position: {x: -310, y: 152, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/Rank Q
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 28, y: 28}
+      position: {x: -310, y: 152, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 16
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 4098
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/Rank Count Q
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 30, y: 28}
+      position: {x: -275, y: 152, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 16
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 4098
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/Rank Token J
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 28, y: 26}
+      position: {x: -310, y: 118, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/Rank J
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 28, y: 28}
+      position: {x: -310, y: 118, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 16
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 4098
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/Rank Count J
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 30, y: 28}
+      position: {x: -275, y: 118, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 16
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 4098
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/Rank Token 10
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 28, y: 26}
+      position: {x: -310, y: 84, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/Rank 10
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 28, y: 28}
+      position: {x: -310, y: 84, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 16
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 4098
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/Rank Count 10
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 30, y: 28}
+      position: {x: -275, y: 84, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 16
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 4098
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/Rank Token 9
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 28, y: 26}
+      position: {x: -310, y: 50, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/Rank 9
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 28, y: 28}
+      position: {x: -310, y: 50, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 16
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 4098
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/Rank Count 9
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 30, y: 28}
+      position: {x: -275, y: 50, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 16
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 4098
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/Rank Token 8
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 28, y: 26}
+      position: {x: -310, y: 16, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/Rank 8
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 28, y: 28}
+      position: {x: -310, y: 16, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 16
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 4098
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/Rank Count 8
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 30, y: 28}
+      position: {x: -275, y: 16, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 16
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 4098
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/Rank Token 7
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 28, y: 26}
+      position: {x: -310, y: -18, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/Rank 7
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 28, y: 28}
+      position: {x: -310, y: -18, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 16
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 4098
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/Rank Count 7
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 30, y: 28}
+      position: {x: -275, y: -18, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 16
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 4098
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/Rank Token 6
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 28, y: 26}
+      position: {x: -310, y: -52, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/Rank 6
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 28, y: 28}
+      position: {x: -310, y: -52, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 16
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 4098
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/Rank Count 6
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 30, y: 28}
+      position: {x: -275, y: -52, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 16
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 4098
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/Rank Token 5
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 28, y: 26}
+      position: {x: -310, y: -86, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/Rank 5
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 28, y: 28}
+      position: {x: -310, y: -86, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 16
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 4098
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/Rank Count 5
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 30, y: 28}
+      position: {x: -275, y: -86, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 16
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 4098
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/Rank Token 4
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 28, y: 26}
+      position: {x: -310, y: -120, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/Rank 4
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 28, y: 28}
+      position: {x: -310, y: -120, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 16
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 4098
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/Rank Count 4
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 30, y: 28}
+      position: {x: -275, y: -120, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 16
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 4098
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/Rank Token 3
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 28, y: 26}
+      position: {x: -310, y: -154, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/Rank 3
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 28, y: 28}
+      position: {x: -310, y: -154, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 16
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 4098
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/Rank Count 3
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 30, y: 28}
+      position: {x: -275, y: -154, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 16
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 4098
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/Rank Token 2
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 28, y: 26}
+      position: {x: -310, y: -188, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/Rank 2
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 28, y: 28}
+      position: {x: -310, y: -188, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 16
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 4098
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/Rank Count 2
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 30, y: 28}
+      position: {x: -275, y: -188, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 16
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 4098
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/Return
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 280, y: 42}
+      position: {x: 0, y: -283, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/Return/Painted Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/Return/Text
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 20
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/Return/Gold Fillet
+      anchorMin: {x: 0.025, y: 0.97}
+      anchorMax: {x: 0.97499996, y: 0.97800004}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 800, y: 504}
+      position: {x: 164, y: -8, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Spades
+      anchorMin: {x: 0, y: 0.75}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Spades/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/51
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 56, y: 84}
+      position: {x: -368.18182, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Spades/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/51/Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: -0.00005569557, y: 0.016883723, z: -0.0032982852, w: 0.99985206}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Spades/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/50
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 56, y: 84}
+      position: {x: -306.81818, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Spades/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/50/Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0.00006710263, y: -0.016582845, z: -0.004045919, w: 0.9998543}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Spades/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/49
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 56, y: 84}
+      position: {x: -245.45454, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Spades/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/49/Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: -0.000096419804, y: 0.014830022, z: -0.006500811, w: 0.9998689}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Spades/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/48
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 56, y: 84}
+      position: {x: -184.09091, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Spades/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/48/Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0.000027638753, y: 0.015258097, z: 0.0018112017, w: 0.999882}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Spades/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/47
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 56, y: 84}
+      position: {x: -122.72727, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Spades/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/47/Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: -0.00010157105, y: -0.01569299, z: 0.006471451, w: 0.99985594}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Spades/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/46
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 56, y: 84}
+      position: {x: -61.363636, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Spades/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/46/Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0.000007633969, y: 0.00066887244, z: 0.011412445, w: 0.9999347}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Spades/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/45
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 56, y: 84}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Spades/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/45/Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0.000035555076, y: -0.015768927, z: -0.0022544698, w: 0.99987316}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Spades/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/44
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 56, y: 84}
+      position: {x: 61.363636, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Spades/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/44/Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0.000033608474, y: 0.0150395855, z: 0.0022344093, w: 0.9998844}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Spades/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/43
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 56, y: 84}
+      position: {x: 122.72727, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Spades/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/43/Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: -0.00007106953, y: 0.014520529, z: -0.004893843, w: 0.99988264}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Spades/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/42
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 56, y: 84}
+      position: {x: 184.09091, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Spades/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/42/Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0.00010462526, y: -0.01134544, z: -0.009220804, w: 0.9998931}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Spades/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/41
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 56, y: 84}
+      position: {x: 245.45454, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Spades/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/41/Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0.000031485488, y: 0.0039054574, z: 0.008061597, w: 0.9999599}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Spades/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/40
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 56, y: 84}
+      position: {x: 306.81818, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Spades/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/40/Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: -0.000054728152, y: 0.013866767, z: -0.0039463034, w: 0.9998961}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Spades/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/39
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 56, y: 84}
+      position: {x: 368.18182, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Spades/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/39/Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: -0.0000047879425, y: 0.017907808, z: -0.00026732334, w: 0.99983966}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Hearts
+      anchorMin: {x: 0, y: 0.5}
+      anchorMax: {x: 1, y: 0.75}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Hearts/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/38
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 56, y: 84}
+      position: {x: -368.18182, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Hearts/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/38/Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0.00009176545, y: -0.02022319, z: -0.00453666, w: 0.9997852}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Hearts/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/37
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 56, y: 84}
+      position: {x: -306.81818, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Hearts/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/37/Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: -0.00011374164, y: 0.010661744, z: -0.01066699, w: 0.9998863}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Hearts/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/36
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 56, y: 84}
+      position: {x: -245.45454, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Hearts/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/36/Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: -0.00003771258, y: 0.003260309, z: -0.011566344, w: 0.9999278}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Hearts/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/35
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 56, y: 84}
+      position: {x: -184.09091, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Hearts/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/35/Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: -0.000028789602, y: -0.0036492776, z: 0.007888826, w: 0.9999623}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Hearts/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/34
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 56, y: 84}
+      position: {x: -122.72727, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Hearts/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/34/Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: -0.00009282383, y: 0.011003685, z: -0.008434893, w: 0.99990386}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Hearts/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/33
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 56, y: 84}
+      position: {x: -61.363636, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Hearts/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/33/Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: -0.000064515734, y: 0.008921041, z: -0.007231385, w: 0.9999341}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Hearts/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/32
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 56, y: 84}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Hearts/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/32/Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0.000006616672, y: 0.0006293241, z: 0.010513351, w: 0.99994457}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Hearts/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/31
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 56, y: 84}
+      position: {x: 61.363636, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Hearts/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/31/Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: -0.00010357467, y: 0.010548712, z: -0.009817684, w: 0.99989617}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Hearts/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/30
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 56, y: 84}
+      position: {x: 122.72727, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Hearts/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/30/Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0.00008593453, y: 0.008385052, z: 0.01024764, w: 0.9999123}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Hearts/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/29
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 56, y: 84}
+      position: {x: 184.09091, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Hearts/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/29/Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: -0.00008680734, y: -0.014400076, z: 0.006027521, w: 0.99987817}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Hearts/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/28
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 56, y: 84}
+      position: {x: 245.45454, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Hearts/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/28/Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0.000064822336, y: -0.017998405, z: -0.0036009531, w: 0.99983156}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Hearts/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/27
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 56, y: 84}
+      position: {x: 306.81818, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Hearts/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/27/Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: -0.00006909521, y: -0.01456133, z: 0.00474456, w: 0.99988276}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Hearts/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/26
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 56, y: 84}
+      position: {x: 368.18182, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Hearts/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/26/Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0.0000895459, y: 0.009269042, z: 0.009659884, w: 0.99991035}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Clubs
+      anchorMin: {x: 0, y: 0.25}
+      anchorMax: {x: 1, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Clubs/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/12
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 56, y: 84}
+      position: {x: -368.18182, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Clubs/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/12/Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: -0.0000781512, y: 0.009380046, z: -0.008330988, w: 0.9999213}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Clubs/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/11
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 56, y: 84}
+      position: {x: -306.81818, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Clubs/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/11/Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0.000105098145, y: -0.011943616, z: -0.008798557, w: 0.99988997}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Clubs/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/10
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 56, y: 84}
+      position: {x: -245.45454, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Clubs/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/10/Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: -0.0000098226565, y: 0.01725826, z: -0.000569072, w: 0.9998509}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Clubs/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/9
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 56, y: 84}
+      position: {x: -184.09091, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Clubs/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/9/Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0.00009519905, y: -0.0147269685, z: -0.0064634304, w: 0.99987066}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Clubs/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/8
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 56, y: 84}
+      position: {x: -122.72727, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Clubs/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/8/Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0.000014773783, y: 0.022053035, z: 0.00066975754, w: 0.9997566}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Clubs/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/7
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 56, y: 84}
+      position: {x: -61.363636, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Clubs/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/7/Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0.00007649767, y: 0.014055828, z: 0.005441799, w: 0.99988645}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Clubs/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/6
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 56, y: 84}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Clubs/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/6/Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0.000083193736, y: 0.011767656, z: 0.007069029, w: 0.9999058}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Clubs/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/5
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 56, y: 84}
+      position: {x: 61.363636, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Clubs/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/5/Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: -0.000033488224, y: 0.016032498, z: -0.0020884986, w: 0.99986935}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Clubs/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/4
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 56, y: 84}
+      position: {x: 122.72727, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Clubs/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/4/Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: -0.000013279685, y: 0.0014764129, z: -0.008994187, w: 0.99995846}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Clubs/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/3
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 56, y: 84}
+      position: {x: 184.09091, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Clubs/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/3/Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: -0.000037091348, y: -0.018201651, z: 0.0020374595, w: 0.9998323}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Clubs/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/2
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 56, y: 84}
+      position: {x: 245.45454, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Clubs/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/2/Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0.00009092719, y: 0.015767414, z: 0.0057659666, w: 0.9998591}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Clubs/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/1
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 56, y: 84}
+      position: {x: 306.81818, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Clubs/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/1/Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0.00006522101, y: 0.018183794, z: 0.0035861495, w: 0.9998283}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Clubs/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/0
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 56, y: 84}
+      position: {x: 368.18182, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Clubs/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/0/Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: -0.00006422956, y: 0.010028884, z: -0.0064040045, w: 0.99992925}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Diamonds
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 0.25}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Diamonds/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/25
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 56, y: 84}
+      position: {x: -368.18182, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Diamonds/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/25/Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: -0.000052064126, y: 0.0053376374, z: -0.0097535495, w: 0.9999382}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Diamonds/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/24
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 56, y: 84}
+      position: {x: -306.81818, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Diamonds/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/24/Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0.000096662356, y: -0.011690084, z: -0.008267901, w: 0.9998975}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Diamonds/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/23
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 56, y: 84}
+      position: {x: -245.45454, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Diamonds/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/23/Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: -0.000006765034, y: -0.0007301362, z: 0.009265042, w: 0.99995685}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Diamonds/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/22
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 56, y: 84}
+      position: {x: -184.09091, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Diamonds/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/22/Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0.000009478856, y: -0.0164035, z: -0.0005777778, w: 0.9998653}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Diamonds/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/21
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 56, y: 84}
+      position: {x: -122.72727, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Diamonds/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/21/Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: -0.000058171612, y: 0.01193402, z: -0.0048740306, w: 0.9999169}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Diamonds/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/20
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 56, y: 84}
+      position: {x: -61.363636, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Diamonds/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/20/Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: -0.000036136058, y: 0.0029220944, z: -0.012365494, w: 0.9999193}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Diamonds/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/19
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 56, y: 84}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Diamonds/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/19/Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0.00005860384, y: 0.005110732, z: 0.0114659155, w: 0.9999212}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Diamonds/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/18
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 56, y: 84}
+      position: {x: 61.363636, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Diamonds/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/18/Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0.000062918865, y: -0.0058500688, z: -0.01075443, w: 0.9999251}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Diamonds/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/17
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 56, y: 84}
+      position: {x: 122.72727, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Diamonds/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/17/Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0.000119891454, y: 0.012531199, z: 0.009566248, w: 0.9998757}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Diamonds/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/16
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 56, y: 84}
+      position: {x: 184.09091, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Diamonds/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/16/Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: -0.0000026801602, y: 0.015420159, z: -0.00017378818, w: 0.9998811}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Diamonds/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/15
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 56, y: 84}
+      position: {x: 245.45454, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Diamonds/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/15/Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: -0.00004031785, y: 0.0151035795, z: -0.0026691095, w: 0.9998824}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Diamonds/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/14
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 56, y: 84}
+      position: {x: 306.81818, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Diamonds/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/14/Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0.0001202455, y: -0.017582223, z: -0.006837821, w: 0.999822}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Diamonds/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/13
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 56, y: 84}
+      position: {x: 368.18182, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/SuitRows/Suit Row Diamonds/Card chapter/c1f5866f508b470488c3d8ccd97be64f/battle/battle-1/player/0/card/13/Surface
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: -0.000055738998, y: 0.016398314, z: -0.003398592, w: 0.99985975}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: DeckOverview
+    pose:
+      path: Frame/Panel/Gold Fillet
+      anchorMin: {x: 0.025, y: 0.97}
+      anchorMax: {x: 0.97499996, y: 0.97800004}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Adventure UI
+    pose:
+      path: Run Header
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Adventure UI
+    pose:
+      path: "Run Header/\u65C5\u7A0B\u83DC\u5355"
+      anchorMin: {x: 0.948, y: 0.905}
+      anchorMax: {x: 0.982, y: 0.96999997}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: -5.667801, y: 0.0000038146973}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Adventure UI
+    pose:
+      path: "Run Header/\u65C5\u7A0B\u83DC\u5355/Text"
+      anchorMin: {x: 0.12, y: 0.120000005}
+      anchorMax: {x: 0.88, y: 0.88}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 1
+      fontSize: 12.6
+      fontMin: 12.599999
+      fontMax: 18
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0
+    font: {fileID: 11400000, guid: cdd8718265927455997f10004d747aec, type: 2}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  - root: Adventure UI
+    pose:
+      path: "Run Header/\u65C5\u7A0B\u83DC\u5355/Menu Gear"
+      anchorMin: {x: 0.18, y: 0.18}
+      anchorMax: {x: 0.82, y: 0.82}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: -1.0440102, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    font: {fileID: 0}
+    hasOrbColor: 0
+    orbColor: {r: 1, g: 1, b: 1, a: 1}
+  canvases:
+  - root: Battle HUD
+    mode: 1
+    matchMode: 0
+    referenceResolution: {x: 1856, y: 850}
+    matchWidthOrHeight: 1
+    referencePixelsPerUnit: 100
+    scaleFactor: 1
+  - root: HandActionPanel
+    mode: 1
+    matchMode: 0
+    referenceResolution: {x: 1856, y: 850}
+    matchWidthOrHeight: 1
+    referencePixelsPerUnit: 100
+    scaleFactor: 1
+  - root: DrawPileIcon
+    mode: 1
+    matchMode: 0
+    referenceResolution: {x: 1856, y: 850}
+    matchWidthOrHeight: 1
+    referencePixelsPerUnit: 100
+    scaleFactor: 1
+  - root: DeckOverview
+    mode: 1
+    matchMode: 0
+    referenceResolution: {x: 1856, y: 850}
+    matchWidthOrHeight: 1
+    referencePixelsPerUnit: 100
+    scaleFactor: 1

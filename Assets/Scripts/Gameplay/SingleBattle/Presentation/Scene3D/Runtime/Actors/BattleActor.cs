@@ -49,7 +49,7 @@ namespace Poker.SingleBattle
                 if (effect.IsDeath) lethalDisplayEffect = effect;
                 SynchronizeDisplay(effect.After);
             }
-            if (kind == BattlePresentationKind.Attack) ActionPresented?.Invoke();
+            if (kind == BattlePresentationKind.Attack || kind == BattlePresentationKind.Support) ActionPresented?.Invoke();
             return Play(new BattlePresentationCue(kind, DisplayId, effect, markers, shields), true);
         }
         public void SynchronizeDisplay(UnitDisplayData unit, bool reset = false)
@@ -157,7 +157,7 @@ namespace Poker.SingleBattle
             if (IsDisplayBusy) throw new InvalidOperationException("Wait for the previous actor presentation first.");
             if (Presentation == null)
             {
-                if (animate && cue.Kind == BattlePresentationKind.Attack) cue.Markers?.Emit("Impact");
+                if (animate && (cue.Kind == BattlePresentationKind.Attack || cue.Kind == BattlePresentationKind.Support)) cue.Markers?.Emit("Impact");
                 return BattlePresentationOperation.Completed();
             }
             if (!animate) { Presentation.Snap(cue); return BattlePresentationOperation.Completed(); }

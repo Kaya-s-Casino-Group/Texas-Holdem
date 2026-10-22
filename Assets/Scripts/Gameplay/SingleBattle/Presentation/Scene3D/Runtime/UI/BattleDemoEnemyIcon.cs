@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 namespace Poker.SingleBattle
 {
-    public enum BattleDemoEnemySymbol { Sword, Shield, Poison, Stun, Immunity, Reflect, LifeSteal, Overheal, Armor, Heal, Buff, Debuff, Cards, Cleanse, Unknown }
+    public enum BattleDemoEnemySymbol { Sword, Shield, Poison, Stun, Immunity, Reflect, LifeSteal, Overheal, Armor, Heal, Buff, Debuff, Cards, Cleanse, Unknown, Wait }
 
     /// <summary>Scene-local vector symbols, drawn directly by uGUI so world-space icons remain sharp.</summary>
     [RequireComponent(typeof(CanvasRenderer))]
@@ -46,6 +46,11 @@ namespace Poker.SingleBattle
             shade = color;
             switch (Symbol)
             {
+                case BattleDemoEnemySymbol.Wait:
+                    Box(-.27f, .31f, .27f, .39f); Box(-.27f, -.39f, .27f, -.31f);
+                    Polygon(new Vector2(-.23f, .29f), new Vector2(.23f, .29f), new Vector2(0, .01f));
+                    Polygon(new Vector2(0, -.01f), new Vector2(.23f, -.29f), new Vector2(-.23f, -.29f));
+                    break;
                 case BattleDemoEnemySymbol.Sword:
                     shade = ink; Polygon(new Vector2(-.19f, -.10f), new Vector2(.28f, .43f), new Vector2(.46f, .47f), new Vector2(.41f, .27f), new Vector2(-.08f, -.20f));
                     shade = color; Polygon(new Vector2(-.12f, -.08f), new Vector2(.30f, .37f), new Vector2(.40f, .41f), new Vector2(.35f, .29f), new Vector2(-.03f, -.12f));

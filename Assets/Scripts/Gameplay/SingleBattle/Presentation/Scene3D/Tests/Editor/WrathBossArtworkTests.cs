@@ -27,13 +27,19 @@ namespace Poker.SingleBattle.Tests
                     "Duplicate URP camera data prevents SceneView and PlayMode previews.");
                 camera.aspect = aspect;
                 var composition = host.GetComponent<WrathBossArtworkLayout>();
+                // Simulate legacy/spawned actors retaining different billboard depths.
+                for (int i = 0; i < host.Enemies.Count; i++)
+                    host.Enemies[i].GetComponent<BattleBillboardLayout>().SetDepth(2 + i * .4f);
                 Assert.IsNotNull(composition); composition.Preview();
                 float pixelScale = -1;
+                float sharedDepth = camera.WorldToViewportPoint(host.Enemies[0].transform.position).z;
                 foreach (var actor in host.Enemies)
                 {
                     var part = composition.PartFor(actor);
                     Assert.IsNotNull(part);
                     var surface = actor.GetComponentInChildren<BattleDemoAshPresenter>().Artwork;
+                    Assert.That(camera.WorldToViewportPoint(actor.transform.position).z,
+                        Is.EqualTo(sharedDepth).Within(.00001f), "Boss parts must share one camera depth.");
                     Assert.IsTrue(part.Material == surface.sharedMaterial);
                     Assert.AreEqual(part.Order, surface.sortingOrder);
                     var lower = camera.WorldToViewportPoint(surface.transform.TransformPoint(new Vector3(-.5f, -.5f, 0)));

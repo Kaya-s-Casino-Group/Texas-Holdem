@@ -34,7 +34,7 @@ namespace Poker.SingleBattle
             if (!Application.isPlaying || !isActiveAndEnabled)
             {
                 Snap(cue);
-                if (cue.Kind == BattlePresentationKind.Attack) cue.Markers?.Emit("Impact");
+                if (cue.Kind == BattlePresentationKind.Attack || cue.Kind == BattlePresentationKind.Support) cue.Markers?.Emit("Impact");
                 return BattlePresentationOperation.Completed();
             }
             active = new BattlePresentationOperation(); var pending = active;
@@ -42,7 +42,7 @@ namespace Poker.SingleBattle
             {
                 var shieldWork = ApplyShields(cue, true);
                 var bodyWork = Body?.Play(cue) ?? BattlePresentationOperation.Completed();
-                if (Body == null && cue.Kind == BattlePresentationKind.Attack) cue.Markers?.Emit("Impact");
+                if (Body == null && (cue.Kind == BattlePresentationKind.Attack || cue.Kind == BattlePresentationKind.Support)) cue.Markers?.Emit("Impact");
                 playback = StartCoroutine(Wait(pending, bodyWork, shieldWork));
                 if (!pending.keepWaiting) playback = null;
             }

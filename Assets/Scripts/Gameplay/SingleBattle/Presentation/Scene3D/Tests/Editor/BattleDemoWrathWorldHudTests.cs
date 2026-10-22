@@ -23,7 +23,7 @@ namespace Poker.SingleBattle.Tests
             public readonly SingleBattleSceneAdapter Host;
             public readonly BattleDemoEnemyWorldHud World;
 
-            public Fixture(bool wrath = true, bool suppressBinding = false)
+            public Fixture(bool wrath = true, bool suppressBinding = false, bool concept = false)
             {
                 copy = AssetDatabase.GenerateUniqueAssetPath("Assets/Scenes/WrathWorldHudTest.unity");
                 Assert.IsTrue(AssetDatabase.CopyAsset(WrathBossSetup.SourceScenePath, copy));
@@ -48,6 +48,7 @@ namespace Poker.SingleBattle.Tests
                 Host.StartBattle();
                 World = Host.GetComponent<BattleDemoEnemyWorldHud>();
                 Assert.NotNull(World, "The authored remote scene owns its world HUD.");
+                World.ConfigureConceptLayout(concept);
                 Invoke(World, "Start");
                 worldRoot = scene.GetRootGameObjects().Single(root => root.name == "BattleDemo Enemy World UI").transform;
                 Edit(new BattleAdminPatch(vitals: new[] {
@@ -108,6 +109,32 @@ namespace Poker.SingleBattle.Tests
             Assert.AreEqual(BattleDemoEnemySymbol.Immunity, badge.Symbol);
             Assert.AreEqual("2", badge.Value);
             StringAssert.Contains("伤害免疫", badge.Description);
+        }
+
+        [TestCase(false)]
+        [TestCase(true)]
+        public void EnemyHudKeepsScreenSizeWhenArtworkMovesFurtherFromCamera(bool concept)
+        {
+            using (var fixture = new Fixture(wrath: false, concept: concept))
+            {
+                var actor = fixture.Host.Enemies.Single();
+                var view = (RectTransform)fixture.View(actor.DisplayId);
+                var canvas = view.GetComponentInParent<Canvas>();
+                Assert.AreEqual(RenderMode.ScreenSpaceOverlay, canvas.renderMode);
+                var camera = (Camera)typeof(BattleDemoEnemyWorldHud).GetField("viewCamera", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(fixture.World);
+                camera.orthographic = false;
+                fixture.RefreshWorldOnly();
+                var health = view.Find("Health Bar").GetComponent<RectTransform>();
+                var corners = new Vector3[4]; health.GetWorldCorners(corners);
+                float originalWidth = Vector3.Distance(corners[0], corners[3]);
+                float originalFont = health.GetComponentInChildren<TMP_Text>().fontSize;
+                actor.transform.position += camera.transform.forward * 5;
+                fixture.RefreshWorldOnly(); health.GetWorldCorners(corners);
+                Assert.That(Vector3.Distance(corners[0], corners[3]), Is.EqualTo(originalWidth).Within(.001f));
+                Assert.AreEqual(originalFont, health.GetComponentInChildren<TMP_Text>().fontSize);
+                Assert.AreEqual(Vector3.one, view.localScale);
+                Assert.AreEqual(1, view.GetComponent<CanvasGroup>().alpha);
+            }
         }
 
         [Test]
@@ -226,7 +253,7 @@ namespace Poker.SingleBattle.Tests
                 // when it currently has block. Establish that final row before starting hover.
                 fixture.Edit(new BattleAdminPatch(vitals: new[] {
                     new BattleAdminVitals(actor.ParticipantId, block: 1) }));
-                var badge = fixture.Intents(actor.DisplayId).Single(item => item.Description == "攻击：40 伤害");
+                var badge = fixture.Intents(actor.DisplayId).Single(item => item.Description == "攻击：6 伤害");
                 var tooltip = fixture.View(actor.DisplayId).Find("Enemy Badge Tooltip");
                 badge.OnPointerEnter(null);
                 fixture.RefreshWorldOnly();
@@ -246,7 +273,7 @@ namespace Poker.SingleBattle.Tests
                 Assert.IsTrue(tooltip.gameObject.activeSelf, "A shield change must not close the unchanged attack explanation.");
                 blockTooltip.OnPointerExit(null);
                 Assert.IsTrue(tooltip.gameObject.activeSelf, "Another badge's pointer exit must not close the hovered explanation.");
-                Assert.AreEqual("攻击：40 伤害", tooltip.GetComponentInChildren<TMP_Text>().text);
+                Assert.AreEqual("攻击：6 伤害", tooltip.GetComponentInChildren<TMP_Text>().text);
             }
         }
 
@@ -258,8 +285,8 @@ namespace Poker.SingleBattle.Tests
                 var actor = fixture.Host.Enemies.Single();
                 var badge = fixture.Intents(actor.DisplayId).Single();
                 Assert.AreEqual(BattleDemoEnemySymbol.Sword, badge.GetComponentInChildren<BattleDemoEnemyIcon>().Symbol);
-                Assert.AreEqual("40", badge.GetComponentInChildren<TMP_Text>().text);
-                Assert.AreEqual("攻击：40 伤害", badge.Description);
+                Assert.AreEqual("6", badge.GetComponentInChildren<TMP_Text>().text);
+                Assert.AreEqual("攻击：6 伤害", badge.Description);
                 Assert.AreEqual(BattleDemoEnemyHudModel.AttackColor, badge.GetComponentInChildren<BattleDemoEnemyIcon>().color);
             }
         }

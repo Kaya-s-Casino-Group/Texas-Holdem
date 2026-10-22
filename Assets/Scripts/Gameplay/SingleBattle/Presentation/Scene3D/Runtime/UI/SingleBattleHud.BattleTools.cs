@@ -104,7 +104,7 @@ namespace Poker.SingleBattle
                 RefreshRelicIcons();
                 var relics = host.State.Duel.Player(host.Player.ParticipantId).Relics.Relics;
                 int index = relics.ToList().FindIndex(item => item.InstanceId == instanceId);
-                selectedItem = instanceId; ShowRelicHover(instanceId, relicIconViews[index].rectTransform); return true;
+                selectedItem = instanceId; ShowRelicHover(instanceId, relicIconViews[index].rectTransform, forUse: true); return true;
             }
             ResetToolsContext();
             selectedItem = instanceId; selectedItemTarget = null; itemFeedback = null; battleToolsExpanded = true;

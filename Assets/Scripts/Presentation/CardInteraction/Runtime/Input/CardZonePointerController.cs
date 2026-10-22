@@ -21,14 +21,19 @@ namespace CardInteraction
             this.source = source ?? throw new ArgumentNullException(nameof(source));
         }
 
-        /// <summary>pressed/released are left-button edges. blocked covers UI, focus loss or viewport exit.</summary>
+        internal bool TryHit(Ray ray, out CardInstanceView hit)
+        {
+            return CardZoneRaycaster.TryHit(zone, ray, HoveredViewId, out hit, includeEntering: true) &&
+                source.TryGetInteraction(hit.ViewId, out _);
+        }
+
+        /// <summary>pressed/released are left-button edges. blocked covers another input owner, focus loss or viewport exit.</summary>
         public void ProcessPointer(Ray ray, bool pressed = false, bool released = false, bool blocked = false)
         {
             string context = zone != null && zone.Data != null ? zone.Data.ZoneId.Value : null;
             if (context != zoneContext) { pressedViewId = null; zoneContext = context; }
             if (blocked || zone == null || !zone.isActiveAndEnabled) { CancelPointer(); return; }
-            string hitId = CardZoneRaycaster.TryHit(zone, ray, HoveredViewId, out var hit, includeEntering: true) &&
-                source.TryGetInteraction(hit.ViewId, out _) ? hit.ViewId : null;
+            string hitId = TryHit(ray, out var hit) ? hit.ViewId : null;
             bool changed = UpdateHover(hit != null && hit.IsEntering ? null : hitId);
             if (pressed) pressedViewId = hitId;
             if (released)

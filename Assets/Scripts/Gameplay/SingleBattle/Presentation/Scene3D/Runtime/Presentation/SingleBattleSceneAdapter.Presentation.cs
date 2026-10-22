@@ -51,6 +51,8 @@ namespace Poker.SingleBattle
             if (presentationDirector == null || !presentationDirector.HasConfiguredTimeline)
                 throw new InvalidOperationException("Configure the scene presentation timeline before starting this battle.");
             BattleRecoveryTimeline.Upgrade(this, presentationDirector);
+            BattleEffectTimeline.Upgrade(this, presentationDirector);
+            BattleTurnBannerTimeline.Upgrade(this, presentationDirector);
             presentationDirector.Configure(null);
             presentationDirector.Display.Changed += DisplayChanged;
             presentationDirector.PlaybackFinished += FinishPresentation;

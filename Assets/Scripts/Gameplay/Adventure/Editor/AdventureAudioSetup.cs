@@ -35,7 +35,6 @@ namespace Poker.Adventure.Editor
             var music = new[] { "MainMenu", "NormalBattle", "EliteBattle", "Boss", "Rest" }.Select(name => Import(name, true)).ToArray();
             var draws = new[] { Import("Draw1", false), Import("Draw2", false) };
             var enemyAttack = Import("EnemyAttack", false);
-            var enemyHit = Import("EnemyHit", false);
             var button = Existing("03_按钮与界面提示/button__按钮点击与总分显示.ogg");
             var invalid = Existing("03_按钮与界面提示/cancel__失效警示与结算条目.ogg");
             var coins = Existing("02_筹码与金钱/coin1__金钱余额变化.ogg");
@@ -68,7 +67,7 @@ namespace Poker.Adventure.Editor
                 if (actorAudio == null) actorAudio = audioRoot.GetComponent<BattleActorAudio>();
                 if (actorAudio == null) actorAudio = audioRoot.gameObject.AddComponent<BattleActorAudio>();
                 SetCue(actorAudio, BattlePresentationKind.Attack, actor is EnemyBattleActor ? enemyAttack : playerAttack, .75f);
-                SetCue(actorAudio, BattlePresentationKind.Hit, actor is EnemyBattleActor ? enemyHit : playerHit, .65f);
+                SetCue(actorAudio, BattlePresentationKind.Hit, playerHit, .65f);
                 SetCue(actorAudio, BattlePresentationKind.Death, death, .6f);
                 actorAudio.Configure(Voice(actorAudio.transform, "Attack"), Voice(actorAudio.transform, "Hit"), Voice(actorAudio.transform, "Death"));
                 presenter.ConfigureAudio(actorAudio);

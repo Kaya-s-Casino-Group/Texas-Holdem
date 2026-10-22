@@ -46,14 +46,14 @@ Play 中的鼠标 → CardZonePointerController → ICardInteractionSource
 
 手牌默认最多选中 **5 张**，由 `HandZoneView.MaxSelectedCards / SetMaxSelectedCards` 配置。达到上限后拒绝新增选择，已有选择仍可取消；降低上限不强制清除已有选择。鼠标控制器对任意手牌数据源检查上限，CardZonePlayHost 的权限查询与直接新增选中也遵守相同边界。
 
-完整点击但未能选中新牌时，HandZoneView 统一触发 `CardSelectionDenied`：超限、禁用牌、权威阶段锁定及可见的入列飞行卡牌都使用同一套小幅上升/回弹动画。默认局部 +Z 0.004、上升 0.08 秒、回弹 0.18 秒。效果与正常选中/悬停独立，重复点击从当前位移续接，不累加高度；成功选中、收牌、重开或禁用会清理。UI 遮挡/失焦、跨牌松开、已移除或不可见卡牌属于未完成点击，不触发反馈。`SetSelectionDeniedSound` 配置独立的拒绝音效，默认空 Clip 为静默，不加载占位资源；Inspector 和实战牌区工具均可配置。
+完整点击但未能选中新牌时，HandZoneView 统一触发 `CardSelectionDenied`：超限、禁用牌、权威阶段锁定及可见的入列飞行卡牌都使用同一套小幅上升/回弹动画。默认局部 +Z 0.004、上升 0.08 秒、回弹 0.18 秒。效果与正常选中/悬停独立，重复点击从当前位移续接，不累加高度；成功选中、收牌、重开或禁用会清理。失焦、跨牌松开、已移除或不可见卡牌属于未完成点击，不触发反馈。`SetSelectionDeniedSound` 配置独立的拒绝音效，默认空 Clip 为静默，不加载占位资源；Inspector 和实战牌区工具均可配置。
 
 本地交互状态与 Core 规则卡牌关联，但不写入权威对局存档，不影响其他观察者。编辑器中的 `PreviewCard.IsHovered / IsSelected` 是实际状态来源，`CardZonePreviewModel` 实现数据接口；运行时 `CardZoneCardState` 持有逐牌数据，`CardZonePlayHost` 实现同样的接口；正式对局宿主也可使用自己的客户端模型。
 
 ## 当前行为
 
 - 移入一张牌设置悬停，离开或换牌清除旧悬停。左键按下并在同一张牌松开，切换选中；可选多张，不执行拖拽。
-- 选中表示待提交。离开牌面、离开窗口、失焦、解绑或 UI 遮挡会取消悬停与未完成点击，保留已选中状态。
+- 选中表示待提交。离开牌面、离开窗口、失焦、解绑或其他牌区取得输入优先权会取消悬停与未完成点击，保留已选中状态。
 - 悬停面积扩大 20%（等比缩放 √1.2 ≈ 1.0954），不再上浮；选中仍默认沿局部 +Z 0.02 上浮，取消选中回落至原位。悬停缩放和选中位移由两个独立 DOTween OutBack 驱动，可同时成立；鼠标移入/移出不重播选中动画。默认放大/上浮 0.12 秒、缩小/回落 0.14 秒，惯性强度 2.2；选中上浮额外乘 1.35（上限 3）。状态立即写回卡牌，快速反向从实际姿态接续。选中时摆角随上浮平滑归零并保持静止，取消后恢复摆动。
 - `CanSelect` 决定能否新增选中；已选中的牌总能通过再次点击取消。验证模型使用 Core `CanPlay`：禁用牌可悬停但不可新增选中，失效牌可以选中。正式宿主可补充回合、归属、数量等条件，提交时仍须由引擎验证。
 - 鼠标控制器只管理选择，不修改 Zone 列表；弃牌按钮调用宿主命令。排序后状态跟随原牌；移除卡牌后不再返回其选中身份，也不会把旧按下事件应用到另一张牌。
@@ -62,7 +62,9 @@ Play 中的鼠标 → CardZonePointerController → ICardInteractionSource
 
 `CardZoneRaycaster.TryHit` 将世界射线变换到每张牌实际渲染 Mesh 的局部空间，与 bounds 相交。支持区域旋转、缩放、圆弧、翻面、上浮和摆动；使用距离最近的牌，等深度时后面的列表元素优先。美术 Prefab 的 Collider 保持关闭，不依赖 Physics.Raycast。
 
-命中使用实际缩放后的卡牌几何。当前悬停牌若处于选中上浮，还按实际动画偏移保留未上浮时的命中范围，防止沿 Z 位移后在静止鼠标下反复进出。默认命中排除入列飞行卡牌；鼠标控制器通过 includeEntering 识别可见飞行牌的拒绝点击，不允许其选中/悬停。未渲染牌和停用牌区不参与命中；已有牌让位时按实际位置命中。命中范围是矩形包围盒，不逐像素裁切圆角；只处理绑定牌区，场景遮挡和多个牌区的输入仲裁由宿主负责。
+命中使用实际缩放后的卡牌几何。当前悬停牌若处于选中上浮，还按实际动画偏移保留未上浮时的命中范围，防止沿 Z 位移后在静止鼠标下反复进出。默认命中排除入列飞行卡牌；鼠标控制器通过 includeEntering 识别可见飞行牌的拒绝点击，不允许其选中/悬停。未渲染牌和停用牌区不参与命中；已有牌让位时按实际位置命中。命中范围是矩形包围盒，不逐像素裁切圆角；几何命中只处理绑定牌区；运行时由 EventSystem 仲裁多个牌区。
+
+`CardZoneMouseInput` 同时是 EventSystem 的 `BaseRaycaster`，sortOrderPriority 和 renderOrderPriority 均为 int.MaxValue。排序用 eventCamera 为空，几何射线仍使用绑定相机，避免 UI Camera 的 depth 抢占优先级。命中卡牌时优先于 GraphicRaycaster 和 PhysicsRaycaster，重叠 UI 不会同时收到指针点击；未命中、停用或解绑后，UI 正常接收输入。卡牌之间保留原有几何命中规则，多个牌区只允许排序最前的命中所属组件处理输入。
 
 ## 运行时接入
 
@@ -85,7 +87,7 @@ void RefreshZone()
 var pending = mouseInput.Controller.GetSelectedViewIds();
 ```
 
-未指定相机时使用 Camera.main。组件读取 Input System 的 Mouse 和 Touchscreen；手机按住显示悬停，松开才选中/取消，滑动、取消、失焦和 UI 遮挡会取消未完成手势。一次手势只跟踪第一根手指，触摸期间不再读取鼠标，避免重复点击；Unity 编辑器中只接受 Play 的 Game 视图输入，Scene 和其他窗口不响应；鼠标不在相机视口、应用失焦或 EventSystem 检测到 UI 时阻止牌区输入。宿主也可直接调用 `CardZonePointerController.ProcessPointer` 注入射线和左键边沿；`CancelPointer` 清理未完成手势。解绑时用 `Unbind`，并按宿主生命周期移除事件订阅。
+未指定相机时使用 Camera.main。组件读取 Input System 的 Mouse 和 Touchscreen；手机按住显示悬停，松开才选中/取消，滑动、取消、失焦和其他牌区取得输入优先权会取消未完成手势。一次手势只跟踪第一根手指，触摸期间不再读取鼠标，避免重复点击；Unity 编辑器中只接受 Play 的 Game 视图输入，Scene 和其他窗口不响应；鼠标不在相机视口、应用失焦或 EventSystem 命中其他优先牌区时阻止当前牌区输入；普通 UI 不遮挡命中的卡牌。宿主也可直接调用 `CardZonePointerController.ProcessPointer` 注入射线和左键边沿；`CancelPointer` 清理未完成手势。解绑时用 `Unbind`，并按宿主生命周期移除事件订阅。
 
 ## Game 中的手牌操作按钮
 
@@ -113,7 +115,7 @@ UGUI Button → HandActionPanelView 请求 → HandActionPresenter
 
 抽牌由玩法流程调用 `DrawCards`，不由玩家按钮触发。`Runtime/Presenters/DrawPilePresenter.cs` 保存本地宿主与 `CardPresentation.DrawPileView` 引用，每帧将当前 DeckCards 数量投影为牌背叠层；Edit 显式刷新读取 InitialDeckCards，Play 不读取编辑器窗口。图标不拥有牌堆、不发抽牌命令；悬停显示紧凑牌组统计表，点击打开并保持完整卡牌总览，返回关闭，全部属于本地展示状态。空堆保留一张暗色牌背；右下角数字显示剩余牌数（含 0），复用 Noto Sans CJK SC 字体，不接收射线。`Editor/DrawPileSetup.cs` 将独立 `DrawPileIcon.prefab` 放在右下角并绑定同一 UI Camera；采用 GraphicRaycaster 和稳定的 Icon 射线区域；Deck 子节点的 CardUIGraphic 仅负责图集渲染与惯性缩放，不接收射线。
 
-固化手牌时自动创建按钮和抽牌堆图标并绑定；`工具 > 卡牌表现 > 场景接入 > 配置手牌操作按钮` 可手动接入。出牌路径从该手牌上的 CardZoneTransferPresenter 匹配；没有路径时仅禁用出牌按钮，配置路径后重新接入。`Update Player Hand UI` 可升级旧 Prefab：原 Draw 字段通过 FormerlySerializedAs 保留按钮/文字引用，改为 Play 并移除 Status 节点，保留 GUID/配色。缺少 EventSystem 时创建 InputSystemUIInputModule；运行时复用已有 EventSystem，仅使用 InputSystemUIInputModule；旧场景中残留的 StandaloneInputModule 会停用。项目 Active Input Handling 固定为 Input System Package (New)，修改该设置后必须重启 Unity，脚本重编译不能启动原生设备后端。鼠标、触摸与键盘不再读取旧输入 API。四个按钮 Graphic 与牌堆 Icon 固定区域拦截射线，背景/文字及图集牌堆叠层不拦截；CardZoneMouseInput 沿用 UI 遮挡检查。准备工具支持 Undo、保留已有 Prefab 样式，仅标记场景 dirty；需保存场景以保留引用。Prefab、运行脚本、字体与 .meta 沿现有程序集和 link.xml 进入首包，不依赖打开验证窗口。
+固化手牌时自动创建按钮和抽牌堆图标并绑定；`工具 > 卡牌表现 > 场景接入 > 配置手牌操作按钮` 可手动接入。出牌路径从该手牌上的 CardZoneTransferPresenter 匹配；没有路径时仅禁用出牌按钮，配置路径后重新接入。`Update Player Hand UI` 可升级旧 Prefab：原 Draw 字段通过 FormerlySerializedAs 保留按钮/文字引用，改为 Play 并移除 Status 节点，保留 GUID/配色。缺少 EventSystem 时创建 InputSystemUIInputModule；运行时复用已有 EventSystem，仅使用 InputSystemUIInputModule；旧场景中残留的 StandaloneInputModule 会停用。项目 Active Input Handling 固定为 Input System Package (New)，修改该设置后必须重启 Unity，脚本重编译不能启动原生设备后端。鼠标、触摸与键盘不再读取旧输入 API。四个按钮 Graphic 与牌堆 Icon 固定区域拦截射线，背景/文字及图集牌堆叠层不拦截；CardZoneMouseInput 命中卡牌时优先于这些 UI 区域。准备工具支持 Undo、保留已有 Prefab 样式，仅标记场景 dirty；需保存场景以保留引用。Prefab、运行脚本、字体与 .meta 沿现有程序集和 link.xml 进入首包，不依赖打开验证窗口。
 
 ## 抽牌落位后排序
 

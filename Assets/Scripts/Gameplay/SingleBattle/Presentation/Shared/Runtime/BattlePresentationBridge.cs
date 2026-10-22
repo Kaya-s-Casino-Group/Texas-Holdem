@@ -57,11 +57,29 @@ namespace Poker.BattlePresentation
                 var handScore = fact.Score ?? (fact.Kind == BattleTimelineKind.EffectSettled && fact.Action == CardDuelAction.Play
                     ? result.Steps[fact.StepIndex].Transition.Score : null);
                 if (handScore != null) values["handCategory"] = handScore.Category.ToString();
+                if (fact.Action == CardDuelAction.EnemyAction)
+                {
+                    var resolved = result.Steps[fact.StepIndex].Transition;
+                    var primary = resolved.EffectPlan?.Effects ?? resolved.RuleEvents
+                        .Where(item => item.Provenance?.Origin == CombatEffectOrigin.Primary && item.Effect != null).Select(item => item.Effect).ToArray();
+                    values["enemyMotion"] = primary.Any(item => item.Source == fact.Actor && item.Target != fact.Actor &&
+                        (item.Kind == CombatEffectKind.Damage || item.Kind == CombatEffectKind.Eliminate || item.Kind == CombatEffectKind.LoseHealth)) ? "Attack" : "Support";
+                }
                 if (fact.ActionCost != null) values["cost"] = fact.ActionCost.Cost.ToString(CultureInfo.InvariantCulture);
                 if (fact.RuleEvent != null) values["feedback"] = string.Join("\n", BattlePresentationRuleText.Events(new[] { fact.RuleEvent }, fact.State.Duel, engine().Duel.Definition.StatusCatalog));
                 if (fact.RelicActivation != null) values["feedback"] = "遗物触发：" + fact.RelicActivation.Before.DefinitionId + " / " + fact.RelicActivation.TriggerId;
                 var effect = fact.RuleEvent as CombatEvent;
                 if (effect != null) values["effectKey"] = "rule/" + fact.ActionId + "/" + effect.Revision + "/" + effect.SequenceIndex;
+                if (fact.RuleEvent?.Provenance != null) values["effectOrigin"] = fact.RuleEvent.Provenance.Origin.ToString();
+                var appliedStatus = (fact.RuleEvent as CombatStatusEvent)?.Status;
+                var changedStatus = fact.RuleEvent as CombatStatusChangedEvent;
+                var status = appliedStatus ?? changedStatus?.StatusAfter ?? changedStatus?.StatusBefore;
+                if (status != null)
+                {
+                    values["statusTarget"] = status.Target.Id;
+                    values["statusChange"] = appliedStatus != null ? "Applied" : changedStatus.Reason.ToString();
+                    values["statusTags"] = (engine().Duel.Definition.StatusCatalog?.Find(status.DefinitionId)?.Tags ?? StatusTags.None).ToString();
+                }
                 var projectedEffect = effect == null ? null : new EffectDisplayData(effect.Effect.Kind.ToString(), effect.Effect.Source.Value,
                     effect.Effect.Target.Value, effect.SettledAmount, effect.HealthLost, effect.BlockAbsorbed,
                     BattleDisplayProjector.Unit(effect.Before, fact.State.Duel), BattleDisplayProjector.Unit(effect.After, fact.State.Duel), effect.Died);

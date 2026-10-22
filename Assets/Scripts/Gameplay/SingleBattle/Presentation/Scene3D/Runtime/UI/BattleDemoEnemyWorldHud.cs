@@ -11,24 +11,29 @@ using UIFoundation;
 
 namespace Poker.SingleBattle
 {
-    /// <summary>BattleDemo only. Each enemy owns a world-space canvas with intent, health, block and status rows.</summary>
+    /// <summary>Screen-space enemy HUDs follow artwork anchors without shrinking with world depth.</summary>
     [DefaultExecutionOrder(150)]
     public sealed class BattleDemoEnemyWorldHud : MonoBehaviour
     {
         [SerializeField] private SingleBattleSceneAdapter host;
         [SerializeField] private Camera viewCamera;
         [SerializeField] private TMP_FontAsset font;
+        [SerializeField] private bool conceptLayout;
+        public void ConfigureConceptLayout(bool value) { conceptLayout = value; }
         private Transform uiRoot;
+        private Canvas screenCanvas;
+        private BattleAuthoredLayout authoredLayout;
         private BattleDisplaySnapshot previous;
         private readonly List<View> views = new List<View>();
         private sealed class IconView
-        { internal RectTransform Root; internal BattleDemoEnemyIcon Icon; internal TMP_Text Value; internal BattleDemoEnemyBadgeTooltip Tooltip; }
+        { internal RectTransform Root; internal BattleDemoEnemyIcon Icon; internal Image Art; internal TMP_Text Value, Caption; internal BattleDemoEnemyBadgeTooltip Tooltip; internal bool Status; }
         private sealed class View
         {
             internal EnemyBattleActor Actor;
             internal Transform Surface;
             internal RectTransform Root, Fill, Health, StatusRow, IntentRow, Tooltip;
             internal TMP_Text HealthText, TooltipText;
+            internal CanvasGroup Visibility;
             internal IconView Block;
             internal BattleDemoEnemyBadgeTooltip OpenTooltip;
             internal readonly List<IconView> Intents = new List<IconView>(), Statuses = new List<IconView>();
@@ -57,8 +62,16 @@ namespace Poker.SingleBattle
         private void Start()
         {
             if (host == null || viewCamera == null || font == null) { enabled = false; return; }
-            var root = new GameObject("BattleDemo Enemy World UI");
+            authoredLayout = host.GetComponent<BattleAuthoredLayout>();
+            // Preserve the object/component names used by existing scenes and validation tools.
+            var root = new GameObject("BattleDemo Enemy World UI", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
             UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(root, gameObject.scene); uiRoot = root.transform;
+            root.layer = 5;
+            screenCanvas = root.GetComponent<Canvas>();
+            screenCanvas.renderMode = RenderMode.ScreenSpaceOverlay; screenCanvas.sortingOrder = 20;
+            var scaler = root.GetComponent<CanvasScaler>();
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1280, 720); scaler.matchWidthOrHeight = 1;
             EnsureViews(); Refresh();
         }
         private void EnsureViews()
@@ -70,11 +83,8 @@ namespace Poker.SingleBattle
                 if (renderer == null) continue;
                 var surface = renderer.transform;
                 var rect = Rect("Enemy World HUD " + actor.name, uiRoot, new Vector2(240, 340), Vector2.zero);
-                var canvas = rect.gameObject.AddComponent<Canvas>(); canvas.renderMode = RenderMode.WorldSpace;
-                canvas.worldCamera = viewCamera; canvas.sortingOrder = 20;
-                rect.gameObject.AddComponent<CanvasScaler>().dynamicPixelsPerUnit = 2;
-                rect.gameObject.AddComponent<GraphicRaycaster>();
-                var view = new View { Actor = actor, Surface = surface, Root = rect };
+                var view = new View { Actor = actor, Surface = surface, Root = rect,
+                    Visibility = rect.gameObject.AddComponent<CanvasGroup>() };
                 view.Health = Rect("Health Bar", rect, new Vector2(184, 17), Vector2.zero);
                 Image(view.Health, new Color32(28, 19, 25, 240));
                 var border = view.Health.gameObject.AddComponent<Outline>(); border.effectColor = new Color32(113, 75, 80, 255); border.effectDistance = Vector2.one;
@@ -83,11 +93,15 @@ namespace Poker.SingleBattle
                 view.Fill.offsetMin = Vector2.one; view.Fill.offsetMax = -Vector2.one;
                 Image(view.Fill, new Color32(178, 40, 57, 255));
                 view.HealthText = Text("Health Value", view.Health, new Vector2(180, 21), 13);
-                view.Block = Icon("Current Block", rect, false, view);
-                view.Block.Root.sizeDelta = new Vector2(46, 30);
-                view.Block.Icon.rectTransform.sizeDelta = new Vector2(29, 29);
-                view.Block.Icon.rectTransform.anchoredPosition = new Vector2(-7, 0);
-                view.Block.Value.rectTransform.anchoredPosition = new Vector2(17, 0); view.Block.Value.fontSize = 17;
+                if (conceptLayout) view.Health.gameObject.AddComponent<ConceptHealthBar>();
+                view.Block = Icon("Current Block", rect, conceptLayout, view);
+                if (!conceptLayout)
+                {
+                    view.Block.Root.sizeDelta = new Vector2(46, 30);
+                    view.Block.Icon.rectTransform.sizeDelta = new Vector2(29, 29);
+                    view.Block.Icon.rectTransform.anchoredPosition = new Vector2(-7, 0);
+                    view.Block.Value.rectTransform.anchoredPosition = new Vector2(17, 0); view.Block.Value.fontSize = 17;
+                }
                 view.StatusRow = Rect("Statuses", rect, new Vector2(184, 28), Vector2.zero);
                 view.IntentRow = Rect("Intents", rect, new Vector2(210, 42), Vector2.zero);
                 view.Tooltip = Rect("Enemy Badge Tooltip", rect, new Vector2(228, 94), Vector2.zero);
@@ -120,14 +134,82 @@ namespace Poker.SingleBattle
                 owner.OpenTooltip = null;
                 if (owner.Tooltip != null) owner.Tooltip.gameObject.SetActive(false);
             };
-            return new IconView { Root = rect, Icon = icon, Value = value, Tooltip = tooltip };
+            Image art = null; TMP_Text caption = null;
+            if (conceptLayout)
+            {
+                ConceptBattleSkin.Surface(rect, status ? "Panels/panel_counter" : "Panels/panel_enemy_intent", false, true);
+                art = ConceptBattleSkin.Art(rect, "Concept Icon", "Icons/icon_attack_sword", new Rect(.08f, .16f, .24f, .68f));
+                value.rectTransform.anchorMin = Vector2.zero; value.rectTransform.anchorMax = Vector2.one;
+                value.rectTransform.offsetMin = new Vector2(status ? 23 : 38, 3); value.rectTransform.offsetMax = new Vector2(-8, -3);
+                value.rectTransform.pivot = new Vector2(.5f,.5f);
+                value.fontSize = status ? 12 : 23; value.enableAutoSizing = true; value.fontSizeMin = status ? 8 : 15;
+                value.fontSizeMax = status ? 12 : 23; value.overflowMode = TextOverflowModes.Overflow;
+                if (!status) caption = ConceptBattleSkin.Text(rect, "Action Caption", font, new Rect(.64f,.12f,.32f,.76f), "下次行动", 9);
+                value.transform.SetAsLastSibling();
+            }
+            BattleBadgeText.Apply(value);
+            return new IconView { Root = rect, Icon = icon, Art = art, Value = value, Caption = caption, Tooltip = tooltip, Status = status };
         }
         private static void Set(IconView view, BattleDemoEnemyHudModel.Badge badge, string detail = null)
         {
             view.Icon.Set(badge.Symbol, badge.Color); view.Value.text = badge.Value; view.Value.color = badge.Color;
+            if (view.Art != null)
+            {
+                string key = ConceptIcon(badge.Symbol);
+                view.Art.gameObject.SetActive(key != null); view.Icon.enabled = key == null;
+                if (key != null) view.Art.sprite = ConceptBattleSkin.Get("Icons/" + key);
+                view.Value.color = badge.Symbol == BattleDemoEnemySymbol.Sword ? new Color32(209, 67, 72, 255) : ConceptBattleSkin.Paper;
+                if (view.Status) view.Value.text = badge.Symbol == BattleDemoEnemySymbol.Shield ? "护盾 " + badge.Value : badge.Description.Length <= 4 ? badge.Description + " " + badge.Value : badge.Value;
+                if (view.Caption != null) view.Caption.text = badge.Symbol == BattleDemoEnemySymbol.Wait
+                    ? (badge.Description == "准备行动" ? "准备\n<size=80%>即将行动</size>" : "等待\n<size=80%>下回合</size>")
+                    : ConceptCaption(badge.Symbol) + "\n<size=80%>下次行动</size>";
+            }
+            BattleBadgeText.Apply(view.Value);
             string description = detail ?? badge.Description;
             if (view.Tooltip.Description != description) view.Tooltip.Hide?.Invoke();
             view.Tooltip.Description = description;
+        }
+        private static string ConceptIcon(BattleDemoEnemySymbol symbol)
+        {
+            switch(symbol)
+            {
+                case BattleDemoEnemySymbol.Wait: return null;
+                case BattleDemoEnemySymbol.Sword: return "icon_attack_sword";
+                case BattleDemoEnemySymbol.Shield: case BattleDemoEnemySymbol.Armor: return "icon_shield";
+                case BattleDemoEnemySymbol.Poison: return "icon_poison";
+                case BattleDemoEnemySymbol.Stun: return "icon_stun";
+                case BattleDemoEnemySymbol.Immunity: return "icon_immunity";
+                case BattleDemoEnemySymbol.Reflect: return "icon_reflect";
+                case BattleDemoEnemySymbol.LifeSteal: return "icon_bleeding";
+                case BattleDemoEnemySymbol.Overheal: return "icon_overheal";
+                case BattleDemoEnemySymbol.Heal: return "icon_heal";
+                case BattleDemoEnemySymbol.Buff: return "icon_buff";
+                case BattleDemoEnemySymbol.Debuff: return "icon_weakness";
+                case BattleDemoEnemySymbol.Cards: return "icon_draw_pile";
+                case BattleDemoEnemySymbol.Cleanse: return "icon_cleanse";
+                default: return "icon_unknown";
+            }
+        }
+        private static string ConceptCaption(BattleDemoEnemySymbol symbol)
+        {
+            switch(symbol)
+            {
+                case BattleDemoEnemySymbol.Sword: return "攻击";
+                case BattleDemoEnemySymbol.Shield: return "防御";
+                case BattleDemoEnemySymbol.Poison: return "中毒";
+                case BattleDemoEnemySymbol.Stun: return "眩晕";
+                case BattleDemoEnemySymbol.Immunity: return "免疫";
+                case BattleDemoEnemySymbol.Reflect: return "盾反";
+                case BattleDemoEnemySymbol.LifeSteal: return "吸血";
+                case BattleDemoEnemySymbol.Overheal: return "溢疗";
+                case BattleDemoEnemySymbol.Armor: return "护甲";
+                case BattleDemoEnemySymbol.Heal: return "治疗";
+                case BattleDemoEnemySymbol.Buff: return "蓄力";
+                case BattleDemoEnemySymbol.Debuff: return "破盾";
+                case BattleDemoEnemySymbol.Cards: return "抽牌";
+                case BattleDemoEnemySymbol.Cleanse: return "净化";
+                default: return "特殊";
+            }
         }
         private static void SetVisible(IconView view, bool visible)
         {
@@ -158,6 +240,7 @@ namespace Poker.SingleBattle
                 view.Fill.anchorMin = new Vector2(1f / 184, 1f / 17);
                 view.Fill.anchorMax = new Vector2((1 + 182 * fraction) / 184, 16f / 17);
                 view.Fill.offsetMin = view.Fill.offsetMax = Vector2.zero;
+                if (conceptLayout) view.Health.GetComponent<ConceptHealthBar>().Present(bossBody ? "boss" : "minion", fraction);
                 SetVisible(view.Block, !regenerating && unit.Block > 0);
                 Set(view.Block, new BattleDemoEnemyHudModel.Badge(BattleDemoEnemySymbol.Shield, BattleDemoEnemyHudModel.ShieldColor, unit.Block.ToString(), "当前护盾：" + unit.Block));
                 IReadOnlyList<BattleDemoEnemyHudModel.Badge> intents;
@@ -176,7 +259,9 @@ namespace Poker.SingleBattle
                     long? charge = wrath != null && enemy.BehaviorState?.Intent?.Id == wrath.ChargeActionId
                         ? wrath.AttackPerCharge : (long?)null;
                     intents = previous.IsFinished ? new BattleDemoEnemyHudModel.Badge[0]
-                        : BattleDemoEnemyHudModel.Intents(view.Actor.ReadIntent()?.Action, charge);
+                        : previous.Labels.TryGetValue("intentWait/" + unit.Id, out var waitReason)
+                            ? new[] { new BattleDemoEnemyHudModel.Badge(BattleDemoEnemySymbol.Wait, ConceptBattleSkin.Gold, "", waitReason) }
+                            : BattleDemoEnemyHudModel.Intents(view.Actor.ReadIntent()?.Action, charge, enemy?.BehaviorState?.Intent);
                     if (!previous.IsFinished && previous.Resource(unit.Id, "wrath.warning")?.Value == 1)
                     {
                         long release = previous.Resource(unit.Id, "wrath.releaseRound")?.Value ?? -1;
@@ -226,53 +311,103 @@ namespace Poker.SingleBattle
             {
                 if (view.Surface == null || !view.Root.gameObject.activeSelf) continue;
                 var mesh = view.Surface.GetComponent<MeshFilter>().sharedMesh.bounds;
-                float width = mesh.size.x * Mathf.Abs(view.Surface.lossyScale.x);
-                float height = mesh.size.y * Mathf.Abs(view.Surface.lossyScale.y);
-                float scale = Mathf.Max(.0001f, width / 240);
                 bool body = host.UsesExternalCommands && previous != null &&
                     previous.Labels.TryGetValue("wrath.body", out var bodyId) && bodyId == view.Actor.DisplayId;
                 if (body)
                 {
                     PositionBossHeader(view);
+                    if (conceptLayout) PositionConceptBoss(view);
+                    if (conceptLayout && authoredLayout != null) authoredLayout.ApplyHud(view.Actor, view.Root, screenCanvas);
                     continue;
                 }
                 var part = composition != null && composition.IsComposed ? composition.PartFor(view.Actor) : null;
                 bool hand = part != null && part.Name != "Body";
                 var center = mesh.center;
                 if (hand)
-                {
-                    // Place the familiar enemy UI around the palm, rather than the long arm's
-                    // rectangular crop. Compensate for the larger artwork to retain the compact HUD.
                     center = new Vector3((part.HudPixel.x - part.Pixels.x) / part.Pixels.width - .5f,
                         .5f - (part.HudPixel.y - part.Pixels.y) / part.Pixels.height, 0);
-                    scale *= .60f * (.76f / 1.08f);
-                }
-                view.Root.SetPositionAndRotation(view.Surface.TransformPoint(center) - viewCamera.transform.forward * .025f, viewCamera.transform.rotation);
-                view.Root.localScale = Vector3.one * scale;
+                var projected = viewCamera.WorldToScreenPoint(view.Surface.TransformPoint(center));
+                bool onScreen = projected.z > viewCamera.nearClipPlane && viewCamera.pixelRect.Contains(projected);
+                view.Visibility.alpha = onScreen ? 1 : 0; view.Visibility.blocksRaycasts = onScreen;
+                if (!onScreen) { view.OpenTooltip?.Hide?.Invoke(); continue; }
+                PlaceOnScreen(view.Root, projected);
+                var upper = viewCamera.WorldToScreenPoint(view.Surface.TransformPoint(mesh.center + Vector3.up * mesh.extents.y));
+                var lower = viewCamera.WorldToScreenPoint(view.Surface.TransformPoint(mesh.center - Vector3.up * mesh.extents.y));
+                float height = Mathf.Abs(upper.y - lower.y) / Mathf.Max(.001f, screenCanvas.scaleFactor);
                 view.Health.sizeDelta = new Vector2(184, 17);
                 view.HealthText.rectTransform.sizeDelta = new Vector2(180, 21);
                 view.HealthText.fontSize = hand ? 18 : 13;
-                float halfHeight = hand ? 42 : height / scale * .5f;
+                float halfHeight = hand ? 42 : height * .5f;
                 view.Health.anchoredPosition = new Vector2(0, -halfHeight - 17);
                 view.Block.Root.anchoredPosition = new Vector2(-120, -halfHeight - 17);
                 view.StatusRow.anchoredPosition = new Vector2(0, -halfHeight - 46);
                 view.IntentRow.anchoredPosition = new Vector2(0, halfHeight + 28);
+                if (conceptLayout) PositionConcept(view, height, hand);
+                if (conceptLayout && authoredLayout != null) authoredLayout.ApplyHud(view.Actor, view.Root, screenCanvas);
             }
+        }
+
+        private void PositionConcept(View view, float height, bool hand)
+        {
+            // These offsets are reference-screen pixels, independent of the model's size/depth.
+            float up = hand ? 42 : height * .5f;
+            view.Root.anchoredPosition += Vector2.up * (up + 18);
+            view.Health.sizeDelta = new Vector2(220, 30); view.Health.anchoredPosition = new Vector2(0, 35);
+            view.Health.GetComponent<ConceptHealthBar>().Present("minion", Fraction(view));
+            view.HealthText.rectTransform.sizeDelta = new Vector2(206, 23); view.HealthText.fontSize = 15;
+            LayoutConceptBadges(view, 67, 8);
+        }
+        private float Fraction(View view)
+        {
+            var unit = previous?.Unit(view.Actor.DisplayId);
+            return unit != null && unit.MaxHealth > 0 ? Mathf.Clamp01((float)unit.Health / unit.MaxHealth) : 0;
+        }
+        private void PositionConceptBoss(View view)
+        {
+            view.Health.sizeDelta = new Vector2(560, 84); view.Health.anchoredPosition = Vector2.zero;
+            view.Health.GetComponent<ConceptHealthBar>().Present("boss", Fraction(view));
+            view.HealthText.rectTransform.sizeDelta = new Vector2(530, 28); view.HealthText.fontSize = 20;
+            LayoutConceptBadges(view, 65, -48);
+        }
+        private static void LayoutConceptBadges(View view, float intentY, float statusY)
+        {
+            view.IntentRow.anchoredPosition = new Vector2(0, intentY);
+            var intents = view.Intents.Where(b => b.Root.gameObject.activeSelf).ToArray();
+            for (int i = 0; i < intents.Length; i++)
+            {
+                float width = intents.Length == 1 ? 144 : 104;
+                intents[i].Root.sizeDelta = new Vector2(width, 40);
+                intents[i].Root.anchoredPosition = new Vector2((i % 2 - (Mathf.Min(2, intents.Length) - 1) * .5f) * (width + 4), i / 2 * 40);
+                PositionConceptBadge(intents[i]);
+            }
+            view.StatusRow.anchoredPosition = new Vector2(0, statusY);
+            var statuses = view.Statuses.Where(b => b.Root.gameObject.activeSelf).ToList();
+            if (view.Block.Root.gameObject.activeSelf) statuses.Insert(0, view.Block);
+            for (int i = 0; i < statuses.Count; i++)
+            {
+                var badge = statuses[i]; badge.Root.sizeDelta = new Vector2(74, 24);
+                var position = new Vector2((i % 3 - (Mathf.Min(3, statuses.Count) - 1) * .5f) * 78, -(i / 3) * 26);
+                badge.Root.anchoredPosition = badge == view.Block ? position + new Vector2(0, statusY) : position;
+                PositionConceptBadge(badge);
+            }
+        }
+        private static void PositionConceptBadge(IconView badge)
+        {
+            // Reapply contained art after the badge receives its final dimensions.
+            var iconArea = badge.Status ? new Rect(.05f,.13f,.22f,.74f) : new Rect(.08f,.14f,.22f,.72f);
+            ConceptBattleSkin.Place(badge.Art.transform, iconArea);
+            ConceptBattleSkin.Place(badge.Icon.transform, iconArea);
+            badge.Art.preserveAspect = true;
+            ConceptBattleSkin.Place(badge.Value.transform, badge.Status ? new Rect(.29f,.08f,.65f,.84f) : new Rect(.30f,.08f,.31f,.84f));
         }
 
         private void PositionBossHeader(View view)
         {
-            var pixels = viewCamera.pixelRect;
             var safe = ScreenSafeArea.CameraRect(viewCamera);
-            var screen = new Vector2((safe.x - pixels.x + safe.width * .64f) / pixels.width,
-                (safe.y - pixels.y + safe.height * .90f) / pixels.height);
-            const float depth = 3;
-            float worldHeight = viewCamera.orthographic ? 2 * viewCamera.orthographicSize :
-                2 * depth * Mathf.Tan(viewCamera.fieldOfView * Mathf.Deg2Rad * .5f);
-            float scale = worldHeight / 720 * safe.height / pixels.height;
-            float barWidth = .40f * 720 * viewCamera.aspect * (safe.width / pixels.width) / (safe.height / pixels.height);
-            view.Root.SetPositionAndRotation(viewCamera.ViewportToWorldPoint(new Vector3(screen.x, screen.y, depth)), viewCamera.transform.rotation);
-            view.Root.localScale = Vector3.one * scale;
+            var screen = new Vector2(safe.x + safe.width * .64f, safe.y + safe.height * (conceptLayout ? .82f : .90f));
+            float barWidth = safe.width * .40f / Mathf.Max(.001f, screenCanvas.scaleFactor);
+            PlaceOnScreen(view.Root, screen);
+            view.Visibility.alpha = 1; view.Visibility.blocksRaycasts = true;
             view.Health.anchoredPosition = Vector2.zero;
             view.Health.sizeDelta = new Vector2(barWidth, 22);
             view.HealthText.rectTransform.sizeDelta = new Vector2(barWidth - 4, 27);
@@ -281,6 +416,13 @@ namespace Poker.SingleBattle
             view.StatusRow.anchoredPosition = new Vector2(-barWidth * .5f + 95, -32);
             view.IntentRow.anchoredPosition = new Vector2(barWidth * .5f - 80, -32);
         }
+        private void PlaceOnScreen(RectTransform rect, Vector2 position)
+        {
+            RectTransformUtility.ScreenPointToLocalPointInRectangle((RectTransform)uiRoot, position, null, out var local);
+            rect.anchoredPosition = local;
+            rect.localRotation = Quaternion.identity; rect.localScale = Vector3.one;
+        }
+
         private void OnDisable()
         {
             foreach (var view in views) view.OpenTooltip?.Hide?.Invoke();

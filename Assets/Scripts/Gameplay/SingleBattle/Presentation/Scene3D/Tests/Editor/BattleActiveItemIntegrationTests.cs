@@ -24,7 +24,7 @@ namespace Poker.SingleBattle.Tests
             public readonly CardZonePlayHost Hand;
             public readonly HandZoneView HandView;
             private readonly Dictionary<string, string> itemIds;
-            public Fixture()
+            public Fixture(bool externalCommands = false)
             {
                 var root = New("Active item host");
                 var match = root.AddComponent<CardMatchHost>(); match.ConfigureRuntimeManaged();
@@ -46,7 +46,16 @@ namespace Poker.SingleBattle.Tests
                 Assert.NotNull(xml, "The Unity package must expose the date-versioned standard XML.");
                 Host.ConfigureContent(xml, "standard-item-lab");
                 Editor.BattlePresentationSceneSetup.ConfigureHost(Host, includeFeedback: false);
-                Host.StartBattle(); HandView.CompleteTransitions();
+                if (externalCommands)
+                {
+                    var content = BattleContentCompiler.CompileXml(xml.text).Content;
+                    var session = BattleContentFactory.Create(content, new BattleSetupRequest("standard-item-lab",
+                        "external-item-names", HmacDeckShuffler.FromSeed(new byte[32]))).Session;
+                    var opening = session.Execute(session.State.Revision, session.State.Duel.PlayerId, CardDuelAction.Start);
+                    Host.AttachCommands(new BattleSessionCommands(session), opening, false);
+                }
+                else Host.StartBattle();
+                HandView.CompleteTransitions();
                 itemIds = Host.State.Duel.Player(Host.Player.ParticipantId).Relics.Relics
                     .GroupBy(item => item.DefinitionId).ToDictionary(group => group.Key, group => group.First().InstanceId);
             }
@@ -62,10 +71,11 @@ namespace Poker.SingleBattle.Tests
             }
         }
 
-        [Test]
-        public void DateStandardLoadsTheCurrentActionWindowAndChineseItemNames()
+        [TestCase(false)]
+        [TestCase(true)]
+        public void DateStandardLoadsTheCurrentActionWindowAndChineseItemNames(bool externalCommands)
         {
-            using (var f = new Fixture())
+            using (var f = new Fixture(externalCommands))
             {
                 Assert.AreEqual(StandardPath, AssetDatabase.GetAssetPath(f.Host.ContentXml));
                 Assert.AreEqual("standard-item-lab", f.Host.ContentEncounterId);
@@ -75,6 +85,7 @@ namespace Poker.SingleBattle.Tests
                 Assert.NotNull(BattleRelicArt.Get("10002"), "The potion icon must load through the runtime Resources mapping.");
                 Assert.AreEqual("一串手雷", f.Host.ItemName("11004"));
                 Assert.AreEqual("俄罗斯转盘", f.Host.ItemName("15001"));
+                Assert.AreEqual("同花倍率", f.Host.ItemName("10001"));
                 Assert.AreEqual("unknown-item", f.Host.ItemName("unknown-item"));
                 Assert.AreEqual("", f.Host.ItemName(null));
                 Assert.IsTrue(f.Host.CanUseItem(f.Id("10002")));

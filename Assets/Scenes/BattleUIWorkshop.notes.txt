@@ -1,0 +1,13 @@
+其他运行时 UI 布局工作台
+
+在编辑模式调整并保存此 scene，完成后告知我接回正式战斗。
+Gameplay/UI/Battle HUD：玩家、血条、回合、行动点、遗物栏、金币、抽牌流程、结束回合、信息弹窗。
+Gameplay/UI/HandActionPanel：出牌、弃牌、排序、效果预览。
+Gameplay/UI/DrawPileIcon：牌堆和计数。DeckOverview：牌库面板模板。
+Gameplay/Card Table/Hand Zone：手牌位置参照。敌人与背景为整体布局参照。
+工具 > 其他UI布局工作台：可切换信息弹窗和结算面板；其他隐藏节点可在 Hierarchy 勾选激活。
+控件保留原节点名称与层级，方便回接；游戏逻辑与自动布局未复制。数字和文字是布局样例。
+
+本轮新增：Action Liquid 使用 imagegen 暗红血液贴图，填充高度为当前行动点 / 3，深棕色底，外框和数字在液体上方。
+Discard/Discard Shield Preview：图标 +N，正式战斗按选中牌的实际弃牌结算预览更新，静态工作台默认 +0。
+BattleDemo Enemy World UI 仅作参照，以前一轮 BattleLayoutWorkshop 和已导入的 BattleLayoutWorkshop.asset 为准，后续回接其余 UI 时排除此节点。

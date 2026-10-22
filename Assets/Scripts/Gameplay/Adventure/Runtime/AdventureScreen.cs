@@ -83,7 +83,14 @@ namespace Poker.Adventure
                 footer.SetParent(safe, false);
                 deskLayout.gameObject.SetActive(false);
                 RitualSkin.Place(header, new Rect(0, 0, 1, 1));
-                DeskButton(header, "菜单", new Rect(.948f, .90f, .045f, .07f), host.ReturnToMenu, !host.IsBusy, "Button", 19);
+                var menu = DeskButton(header, "旅程菜单", new Rect(.948f, .90f, .045f, .07f), host.ReturnToMenu, !host.IsBusy, "Button", 19);
+                if (host.BattleView.GetComponentInChildren<DeskBattleLayout>(true) != null ||
+                    host.BattleView.gameObject.scene.GetRootGameObjects().Any(root => root.GetComponentInChildren<DeskBattleLayout>(true) != null))
+                {
+                    ConceptBattleSkin.Button(menu, new Rect(.948f, .03f, .034f, .065f), "Frames/frame_relic_slot", 18);
+                    menu.GetComponentInChildren<TMP_Text>().color = Color.clear;
+                    ConceptBattleSkin.Art(menu.transform, "Menu Gear", "Icons/icon_settings_gear", new Rect(.18f, .18f, .64f, .64f));
+                }
                 ErrorFooter(); return;
             }
             deskLayout.gameObject.SetActive(true);

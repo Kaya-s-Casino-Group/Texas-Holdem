@@ -139,6 +139,9 @@ namespace Poker.SingleBattle.Editor
                 var banner = Template(feedbackRoot, "Banner Template", sample, new Vector2(.5f, .8f), new Vector2(700, 80), 31);
                 var playerEffect = Template(feedbackRoot, "Player Effect Template", sample, new Vector2(.28f, .58f), new Vector2(480, 70), 35);
                 var enemyEffect = Template(feedbackRoot, "Enemy Effect Template", sample, new Vector2(.72f, .58f), new Vector2(480, 70), 35);
+                BattleFeedbackFontSetup.Apply(banner);
+                BattleFeedbackFontSetup.Apply(playerEffect);
+                BattleFeedbackFontSetup.Apply(enemyEffect);
                 bindings.Add(new SceneTargetBinding { key = "ui.feedback", target = feedbackRoot });
                 UiFeedbackTimelineAction Ui(string name, UiFeedbackKind kind, TMP_Text template, string text, Color color, float duration = .58f)
                 {
@@ -159,7 +162,7 @@ namespace Poker.SingleBattle.Editor
                 foreach (var team in new[] { "player", "enemy" })
                 {
                     var floatText = team == "player" ? playerEffect : enemyEffect;
-                    var damage = Ui("UI Damage " + team, UiFeedbackKind.Damage, floatText, "{target} -{damage}", new Color(1, .4f, .32f));
+                    var damage = Ui("UI Damage " + team, UiFeedbackKind.Damage, floatText, "-{damage}", new Color(1, .4f, .32f));
                     AddUi(groups, "EffectSettled", null, new SceneTimelineFilter { targetTeam = team, healthLost = SceneAmountMatch.Positive }, damage, "ui-damage", false, Marker("effect", "Revealed"));
                     var blockHit = Ui("UI Block Hit " + team, UiFeedbackKind.Block, floatText, "格挡抵消 {block}", new Color(.55f, .85f, 1));
                     AddUi(groups, "EffectSettled", null, new SceneTimelineFilter { targetTeam = team, blockAbsorbed = SceneAmountMatch.Positive }, blockHit, "ui-block-hit", false, Marker("effect", "Revealed"));

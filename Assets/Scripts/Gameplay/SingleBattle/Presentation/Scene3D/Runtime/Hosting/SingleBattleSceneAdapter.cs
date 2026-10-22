@@ -28,7 +28,17 @@ namespace Poker.SingleBattle
         private IEnumerable<BattleActor> Actors => Players.Cast<BattleActor>().Concat(Enemies);
         public CardZone PlayerZone(string kind) => State.Zone(kind, playerActor.ParticipantId);
         public int PlayerDiscards => State.DiscardsFor(playerActor.ParticipantId);
-        public bool CanSwitchPlayer => State != null && ReferenceEquals(State, AuthorityState) && State.HasStarted && !IsPresenting && !State.Duel.IsFinished &&
+        public bool IsHandGuideOpen { get; private set; }
+        public void SetHandGuideOpen(bool value)
+        {
+            IsHandGuideOpen = value;
+            candidateKey = null;
+            RefreshCandidate();
+            actions?.Refresh();
+        }
+        public DrawPilePresenter DrawPile => drawPile;
+        public DeckOverviewPresenter DeckOverview => overview;
+        public bool CanSwitchPlayer => !IsHandGuideOpen && State != null && ReferenceEquals(State, AuthorityState) && State.HasStarted && !IsPresenting && !State.Duel.IsFinished &&
             State.Duel.Phase == ScoredDuelPhase.AwaitingPlayerHand && actions != null && actions.Hand != null &&
             !actions.Hand.Presentation.IsPresenting;
         public bool SelectPlayer(PlayerBattleActor player)
@@ -62,7 +72,7 @@ namespace Poker.SingleBattle
         public CardDuelTransition PreviewSelectedPlay() => CanReceivePlayerInput
             ? PreviewPlayWithTargets(playerActor.ParticipantId, actions.Hand.CaptureSelection().Cards) : null;
         public event Action StateChanged;
-        internal bool CanReceivePlayerInput => isActiveAndEnabled && SceneHost.isActiveAndEnabled && State != null && ReferenceEquals(State, AuthorityState) && match != null && match.IsRunning &&
+        internal bool CanReceivePlayerInput => !IsHandGuideOpen && isActiveAndEnabled && SceneHost.isActiveAndEnabled && State != null && ReferenceEquals(State, AuthorityState) && match != null && match.IsRunning &&
             playerActor != null && ReferenceEquals(match.Commands, playerActor) && Playback != null && Playback.CanAct(playerActor.ParticipantId) &&
             Enemies.All(actor => actor != null && actor.IsBound && (!actor.IsAlive || actor.isActiveAndEnabled)) &&
             actions != null && actions.Hand != null && actions.Hand.IsRunning && !actions.Hand.Presentation.IsPresenting;
@@ -114,6 +124,8 @@ namespace Poker.SingleBattle
             if (session.State.Duel.Players.Count != Players.Count || !externalCommands && session.State.Duel.Enemies.Count != Enemies.Count)
                 throw new ArgumentException("The scene actors must match the session's roster slots.", nameof(session));
             if (!externalCommands) ValidateContentRoster(ReadContentEncounter(), session);
+            // Adventure sessions already own compiled rules, but their HUD still needs the display names.
+            else ReadItemNames(contentXml != null ? BattleContentXmlReader.Read(contentXml.text, contentXml.name + ".xml").Source : null);
         }
         void IBattleSceneAdapter.SessionAttached() { playTargets.Clear(); candidateKey = null; RefreshCandidate(); Publish(); }
         private void Bind()

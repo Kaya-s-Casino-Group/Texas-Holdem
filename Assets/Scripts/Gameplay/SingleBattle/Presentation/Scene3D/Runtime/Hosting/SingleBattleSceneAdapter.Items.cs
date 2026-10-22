@@ -5,7 +5,7 @@ namespace Poker.SingleBattle
     public sealed partial class SingleBattleSceneAdapter
     {
         // Item usability is independent of card energy costs. The authority enforces the player action window.
-        private bool CanReceiveItemInput => isActiveAndEnabled && SceneHost.isActiveAndEnabled &&
+        private bool CanReceiveItemInput => !IsHandGuideOpen && isActiveAndEnabled && SceneHost.isActiveAndEnabled &&
             State != null && ReferenceEquals(State, AuthorityState) && !IsPresenting &&
             playerActor != null && match != null && match.IsRunning && ReferenceEquals(match.Commands, playerActor) &&
             actions != null && actions.Hand != null && actions.Hand.IsRunning && Playback != null;

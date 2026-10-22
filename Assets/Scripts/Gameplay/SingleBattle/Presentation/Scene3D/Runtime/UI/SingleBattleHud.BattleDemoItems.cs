@@ -3,6 +3,7 @@ using Poker.BattlePresentation;
 using PokerEngine;
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 namespace Poker.SingleBattle
@@ -17,12 +18,13 @@ namespace Poker.SingleBattle
         private string relicHoverId, relicReplacementId, relicHoverMatch, relicHoverObserver;
         private CardDuelState relicHoverState;
         private float relicHoverCloseAt = float.PositiveInfinity;
+        private bool relicUseOpen;
+        internal bool IsRelicUseOpen(string id) => relicUseOpen && relicHoverId == id;
 
         private void BindRelicHover(Image icon, BattleRelicState relic, BattleRelicLoadout loadout)
         {
             icon.raycastTarget = true;
             var hover = icon.GetComponent<BattleDemoRelicHoverTarget>() ?? icon.gameObject.AddComponent<BattleDemoRelicHoverTarget>();
-            hover.Configure(this, relic.InstanceId);
             var count = icon.transform.Find("Remaining Uses")?.GetComponent<TMP_Text>();
             if (count == null)
             {
@@ -31,28 +33,34 @@ namespace Poker.SingleBattle
                 count.rectTransform.anchoredPosition = new Vector2(3, -2); count.rectTransform.sizeDelta = new Vector2(28, 22);
                 count.fontSize = 16; count.enableAutoSizing = false; count.fontStyle = FontStyles.Bold;
                 count.alignment = TextAlignmentOptions.BottomRight; count.raycastTarget = false; count.enableWordWrapping = false;
-                count.color = Color.white; count.outlineColor = new Color32(20, 15, 21, 255); count.outlineWidth = .3f;
             }
+            BattleBadgeText.Apply(count);
             var activation = loadout.RulesFor(relic.InstanceId).Item?.Activation;
             bool active = activation.HasValue && activation.Value != BattleItemActivation.None;
+            hover.Configure(this, relic.InstanceId, active);
             count.text = relic.RemainingCharges?.ToString() ?? "";
             count.gameObject.SetActive(active && relic.RemainingCharges.HasValue);
         }
 
         internal void KeepRelicHover() => relicHoverCloseAt = float.PositiveInfinity;
-        internal void LeaveRelicHover() => relicHoverCloseAt = Time.unscaledTime + .18f;
+        internal void LeaveRelicHover()
+        { if (!relicUseOpen) relicHoverCloseAt = Time.unscaledTime + .18f; }
         private void HideRelicHover()
         {
             if (relicHoverPanel != null) relicHoverPanel.gameObject.SetActive(false);
             relicHoverId = relicReplacementId = null; relicHoverState = null;
+            relicUseOpen = false;
         }
 
-        internal void ShowRelicHover(string id, RectTransform anchor)
+        internal void ShowRelicHover(string id, RectTransform anchor, bool forUse = false)
         {
+            if (IsHandGuideOpen) return;
+            if (relicUseOpen && !forUse) return;
             if (GetComponent<BattleDemoRelicArt>() == null || host?.State == null || host.Player == null) return;
             var relic = host.State.Duel.Player(host.Player.ParticipantId).Relics.Relics.FirstOrDefault(item => item.InstanceId == id);
             if (relic == null) return;
             if (relicHoverId != id) relicReplacementId = null;
+            relicUseOpen = forUse;
             relicHoverId = id; relicHoverAnchor = anchor; KeepRelicHover();
             relicHoverMatch = host.State.Table.MatchId.ToString(); relicHoverObserver = host.Player.ParticipantId.Value;
             EnsureRelicHover(); relicHoverPanel.gameObject.SetActive(true); relicHoverPanel.SetAsLastSibling();
@@ -94,7 +102,7 @@ namespace Poker.SingleBattle
             if (relic == null) { HideRelicHover(); return; }
             relicHoverState = host.State;
             var rules = loadout.RulesFor(relic.InstanceId); var spec = rules.Item;
-            bool active = spec != null && spec.Activation != BattleItemActivation.None;
+            bool active = relicUseOpen && spec != null && spec.Activation != BattleItemActivation.None;
             relicHoverIcon.sprite = ResolveRelicIcon(relic.DefinitionId);
             relicHoverName.text = host.ItemName(relic.DefinitionId) + "  Lv." + relic.Level;
             relicHoverDescription.text = BattlePresentationRuleText.RelicDescription(rules);
@@ -105,7 +113,7 @@ namespace Poker.SingleBattle
             float top = 70 + descriptionHeight; Place(relicHoverRuntime.rectTransform, 14, -top, 272, runtimeHeight); top += runtimeHeight + 12;
             foreach (var button in relicReplacementButtons) { button.gameObject.SetActive(false); Destroy(button.gameObject); }
             relicReplacementButtons.Clear();
-            if (spec?.Activation == BattleItemActivation.ReplaceHeld)
+            if (active && spec.Activation == BattleItemActivation.ReplaceHeld)
             {
                 var targets = loadout.Relics.Where(item => item.InstanceId != relic.InstanceId).ToArray();
                 if (!targets.Any(item => item.InstanceId == relicReplacementId)) relicReplacementId = null;
@@ -166,6 +174,16 @@ namespace Poker.SingleBattle
             if (host?.State == null || host.Player == null || relicHoverMatch != host.State.Table.MatchId.ToString() ||
                 relicHoverObserver != host.Player.ParticipantId.Value || relicHoverAnchor == null || !relicHoverAnchor.gameObject.activeInHierarchy ||
                 Time.unscaledTime >= relicHoverCloseAt) { HideRelicHover(); return; }
+            var pointer = Pointer.current;
+            if (pointer != null && pointer.press.wasPressedThisFrame)
+            {
+                var canvas = GetComponentInParent<Canvas>();
+                var camera = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay ? canvas.worldCamera : null;
+                var position = pointer.position.ReadValue();
+                if (!RectTransformUtility.RectangleContainsScreenPoint(relicHoverPanel, position, camera) &&
+                    !RectTransformUtility.RectangleContainsScreenPoint(relicHoverAnchor, position, camera))
+                { HideRelicHover(); return; }
+            }
             if (!ReferenceEquals(relicHoverState, host.State)) RebuildRelicHover();
             if (relicHoverId == null) return;
             relicHoverUse.interactable = CanUseHoveredRelic();

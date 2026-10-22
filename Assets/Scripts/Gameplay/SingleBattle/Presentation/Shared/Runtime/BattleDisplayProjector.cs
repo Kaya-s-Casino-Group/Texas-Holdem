@@ -10,6 +10,26 @@ namespace Poker.BattlePresentation
     /// <summary>The rule adapter owns localization, identity and forecasts. Renderers receive values only.</summary>
     public static class BattleDisplayProjector
     {
+        public static IEnumerable<CombatRuleEvent> IntentEvents(EnemyActionPreview preview, EnemyBehaviorAction plannedAction = null)
+        {
+            if (preview == null) return Enumerable.Empty<CombatRuleEvent>();
+            bool explicitlyClearsBlock = plannedAction?.Effects?.Steps.Any(step => step.Effect.Kind == CombatEffectKind.ClearBlock) == true;
+            // Turn-start shield expiry is bookkeeping, not the enemy's announced skill.
+            return preview.RuleEvents.Where(item => explicitlyClearsBlock || item.Effect?.Kind != CombatEffectKind.ClearBlock ||
+                item.Effect.Source != preview.Source || item.Effect.Target != preview.Source);
+        }
+        public static string EnemyIntentWaitReason(TeamBattleState state, ParticipantId actor)
+        {
+            if (state == null || state.IsFinished || !state.Combat.Get(actor).IsAlive) return null;
+            if (state.Phase == ScoredDuelPhase.AwaitingPlayerHand &&
+                state.Players.All(player => player.HasEnded || !state.Combat.Get(player.Id).IsAlive))
+                return "准备行动";
+            if (state.Phase == ScoredDuelPhase.AwaitingEnemyAction && !state.PendingEnemies.Contains(actor))
+                return "等待下回合";
+            var enemy = state.Enemies.FirstOrDefault(unit => unit.Id == actor);
+            // Intermediate phase-entry facts can precede the rule engine's next intent plan.
+            return enemy?.Behavior != null && enemy.BehaviorState?.Intent == null ? "准备下回合行动" : null;
+        }
         public static BattleDisplaySnapshot Build(CardDuelState state, CardDuelEngine engine, ParticipantId observer,
             DisplayCursor cursor = null)
         {
@@ -41,12 +61,20 @@ namespace Poker.BattlePresentation
             {
                 if (!duel.Combat.Get(enemy.Id).IsAlive || duel.IsFinished ||
                     !duel.Players.Any(player => duel.Combat.Get(player.Id).IsAlive)) continue;
+                var waitReason = EnemyIntentWaitReason(duel, enemy.Id);
+                if (waitReason != null)
+                {
+                    labels["intentWait/" + enemy.Id.Value] = waitReason;
+                    labels["intent/" + enemy.Id.Value] = waitReason;
+                    if (enemy.Behavior?.Wrath != null) labels["wrath.current"] = waitReason;
+                    continue;
+                }
                 var preview = engine.Duel.PreviewEnemyAction(duel, enemy.Id, includeWrathUltimate: wrath == null || enemy.Id != wrath.BodyId);
                 string skill = enemy.BehaviorState?.Intent?.Name;
                 labels["intent/" + enemy.Id.Value] = preview == null || !preview.Accepted ? "意图不可用" : preview.IsSkipped ? "眩晕 · 跳过行动" :
                     (string.IsNullOrEmpty(skill) ? "" : skill + "\n") +
                     (wrath != null && enemy.Id == wrath.BodyId ? "攻击力 " + wrath.Attack + "\n" : AttackGrowth(enemy, duel.CompletedRounds)) +
-                    string.Join("\n", BattlePresentationRuleText.Events(preview.RuleEvents, duel, engine.Duel.Definition.StatusCatalog, true));
+                    string.Join("\n", BattlePresentationRuleText.Events(IntentEvents(preview, enemy.BehaviorState?.Intent), duel, engine.Duel.Definition.StatusCatalog, true));
                 if (wrath != null && enemy.Id == wrath.BodyId)
                 {
                     var hits = preview?.Hits.Where(hit => hit.Effect.Source == enemy.Id &&

@@ -188,12 +188,13 @@ namespace Poker.SingleBattle
             if (resultRestart != null) resultRestart.onClick.RemoveListener(Restart);
             if (endTurn != null) endTurn.onClick.RemoveListener(EndTurn);
         }
-        private void OnEnable() { Subscribe(); Refresh(); if (Application.isPlaying) ScreenSafeArea.Ensure(GetComponent<Canvas>()); }
-        private void OnDisable() { Unsubscribe(); resultDelay.Reset(); HideEnemyIntents(); HideRelicHover(); HideWrathHud(); HideWrathPrompts(); }
-        private void OnDestroy() => DestroyEnemyIntents();
+        private void OnEnable() { RefreshAdminEntry(); Subscribe(); Refresh(); if (Application.isPlaying) ScreenSafeArea.Ensure(GetComponent<Canvas>()); }
+        private void OnDisable() { CloseHandGuide(); Unsubscribe(); resultDelay.Reset(); HideEnemyIntents(); HideRelicHover(); HideWrathHud(); HideWrathPrompts(); }
+        private void OnDestroy() { DestroyHandGuide(); DestroyEnemyIntents(); }
         // Card landing can finish without a rules transition (e.g. opening deal or local sort).
         private void LateUpdate()
         {
+            UpdateHandGuide();
             if (host != null && !host.UsesExternalCommands && host.Display?.IsFinished == true &&
                 resultPanel != null && !resultPanel.activeSelf) Refresh();
             UpdateRitualIntentLayout();
@@ -205,6 +206,7 @@ namespace Poker.SingleBattle
             RefreshWrathTargetAvailability();
             UpdateWrathPromptViews();
             RefreshAdminEntry();
+            UpdateAdministratorShortcut();
             if (host != null && endTurn != null) endTurn.interactable = host.CanEndTurn;
             if (switchPlayer != null) switchPlayer.interactable = host.CanSwitchPlayer && host.Display != null && host.Display.Units.Count(unit => unit.Team == "player" && ResourceValue(host.Display, unit.Id, "canAct") == 1) > 1;
             if (adminPanel?.IsOpen != true && Keyboard.current != null && Keyboard.current.tabKey.wasPressedThisFrame) SelectNextPlayer();

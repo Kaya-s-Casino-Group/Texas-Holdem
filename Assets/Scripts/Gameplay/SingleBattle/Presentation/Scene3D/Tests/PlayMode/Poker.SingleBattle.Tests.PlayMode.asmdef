@@ -1,6 +1,7 @@
 {
   "name": "Poker.SingleBattle.Tests.PlayMode",
   "references": [
+    "Unity.InputSystem",
     "Unity.TextMeshPro",
     "Poker.SingleBattle.Runtime",
     "Poker.BattlePresentation.Shared",

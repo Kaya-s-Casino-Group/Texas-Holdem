@@ -39,7 +39,7 @@ namespace Poker.SingleBattle.Editor
                 Undo.RegisterCreatedObjectUndo(button.gameObject, "创建固定修改器按钮");
             }
             button.name = "Open Battle Administrator";
-            button.gameObject.SetActive(true); button.gameObject.layer = hud.gameObject.layer;
+            button.gameObject.SetActive(false); button.gameObject.layer = hud.gameObject.layer;
             button.interactable = true;
             button.onClick = new Button.ButtonClickedEvent();
             UnityEventTools.AddPersistentListener(button.onClick, hud.OpenAdministrator);
@@ -55,7 +55,7 @@ namespace Poker.SingleBattle.Editor
             if (raycaster == null) raycaster = Undo.AddComponent<GraphicRaycaster>(button.gameObject);
             raycaster.blockingObjects = GraphicRaycaster.BlockingObjects.None;
             hud.GetComponent<BattleDemoUITheme>()?.StyleButton(button, false);
-            var label = button.GetComponentInChildren<TMP_Text>();
+            var label = button.GetComponentInChildren<TMP_Text>(true);
             label.text = "对局修改器"; label.fontSize = 16; label.enableAutoSizing = false; label.raycastTarget = false;
             button.targetGraphic.raycastTarget = true;
             data.Update();

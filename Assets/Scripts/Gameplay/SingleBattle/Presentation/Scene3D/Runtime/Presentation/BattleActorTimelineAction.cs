@@ -78,7 +78,11 @@ namespace Poker.SingleBattle
                     }
                     if (run.Actor.IsDisplayBusy) return;
                     var effect = run.Context.Data.Effect;
-                    run.Source = run.Actor.PresentDisplay(kind, effect, new GuardedMarkers(run), ShieldFrame(run, effect));
+                    var motion = kind;
+                    if (run.Context.Data.Values.TryGetValue("enemyMotion", out var enemyMotion) && enemyMotion == "Support")
+                        motion = kind == BattlePresentationKind.PrepareAttack ? BattlePresentationKind.PrepareSupport :
+                            kind == BattlePresentationKind.Attack ? BattlePresentationKind.Support : kind;
+                    run.Source = run.Actor.PresentDisplay(motion, effect, new GuardedMarkers(run), ShieldFrame(run, effect));
                     run.Started = true;
                     if (kind != BattlePresentationKind.Attack) new GuardedMarkers(run).Emit("Revealed");
                 }

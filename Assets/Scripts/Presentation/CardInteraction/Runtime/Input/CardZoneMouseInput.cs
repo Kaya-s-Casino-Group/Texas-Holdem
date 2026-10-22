@@ -12,7 +12,7 @@ namespace CardInteraction
 {
     /// <summary>Input System mouse/touch adapter. The component name preserves existing scene bindings.</summary>
     [DisallowMultipleComponent]
-    public sealed class CardZoneMouseInput : MonoBehaviour
+    public sealed class CardZoneMouseInput : BaseRaycaster
     {
         [SerializeField] private Camera inputCamera;
         private CardZonePointerController controller;
@@ -25,6 +25,26 @@ namespace CardInteraction
         private EventSystem pointerSystem;
         public CardZonePointerController Controller => controller;
         public event Action StateChanged;
+
+        // A null event camera bypasses EventSystem's camera-depth comparison, so UI overlay
+        // cameras cannot outrank cards. Geometry still uses the explicitly bound input camera.
+        public override Camera eventCamera => null;
+        public override int sortOrderPriority => int.MaxValue;
+        public override int renderOrderPriority => int.MaxValue;
+
+        public override void Raycast(PointerEventData eventData, List<RaycastResult> resultAppendList)
+        {
+            var camera = inputCamera != null ? inputCamera : Camera.main;
+            if (!isActiveAndEnabled || controller == null || camera == null || !camera.isActiveAndEnabled ||
+                !camera.pixelRect.Contains(eventData.position)) return;
+            if (!controller.TryHit(camera.ScreenPointToRay(eventData.position), out var hit)) return;
+            resultAppendList.Add(new RaycastResult
+            {
+                gameObject = hit.gameObject, module = this, index = resultAppendList.Count,
+                screenPosition = eventData.position,
+                distance = Vector3.Distance(camera.transform.position, hit.transform.position)
+            });
+        }
 
         public void Bind(CardZoneView zone, ICardInteractionSource cards, Camera camera = null)
         {
@@ -47,7 +67,11 @@ namespace CardInteraction
             pointerData.Reset(); pointerData.position = position;
             // Raycast the current position: EventSystem's cached pointer state can be one frame behind Update.
             uiHits.Clear(); system.RaycastAll(pointerData, uiHits);
-            foreach (var hit in uiHits) if (hit.module is GraphicRaycaster) return true;
+            foreach (var hit in uiHits)
+            {
+                if (hit.module is CardZoneMouseInput cards) return cards != this;
+                if (hit.module is GraphicRaycaster) return true;
+            }
             return false;
         }
         private void Update()
@@ -113,7 +137,7 @@ namespace CardInteraction
         }
         private void OnApplicationFocus(bool focused) { if (!focused) CancelGesture(); }
         private void OnApplicationPause(bool paused) { if (paused) CancelGesture(); }
-        private void OnDisable() => CancelGesture();
-        private void OnDestroy() => Unbind();
+        protected override void OnDisable() { CancelGesture(); base.OnDisable(); }
+        protected override void OnDestroy() { Unbind(); base.OnDestroy(); }
     }
 }

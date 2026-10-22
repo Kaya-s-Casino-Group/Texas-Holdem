@@ -1,0 +1,70 @@
+{
+  "generator": "Built-in ImageGen",
+  "assets": [
+    {
+      "name": "panel_button_play_compact",
+      "prompt": "Use case: ui-mockup. Asset type: production Unity 2D UI sprite. Reference image 1 provides the approved antique gold and black charcoal hand-painted fantasy UI style. Reference image 2 provides the full composition only. Generate ONE isolated UI asset, orthographic flat front view, crisp painted beveled muted antique-gold thin metal edge, subtle charcoal brushed interior. Genuine alpha transparent background outside silhouette, no shadow outside, NO text, NO symbols, NO numbers, NO other UI or scene. Moderate fine details readable at small display scale. No glow. Compact horizontal primary play button, silhouette width:height exactly 2.15:1, wide rectangular center with chamfered pointed corners and small gold diamonds centered top/bottom. Muted oxblood red interior. Dominates transparent canvas with little margin.",
+      "source": "/Users/linxi/.codex/generated_images/01a16344-214f-7340-a6a1-8df83e4386e9/exec-64a79ca0-efd8-46f3-8617-973b3686739b.png"
+    },
+    {
+      "name": "panel_button_discard_compact",
+      "prompt": "Use case: ui-mockup. Asset type: production Unity 2D UI sprite. Reference image 1 provides the approved antique gold and black charcoal hand-painted fantasy UI style. Reference image 2 provides the full composition only. Generate ONE isolated UI asset, orthographic flat front view, crisp painted beveled muted antique-gold thin metal edge, subtle charcoal brushed interior. Genuine alpha transparent background outside silhouette, no shadow outside, NO text, NO symbols, NO numbers, NO other UI or scene. Moderate fine details readable at small display scale. No glow. Compact horizontal secondary discard button, silhouette width:height exactly 2.15:1, wide rectangular center with chamfered pointed corners and small gold diamonds centered top/bottom. Nearly black charcoal interior. Dominates transparent canvas with little margin.",
+      "source": "/Users/linxi/.codex/generated_images/01a16344-214f-7340-a6a1-8df83e4386e9/exec-fcd5d6a7-f1b7-40e8-95ed-fb5e2c4d0a70.png"
+    },
+    {
+      "name": "panel_relic_rail",
+      "prompt": "Use case: ui-mockup. Asset type: production Unity 2D UI sprite. Reference image 1 provides the approved antique gold and black charcoal hand-painted fantasy UI style. Reference image 2 provides the full composition only. Generate ONE isolated UI asset, orthographic flat front view, crisp painted beveled muted antique-gold thin metal edge, subtle charcoal brushed interior. Genuine alpha transparent background outside silhouette, no shadow outside, NO text, NO symbols, NO numbers, NO other UI or scene. Moderate fine details readable at small display scale. No glow. Tall vertical relic inventory backing panel, silhouette width:height exactly 0.36:1. One continuous subtle almost black translucent smoky interior, thin restrained antique gold perimeter with tiny corner accents. NO grid, NO slots, NO divider, NO header, completely blank interior to overlay 2 columns x6 rows of icons. Minimal small top and bottom ornament. Dominates transparent canvas with little margin.",
+      "source": "/Users/linxi/.codex/generated_images/01a16344-214f-7340-a6a1-8df83e4386e9/exec-5070d61c-e017-4b0b-a174-5bcc3168a699.png"
+    },
+    {
+      "name": "panel_sort",
+      "prompt": "Use case: ui-mockup. Asset type: production Unity 2D UI sprite. Reference image 1 provides the approved antique gold and black charcoal hand-painted fantasy UI style. Reference image 2 provides the full composition only. Generate ONE isolated UI asset, orthographic flat front view, crisp painted beveled muted antique-gold thin metal edge, subtle charcoal brushed interior. Genuine alpha transparent background outside silhouette, no shadow outside, NO text, NO symbols, NO numbers, NO other UI or scene. Moderate fine details readable at small display scale. No glow. Horizontal sorting control backing panel, silhouette width:height exactly 4.8:1. Black charcoal interior, very thin gold edge, tapered clipped ends and restrained pointed ornaments on left/right tips. NO center divider, blank interior, NO text. Dominates transparent canvas with little margin.",
+      "source": "/Users/linxi/.codex/generated_images/01a16344-214f-7340-a6a1-8df83e4386e9/exec-6f91416e-4874-4527-9e82-00a4deb8dbe1.png"
+    },
+    {
+      "name": "icon_poison",
+      "path": "/Users/linxi/.codex/generated_images/01a16344-214f-7340-a6a1-8df83e4386e9/exec-c94d9aaa-57fe-4a18-9788-bdc4aab9b4fa.png",
+      "prompt": "Use case: ui-mockup. Production fantasy game HUD STATUS ICON sprite. Create ONE isolated object: A single sickly muted emerald green poison droplet with a tiny ivory skull impression, bold simple silhouette. Match the attached reference icon's hand-painted inked dark fantasy relic style, bold dark outlines, shaded faceted forms, restrained antique gold details, muted colors, readability at 24 pixels. Center one large object with 5 percent clear margin. No slot frame, no background, no UI panel, no caption, no letters or numbers, no bloom or external glow. Genuine transparent alpha background. Do not include the reference shield unless this subject is a shield."
+    },
+    {
+      "name": "icon_stun",
+      "path": "/Users/linxi/.codex/generated_images/01a16344-214f-7340-a6a1-8df83e4386e9/exec-caa15da8-9d69-4d31-8193-5fbb76d57e1c.png",
+      "prompt": "Use case: ui-mockup. Production fantasy game HUD STATUS ICON sprite. Create ONE isolated object: A single jagged muted golden four-point dazed star with a small curved orbit around it, conveys stunned, simple silhouette. Match the attached reference icon's hand-painted inked dark fantasy relic style, bold dark outlines, shaded faceted forms, restrained antique gold details, muted colors, readability at 24 pixels. Center one large object with 5 percent clear margin. No slot frame, no background, no UI panel, no caption, no letters or numbers, no bloom or external glow. Genuine transparent alpha background. Do not include the reference shield unless this subject is a shield."
+    },
+    {
+      "name": "icon_immunity",
+      "path": "/Users/linxi/.codex/generated_images/01a16344-214f-7340-a6a1-8df83e4386e9/exec-3c657c28-02c4-43e0-b9ac-73fee34bbba1.png",
+      "prompt": "Use case: ui-mockup. Production fantasy game HUD STATUS ICON sprite. Create ONE isolated object: A single antique-gold small shield inset with a muted icy blue faceted gemstone, conveys control immunity, simple silhouette. Match the attached reference icon's hand-painted inked dark fantasy relic style, bold dark outlines, shaded faceted forms, restrained antique gold details, muted colors, readability at 24 pixels. Center one large object with 5 percent clear margin. No slot frame, no background, no UI panel, no caption, no letters or numbers, no bloom or external glow. Genuine transparent alpha background. Do not include the reference shield unless this subject is a shield."
+    },
+    {
+      "name": "icon_reflect",
+      "path": "/Users/linxi/.codex/generated_images/01a16344-214f-7340-a6a1-8df83e4386e9/exec-92ead276-c926-485d-a9ee-2bc5d6fc44b6.png",
+      "prompt": "Use case: ui-mockup. Production fantasy game HUD STATUS ICON sprite. Create ONE isolated object: A single silver and antique-gold shield with a large return arrow etched onto its face, conveys shield reflect. Match the attached reference icon's hand-painted inked dark fantasy relic style, bold dark outlines, shaded faceted forms, restrained antique gold details, muted colors, readability at 24 pixels. Center one large object with 5 percent clear margin. No slot frame, no background, no UI panel, no caption, no letters or numbers, no bloom or external glow. Genuine transparent alpha background. Do not include the reference shield unless this subject is a shield."
+    },
+    {
+      "name": "icon_overheal",
+      "path": "/Users/linxi/.codex/generated_images/01a16344-214f-7340-a6a1-8df83e4386e9/exec-70455be0-de19-42fd-a466-076007988945.png",
+      "prompt": "Use case: ui-mockup. Production fantasy game HUD STATUS ICON sprite. Create ONE isolated object: An ivory anatomical heart wrapped by a jade-green curved arrow, with one tiny red pointed tip, conveys surplus healing converted to damage. Match the attached reference icon's hand-painted inked dark fantasy relic style, bold dark outlines, shaded faceted forms, restrained antique gold details, muted colors, readability at 24 pixels. Center one large object with 5 percent clear margin. No slot frame, no background, no UI panel, no caption, no letters or numbers, no bloom or external glow. Genuine transparent alpha background. Do not include the reference shield."
+    },
+    {
+      "name": "icon_heal",
+      "path": "/Users/linxi/.codex/generated_images/01a16344-214f-7340-a6a1-8df83e4386e9/exec-7cc59607-610d-470d-8f6c-32d8b42ca024.png",
+      "prompt": "Use case: ui-mockup. Production fantasy game HUD STATUS ICON sprite. Create ONE isolated object: A single jade-green faceted crystal shaped as a four-armed medical cross, gold setting, readable bold silhouette. Match the attached reference icon's hand-painted inked dark fantasy relic style, bold dark outlines, shaded faceted forms, restrained antique gold details, muted colors, readability at 24 pixels. Center one large object with 5 percent clear margin. No slot frame, no background, no UI panel, no caption, no letters or numbers, no bloom or external glow. Genuine transparent alpha background. Do not include the reference shield."
+    },
+    {
+      "name": "icon_buff",
+      "path": "/Users/linxi/.codex/generated_images/01a16344-214f-7340-a6a1-8df83e4386e9/exec-9388928a-3b6c-4a01-b2e9-c6caaeb62c70.png",
+      "prompt": "Use case: ui-mockup. Production fantasy game HUD STATUS ICON sprite. Create ONE isolated object: A single armored antique-gold clenched fist pointed upward, conveys permanent increased attack power. Match the attached reference icon's hand-painted inked dark fantasy relic style, bold dark outlines, shaded faceted forms, restrained antique gold details, muted colors, readability at 24 pixels. Center one large object with 5 percent clear margin. No slot frame, no background, no UI panel, no caption, no letters or numbers, no bloom or external glow. Genuine transparent alpha background. Do not include the reference shield."
+    },
+    {
+      "name": "icon_cleanse",
+      "path": "/Users/linxi/.codex/generated_images/01a16344-214f-7340-a6a1-8df83e4386e9/exec-fbed432a-ce70-4054-83a3-28f8e94b2003.png",
+      "prompt": "Use case: ui-mockup. Production fantasy game HUD STATUS ICON sprite. Create ONE isolated object: One large ivory four-point purifying sparkle with two tiny gold sparkles, attached as a single compact emblem. Match the attached reference icon's hand-painted inked dark fantasy relic style, bold dark outlines, shaded faceted forms, restrained antique gold details, muted colors, readability at 24 pixels. Center one large object with 5 percent clear margin. No slot frame, no background, no UI panel, no caption, no letters or numbers, no bloom or external glow. Genuine transparent alpha background. Do not include the reference shield."
+    },
+    {
+      "name": "icon_unknown",
+      "path": "/Users/linxi/.codex/generated_images/01a16344-214f-7340-a6a1-8df83e4386e9/exec-a2857327-0a92-43d7-80c5-d13457e14e29.png",
+      "prompt": "Use case: ui-mockup. Production fantasy game HUD STATUS ICON sprite. Create ONE isolated object: A single muted purple eye-shaped gemstone in a small antique gold setting, mysterious unrecognized action, bold silhouette. Match the attached reference icon's hand-painted inked dark fantasy relic style, bold dark outlines, shaded faceted forms, restrained antique gold details, muted colors, readability at 24 pixels. Center one large object with 5 percent clear margin. No slot frame, no background, no UI panel, no caption, no letters or numbers, no bloom or external glow. Genuine transparent alpha background. Do not include the reference shield."
+    }
+  ]
+}

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using CardInteraction;
 using CardPresentation.Editor;
@@ -7,7 +8,9 @@ using PokerEngine;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 using Object = UnityEngine.Object;
 
 namespace CardPresentation.Tests
@@ -15,6 +18,19 @@ namespace CardPresentation.Tests
     [TestFixture]
     public sealed class CardMouseInteractionTests
     {
+        // Keep real GraphicRaycaster camera/sorting priorities while supplying a deterministic
+        // full-screen UI hit: EditMode does not render the Canvas needed for Graphic.depth.
+        public sealed class PriorityTestGraphicRaycaster : GraphicRaycaster
+        {
+            public GameObject Target;
+            public override void Raycast(PointerEventData eventData, List<RaycastResult> results)
+            {
+                results.Add(new RaycastResult { gameObject = Target, module = this,
+                    index = results.Count, distance = 0, sortingOrder = short.MaxValue,
+                    screenPosition = eventData.position });
+            }
+        }
+
         private sealed class Fixture : IDisposable
         {
             public readonly Scene Scene;
@@ -46,6 +62,69 @@ namespace CardPresentation.Tests
             public void Dispose()
             {
                 Pointer.CancelPointer(); Zone.Clear(); Object.DestroyImmediate(Root); EditorSceneManager.ClosePreviewScene(Scene);
+            }
+        }
+
+        [TestCase(RenderMode.ScreenSpaceOverlay)]
+        [TestCase(RenderMode.ScreenSpaceCamera)]
+        public void CardsWinEventSystemRaycastsOverUIAndReleaseInputWhenUnavailable(RenderMode mode)
+        {
+            using (var f = new Fixture(1))
+            {
+                var eventsObject = new GameObject("Priority Events", typeof(EventSystem));
+                var cameraObject = new GameObject("Priority Camera", typeof(Camera));
+                var uiCameraObject = new GameObject("Priority UI Camera", typeof(Camera));
+                var canvasObject = new GameObject("Priority UI", typeof(Canvas), typeof(PriorityTestGraphicRaycaster));
+                try
+                {
+                    var events = eventsObject.GetComponent<EventSystem>();
+                    var camera = cameraObject.GetComponent<Camera>();
+                    var ray = f.RayAt(f.Zone.Views[0]);
+                    camera.transform.SetPositionAndRotation(ray.origin, Quaternion.LookRotation(ray.direction, Vector3.forward));
+                    camera.orthographic = true; camera.orthographicSize = 1; camera.depth = -100;
+                    var uiCamera = uiCameraObject.GetComponent<Camera>(); uiCamera.depth = 100;
+                    var canvas = canvasObject.GetComponent<Canvas>();
+                    canvas.renderMode = mode; canvas.worldCamera = uiCamera; canvas.sortingOrder = short.MaxValue;
+                    var buttonObject = new GameObject("Overlapping Button", typeof(RectTransform), typeof(Image), typeof(Button));
+                    canvasObject.GetComponent<PriorityTestGraphicRaycaster>().Target = buttonObject;
+                    buttonObject.transform.SetParent(canvas.transform, false);
+                    var rect = buttonObject.GetComponent<RectTransform>();
+                    rect.anchorMin = Vector2.zero; rect.anchorMax = Vector2.one;
+                    rect.offsetMin = rect.offsetMax = Vector2.zero;
+                    int uiClicks = 0; buttonObject.GetComponent<Button>().onClick.AddListener(() => uiClicks++);
+                    Canvas.ForceUpdateCanvases();
+                    var input = f.Root.AddComponent<CardZoneMouseInput>(); input.Bind(f.Zone, f.Model, camera);
+                    // EditMode does not invoke OnEnable for these runtime raycasters.
+                    RaycasterManager.GetRaycasters().Add(input);
+                    RaycasterManager.GetRaycasters().Add(canvasObject.GetComponent<GraphicRaycaster>());
+                    var pointer = new PointerEventData(events) { position = camera.WorldToScreenPoint(f.Zone.Views[0].transform.position) };
+                    var hits = new List<RaycastResult>();
+                    events.RaycastAll(pointer, hits);
+                    Assert.IsTrue(hits.Any(hit => hit.gameObject == buttonObject), "The overlapping UI must actually be raycastable.");
+                    Assert.AreSame(input, hits[0].module, "Card priority must beat both overlay sorting and UI camera depth.");
+                    ExecuteEvents.ExecuteHierarchy(hits[0].gameObject, pointer, ExecuteEvents.pointerClickHandler);
+                    Assert.AreEqual(0, uiClicks, "A card hit must not click the overlapping UI.");
+                    input.Controller.ProcessPointer(camera.ScreenPointToRay(pointer.position), pressed: true);
+                    input.Controller.ProcessPointer(camera.ScreenPointToRay(pointer.position), released: true);
+                    Assert.IsTrue(f.Model.Cards[0].IsSelected);
+
+                    pointer.position = new Vector2(camera.pixelRect.xMin + 1, camera.pixelRect.yMin + 1);
+                    events.RaycastAll(pointer, hits); Assert.AreSame(buttonObject, hits[0].gameObject);
+                    pointer.position = camera.WorldToScreenPoint(f.Zone.Views[0].transform.position);
+                    input.enabled = false;
+                    events.RaycastAll(pointer, hits); Assert.AreSame(buttonObject, hits[0].gameObject);
+                    input.enabled = true; input.Unbind();
+                    events.RaycastAll(pointer, hits); Assert.AreSame(buttonObject, hits[0].gameObject);
+                    ExecuteEvents.ExecuteHierarchy(hits[0].gameObject, pointer, ExecuteEvents.pointerClickHandler);
+                    Assert.AreEqual(1, uiClicks);
+                }
+                finally
+                {
+                    RaycasterManager.GetRaycasters().Remove(f.Root.GetComponent<CardZoneMouseInput>());
+                    RaycasterManager.GetRaycasters().Remove(canvasObject.GetComponent<GraphicRaycaster>());
+                    Object.DestroyImmediate(canvasObject); Object.DestroyImmediate(uiCameraObject);
+                    Object.DestroyImmediate(cameraObject); Object.DestroyImmediate(eventsObject);
+                }
             }
         }
 

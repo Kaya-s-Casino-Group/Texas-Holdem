@@ -1,0 +1,21 @@
+战斗布局工作台
+
+场景：Assets/Scenes/BattleLayoutWorkshop.unity
+来源：SingleChapterAdventure 当前新版美术和 SingleChapterBattle.xml 的普通、精英、暴怒编成。
+
+使用：退出 Play，打开场景。工具 > 战斗布局工作台 > 显示普通战斗 / 显示精英战斗 / 显示暴怒 Boss。
+也可手动切换三个顶层对象的 Active；一次只显示一组。
+Enemies 下调整敌人的 Transform；Enemy HUD 下调整对应 ID 的 RectTransform，Health Bar 是血条。
+在编辑模式调整并保存 Ctrl/Cmd+S，不需要进入 Play。血条是静态开局快照。
+环境、相机与光源用于参考。每组拥有独立镜头，切换布局时一起切换。
+
+接回时：按 enemy、hand-1 ... hand-5 的 ID 配对敌人与 HUD。工作台不会自动回写；通过“工具 > 战斗布局工作台 > 将调整接回主线战斗”显式更新。
+原始定位逻辑：AdventureBattleLayout.cs、WrathBossArtworkLayout.cs、BattleBillboardLayout.cs。
+原始血条/意图逻辑：BattleDemoEnemyWorldHud.cs、ConceptHealthBar.cs。
+创建工具不会覆盖已存在的工作台；再次调用只打开它。
+
+2026-10-23 已将本次调整接入 SingleChapterAdventure。
+布局资产：Assets/GameAssets/SingleBattle/BattleLayoutWorkshop.asset。
+BattleAuthoredLayout 在原有定位后应用敌人及美术子节点的位置、缩放，HUD 按同一资产恢复血条、意图、状态的 RectTransform 和文字排版。
+只保存几何及排版，不保存或覆盖血量、意图内容、状态层数、血条填充率、死亡/再生可见性。
+普通第二场复用普通布局；未在工作台出现的动态角色继续使用原有编队位置。

@@ -1,0 +1,2540 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fbd1fabd687b64d9591ca87cea8ad97a, type: 3}
+  m_Name: BattleLayoutWorkshop
+  m_EditorClassIdentifier: 
+  entries:
+  - encounter: single-chapter-battle-1
+    actorId: enemy
+    actorViewport: {x: 0.6709533, y: 0.48079222}
+    depth: 6.6250052
+    referenceFrustumHeight: 6.0383773
+    referenceAspect: 2.1641026
+    actorScale: {x: 2.5469823, y: 2.4499836, z: 1}
+    cameraRelativeRotation: {x: 0, y: 0, z: 0, w: 1}
+    artworkPosition: {x: 0, y: 0, z: 0}
+    artworkScale: {x: 1, y: 1, z: 1}
+    artworkRotation: {x: 0, y: 0, z: 0, w: 1}
+    hudOffset: {x: 45.259315, y: 226.22952}
+    hudViewport: {x: 0.7, y: 0.7949999}
+    fixedHud: 0
+    hudRoot:
+      path: 
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 240, y: 340}
+      position: {x: 311.63077, y: 212.39995, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    nodes:
+    - path: Health Bar
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 220, y: 19.91469}
+      position: {x: -60, y: -40.599983, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Health Bar/Concept Track
+      anchorMin: {x: 0.06540284, y: 0.30890054}
+      anchorMax: {x: 0.9345972, y: 0.6963351}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Health Bar/Concept Fill
+      anchorMin: {x: 0.06540284, y: 0.30890054}
+      anchorMax: {x: 0.9345972, y: 0.6963351}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Health Bar/Concept Frame
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Health Bar/Health Value
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 206, y: 23}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 15
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0
+    - path: Current Block
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 30, y: 29}
+      position: {x: -120, y: -168.19998, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Current Block/Icon
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 25, y: 25}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Current Block/Concept Icon
+      anchorMin: {x: 0.08, y: 0.15999997}
+      anchorMax: {x: 0.32, y: 0.84}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: -12.799125}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Current Block/Value
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: -31, y: -6}
+      position: {x: 7.5, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 1
+      fontSize: 12
+      fontMin: 8
+      fontMax: 12
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0
+    - path: Statuses
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 184, y: 28}
+      position: {x: -59.999996, y: -62.8, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Intents
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 210, y: 42}
+      position: {x: -59.999996, y: -8.6, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Intents/Intent 0
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 131.3027, y: 36.473}
+      position: {x: 4.8713, y: -1.5, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Intents/Intent 0/Icon
+      anchorMin: {x: 0.08, y: 0.13999999}
+      anchorMax: {x: 0.3, y: 0.86}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Intents/Intent 0/Concept Icon
+      anchorMin: {x: 0.08, y: 0.13999999}
+      anchorMax: {x: 0.3, y: 0.86}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 23.3754, y: 11.5203}
+      position: {x: 7.7, y: -0.0000038146973, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Intents/Intent 0/Action Caption
+      anchorMin: {x: 0.64, y: 0.120000005}
+      anchorMax: {x: 0.96, y: 0.88}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: -27.5, y: -0.79991, z: 0}
+      scale: {x: 1.07, y: 1.07, z: 1.07}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 1
+      fontSize: 10
+      fontMin: 10
+      fontMax: 9
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0
+    - path: Intents/Intent 0/Value
+      anchorMin: {x: 0.3, y: 0.08000004}
+      anchorMax: {x: 0.61, y: 0.92}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 41.4, y: -0.79991, z: 0}
+      scale: {x: 0.6, y: 0.6, z: 0.6}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 1
+      fontSize: 21.15
+      fontMin: 15
+      fontMax: 23
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0
+  - encounter: single-chapter-gatekeeper
+    actorId: enemy
+    actorViewport: {x: 0.7, y: 0.55999994}
+    depth: 6.4000015
+    referenceFrustumHeight: 5.8332973
+    referenceAspect: 2.1641026
+    actorScale: {x: 1.5501865, y: 2.4499836, z: 1}
+    cameraRelativeRotation: {x: 0, y: 0, z: 0, w: 1}
+    artworkPosition: {x: -0.11, y: -0.162, z: 0.11}
+    artworkScale: {x: 1.7644, y: 1.7644, z: 1.7644}
+    artworkRotation: {x: 0, y: 0, z: 0, w: 1}
+    hudOffset: {x: 0, y: 169.19997}
+    hudViewport: {x: 0.7, y: 0.7949999}
+    fixedHud: 0
+    hudRoot:
+      path: 
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 240, y: 340}
+      position: {x: 311.63077, y: 212.39995, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    nodes:
+    - path: Health Bar
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 220, y: 19.91469}
+      position: {x: -18.4, y: 35, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Health Bar/Concept Track
+      anchorMin: {x: 0.06540284, y: 0.30890054}
+      anchorMax: {x: 0.9345972, y: 0.6963351}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Health Bar/Concept Fill
+      anchorMin: {x: 0.06540284, y: 0.30890054}
+      anchorMax: {x: 0.9345972, y: 0.6963351}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Health Bar/Concept Frame
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Health Bar/Health Value
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 206, y: 23}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 15
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0
+    - path: Current Block
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 30, y: 29}
+      position: {x: -120, y: -168.19998, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Current Block/Icon
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 25, y: 25}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Current Block/Concept Icon
+      anchorMin: {x: 0.08, y: 0.15999997}
+      anchorMax: {x: 0.32, y: 0.84}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: -12.799125}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Current Block/Value
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: -31, y: -6}
+      position: {x: 7.5, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 1
+      fontSize: 12
+      fontMin: 8
+      fontMax: 12
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0
+    - path: Statuses
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 184, y: 28}
+      position: {x: -18.400015, y: 8, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Intents
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 210, y: 42}
+      position: {x: -18.400015, y: 67, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Intents/Intent 0
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 104, y: 40}
+      position: {x: -54, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Intents/Intent 0/Icon
+      anchorMin: {x: 0.08, y: 0.13999999}
+      anchorMax: {x: 0.3, y: 0.86}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Intents/Intent 0/Concept Icon
+      anchorMin: {x: 0.08, y: 0.13999999}
+      anchorMax: {x: 0.3, y: 0.86}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 11.8295, y: 4.3374}
+      position: {x: 7.1, y: 2.1687, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Intents/Intent 0/Action Caption
+      anchorMin: {x: 0.64, y: 0.120000005}
+      anchorMax: {x: 0.96, y: 0.88}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: -23.5, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 1
+      fontSize: 10
+      fontMin: 10
+      fontMax: 9
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0
+    - path: Intents/Intent 0/Value
+      anchorMin: {x: 0.3, y: 0.08000004}
+      anchorMax: {x: 0.61, y: 0.92}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: -9.0512, y: -9.433}
+      position: {x: 32.7, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 1
+      fontSize: 16.65
+      fontMin: 15
+      fontMax: 23
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0
+    - path: Intents/Intent 1
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 104, y: 40}
+      position: {x: 54, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Intents/Intent 1/Icon
+      anchorMin: {x: 0.08, y: 0.13999999}
+      anchorMax: {x: 0.3, y: 0.86}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Intents/Intent 1/Concept Icon
+      anchorMin: {x: 0.08, y: 0.13999999}
+      anchorMax: {x: 0.3, y: 0.86}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 13.2094, y: 0.79996}
+      position: {x: 6.6047, y: 0.40001, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Intents/Intent 1/Action Caption
+      anchorMin: {x: 0.64, y: 0.120000005}
+      anchorMax: {x: 0.96, y: 0.88}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: -23.3, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 1
+      fontSize: 10
+      fontMin: 10
+      fontMax: 9
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0
+    - path: Intents/Intent 1/Value
+      anchorMin: {x: 0.3, y: 0.08000004}
+      anchorMax: {x: 0.61, y: 0.92}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 35.359974, y: 0, z: 0}
+      scale: {x: 0.73, y: 0.73, z: 0.73}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 1
+      fontSize: 23
+      fontMin: 15
+      fontMax: 23
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0
+  - encounter: single-chapter-wrath
+    actorId: enemy
+    actorViewport: {x: 0.63044906, y: 0.46950403}
+    depth: 3.2000017
+    referenceFrustumHeight: 2.9166496
+    referenceAspect: 2.1641026
+    actorScale: {x: 1.5416001, y: 2.5363631, z: 1}
+    cameraRelativeRotation: {x: 0, y: 0, z: 0, w: 1}
+    artworkPosition: {x: 0, y: 0, z: 0}
+    artworkScale: {x: 1, y: 1, z: 1}
+    artworkRotation: {x: 0, y: 0, z: 0, w: 1}
+    hudOffset: {x: 14.881836, y: 227.4571}
+    hudViewport: {x: 0.64, y: 0.78541666}
+    fixedHud: 1
+    hudRoot:
+      path: 
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 240, y: 340}
+      position: {x: 218.14151, y: 205.5, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    nodes:
+    - path: Health Bar
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 560, y: 83.73114}
+      position: {x: -177.6, y: 86, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Health Bar/Concept Track
+      anchorMin: {x: 0.086419754, y: 0.38837922}
+      anchorMax: {x: 0.913123, y: 0.6391437}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Health Bar/Concept Fill
+      anchorMin: {x: 0.086419754, y: 0.38837922}
+      anchorMax: {x: 0.913123, y: 0.6391437}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Health Bar/Concept Frame
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Health Bar/Health Value
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 530, y: 28}
+      position: {x: 4.8, y: 1.1523, z: 0}
+      scale: {x: 0.74, y: 0.74, z: 0.74}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 20
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0
+    - path: Current Block
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 30, y: 29}
+      position: {x: -333.63077, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Current Block/Icon
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 25, y: 25}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Current Block/Concept Icon
+      anchorMin: {x: 0.08, y: 0.15999997}
+      anchorMax: {x: 0.32, y: 0.84}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: -12.799125}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Current Block/Value
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: -31, y: -6}
+      position: {x: 7.5, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 1
+      fontSize: 12
+      fontMin: 8
+      fontMax: 12
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0
+    - path: Statuses
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 433.7139, y: 43.2}
+      position: {x: -183.84312, y: 36.100018, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Intents
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 210, y: 42}
+      position: {x: -166.1, y: 118.7, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Intents/Intent 0
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 144, y: 40}
+      position: {x: 0, y: 9.2, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Intents/Intent 0/Icon
+      anchorMin: {x: 0.08, y: 0.13999999}
+      anchorMax: {x: 0.3, y: 0.86}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Intents/Intent 0/Concept Icon
+      anchorMin: {x: 0.08, y: 0.13999999}
+      anchorMax: {x: 0.3, y: 0.86}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 13.6355, y: 12.396}
+      position: {x: 6.8177, y: -0.598, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Intents/Intent 0/Action Caption
+      anchorMin: {x: 0.64, y: 0.120000005}
+      anchorMax: {x: 0.96, y: 0.88}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: -32.6, y: 0, z: 0}
+      scale: {x: 1.25, y: 1.25, z: 1.25}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 1
+      fontSize: 10
+      fontMin: 10
+      fontMax: 9
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0
+    - path: Intents/Intent 0/Value
+      anchorMin: {x: 0.3, y: 0.08000004}
+      anchorMax: {x: 0.61, y: 0.92}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: -9.593, y: -7.2205}
+      position: {x: 45.7, y: -0.59798, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 1
+      fontSize: 18.2
+      fontMin: 15
+      fontMax: 23
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0
+  - encounter: single-chapter-wrath
+    actorId: hand-1
+    actorViewport: {x: 0.5389728, y: 0.3625841}
+    depth: 3.200001
+    referenceFrustumHeight: 2.9166489
+    referenceAspect: 2.1641026
+    actorScale: {x: 0.7950549, y: 1.1831326, z: 1}
+    cameraRelativeRotation: {x: 0, y: 0, z: 0, w: 1}
+    artworkPosition: {x: 0, y: 0, z: 0}
+    artworkScale: {x: 1, y: 1, z: 1}
+    artworkRotation: {x: 0, y: 0, z: 0, w: 1}
+    hudOffset: {x: 17.41827, y: 75.70761}
+    hudViewport: {x: 0.5501516, y: 0.4677336}
+    fixedHud: 0
+    hudRoot:
+      path: 
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 240, y: 340}
+      position: {x: 78.14385, y: -23.231834, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    nodes:
+    - path: Health Bar
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 158.2928, y: 14.3289}
+      position: {x: -146.90002, y: -80.97319, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Health Bar/Concept Track
+      anchorMin: {x: 0.06540284, y: 0.30890054}
+      anchorMax: {x: 0.9345972, y: 0.6963351}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Health Bar/Concept Fill
+      anchorMin: {x: 0.06540284, y: 0.30890054}
+      anchorMax: {x: 0.9345972, y: 0.6963351}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Health Bar/Concept Frame
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Health Bar/Health Value
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 206, y: 23}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 15
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0
+    - path: Current Block
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 30, y: 29}
+      position: {x: -120, y: -59, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Current Block/Icon
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 25, y: 25}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Current Block/Concept Icon
+      anchorMin: {x: 0.08, y: 0.15999997}
+      anchorMax: {x: 0.32, y: 0.84}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: -12.799125}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Current Block/Value
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: -31, y: -6}
+      position: {x: 7.5, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 1
+      fontSize: 12
+      fontMin: 8
+      fontMax: 12
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0
+    - path: Statuses
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 132.3904, y: 20.1464}
+      position: {x: -146.9, y: -100.4, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Intents
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 151.0977, y: 30.2195}
+      position: {x: -146.90002, y: -57.948788, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Intents/Intent 0
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 144, y: 40}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Intents/Intent 0/Icon
+      anchorMin: {x: 0.08, y: 0.13999999}
+      anchorMax: {x: 0.3, y: 0.86}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Intents/Intent 0/Concept Icon
+      anchorMin: {x: 0.08, y: 0.13999999}
+      anchorMax: {x: 0.3, y: 0.86}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Intents/Intent 0/Action Caption
+      anchorMin: {x: 0.64, y: 0.120000005}
+      anchorMax: {x: 0.96, y: 0.88}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: -43.199966, y: 0, z: 0}
+      scale: {x: 1.33, y: 1.33, z: 1.33}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 1
+      fontSize: 10
+      fontMin: 10
+      fontMax: 9
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0
+    - path: Intents/Intent 0/Value
+      anchorMin: {x: 0.3, y: 0.08000004}
+      anchorMax: {x: 0.61, y: 0.92}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: -12.6642, y: -9.5322}
+      position: {x: 32.1, y: -0.000005722046, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 1
+      fontSize: 16.6
+      fontMin: 15
+      fontMax: 23
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0
+  - encounter: single-chapter-wrath
+    actorId: hand-2
+    actorViewport: {x: 0.7616001, y: 0.4745801}
+    depth: 3.2000012
+    referenceFrustumHeight: 2.916649
+    referenceAspect: 2.1641026
+    actorScale: {x: 0.9531839, y: 1.060283, z: 1}
+    cameraRelativeRotation: {x: 0, y: 0, z: 0, w: 1}
+    artworkPosition: {x: 0, y: 0, z: 0}
+    artworkScale: {x: 1, y: 1, z: 1}
+    artworkRotation: {x: 0, y: 0, z: 0, w: 1}
+    hudOffset: {x: 108.48693, y: 9.002329}
+    hudViewport: {x: 0.83122534, y: 0.48708335}
+    fixedHud: 0
+    hudRoot:
+      path: 
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 240, y: 340}
+      position: {x: 516.1, y: -9.3, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    nodes:
+    - path: Health Bar
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 193.6859, y: 14.6917}
+      position: {x: 4, y: 17, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Health Bar/Concept Track
+      anchorMin: {x: 0.06540284, y: 0.30890054}
+      anchorMax: {x: 0.9345972, y: 0.6963351}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Health Bar/Concept Fill
+      anchorMin: {x: 0.06540284, y: 0.30890054}
+      anchorMax: {x: 0.9345972, y: 0.6963351}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Health Bar/Concept Frame
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Health Bar/Health Value
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 206, y: 23}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 15
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0
+    - path: Current Block
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 30, y: 29}
+      position: {x: -120, y: -59, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Current Block/Icon
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 25, y: 25}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Current Block/Concept Icon
+      anchorMin: {x: 0.08, y: 0.15999997}
+      anchorMax: {x: 0.32, y: 0.84}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: -12.799125}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Current Block/Value
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: -31, y: -6}
+      position: {x: 7.5, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 1
+      fontSize: 12
+      fontMin: 8
+      fontMax: 12
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0
+    - path: Statuses
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 161.9918, y: 20.6566}
+      position: {x: 4.000101, y: -2.918808, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Intents
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 184.882, y: 30.9848}
+      position: {x: 4.000101, y: 40.607494, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Intents/Intent 0
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 144, y: 40}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Intents/Intent 0/Icon
+      anchorMin: {x: 0.08, y: 0.13999999}
+      anchorMax: {x: 0.3, y: 0.86}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Intents/Intent 0/Concept Icon
+      anchorMin: {x: 0.08, y: 0.13999999}
+      anchorMax: {x: 0.3, y: 0.86}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Intents/Intent 0/Action Caption
+      anchorMin: {x: 0.64, y: 0.120000005}
+      anchorMax: {x: 0.96, y: 0.88}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: -46.3, y: 0, z: 0}
+      scale: {x: 1.41, y: 1.41, z: 1.41}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 1
+      fontSize: 10
+      fontMin: 10
+      fontMax: 9
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0
+    - path: Intents/Intent 0/Value
+      anchorMin: {x: 0.3, y: 0.08000004}
+      anchorMax: {x: 0.61, y: 0.92}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: -11.0273, y: -8.3001}
+      position: {x: 40.4, y: -0.000009536743, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 1
+      fontSize: 17.45
+      fontMin: 15
+      fontMax: 23
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0
+  - encounter: single-chapter-wrath
+    actorId: hand-3
+    actorViewport: {x: 0.7317566, y: 0.75203204}
+    depth: 3.2000017
+    referenceFrustumHeight: 2.9166496
+    referenceAspect: 2.1641026
+    actorScale: {x: 0.8914444, y: 0.88829416, z: 1}
+    cameraRelativeRotation: {x: 0, y: 0, z: 0, w: 1}
+    artworkPosition: {x: 0, y: 0, z: 0}
+    artworkScale: {x: 1, y: 1, z: 1}
+    artworkRotation: {x: 0, y: 0, z: 0, w: 1}
+    hudOffset: {x: 146.98761, y: -55.76307}
+    hudViewport: {x: 0.82609105, y: 0.6745833}
+    fixedHud: 0
+    hudRoot:
+      path: 
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 240, y: 340}
+      position: {x: 508.1, y: 125.7, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    nodes:
+    - path: Health Bar
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 209.1647, y: 14.9957}
+      position: {x: -41.00003, y: 56.904175, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Health Bar/Concept Track
+      anchorMin: {x: 0.06540284, y: 0.30890054}
+      anchorMax: {x: 0.9345972, y: 0.6963351}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Health Bar/Concept Fill
+      anchorMin: {x: 0.06540284, y: 0.30890054}
+      anchorMax: {x: 0.9345972, y: 0.6963351}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Health Bar/Concept Frame
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Health Bar/Health Value
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 206, y: 23}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 15
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0
+    - path: Current Block
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 30, y: 29}
+      position: {x: -120, y: -59, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Current Block/Icon
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 25, y: 25}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Current Block/Concept Icon
+      anchorMin: {x: 0.08, y: 0.15999997}
+      anchorMax: {x: 0.32, y: 0.84}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: -12.799125}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Current Block/Value
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: -31, y: -6}
+      position: {x: 7.5, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 1
+      fontSize: 12
+      fontMin: 8
+      fontMax: 12
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0
+    - path: Statuses
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 174.9377, y: 21.0839}
+      position: {x: -41.00003, y: 36.573277, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Intents
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 199.6572, y: 31.6258}
+      position: {x: -41, y: 81, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Intents/Intent 0
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 144, y: 40}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Intents/Intent 0/Icon
+      anchorMin: {x: 0.08, y: 0.13999999}
+      anchorMax: {x: 0.3, y: 0.86}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Intents/Intent 0/Concept Icon
+      anchorMin: {x: 0.08, y: 0.13999999}
+      anchorMax: {x: 0.3, y: 0.86}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Intents/Intent 0/Action Caption
+      anchorMin: {x: 0.64, y: 0.120000005}
+      anchorMax: {x: 0.96, y: 0.88}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: -43.20003, y: 0, z: 0}
+      scale: {x: 1.28, y: 1.28, z: 1.28}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 1
+      fontSize: 10
+      fontMin: 10
+      fontMax: 9
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0
+    - path: Intents/Intent 0/Value
+      anchorMin: {x: 0.3, y: 0.08000004}
+      anchorMax: {x: 0.61, y: 0.92}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: -14.4962, y: -11.7936}
+      position: {x: 40.4, y: -0.000015258789, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 1
+      fontSize: 15.05
+      fontMin: 15
+      fontMax: 23
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0
+  - encounter: single-chapter-wrath
+    actorId: hand-4
+    actorViewport: {x: 0.70550656, y: 0.39908832}
+    depth: 3.2000017
+    referenceFrustumHeight: 2.9166496
+    referenceAspect: 2.1641026
+    actorScale: {x: 0.62054616, y: 0.85049456, z: 1}
+    cameraRelativeRotation: {x: 0, y: 0, z: 0, w: 1}
+    artworkPosition: {x: 0, y: 0, z: 0}
+    artworkScale: {x: 1, y: 1, z: 1}
+    artworkRotation: {x: 0, y: 0, z: 0, w: 1}
+    hudOffset: {x: -16.562876, y: 99.19092}
+    hudViewport: {x: 0.6948768, y: 0.5368535}
+    fixedHud: 0
+    hudRoot:
+      path: 
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 240, y: 340}
+      position: {x: 303.64798, y: 26.53452, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    nodes:
+    - path: Health Bar
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 189.0421, y: 14.3398}
+      position: {x: 0.221, y: -115.8632, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Health Bar/Concept Track
+      anchorMin: {x: 0.06540284, y: 0.30890054}
+      anchorMax: {x: 0.9345972, y: 0.6963351}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Health Bar/Concept Fill
+      anchorMin: {x: 0.06540284, y: 0.30890054}
+      anchorMax: {x: 0.9345972, y: 0.6963351}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Health Bar/Concept Frame
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Health Bar/Health Value
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 206, y: 23}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 15
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0
+    - path: Current Block
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 30, y: 29}
+      position: {x: -120, y: -59, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Current Block/Icon
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 25, y: 25}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Current Block/Concept Icon
+      anchorMin: {x: 0.08, y: 0.15999997}
+      anchorMax: {x: 0.32, y: 0.84}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: -12.799125}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Current Block/Value
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: -31, y: -6}
+      position: {x: 7.5, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 1
+      fontSize: 12
+      fontMin: 8
+      fontMax: 12
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0
+    - path: Statuses
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 158.108, y: 20.1617}
+      position: {x: 0.221, y: -135.3049, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Intents
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 180.4493, y: 30.2426}
+      position: {x: 0.221, y: -92.8213, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Intents/Intent 0
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 144, y: 40}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Intents/Intent 0/Icon
+      anchorMin: {x: 0.08, y: 0.13999999}
+      anchorMax: {x: 0.3, y: 0.86}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Intents/Intent 0/Concept Icon
+      anchorMin: {x: 0.08, y: 0.13999999}
+      anchorMax: {x: 0.3, y: 0.86}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Intents/Intent 0/Action Caption
+      anchorMin: {x: 0.64, y: 0.120000005}
+      anchorMax: {x: 0.96, y: 0.88}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: -43.200016, y: 0, z: 0}
+      scale: {x: 1.27, y: 1.27, z: 1.27}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 1
+      fontSize: 10
+      fontMin: 10
+      fontMax: 9
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0
+    - path: Intents/Intent 0/Value
+      anchorMin: {x: 0.3, y: 0.08000004}
+      anchorMax: {x: 0.61, y: 0.92}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: -13.9654, y: -10.5116}
+      position: {x: 34.6, y: 0.0000019073486, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 1
+      fontSize: 15.9
+      fontMin: 15
+      fontMax: 23
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0
+  - encounter: single-chapter-wrath
+    actorId: hand-5
+    actorViewport: {x: 0.5206576, y: 0.69554806}
+    depth: 3.2000017
+    referenceFrustumHeight: 2.9166496
+    referenceAspect: 2.1641026
+    actorScale: {x: 0.76292515, y: 1.0502033, z: 1}
+    cameraRelativeRotation: {x: 0, y: 0, z: 0, w: 1}
+    artworkPosition: {x: 0, y: 0, z: 0}
+    artworkScale: {x: 1, y: 1, z: 1}
+    artworkRotation: {x: 0, y: 0, z: 0, w: 1}
+    hudOffset: {x: -24.027794, y: 5.4902344}
+    hudViewport: {x: 0.5052369, y: 0.70317334}
+    fixedHud: 0
+    hudRoot:
+      path: 
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 240, y: 340}
+      position: {x: 8.15993, y: 146.28482, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    nodes:
+    - path: Health Bar
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 175.111, y: 12.7001}
+      position: {x: -108, y: -77, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Health Bar/Concept Track
+      anchorMin: {x: 0.06540284, y: 0.30890054}
+      anchorMax: {x: 0.9345972, y: 0.6963351}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Health Bar/Concept Fill
+      anchorMin: {x: 0.06540284, y: 0.30890054}
+      anchorMax: {x: 0.9345972, y: 0.6963351}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Health Bar/Concept Frame
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Health Bar/Health Value
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 206, y: 23}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 0
+      fontSize: 15
+      fontMin: 18
+      fontMax: 72
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0
+    - path: Current Block
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 30, y: 29}
+      position: {x: -120, y: -59, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Current Block/Icon
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 25, y: 25}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Current Block/Concept Icon
+      anchorMin: {x: 0.08, y: 0.15999997}
+      anchorMax: {x: 0.32, y: 0.84}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: -12.799125}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Current Block/Value
+      anchorMin: {x: 0, y: 0}
+      anchorMax: {x: 1, y: 1}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: -31, y: -6}
+      position: {x: 7.5, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 1
+      fontSize: 12
+      fontMin: 8
+      fontMax: 12
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0
+    - path: Statuses
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 146.4565, y: 17.8563}
+      position: {x: -108, y: -94.21859, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Intents
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 167.1514, y: 26.7845}
+      position: {x: -108, y: -56.592728, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Intents/Intent 0
+      anchorMin: {x: 0.5, y: 0.5}
+      anchorMax: {x: 0.5, y: 0.5}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 144, y: 40}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Intents/Intent 0/Icon
+      anchorMin: {x: 0.08, y: 0.13999999}
+      anchorMax: {x: 0.3, y: 0.86}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Intents/Intent 0/Concept Icon
+      anchorMin: {x: 0.08, y: 0.13999999}
+      anchorMax: {x: 0.3, y: 0.86}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: 0, y: 0, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 0
+      autoSize: 0
+      fontSize: 0
+      fontMin: 0
+      fontMax: 0
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 0
+      fontStyle: 0
+    - path: Intents/Intent 0/Action Caption
+      anchorMin: {x: 0.64, y: 0.120000005}
+      anchorMax: {x: 0.96, y: 0.88}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: 0, y: 0}
+      position: {x: -41.4, y: 0, z: 0}
+      scale: {x: 1.21, y: 1.21, z: 1.21}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 1
+      fontSize: 10
+      fontMin: 10
+      fontMax: 9
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0
+    - path: Intents/Intent 0/Value
+      anchorMin: {x: 0.3, y: 0.08000004}
+      anchorMax: {x: 0.61, y: 0.92}
+      pivot: {x: 0.5, y: 0.5}
+      sizeDelta: {x: -7.7043, y: -6.6037}
+      position: {x: 40.199997, y: -0.9018593, z: 0}
+      scale: {x: 1, y: 1, z: 1}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      hasText: 1
+      autoSize: 1
+      fontSize: 18.6
+      fontMin: 15
+      fontMax: 23
+      characterSpacing: 0
+      lineSpacing: 0
+      alignment: 514
+      fontStyle: 0

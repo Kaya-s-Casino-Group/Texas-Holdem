@@ -80,6 +80,73 @@ namespace Poker.Adventure.Tests
         }
 
         [UnityTest]
+        public IEnumerator CurrentAdventureShowsEnemyWindupImpactAndRestoresInput()
+        {
+            Assert.IsTrue(host.NewRun("fool", 312), host.Message);
+            Assert.IsTrue(host.ExecuteAdventure(new AdventureCommand(AdventureCommandKind.EnterNode, "battle-1")), host.Message);
+            yield return Idle();
+            var view = host.BattleView;
+            var enemy = view.Enemies.Single();
+            var rest = enemy.Visual.localPosition;
+            var effects = view.GetComponentInChildren<BattleEffectTimelineAction>(true);
+            Assert.NotNull(effects);
+            var output = Path.GetFullPath(Path.Combine(Application.dataPath, "../output/battle-effects"));
+            Directory.CreateDirectory(output);
+            bool sawRetreat = false, sawLunge = false, sawEffect = false, captured = false;
+            var banner = view.GetComponentInChildren<BattleTurnBannerAction>(true);
+            Assert.NotNull(banner);
+            var titles = new List<string>();
+            float started = Time.realtimeSinceStartup;
+            Assert.IsTrue(view.EndTurn(true));
+            float deadline = started + 25;
+            while (view.IsPresenting && Time.realtimeSinceStartup < deadline)
+            {
+                if (banner.ActiveBannerCount > 0 && !titles.Contains(banner.CurrentTitle))
+                {
+                    string title = banner.CurrentTitle; titles.Add(title);
+                    Assert.Less(Vector3.Distance(rest, enemy.Visual.localPosition), .001f, "Turn banners must not overlap the enemy attack.");
+                    yield return new WaitForSecondsRealtime(.25f);
+                    var ribbon = UnityEngine.Object.FindObjectOfType<BattleTurnBannerGraphic>();
+                    Assert.NotNull(ribbon.GetComponent<CanvasRenderer>(), "The banner backdrop must have a renderer.");
+                    yield return CaptureBattleFrame(Path.Combine(output, title == "你的回合" ? "your-turn-banner.png" : "enemy-turn-banner.png"));
+                }
+                sawRetreat |= enemy.Visual.localPosition.x > rest.x + .04f;
+                sawLunge |= enemy.Visual.localPosition.x < rest.x - .18f;
+                sawEffect |= effects.ActiveEffectCount > 0;
+                if (!captured && effects.ActiveEffectCount > 0)
+                {
+                    captured = true;
+                    Assert.AreEqual(0, view.Display.CompletedRounds, "The next round must not be revealed during the enemy hit.");
+                    var image = UnityEngine.Object.FindObjectsOfType<RawImage>().Single(item => item.name == "Hit");
+                    Assert.IsTrue(image.canvas.enabled);
+                    Assert.Greater(image.rectTransform.position.x, 0);
+                    Assert.Less(image.rectTransform.position.x, Screen.width);
+                    yield return CaptureBattleFrame(Path.Combine(output, "adventure-enemy-impact.png"));
+                    Assert.AreEqual(0, view.Display.CompletedRounds);
+                }
+                Assert.IsFalse(view.CanEndTurn, "Input must wait for the full attack and effect tail.");
+                yield return null;
+            }
+            Assert.IsFalse(view.IsPresenting);
+            Assert.IsTrue(sawRetreat); Assert.IsTrue(sawLunge); Assert.IsTrue(sawEffect);
+            Assert.Greater(Time.realtimeSinceStartup - started, 1.45f);
+            CollectionAssert.AreEqual(new[] { "敌人回合", "你的回合" }, titles);
+            Assert.AreEqual(0, banner.ActiveBannerCount);
+            Assert.AreEqual(rest, enemy.Visual.localPosition);
+            Assert.AreEqual(0, effects.ActiveEffectCount);
+            Assert.IsNull(view.PresentationDirector.LastError);
+            Assert.IsTrue(view.CanEndTurn);
+        }
+
+        private static IEnumerator CaptureBattleFrame(string path)
+        {
+            yield return new WaitForEndOfFrame();
+            var frame = ScreenCapture.CaptureScreenshotAsTexture();
+            File.WriteAllBytes(path, frame.EncodeToPNG());
+            UnityEngine.Object.Destroy(frame);
+        }
+
+        [UnityTest]
         public IEnumerator LastPlayWithRoundMemoryConsumesReviverAndRestoresPlayerInput()
         {
             yield return VerifyLastAction(false);

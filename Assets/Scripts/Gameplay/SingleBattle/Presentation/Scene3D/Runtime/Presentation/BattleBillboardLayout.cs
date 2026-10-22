@@ -18,6 +18,12 @@ namespace Poker.SingleBattle
         private bool initialized;
         public Rect ViewportArea => viewportArea;
 
+        public void SetDepth(float depth)
+        {
+            if (Mathf.Approximately(distance, depth)) return;
+            distance = depth; initialized = false; Refresh();
+        }
+
         public void SetArtworkAspect(float aspect)
         {
             if (Mathf.Approximately(artworkAspect, aspect)) return;

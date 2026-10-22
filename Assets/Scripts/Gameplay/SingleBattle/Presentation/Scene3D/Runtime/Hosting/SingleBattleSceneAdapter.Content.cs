@@ -36,11 +36,17 @@ namespace Poker.SingleBattle
             var result = BattleContentCompiler.Compile(read.Source);
             ContentDiagnostics = result.Diagnostics;
             if (!result.Success) throw ContentFailure();
-            itemNames.Clear();
-            foreach (var node in read.Source.Root.Children.Where(n => n.Name == "Relics").SelectMany(n => n.Children))
-                if (node.Attributes.TryGetValue("id", out var id) && node.Attributes.TryGetValue("name", out var name))
-                    itemNames[id] = name;
+            ReadItemNames(read.Source);
             return result.Content;
+        }
+
+        private void ReadItemNames(BattleContentSource source)
+        {
+            itemNames.Clear();
+            if (source?.Root == null) return;
+            foreach (var node in source.Root.Children.Where(n => n.Name == "Relics").SelectMany(n => n.Children))
+                if (node.Attributes.TryGetValue("id", out var id) && node.Attributes.TryGetValue("name", out var name))
+                    itemNames[id] = name.StartsWith(id + "·", StringComparison.Ordinal) ? name.Substring(id.Length + 1) : name;
         }
 
         private BattleEncounterContentDefinition ReadContentEncounter(CompiledBattleContent content = null)

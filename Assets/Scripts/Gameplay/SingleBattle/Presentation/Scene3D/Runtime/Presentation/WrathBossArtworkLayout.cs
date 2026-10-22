@@ -81,6 +81,7 @@ namespace Poker.SingleBattle
             var layout = actor.GetComponent<BattleBillboardLayout>();
             if (layout != null)
             {
+                layout.SetDepth(depth);
                 layout.SetArtworkAspect(part.Pixels.width / part.Pixels.height);
                 layout.SetViewportArea(artwork.PartViewport(part, CanvasViewport));
                 layout.Refresh();
@@ -113,6 +114,7 @@ namespace Poker.SingleBattle
                 // Match actor billboards: viewport changes refit, camera shake never moves this
                 // layer independently of the assembled body and hands.
                 warningLayout.SetViewportArea(artwork.PartViewport(artwork.Warning, CanvasViewport));
+                warningLayout.SetDepth(depth);
                 warningLayout.Refresh();
             }
         }

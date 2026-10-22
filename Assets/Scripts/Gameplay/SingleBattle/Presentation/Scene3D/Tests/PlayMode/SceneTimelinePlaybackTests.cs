@@ -534,10 +534,15 @@ namespace Poker.SingleBattle.Tests
                 new[] { new BattleAdminCard(definitionId: "standard:1:7"), new BattleAdminCard(definitionId: "standard:2:7"), new BattleAdminCard(definitionId: "standard:3:7") }) });
             Assert.IsTrue(host.Playback.ApplyAdmin(host.AuthorityState.Revision, patch).Accepted);
             yield return Idle(host); Select(host, 3); host.RefreshCandidate(); yield return Idle(host); yield return new WaitForEndOfFrame();
-            StringAssert.Contains("群攻 3", ui.OutcomeText); StringAssert.Contains("击杀 2", ui.OutcomeText);
+            StringAssert.StartsWith("三条  群伤  ", ui.OutcomeText); StringAssert.Contains("击杀 2", ui.DetailsText);
+            StringAssert.Contains("3 个目标", ui.DetailsText);
             StringAssert.DoesNotContain("×", ui.OutcomeText + ui.DetailsText);
             StringAssert.Contains("怪物1 生命 600→558", ui.DetailsText);
             var before = host.AuthorityState; var preview = host.PreviewSelectedPlay(); Assert.AreSame(before, host.AuthorityState);
+            var totalDamage = preview.Events.Where(fact => fact.Effect.Source == host.Player.ParticipantId &&
+                fact.Provenance?.Origin == CombatEffectOrigin.Primary && fact.Effect.Kind == CombatEffectKind.Damage)
+                .Sum(fact => fact.SettledDamage);
+            Assert.AreEqual("三条  群伤  " + totalDamage, ui.OutcomeText);
             var expected = preview.State.Duel.Combat.Get(host.Enemies[0].ParticipantId).Health;
             Assert.AreEqual(3, host.Player.Play(host.Actions.Hand.CaptureSelection(), false));
             Assert.AreEqual(expected, host.Enemies[0].Unit.Health);
@@ -559,7 +564,7 @@ namespace Poker.SingleBattle.Tests
         }
 
         [UnityTest]
-        public IEnumerator RelicHoverOwnsDescriptionsUseButtonsAndLimitedActiveChargeBadges()
+        public IEnumerator RelicClickPinsUsePanelWhileHoverOnlyShowsDescriptionsAndChargeBadges()
         {
             yield return EditorSceneManager.LoadSceneAsyncInPlayMode("Assets/Scenes/BattleDemo.unity", new LoadSceneParameters(LoadSceneMode.Single));
             var host = Object.FindObjectsOfType<SingleBattleSceneAdapter>().Single(); yield return Idle(host);
@@ -591,11 +596,14 @@ namespace Poker.SingleBattle.Tests
             yield return new WaitForSecondsRealtime(.23f); Assert.IsFalse(panel.gameObject.activeSelf);
             var grenade = icons.Single(image => image.sprite == art.Resolve("11004"));
             UnityEngine.EventSystems.ExecuteEvents.Execute(grenade.gameObject, pointer, UnityEngine.EventSystems.ExecuteEvents.pointerEnterHandler);
+            Assert.IsFalse(panel.Find("Use Item").gameObject.activeSelf, "Hover is descriptive; clicking opens the use controls.");
+            UnityEngine.EventSystems.ExecuteEvents.Execute(grenade.gameObject, pointer, UnityEngine.EventSystems.ExecuteEvents.pointerClickHandler);
             var use = panel.Find("Use Item").GetComponent<UnityEngine.UI.Button>(); Assert.IsTrue(use.isActiveAndEnabled);
             yield return null; Assert.IsTrue(use.interactable);
             UnityEngine.EventSystems.ExecuteEvents.Execute(grenade.gameObject, pointer, UnityEngine.EventSystems.ExecuteEvents.pointerExitHandler);
-            UnityEngine.EventSystems.ExecuteEvents.Execute(panel.gameObject, pointer, UnityEngine.EventSystems.ExecuteEvents.pointerEnterHandler);
-            yield return new WaitForSecondsRealtime(.25f); Assert.IsTrue(panel.gameObject.activeSelf, "The user can move from the icon into the use panel.");
+            yield return new WaitForSecondsRealtime(.25f); Assert.IsTrue(panel.gameObject.activeSelf, "A clicked use panel remains open after leaving the icon.");
+            UnityEngine.EventSystems.ExecuteEvents.Execute(passive.gameObject, pointer, UnityEngine.EventSystems.ExecuteEvents.pointerEnterHandler);
+            Assert.AreEqual("一串手雷  Lv.1", panel.Find("Item Name").GetComponent<TMPro.TMP_Text>().text, "Hovering another item cannot replace a clicked selection.");
             long actions = host.State.FlowFor(host.Player.ParticipantId).ActionsRemaining;
             use.onClick.Invoke(); Assert.IsTrue(host.IsPresenting); Assert.IsFalse(host.CanUseItem(loadout.Relics.Single(item => item.DefinitionId == "11004").InstanceId));
             yield return Idle(host); yield return new WaitForEndOfFrame();
@@ -603,6 +611,19 @@ namespace Poker.SingleBattle.Tests
             Assert.AreEqual(actions, host.State.FlowFor(host.Player.ParticipantId).ActionsRemaining);
             StringAssert.Contains("次数 2", panel.Find("Availability").GetComponent<TMPro.TMP_Text>().text);
             Directory.CreateDirectory("Library/BattlePresentationValidation"); ScreenCapture.CaptureScreenshot("Library/BattlePresentationValidation/relic-hover.png");
+            var mouse = UnityEngine.InputSystem.InputSystem.AddDevice<UnityEngine.InputSystem.Mouse>();
+            try
+            {
+                UnityEngine.InputSystem.InputSystem.QueueStateEvent(mouse,
+                    new UnityEngine.InputSystem.LowLevel.MouseState { position = new Vector2(-100, -100) });
+                yield return null;
+                UnityEngine.InputSystem.InputSystem.QueueStateEvent(mouse,
+                    new UnityEngine.InputSystem.LowLevel.MouseState { position = new Vector2(-100, -100) }
+                        .WithButton(UnityEngine.InputSystem.LowLevel.MouseButton.Left));
+                yield return null; yield return new WaitForEndOfFrame();
+                Assert.IsFalse(panel.gameObject.activeSelf, "Clicking outside the panel dismisses it.");
+            }
+            finally { UnityEngine.InputSystem.InputSystem.RemoveDevice(mouse); }
             var die = host.State.Duel.Player(host.Player.ParticipantId).Relics.Relics.Single(item => item.DefinitionId == "14001");
             Assert.IsTrue(hud.SelectItem(die.InstanceId)); yield return null;
             Assert.IsFalse(use.interactable, "Dice requires an explicit replacement target.");

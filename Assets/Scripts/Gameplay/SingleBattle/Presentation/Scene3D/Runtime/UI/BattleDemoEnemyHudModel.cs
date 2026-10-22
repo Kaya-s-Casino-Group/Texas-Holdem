@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using PokerEngine;
+using Poker.BattlePresentation;
 using UnityEngine;
 
 namespace Poker.SingleBattle
@@ -40,12 +41,12 @@ namespace Poker.SingleBattle
             }
             return new Badge(symbol, color, Number(stacks), name);
         }
-        public static IReadOnlyList<Badge> Intents(EnemyActionPreview preview, long? wrathChargeIncrease = null)
+        public static IReadOnlyList<Badge> Intents(EnemyActionPreview preview, long? wrathChargeIncrease = null, EnemyBehaviorAction plannedAction = null)
         {
             if (preview == null || !preview.Accepted) return new[] { new Badge(BattleDemoEnemySymbol.Unknown, Gold, "?", "意图不可用") };
             if (preview.IsSkipped) return new[] { new Badge(BattleDemoEnemySymbol.Stun, Gold, "", "眩晕：跳过本次行动") };
             var badges = new List<Badge>();
-            var effects = preview.RuleEvents.Where(item => item.Effect?.Source == preview.Source &&
+            var effects = BattleDisplayProjector.IntentEvents(preview, plannedAction).Where(item => item.Effect?.Source == preview.Source &&
                 item.Provenance?.Origin == CombatEffectOrigin.Primary && !(item is CombatStatusChangedEvent)).ToArray();
             foreach (var group in effects.GroupBy(item => new { item.Effect.Kind, Status = item.Effect.Status?.DefinitionId.Value,
                 Amount = item is CombatEvent hit ? hit.SettledAmount : item.Effect.Status?.Stacks ?? item.Effect.Amount, item.Effect.Target }))

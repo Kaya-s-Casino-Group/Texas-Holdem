@@ -38,7 +38,7 @@ namespace Poker.SingleBattle
             if (candidate == null || candidate.State == CandidateState.Empty || candidate.State == CandidateState.Closed || candidate.State == CandidateState.Committing)
             {
                 handName.text = "选牌预览";
-                outcome.text = host.IsPresenting ? "结算中…" : "选择卡牌查看效果";
+                outcome.text = host.IsPresenting ? "结算中…" : "选择手牌查看效果";
                 details.text = ""; return;
             }
             handName.text = candidate.PatternName ?? "选牌预览";
@@ -52,8 +52,8 @@ namespace Poker.SingleBattle
                 return;
             }
             var summary = Summarize(host.State, preview, host.Player.ParticipantId);
-            outcome.text = summary[0]; details.text = summary[1];
-            calculation.text = summary[0] + "\n" + summary[1] + "\n\n本次计分 " + candidate.Total + "\n" + candidate.Points + " × " + candidate.Multiplier +
+            outcome.text = handName.text + "  " + summary[0]; details.text = summary[1];
+            calculation.text = outcome.text + "\n" + summary[1] + "\n\n本次计分 " + candidate.Total + "\n" + candidate.Points + " × " + candidate.Multiplier +
                 "\n伤害、护盾、状态和转火已计入效果预览。";
         }
         public static string[] Summarize(CardDuelState current, CardDuelTransition preview, ParticipantId player)
@@ -68,14 +68,17 @@ namespace Poker.SingleBattle
                 enemies.Any(enemy => enemy.Id == fact.Effect.Target)).ToArray();
             string headline;
             bool chain = preview.Score?.Category == HandCategory.Straight || preview.Score?.Category == HandCategory.StraightFlush;
-            if (eliminated.Length > 0) headline = "消灭 " + eliminated.Length + " 个目标";
-            else if (chain) headline = "连续攻击 " + damage.Length + " 次";
+            long totalDamage = damage.Sum(fact => fact.SettledDamage);
+            if (eliminated.Length > 0) headline = "消灭  " + eliminated.Length;
+            else if (chain && damage.Length > 0) headline = "连击  " + totalDamage;
             else if (damage.Select(fact => fact.Effect.Target).Distinct().Count() > 1)
-                headline = "群攻 " + damage.Select(fact => fact.Effect.Target).Distinct().Count() + " 个目标";
-            else if (damage.Length > 0) headline = "造成 " + damage.Sum(fact => fact.SettledDamage) + " 伤害";
-            else headline = "特殊效果";
-            if (kills > 0 && eliminated.Length == 0) headline += " · 可击杀 " + kills + " 个";
+                headline = "群伤  " + totalDamage;
+            else if (damage.Length > 0) headline = "伤害  " + totalDamage;
+            else headline = "";
             var lines = new List<string>();
+            if (damage.Length > 0)
+                lines.Add("总伤害 " + totalDamage + " · " + damage.Length + " 次命中 · " + damage.Select(fact => fact.Effect.Target).Distinct().Count() + " 个目标");
+            if (kills > 0 && eliminated.Length == 0) lines.Add("可击杀 " + kills + " 个");
             for (int index = 0; index < before.Enemies.Count; index++)
             {
                 var id = before.Enemies[index].Id; var old = before.Combat.Get(id); var next = after.Combat.Get(id);
@@ -85,14 +88,23 @@ namespace Poker.SingleBattle
                 lines.Add("怪物" + (index + 1) + " " + value);
             }
             long heal = after.Combat.Get(player).Health - before.Combat.Get(player).Health;
-            if (heal != 0) lines.Add(heal > 0 ? "自身回复 " + heal : "自身扣血 " + -heal);
+            if (heal != 0)
+            {
+                string healthEffect = heal > 0 ? "回复  " + heal : "扣血  " + -heal;
+                headline += (headline.Length > 0 ? " / " : "") + healthEffect;
+                lines.Add(heal > 0 ? "自身回复 " + heal : "自身扣血 " + -heal);
+            }
             var statuses = preview.RuleEvents.OfType<CombatStatusEvent>().Where(fact => fact.Effect.Source == player)
                 .GroupBy(fact => fact.Status.DefinitionId.Value);
+            var statusHeadlines = new List<string>();
             foreach (var status in statuses)
             {
                 string name = BattleDemoEnemyHudModel.Status(status.Key, 1).Description;
-                lines.Add(name + " " + status.Select(fact => fact.Effect.Target).Distinct().Count() + " 个目标");
+                int targets = status.Select(fact => fact.Effect.Target).Distinct().Count();
+                statusHeadlines.Add(name + "  " + targets);
+                lines.Add(name + " " + targets + " 个目标");
             }
+            if (headline.Length == 0) headline = statusHeadlines.Count > 0 ? string.Join(" / ", statusHeadlines) : "无效果  0";
             return new[] { headline, string.Join(" · ", lines) };
         }
         public void OnPointerEnter(PointerEventData eventData)

@@ -1,11 +1,12 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 namespace Poker.SingleBattle
 {
     public sealed partial class SingleBattleHud
     {
-        [Header("对局修改器 · 场景 GUI 固定入口")]
+        [Header("对局修改器 · F5 打开窗口")]
         [SerializeField] private BattleAdminPanel adminPanel;
         [SerializeField] private Button adminButton;
         public BattleAdminPanel Administrator => adminPanel;
@@ -13,14 +14,19 @@ namespace Poker.SingleBattle
 
         private void RefreshAdminEntry()
         {
-            if (!Application.isPlaying || adminButton == null) return;
-            adminButton.interactable = adminPanel != null && host?.Session != null;
+            // Keep the serialized legacy reference so existing scenes migrate without rebuilding.
+            if (adminButton != null && adminButton.gameObject.activeSelf) adminButton.gameObject.SetActive(false);
         }
 
-        // Bound persistently by the scene button, so no runtime clone or listener installation is required.
+        private void UpdateAdministratorShortcut()
+        {
+            if (Application.isPlaying && Application.isFocused && Keyboard.current?.f5Key.wasPressedThisFrame == true)
+                OpenAdministrator();
+        }
+
         public void OpenAdministrator()
         {
-            if (!Application.isPlaying || adminPanel == null || host?.Session == null || message == null) return;
+            if (!Application.isPlaying || host?.IsHandGuideOpen == true || adminPanel == null || adminPanel.IsOpen || host?.Session == null || message == null) return;
             adminPanel.Configure(host, message.font);
             adminPanel.Open();
         }
