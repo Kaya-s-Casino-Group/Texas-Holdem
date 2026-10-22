@@ -14,6 +14,7 @@ namespace Poker.SingleBattle
         [SerializeField] private Rect handArea = new Rect(.35f, .025f, .48f, .17f);
         [SerializeField] private Transform backdrop;
         [SerializeField] private Rect backdropArea = new Rect(.284f, .006f, .71f, .258f);
+        [SerializeField] private bool backdropPreserveAspect;
         private Vector2 lastSize;
         public void Configure(Camera camera, HandZoneView view) { viewCamera=camera; hand=view; Refresh(); }
         public void ConfigureBackdrop(Transform value) { backdrop = value; Refresh(); }
@@ -36,7 +37,18 @@ namespace Poker.SingleBattle
                 backdrop.rotation=viewCamera.transform.rotation;
                 var lower=viewCamera.ViewportToWorldPoint(new Vector3(0,0,depth));
                 var upper=viewCamera.ViewportToWorldPoint(new Vector3(safe.width/w*backdropArea.width,safe.height/h*backdropArea.height,depth));
-                backdrop.localScale=new Vector3(Vector3.Dot(upper-lower,viewCamera.transform.right),Vector3.Dot(upper-lower,viewCamera.transform.up),1);
+                var backdropSize = new Vector2(Vector3.Dot(upper-lower,viewCamera.transform.right),Vector3.Dot(upper-lower,viewCamera.transform.up));
+                if (backdropPreserveAspect)
+                {
+                    var renderer = backdrop.GetComponent<Renderer>();
+                    var texture = renderer != null && renderer.sharedMaterial != null ? renderer.sharedMaterial.mainTexture : null;
+                    if (texture != null && texture.width > 0 && texture.height > 0)
+                    {
+                        float fit = Mathf.Min(backdropSize.x / texture.width, backdropSize.y / texture.height);
+                        backdropSize = new Vector2(texture.width * fit, texture.height * fit);
+                    }
+                }
+                backdrop.localScale=new Vector3(backdropSize.x,backdropSize.y,1);
             }
             var a=viewCamera.ViewportToWorldPoint(new Vector3(0,0,distance));
             var b=viewCamera.ViewportToWorldPoint(new Vector3(safe.width/w*handArea.width,safe.height/h*handArea.height,distance));

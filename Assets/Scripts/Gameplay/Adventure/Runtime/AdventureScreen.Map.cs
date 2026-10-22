@@ -15,55 +15,64 @@ namespace Poker.Adventure
         private void Map()
         {
             var run = host.Adventure;
-            var side = Box(page, "Route Legend", new Rect(0, .02f, .27f, .96f), Panel);
-            Label(side, "七站旅程", new Rect(.09f, .83f, .82f, .12f), 37, Gold);
-            Label(side, "由下向上，前往高亮地点。\n两处补给可选商店或休息。", new Rect(.09f, .67f, .82f, .13f), 23, Paper);
-            Label(side, "已完成 " + run.VisitedNodeIds.Count + " / 7 站", new Rect(.09f, .57f, .82f, .07f), 26, Gold);
+            RitualSkin.Place(page, new Rect(0, 0, 1, 1));
+            var side = DeskPanel(page, "Route Legend", DeskPixels(47, 149, 263, 367));
+            Label(side, "七站旅程", new Rect(.07f, .84f, .86f, .11f), 27, Gold, TextAlignmentOptions.Center);
             var kinds = new[] { AdventureNodeKind.Battle, AdventureNodeKind.Elite, AdventureNodeKind.Chest, AdventureNodeKind.Shop, AdventureNodeKind.Rest, AdventureNodeKind.Boss };
             var captions = new[] { "普通战斗", "精英战斗", "宝箱", "商店", "休息", "首领战斗" };
             for (int i = 0; i < kinds.Length; i++)
             {
-                int column = i % 2, row = i / 2;
-                RitualSkin.Icon(side, captions[i], new Rect(.09f + column * .47f, .41f - row * .13f, .13f, .10f), RitualSkin.Symbol(SymbolIndex(kinds[i])));
-                Label(side, captions[i], new Rect(.24f + column * .47f, .42f - row * .13f, .24f, .07f), 20, Paper);
+                NodeIcon(side, captions[i], new Rect(.10f, .69f - i * .115f, .22f, .10f), kinds[i]);
+                Label(side, captions[i], new Rect(.37f, .70f - i * .115f, .55f, .08f), 22, Paper);
             }
-            Label(side, "金色：可前往    灰色：未解锁\n已完成路线会保留金色连线", new Rect(.09f, .025f, .82f, .09f), 18, Muted);
-            var graph = Rect(page, "Route Map", new Rect(.29f, .015f, .70f, .97f));
-            var positions = host.Definition.Nodes.ToDictionary(n => n.Id, n => new Vector2(.5f + (n.Column - 1) * .27f, .08f + n.Row * .137f));
+            DeskButton(page, "持有道具", DeskPixels(47, 555, 263, 70), () =>
+            {
+                var modal = Modal("持有道具");
+                Inventory(modal, new Rect(.06f, .36f, .88f, .25f), false);
+            }, true, "Button", 22);
+            var board = DeskPanel(page, "Parchment Route", DeskPixels(317, 79, 1422, 928), "MapPanel");
+            var graph = Rect(board, "Route Map", new Rect(.08f, .035f, .84f, .94f));
+            var positions = host.Definition.Nodes.ToDictionary(n => n.Id, n => new Vector2(.5f + (n.Column - 1) * .12f, .085f + n.Row * .135f));
             foreach (var node in host.Definition.Nodes)
             foreach (string nextId in node.NextIds)
             {
                 if (!positions.TryGetValue(nextId, out var next)) continue;
                 bool traveled = run.VisitedNodeIds.Contains(node.Id) && run.VisitedNodeIds.Contains(nextId);
                 bool available = run.VisitedNodeIds.Contains(node.Id) && run.AvailableNodes.Any(n => n.Id == nextId);
-                DottedPath(graph, positions[node.Id], next, traveled || available ? Gold : new Color32(67, 50, 38, 255));
+                DottedPath(graph, positions[node.Id], next, traveled || available ? new Color32(234, 178, 246, 255) : new Color32(114, 73, 106, 255));
             }
             foreach (var node in host.Definition.Nodes)
             {
                 var at = positions[node.Id]; bool reachable = run.AvailableNodes.Any(n => n.Id == node.Id);
                 bool visited = run.VisitedNodeIds.Contains(node.Id);
                 var root = Rect(graph, NodeLabel(node), new Rect(at, Vector2.zero));
-                root.sizeDelta = new Vector2(116, 84);
+                root.sizeDelta = new Vector2(88, 72);
                 var hitArea = root.gameObject.AddComponent<Image>(); hitArea.color = Color.clear;
                 var button = root.gameObject.AddComponent<Button>();
-                var image = RitualSkin.Icon(root, "Node Emblem", new Rect(.18f, .10f, .64f, .80f), RitualSkin.Symbol(SymbolIndex(node.Kind)));
-                image.color = reachable || visited ? Color.white : new Color(.42f, .42f, .42f);
+                var image = NodeIcon(root, "Node Emblem", new Rect(.18f, .10f, .64f, .80f), node.Kind);
+                image.color = reachable || visited ? Color.white : new Color(.58f, .58f, .58f);
                 button.targetGraphic = image;
                 var colors = button.colors; colors.normalColor = Color.white;
                 colors.highlightedColor = new Color(1.3f, 1.18f, .8f); colors.pressedColor = new Color(.75f, .65f, .45f);
                 colors.disabledColor = Color.white; button.colors = colors;
                 button.interactable = reachable;
+                AdventureAudioController.BindButton(button);
                 button.onClick.AddListener(() => host.ExecuteAdventure(new AdventureCommand(AdventureCommandKind.EnterNode, node.Id)));
                 if (reachable)
                 {
                     var outline = image.gameObject.AddComponent<Outline>();
                     outline.effectColor = new Color(1, .82f, .35f, .85f); outline.effectDistance = new Vector2(2, -2);
                 }
-                MapCaption(root, NodeLabel(node), new Rect(.92f, .30f, 1.12f, .46f), 20, Paper);
-                if (reachable || visited) MapCaption(root, reachable ? "可前往" : "已完成", new Rect(.92f, -.01f, 1.12f, .38f), 17, Gold);
+                MapCaption(root, NodeLabel(node), new Rect(.95f, .30f, 1.42f, .46f), 19, Paper);
+                if (reachable || visited) MapCaption(root, reachable ? "可前往" : "已完成", new Rect(.95f, -.01f, 1.42f, .38f), 16, Gold);
             }
-            Inventory(footer, new Rect(0, .12f, .64f, .80f), false);
-            Label(footer, "选定地点后立即进入 · 每一步自动保存", new Rect(.66f, .30f, .34f, .45f), 20, Paper, TextAlignmentOptions.Right);
+            Label(footer, "已完成 " + run.VisitedNodeIds.Count + " / 7 站 · 点击高亮地点前进", new Rect(.20f, .28f, .60f, .50f), 23, Paper, TextAlignmentOptions.Center);
+        }
+        private Image NodeIcon(Transform parent, string name, Rect area, AdventureNodeKind kind)
+        {
+            string sprite = "Node" + kind;
+            return DeskUISkin.Get(sprite) != null ? DeskArt(parent, name, area, sprite, true) :
+                RitualSkin.Icon(parent, name, area, RitualSkin.Symbol(SymbolIndex(kind)));
         }
         private void MapCaption(Transform parent, string text, Rect area, int size, Color color)
         {

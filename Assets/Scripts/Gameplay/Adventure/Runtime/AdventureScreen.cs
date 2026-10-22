@@ -16,7 +16,7 @@ namespace Poker.Adventure
     {
         [SerializeField] private AdventureSceneHost host;
         [SerializeField] private TMP_FontAsset font;
-        private RectTransform page, header, footer, overlay, safe;
+        private RectTransform page, header, footer, overlay, safe, deskLayout;
         private Image backdrop;
         private RitualPicture sceneArt;
         [SerializeField] private Texture2D homeArt, heroArt;
@@ -53,9 +53,14 @@ namespace Poker.Adventure
             backdrop = Box(transform, "Adventure Backdrop", new Rect(0, 0, 1, 1), new Color32(16, 14, 22, 248)).GetComponent<Image>();
             sceneArt = RitualSkin.Picture(backdrop.transform, "Scene Artwork", new Rect(0, 0, 1, 1), homeArt, true);
             safe = ScreenSafeArea.Ensure(canvas, fullBleed: backdrop.transform).Content;
-            header = Rect(safe, "Run Header", new Rect(.035f, .89f, .93f, .09f));
-            page = Rect(safe, "Run Page", new Rect(.05f, .15f, .90f, .69f));
-            footer = Rect(safe, "Run Footer", new Rect(.05f, .025f, .90f, .10f));
+            deskLayout = Rect(safe, "Desk Layout", new Rect(0, 0, 1, 1));
+            var fit = deskLayout.gameObject.AddComponent<AspectRatioFitter>();
+            fit.aspectMode = AspectRatioFitter.AspectMode.FitInParent; fit.aspectRatio = 1920f / 1080f;
+            sceneArt.transform.SetParent(deskLayout, false);
+            RitualSkin.Place(sceneArt.transform, new Rect(0, 0, 1, 1));
+            header = Rect(deskLayout, "Run Header", new Rect(.025f, .92f, .95f, .065f));
+            page = Rect(deskLayout, "Run Page", new Rect(.035f, .12f, .93f, .77f));
+            footer = Rect(deskLayout, "Run Footer", new Rect(.035f, .02f, .93f, .085f));
             overlay = Rect(safe, "Run Overlay", new Rect(0, 0, 1, 1));
             Subscribe();
         }
@@ -63,6 +68,10 @@ namespace Poker.Adventure
         {
             if (host == null) return;
             Build(); UpdateBackdrop(); Clear(page); Clear(header); Clear(footer); Clear(overlay);
+            header.SetParent(deskLayout, false);
+            footer.SetParent(deskLayout, false);
+            RitualSkin.Place(page, new Rect(.035f, .12f, .93f, .77f));
+            RitualSkin.Place(header, new Rect(.025f, .92f, .95f, .065f));
             if (host.Definition == null)
             { Title(page, "旅程暂不可用", "检查场景的冒险内容配置后重试。"); ErrorFooter(); return; }
             bool battle = !host.IsAtMenu && host.Adventure != null && (host.Adventure.Phase == AdventurePhase.Battle || host.IsBusy);
@@ -70,17 +79,18 @@ namespace Poker.Adventure
             if (battle)
             {
                 // Leave the battle's hand and HUD unobstructed. The run menu never advances a battle.
-                Button(header, "旅程菜单", new Rect(.73f, .45f, .12f, .50f), host.ReturnToMenu, !host.IsBusy);
+                header.SetParent(safe, false);
+                footer.SetParent(safe, false);
+                deskLayout.gameObject.SetActive(false);
+                RitualSkin.Place(header, new Rect(0, 0, 1, 1));
+                DeskButton(header, "菜单", new Rect(.948f, .90f, .045f, .07f), host.ReturnToMenu, !host.IsBusy, "Button", 19);
                 ErrorFooter(); return;
             }
+            deskLayout.gameObject.SetActive(true);
             if (host.IsAtMenu || host.Adventure == null) { Menu(); ErrorFooter(); return; }
             setupPage = null;
             var run = host.Adventure;
-            var status = Box(header, "Journey Status", new Rect(0, 0, 1, 1), Panel);
-            Label(status, "第一章 · 破碎王庭", new Rect(.025f, .20f, .24f, .6f), 25, Gold);
-            Label(status, "生命 " + run.Health + " / " + run.MaxHealth + "     金币 " + run.Gold + "     牌组 " + run.Deck.Count + "     道具 " + run.Relics.Count + " / " + run.Definition.RelicCapacity,
-                new Rect(.29f, .22f, .52f, .56f), 23, Paper, TextAlignmentOptions.Right);
-            Button(status, "保存并返回", new Rect(.84f, .18f, .14f, .64f), host.ReturnToMenu, !host.IsBusy);
+            JourneyHeader();
             switch (run.Phase)
             {
                 case AdventurePhase.Map: Map(); break;
@@ -155,8 +165,10 @@ namespace Poker.Adventure
                     Label(modal, host.ItemDescription(relic.DefinitionId), new Rect(.07f, .26f, .86f, .39f), 24, Paper);
                     if (sell) Button(modal, "确认出售 · " + run.SellPrice(relic.Id) + " 金币", new Rect(.07f, .08f, .58f, .13f), () => host.ExecuteAdventure(new AdventureCommand(AdventureCommandKind.SellRelic, relic.Id)), true, true);
                 });
-                RelicIcon(itemButton.transform, relic.DefinitionId, new Rect(.03f, .14f, .25f, .72f));
-                RitualSkin.Place(itemButton.GetComponentInChildren<TMP_Text>().transform, new Rect(.30f, .10f, .66f, .80f));
+                RelicIcon(itemButton.transform, relic.DefinitionId, new Rect(.09f, .29f, .18f, .42f));
+                var caption = itemButton.GetComponentInChildren<TMP_Text>();
+                RitualSkin.Place(caption.transform, new Rect(.34f, .20f, .53f, .57f));
+                caption.fontSize = caption.fontSizeMax = 18; caption.fontSizeMin = 12;
             }
         }
         private void PendingReward()
@@ -167,13 +179,24 @@ namespace Poker.Adventure
             Label(modal, host.ItemName(id), new Rect(.06f, .62f, .36f, .11f), 32, Gold, TextAlignmentOptions.Center);
             Label(modal, host.ItemDescription(id), new Rect(.07f, .24f, .35f, .35f), 23, Paper);
             Label(modal, "替换一件已有道具，\n或放弃这件奖励。", new Rect(.47f, .70f, .46f, .14f), 23, Paper);
+            var viewport = Box(modal, "Reward Choices", new Rect(.47f, .22f, .46f, .46f), Color.clear);
+            viewport.gameObject.AddComponent<RectMask2D>();
+            var content = Rect(viewport, "Choices", new Rect(0, 0, 1, 1));
+            content.anchorMin = new Vector2(0, 1); content.anchorMax = Vector2.one; content.pivot = new Vector2(.5f, 1);
+            content.sizeDelta = new Vector2(0, host.Adventure.Relics.Count * 76);
+            var scroll = viewport.gameObject.AddComponent<ScrollRect>();
+            scroll.viewport = viewport; scroll.content = content; scroll.horizontal = false;
+            scroll.movementType = ScrollRect.MovementType.Clamped;
             int i = 0;
             foreach (var owned in host.Adventure.Relics)
             {
                 var command = new AdventureCommand(AdventureCommandKind.ClaimRelicReward, owned.Id);
-                var button = Button(modal, "替换 " + host.ItemName(owned.DefinitionId), new Rect(.47f, .60f - i * .09f, .46f, .075f), () => host.ExecuteAdventure(command), Preview(command));
-                RelicIcon(button.transform, owned.DefinitionId, new Rect(.025f, .12f, .12f, .76f));
-                RitualSkin.Place(button.GetComponentInChildren<TMP_Text>().transform, new Rect(.16f, .05f, .80f, .90f)); i++;
+                var button = Button(content, "替换 " + host.ItemName(owned.DefinitionId), new Rect(0, 0, 1, 1), () => host.ExecuteAdventure(command), Preview(command));
+                var row = (RectTransform)button.transform;
+                row.anchorMin = new Vector2(0, 1); row.anchorMax = Vector2.one; row.pivot = new Vector2(.5f, 1);
+                row.sizeDelta = new Vector2(0, 68); row.anchoredPosition = new Vector2(0, -i * 76);
+                RelicIcon(button.transform, owned.DefinitionId, new Rect(.045f, .20f, .12f, .60f));
+                RitualSkin.Place(button.GetComponentInChildren<TMP_Text>().transform, new Rect(.22f, .18f, .64f, .64f)); i++;
             }
             var claim = new AdventureCommand(AdventureCommandKind.ClaimRelicReward);
             if (Preview(claim)) Button(modal, "直接领取", new Rect(.07f, .06f, .40f, .10f), () => host.ExecuteAdventure(claim), true, true);
@@ -203,6 +226,12 @@ namespace Poker.Adventure
                 string label = face == null ? card.DefinitionId.ToString() : FaceName(face);
                 string id = card.Id;
                 var button = Button(content, label, new Rect(0, 0, 1, 1), () => { selectedCard = id; RenderService(); }, true, id == selectedCard);
+                // These cells display the actual poker-card artwork, with a plain selection backing.
+                var cardBacking = button.GetComponent<Image>(); cardBacking.sprite = null;
+                cardBacking.color = id == selectedCard ? Accent : Panel;
+                var cellColors = button.colors; cellColors.normalColor = cardBacking.color;
+                cellColors.selectedColor = cellColors.pressedColor = Accent;
+                cellColors.highlightedColor = new Color32(73, 56, 63, 255); button.colors = cellColors;
                 var r = button.GetComponent<RectTransform>(); r.anchorMin = new Vector2(i % columns / (float)columns, 1); r.anchorMax = new Vector2((i % columns + 1) / (float)columns, 1); r.pivot = new Vector2(.5f, 1);
                 r.offsetMin = new Vector2(4, -((i / columns + 1) * rowHeight) + 5); r.offsetMax = new Vector2(-4, -(i / columns * rowHeight) - 5); i++;
                 if (face != null && cardAtlas != null && cardAtlas.TryGetCard(AtlasCardId(face), out var art))
@@ -211,7 +240,7 @@ namespace Poker.Adventure
                     picture.Configure(cardAtlas.texture, false, new Rect(art.uv.x, art.uv.y, art.uv.z, art.uv.w));
                     var caption = button.GetComponentInChildren<TMP_Text>(); caption.text = label.Replace('\n', ' ');
                     RitualSkin.Place(caption.transform, new Rect(.02f, .015f, .96f, .23f));
-                    caption.fontSize = caption.fontSizeMax = 17; caption.fontSizeMin = 17;
+                    caption.fontSize = caption.fontSizeMax = 17; caption.fontSizeMin = 12;
                 }
             }
             var selected = host.Adventure.Deck.FirstOrDefault(card => card.Id == selectedCard);
@@ -250,9 +279,9 @@ namespace Poker.Adventure
         {
             Clear(overlay);
             Box(overlay, "Modal Shield", new Rect(0, 0, 1, 1), new Color(0, 0, 0, .80f));
-            var frame = Box(overlay, "Dialog", new Rect(.15f, .12f, .70f, .76f), Panel);
-            Label(frame, title, new Rect(.05f, .87f, .78f, .09f), 29, Paper);
-            if (close) Button(frame, "关闭", new Rect(.85f, .88f, .10f, .08f), () => Clear(overlay));
+            var frame = DeskPanel(overlay, "Dialog", new Rect(.15f, .08f, .70f, .84f));
+            Label(frame, title, new Rect(.05f, .87f, .72f, .09f), 29, Paper);
+            if (close) Button(frame, "关闭", new Rect(.80f, .86f, .15f, .09f), () => Clear(overlay));
             return frame;
         }
         private void ErrorFooter()
@@ -274,25 +303,27 @@ namespace Poker.Adventure
         private RectTransform Box(Transform parent, string name, Rect area, Color color)
         {
             var rect = Rect(parent, name, area); var image = rect.gameObject.AddComponent<Image>(); image.color = color; image.raycastTarget = true;
-            if (name != "Adventure Backdrop" && name != "Modal Shield") RitualSkin.Panel(image, color == Accent);
             return rect;
         }
         private TMP_Text Label(Transform parent, string text, Rect area, int size, Color color, TextAlignmentOptions align = TextAlignmentOptions.Left)
         {
             var rect = Rect(parent, "Text", area); var label = rect.gameObject.AddComponent<TextMeshProUGUI>();
             label.font = font; label.text = text; label.fontSize = size; label.color = color; label.alignment = align;
-            label.enableWordWrapping = true; label.enableAutoSizing = true; label.fontSizeMax = size; label.fontSizeMin = Mathf.Max(17, size - 5); label.overflowMode = TextOverflowModes.Ellipsis; label.raycastTarget = false;
+            label.enableWordWrapping = true; label.enableAutoSizing = true; label.fontSizeMax = size; label.fontSizeMin = Mathf.Max(12, size * .6f); label.overflowMode = TextOverflowModes.Ellipsis; label.raycastTarget = false;
             return label;
         }
-        private Button Button(Transform parent, string text, Rect area, Action onClick, bool enabled = true, bool primary = false)
+        private Button Button(Transform parent, string text, Rect area, Action onClick, bool enabled = true, bool primary = false, string sprite = null)
         {
             var rect = Box(parent, text.Replace('\n', ' '), area, primary ? Accent : Panel);
             var outline = rect.GetComponent<Outline>() ?? rect.gameObject.AddComponent<Outline>(); outline.effectColor = primary ? Gold : new Color32(83, 71, 83, 255); outline.effectDistance = Vector2.one;
             var button = rect.gameObject.AddComponent<Button>(); button.targetGraphic = rect.GetComponent<Image>(); button.interactable = enabled;
             var colors = button.colors; colors.highlightedColor = new Color(1.25f, 1.2f, 1.1f); colors.disabledColor = new Color(.44f, .44f, .44f); button.colors = colors;
-            RitualSkin.Button(button, primary);
+            sprite = sprite ?? (rect.rect.width > rect.rect.height * 4.2f ? "MenuButton" : "Button");
+            if (DeskUISkin.Get(sprite) != null) DeskUISkin.Button(button, sprite);
+            else RitualSkin.Button(button, primary);
+            AdventureAudioController.BindButton(button);
             button.onClick.AddListener(() => onClick());
-            Label(rect, text, new Rect(.04f, .05f, .92f, .9f), 24, enabled ? Paper : Muted, TextAlignmentOptions.Center);
+            Label(rect, text, new Rect(.10f, .18f, .80f, .64f), 24, enabled ? Paper : Muted, TextAlignmentOptions.Center);
             return button;
         }
         private static void Clear(RectTransform root)
