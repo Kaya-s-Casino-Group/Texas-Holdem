@@ -8,7 +8,9 @@ namespace RetroRendering
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Configure()
         {
-            QualitySettings.vSyncCount = 0;
+            // Desktop should render at the display cadence instead of running the entire HUD
+            // hundreds of times per second. Mobile ignores vSync and uses its explicit cap.
+            QualitySettings.vSyncCount = Application.isMobilePlatform ? 0 : 1;
             OnDemandRendering.renderFrameInterval = 1;
             // Mobile builds use an explicit 60 FPS cap; -1 would restore Unity's 30 FPS default.
             Application.targetFrameRate = Application.isMobilePlatform ? 60 : -1;

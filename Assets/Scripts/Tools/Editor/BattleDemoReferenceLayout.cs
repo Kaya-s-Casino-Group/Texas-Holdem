@@ -237,6 +237,7 @@ public static class BattleDemoReferenceLayout
         importer.alphaIsTransparency = true; importer.mipmapEnabled = true;
         importer.textureCompression = TextureImporterCompression.Uncompressed;
         importer.wrapMode = TextureWrapMode.Clamp; importer.maxTextureSize = 2048;
+        Poker.EditorTools.PokerBuildAssetPolicy.ApplyStandalone(importer);
         importer.SaveAndReimport();
         var texture = AssetDatabase.LoadAssetAtPath<Texture2D>(texturePath);
         var visual = actor.Visual;

@@ -104,6 +104,7 @@ namespace Poker.Adventure.Editor
             importer.mipmapEnabled = true; importer.wrapMode = TextureWrapMode.Clamp;
             importer.filterMode = FilterMode.Trilinear; importer.maxTextureSize = 4096;
             importer.textureCompression = alpha ? TextureImporterCompression.Uncompressed : TextureImporterCompression.CompressedHQ;
+            Poker.EditorTools.PokerBuildAssetPolicy.ApplyStandalone(importer);
             importer.SaveAndReimport();
             return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
         }

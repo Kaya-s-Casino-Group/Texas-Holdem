@@ -10,6 +10,8 @@ namespace Poker.SingleBattle
     {
         public Node[] nodes = Array.Empty<Node>();
         public CanvasSettings[] canvases = Array.Empty<CanvasSettings>();
+        public int Version { get; private set; }
+        private void OnValidate() => Version++;
 
         public static string CanonicalPath(string path) => path.Replace("Safe Area/", "");
         public static bool Includes(string root, string path)
@@ -21,6 +23,7 @@ namespace Poker.SingleBattle
             if (path.StartsWith("Timeline Feedback") || path.StartsWith("Data Bindings") || path.StartsWith("Target Enemy")) return false;
             if (path == "Enemy" || path.StartsWith("Enemy/") || path.StartsWith("Enemy Intent")) return false;
             if (path.Contains("/Relic Icons/")) return false; // Runtime relic instances retain their content and adaptive grid.
+            if (path.Contains("/Concept Relic Slot ")) return false; // Slot frames use that same runtime grid.
             if (path.EndsWith("Health Bar/Fill") || path.EndsWith("Health Bar/Health Fill")) return false;
             return true;
         }

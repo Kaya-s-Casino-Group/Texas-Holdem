@@ -29,6 +29,7 @@ namespace Poker.SingleBattle
         private CardDuelState guideCacheState;
         private CardDuelEngine guideCacheEngine;
         private ParticipantId guideCacheActor;
+        private string guideCacheTargetSelection;
         private HandGuideResult guideResult;
         private CardOutlineCycle guideCycle;
         private Material guideOutlineMaterial;
@@ -133,7 +134,7 @@ namespace Poker.SingleBattle
             CancelHandGuidePreloads(); ClearGuideHighlights(true); ClearGuideCards();
             if (guideOverlay != null) guideOverlay.gameObject.SetActive(false);
             foreach (var pair in guideInputs) if (pair.Key != null) pair.Key.enabled = pair.Value;
-            guideInputs.Clear(); guideState = null; guideResult = null; guideTexts.Clear();
+            guideInputs.Clear(); guideState = null; guideResult = null;
             if (host != null && host.IsHandGuideOpen) host.SetHandGuideOpen(false);
             if (EventSystem.current != null && guidePreviousFocus != null && guidePreviousFocus.activeInHierarchy)
                 EventSystem.current.SetSelectedGameObject(guidePreviousFocus);
@@ -211,6 +212,11 @@ namespace Poker.SingleBattle
                 guideQueries.Clear(); guideTexts.Clear(); ClearGuideHighlights(true);
                 guideCacheState = guideState; guideCacheEngine = host.Engine; guideCacheActor = actor;
             }
+            // Target selection can change without a new rules snapshot while the window is closed.
+            // Reuse expensive settled text on reopen only when both snapshot and target choices match.
+            string targets = string.Join("|", host.PlayTargetChoices.Select(choice => choice.Slot + ":" + choice.SelectedId));
+            if (guideCacheTargetSelection != targets)
+            { guideCacheTargetSelection = targets; guideTexts.Clear(); }
             foreach (var pair in guideTypeButtons)
             {
                 pair.Value.GetComponent<Image>().color = pair.Key == guideType ? new Color32(104, 77, 40, 255) : new Color32(42, 44, 47, 255);
@@ -297,23 +303,26 @@ namespace Poker.SingleBattle
         {
             if (!guideTexts.TryGetValue(candidate.Id, out var text))
             {
-                var preview = host.Engine.PreviewHandGuide(guideState, candidate);
-                // Requested effect slots (e.g. the pair hit in a full house) use the current target,
-                // or the first living target. ActorPolicy effects retain their configured auto targeting.
-                var slots = new List<KeyValuePair<string, IEnumerable<ParticipantId>>>();
-                foreach (var step in (preview.BaseEffects?.Steps ?? Array.Empty<BattleEffectStep>()).Where(s => s.Target.Selection == EffectTargetSelection.Requested).GroupBy(s => s.Target.RequestSlot))
-                {
-                    var target = step.First().Target;
-                    var candidates = target.Group == EffectTargetGroup.Opponents ? guideState.Duel.Enemies.Select(e => e.Id) : guideState.Duel.Players.Select(p => p.Id);
-                    var living = candidates.Where(id => guideState.Duel.Combat.Get(id).IsAlive).ToArray();
-                    string selected = host.PlayTargetChoices.FirstOrDefault(c => c.Slot == step.Key)?.SelectedId;
-                    if (living.Length > 0) slots.Add(new KeyValuePair<string, IEnumerable<ParticipantId>>(step.Key,
-                        new[] { living.FirstOrDefault(id => id.Value == selected).IsValid ? living.First(id => id.Value == selected) : living[0] }));
-                }
-                preview = host.Engine.PreviewHandGuide(guideState, candidate, true, targetBindings: slots.Count == 0 ? null : new BattleTargetBindings(slots));
+                var preview = host.Engine.PreviewHandGuide(guideState, candidate, true, targetBindingResolver: ResolveGuideTargets);
                 text = new BattleHandGuideText(preview, host.Engine.Duel.Definition.StatusCatalog); guideTexts[candidate.Id] = text;
             }
             return text;
+        }
+        private BattleTargetBindings ResolveGuideTargets(BattleEffectSequence effects)
+        {
+            // Requested slots use the selected target or first living target. ActorPolicy effects
+            // retain their configured targeting; the engine still performs authoritative settlement.
+            var slots = new List<KeyValuePair<string, IEnumerable<ParticipantId>>>();
+            foreach (var step in (effects?.Steps ?? Array.Empty<BattleEffectStep>()).Where(s => s.Target.Selection == EffectTargetSelection.Requested).GroupBy(s => s.Target.RequestSlot))
+            {
+                var target = step.First().Target;
+                var candidates = target.Group == EffectTargetGroup.Opponents ? guideState.Duel.Enemies.Select(e => e.Id) : guideState.Duel.Players.Select(p => p.Id);
+                var living = candidates.Where(id => guideState.Duel.Combat.Get(id).IsAlive).ToArray();
+                string selected = host.PlayTargetChoices.FirstOrDefault(c => c.Slot == step.Key)?.SelectedId;
+                if (living.Length > 0) slots.Add(new KeyValuePair<string, IEnumerable<ParticipantId>>(step.Key,
+                    new[] { living.FirstOrDefault(id => id.Value == selected).IsValid ? living.First(id => id.Value == selected) : living[0] }));
+            }
+            return slots.Count == 0 ? null : new BattleTargetBindings(slots);
         }
         private void ShowGuideCandidate(int index, bool resetScroll = false)
         {

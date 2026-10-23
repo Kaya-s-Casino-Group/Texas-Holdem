@@ -25,8 +25,67 @@ namespace Poker.SingleBattle
         private const float ActionCenterX = .875f;
         private readonly Dictionary<string, Transform> targets = new Dictionary<string, Transform>();
         private readonly List<Image> relicSlots = new List<Image>();
-        public void Configure(SingleBattleSceneAdapter owner) { view = owner; Apply(); }
-        private void LateUpdate() => Apply();
+        private readonly BattleUILayoutRootState hudLayout = new BattleUILayoutRootState();
+        private readonly BattleUILayoutRootState actionsLayout = new BattleUILayoutRootState();
+        private readonly BattleUILayoutRootState pileLayout = new BattleUILayoutRootState();
+        private object layoutDisplay, layoutState, layoutCandidate;
+        private PlayerBattleActor layoutPlayer;
+        private bool layoutDiscardReady, layoutDirty = true;
+        private int layoutArtVersion;
+        private BattleDemoRelicArt relicArt;
+        public int LayoutVersion { get; private set; }
+        public void Configure(SingleBattleSceneAdapter owner) { view = owner; InvalidateLayout(); Apply(); }
+        public void InvalidateLayout() => layoutDirty = true;
+        public void SetWorldReferenceAspect(float aspect)
+        {
+            if (view == null) return;
+            view.Actions?.Hand?.GetComponent<BattleDemoViewportLayout>()?.SetReferenceAspect(aspect);
+            view.Player?.GetComponent<BattleBillboardLayout>()?.SetReferenceAspect(aspect);
+        }
+        private void OnEnable() { InvalidateLayout(); BindHud(); }
+        private void OnDisable() { if (hud != null && hud.DeskLayout == this) hud.DeskLayout = null; }
+        private void OnValidate() => InvalidateLayout();
+        private void LateUpdate() => RefreshLayout();
+
+        private bool BindHud()
+        {
+            if (hud == null) hud = GetComponent<SingleBattleHud>();
+            if (hud == null || view == null) return false;
+            if (isActiveAndEnabled) hud.DeskLayout = this;
+            if (relicArt == null) relicArt = GetComponent<BattleDemoRelicArt>();
+            return true;
+        }
+
+        // Observe a few roots and immutable presentation models, never the hundreds of UI descendants.
+        // Landing can change button readiness without producing a rules snapshot. The action panel
+        // owns sort captions and selection colors, so local sorting does not invalidate geometry.
+        public bool RefreshLayout()
+        {
+            if (!BindHud()) return false;
+            bool changed = ObserveLayout();
+            if (!layoutDirty && !changed) return false;
+            Apply(); return true;
+        }
+
+        private bool ObserveLayout()
+        {
+            var actions = view.Actions;
+            var panel = actions != null ? actions.Panel : null;
+            bool changed = hudLayout.Observe(transform);
+            changed |= actionsLayout.Observe(panel != null ? panel.transform : null);
+            changed |= pileLayout.Observe(view.DrawPile?.View != null ? view.DrawPile.View.transform : null);
+            bool discard = panel?.DiscardButton != null && panel.DiscardButton.interactable;
+            // Candidate also changes when a local sort starts/ends its card animation. It only
+            // affects this layout's shield preview while discarding is possible; otherwise it is 0.
+            var candidate = discard ? view.Candidate : null;
+            int artVersion = relicArt != null ? relicArt.Version : 0;
+            changed |= !ReferenceEquals(layoutDisplay, view.Display) || !ReferenceEquals(layoutState, view.AuthorityState) ||
+                !ReferenceEquals(layoutCandidate, candidate) || layoutPlayer != view.Player ||
+                layoutDiscardReady != discard || layoutArtVersion != artVersion;
+            layoutDisplay = view.Display; layoutState = view.AuthorityState; layoutCandidate = candidate;
+            layoutPlayer = view.Player; layoutDiscardReady = discard; layoutArtVersion = artVersion;
+            return changed;
+        }
         private Transform Find(string path)
         {
             if (targets.TryGetValue(path, out var value) && value != null) return value;
@@ -48,9 +107,13 @@ namespace Poker.SingleBattle
         }
         public void Apply()
         {
-            if (view == null) return;
-            if (hud == null) hud = GetComponent<SingleBattleHud>();
-            if (hud == null) return;
+            if (!BindHud()) return;
+            ApplyLayout();
+            layoutDirty = false; LayoutVersion++;
+            ObserveLayout();
+        }
+        private void ApplyLayout()
+        {
             if (font == null) font = hud.GetComponentsInChildren<TMP_Text>(true).First(t => t.font != null).font;
             foreach (var canvas in new[] { hud.GetComponent<Canvas>(), view.Actions?.Panel?.GetComponentInParent<Canvas>() })
             {
@@ -120,14 +183,11 @@ namespace Poker.SingleBattle
                 var image = button.GetComponent<Image>(); image.sprite = null; image.type = Image.Type.Simple; image.color = Color.clear; image.raycastTarget = true;
                 var label = button.GetComponentInChildren<TMP_Text>(); ConceptBattleSkin.Place(label.transform, new Rect(0, .1f, 1, .8f)); ConceptBattleSkin.Format(label, 16);
             }
-            bool suit = view.Actions.Hand.SortOrder == CardZoneSortOrder.SuitFirst;
-            var rank = panel.RankSortButton.GetComponentInChildren<TMP_Text>(); var suits = panel.SuitSortButton.GetComponentInChildren<TMP_Text>();
-            rank.text = "点数"; suits.text = "花色";
+            panel.SetSortPresentation("点数", "花色", ConceptBattleSkin.Paper, ConceptBattleSkin.Gold);
             ConceptBattleSkin.Art(sort.transform, "Rank Arrow", "Icons/icon_sort_triangle", new Rect(.06f, .31f, .06f, .38f));
             var arrow = ConceptBattleSkin.Art(sort.transform, "Suit Arrow", "Icons/icon_sort_triangle", new Rect(.88f, .31f, .06f, .38f));
             arrow.transform.localRotation = Quaternion.Euler(0,0,180);
             ConceptBattleSkin.Text(sort.transform, "Divider", font, new Rect(.47f,.12f,.06f,.76f), "|", 17);
-            rank.color = suit ? ConceptBattleSkin.Paper : ConceptBattleSkin.Gold; suits.color = suit ? ConceptBattleSkin.Gold : ConceptBattleSkin.Paper;
             ConceptBattleSkin.Button(hud.EndTurnButton, new Rect(ActionCenterX - .0855f, FooterY + (FooterHeight - .073f) * .5f, .171f, .073f), "Panels/panel_button_secondary", 25);
         }
         private void LayoutPreview()
@@ -197,9 +257,14 @@ namespace Poker.SingleBattle
                     if (i < entries.Length) entries[i].GetComponent<BattleDemoRelicHoverTarget>()?.BindBase(slot);
                     rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(0, 1);
                     rect.anchoredPosition = new Vector2(i % 2 * step + insetX, -((RectTransform)rail).rect.height * .10f - insetY - i / 2 * step);
-                    rect.sizeDelta = Vector2.one * cell; rect.SetAsFirstSibling();
+                    rect.sizeDelta = Vector2.one * cell;
                 }
-                icons.SetAsLastSibling();
+                // Preserve the original back-to-front order without rotating every sibling.
+                for (int i = 0; i < relicSlots.Count; i++)
+                {
+                    var slot = relicSlots[relicSlots.Count - 1 - i].transform;
+                    if (slot.GetSiblingIndex() != i) slot.SetSiblingIndex(i);
+                }
                 for (int i = 0; i < entries.Length; i++)
                 {
                     var rect = entries[i].rectTransform; rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(0, 1);
@@ -210,6 +275,11 @@ namespace Poker.SingleBattle
             ConceptBattleSkin.Art(feedback, "Relic Heading Frame", "Panels/panel_counter", new Rect(0, 0, 1, .087f));
             var heading = feedback.Find("Heading");
             if (heading != null) { ConceptBattleSkin.Place(heading, new Rect(.08f, .005f, .84f, .076f)); var label = heading.GetComponent<TMP_Text>(); ConceptBattleSkin.Format(label, 19); label.text = "遗物 " + count; heading.SetAsLastSibling(); }
+            if (icons != null)
+            {
+                int index = feedback.childCount - (heading != null ? 2 : 1);
+                if (icons.GetSiblingIndex() != index) icons.SetSiblingIndex(index);
+            }
         }
         private void LayoutTools()
         {

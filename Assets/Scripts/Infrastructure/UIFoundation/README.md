@@ -16,6 +16,10 @@ number.SetTarget(1.25m);
 
 ## 屏幕安全区
 
+`PokerDisplaySettings` 在独立桌面 Player 首次启动时使用 2340×1080 窗口；游戏设置提供 2340×1080、1920×1080、1560×720、1280×720 四档，应用后保存并在下次启动恢复。窗口禁用拖拽缩放和全屏切换，通过设置修改分辨率。Editor 不强制分辨率，方便预览不同设备。iOS / Android 保持原生分辨率，只允许左右横屏，继续使用 CanvasScaler 与下述安全区适配，不执行桌面的 SetResolution。
+
 `ScreenSafeArea.ScreenRect(Canvas)` 与 `CameraRect(Camera)` 将 `Screen.safeArea` 按系统屏幕尺寸归一化，再换算到实际显示尺寸并与当前 viewport 相交。Device Simulator、Editor 预览相机和不同朝向的离屏测试可能返回不同的屏幕与输出尺寸，不能直接混用像素坐标。分屏相机由 `pixelRect / rect` 得到完整显示尺寸；RenderTexture 相机使用自己的 viewport，不继承设备刘海区域。
 
 `CalculateDisplaySafeRect` 提供相同换算的纯计算入口。卡牌世界空间 tooltip 使用 `CameraRect` 限制位置，Canvas UI 使用 `ScreenRect`；移动端额外边距和 tooltip 自身留白仍各自生效。
+
+保存过布局的战斗 UI 通过 `ScreenSafeArea.SetReferenceSize` 在安全区中居中、等比适配设计画布，锚点和固定像素偏移使用同一坐标系。手牌与人物立绘采用相同参考宽高比，背景继续铺满屏幕。敌人工作台布局则以各条目的 `referenceAspect` 同时换算位置和大小，HUD 以 `referenceHudHeight` 换算偏移与尺寸，确保 Boss 本体和各只手在切换宽高比时仍保持组合关系。

@@ -70,6 +70,7 @@ public static class BattleDemoPortraitSetup
         importer.npotScale = TextureImporterNPOTScale.None;
         importer.textureCompression = TextureImporterCompression.Uncompressed;
         importer.wrapMode = TextureWrapMode.Clamp; importer.maxTextureSize = 2048;
+        Poker.EditorTools.PokerBuildAssetPolicy.ApplyStandalone(importer);
         importer.SaveAndReimport();
         return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
     }

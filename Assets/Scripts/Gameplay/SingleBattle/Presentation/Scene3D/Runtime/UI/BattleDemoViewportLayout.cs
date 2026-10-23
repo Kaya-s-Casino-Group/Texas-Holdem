@@ -16,14 +16,21 @@ namespace Poker.SingleBattle
         [SerializeField] private Rect backdropArea = new Rect(.284f, .006f, .71f, .258f);
         [SerializeField] private bool backdropPreserveAspect;
         private Vector2 lastSize;
+        private float referenceAspect;
         public void Configure(Camera camera, HandZoneView view) { viewCamera=camera; hand=view; Refresh(); }
         public void ConfigureBackdrop(Transform value) { backdrop = value; Refresh(); }
+        public void SetReferenceAspect(float aspect)
+        {
+            if (Mathf.Approximately(referenceAspect, aspect)) return;
+            referenceAspect = aspect; Refresh();
+        }
         private void LateUpdate() => Refresh();
         public void Refresh()
         {
             if(viewCamera==null||hand==null)return;
             var viewport=viewCamera.pixelRect;
             var safe=Application.isPlaying?ScreenSafeArea.CameraRect(viewCamera):viewport;
+            safe=ScreenSafeArea.FitAspect(safe,referenceAspect);
             float w=Mathf.Max(1,viewCamera.pixelWidth),h=Mathf.Max(1,viewCamera.pixelHeight);
             var origin=safe.position-viewport.position;
             var center=new Vector3((origin.x+safe.width*handArea.center.x)/w,(origin.y+safe.height*handArea.center.y)/h,distance);

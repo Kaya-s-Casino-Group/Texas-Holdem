@@ -54,6 +54,55 @@ namespace Poker.SingleBattle.Tests
                     var expected = authored.Profile.nodes.Single(n => n.root == "HandActionPanel" && n.pose.path == "Actions/Discard").pose;
                     Assert.That(Vector2.Distance(((RectTransform)discard).sizeDelta, expected.sizeDelta), Is.LessThan(.001f));
                 }
+                // Automatic idle frames must retain the authored result without restoring
+                // the desk defaults and immediately writing the profile over them again.
+                for (int frame = 0; frame < 4; frame++) { host.RefreshCandidate(); host.Actions.Refresh(); desk.RefreshLayout(); authored.RefreshLayout(); }
+                int deskVersion = desk.LayoutVersion, authoredVersion = authored.LayoutVersion;
+                var stablePlayer = authored.Resolve("Battle HUD", "Player"); stablePlayer.hasChanged = false;
+                for (int frame = 0; frame < 30; frame++)
+                {
+                    host.RefreshCandidate(); host.Actions.Refresh(); // Runtime presenters run before the layouts.
+                    Assert.IsFalse(desk.RefreshLayout(), "Idle desk layout rebuilt");
+                    Assert.IsFalse(authored.RefreshLayout(), "Idle authored layout rebuilt");
+                    AssertSortPresentation(host, host.Actions.Hand.SortOrder == CardInteraction.CardZoneSortOrder.SuitFirst);
+                }
+                Assert.That(desk.LayoutVersion, Is.EqualTo(deskVersion));
+                Assert.That(authored.LayoutVersion, Is.EqualTo(authoredVersion));
+                Assert.IsFalse(stablePlayer.hasChanged, "Two layout owners still rewrote the player's pose");
+                foreach (bool suitFirst in new[] { true, false })
+                {
+                    if (suitFirst) host.Actions.SortBySuit(); else host.Actions.SortByRank();
+                    Assert.AreEqual(suitFirst ? CardInteraction.CardZoneSortOrder.SuitFirst : CardInteraction.CardZoneSortOrder.RankFirst,
+                        host.Actions.Hand.SortOrder);
+                    for (int frame = 0; frame < 30; frame++)
+                    {
+                        // Observe both the sorting animation and the return to input-ready state.
+                        // Each can replace Candidate without changing the zero discard preview.
+                        if (frame == 15) host.Actions.Hand.GetComponent<CardPresentation.HandZoneView>().CompleteTransitions();
+                        host.RefreshCandidate(); host.Actions.Refresh();
+                        Assert.IsFalse(desk.RefreshLayout(), "Sorting should only update its own panel state");
+                        Assert.IsFalse(authored.RefreshLayout(), "Sorting does not change authored geometry");
+                        AssertSortPresentation(host, suitFirst);
+                    }
+                    Assert.That(desk.LayoutVersion, Is.EqualTo(deskVersion));
+                    Assert.That(authored.LayoutVersion, Is.EqualTo(authoredVersion));
+                }
+                var discardCards = host.Actions.Hand.Cards.Where(card => card.Card.CanDiscard).Take(2).ToArray();
+                Assert.AreEqual(2, discardCards.Length);
+                foreach (var card in discardCards)
+                {
+                    host.Actions.Hand.SetInteraction(card.Id, new CardPresentation.CardInteractionState(isSelected: true));
+                    host.Actions.Hand.Publish();
+                    host.Actions.Hand.GetComponent<CardPresentation.HandZoneView>().CompleteTransitions();
+                    host.RefreshCandidate(); host.Actions.Refresh();
+                    Assert.IsTrue(host.Actions.Panel.DiscardButton.interactable);
+                    Assert.IsTrue(desk.RefreshLayout(), "An actionable changed discard candidate must refresh its shield preview");
+                    authored.RefreshLayout();
+                    long gain = BattleResourceWidgets.DiscardShieldGain(host.PreviewSelectedDiscard(), host.Player.ParticipantId);
+                    Assert.That(host.Actions.Panel.DiscardButton.transform.Find("Discard Shield Preview/Shield Count")
+                        .GetComponent<TMP_Text>().text, Is.EqualTo("+" + gain));
+                    Assert.IsFalse(desk.RefreshLayout(), "The same actionable candidate must stay cached");
+                }
                 var liquid = All<BattleActionPointLiquid>(scene).Single(); liquid.SetActions(1);
                 var energy = authored.Resolve("Battle HUD", "Concept Action Points/Energy").GetComponent<TMP_Text>(); energy.text = "1";
                 var shield = host.Actions.Panel.DiscardButton.transform.Find("Discard Shield Preview/Shield Count").GetComponent<TMP_Text>(); shield.text = "+19";
@@ -66,6 +115,15 @@ namespace Poker.SingleBattle.Tests
                 host.Actions.Hand.StopSession();
             }
             finally { EditorSceneManager.CloseScene(scene, true); AssetDatabase.DeleteAsset(scratch); }
+        }
+
+        private static void AssertSortPresentation(SingleBattleSceneAdapter host, bool suitFirst)
+        {
+            var rank = host.Actions.Panel.RankSortButton.GetComponentInChildren<TMP_Text>();
+            var suit = host.Actions.Panel.SuitSortButton.GetComponentInChildren<TMP_Text>();
+            Assert.AreEqual("点数", rank.text); Assert.AreEqual("花色", suit.text);
+            Assert.AreEqual(suitFirst ? ConceptBattleSkin.Paper : ConceptBattleSkin.Gold, rank.color);
+            Assert.AreEqual(suitFirst ? ConceptBattleSkin.Gold : ConceptBattleSkin.Paper, suit.color);
         }
 
         [Test]

@@ -22,6 +22,7 @@ namespace Poker.SingleBattle
             public string encounter, actorId;
             public Vector2 actorViewport;
             public float depth, referenceFrustumHeight, referenceAspect;
+            public float referenceHudHeight = 720;
             public Vector3 actorScale;
             public Quaternion cameraRelativeRotation;
             public Vector3 artworkPosition, artworkScale = Vector3.one;

@@ -110,13 +110,47 @@ public static class PokerBuild
     [MenuItem("工具/构建发布/macOS/构建游戏")]
     public static void BuildMac()
     {
+        if (EditorApplication.isPlayingOrWillChangePlaymode)
+            throw new System.InvalidOperationException("Exit Play Mode before building.");
+        if (!BuildPipeline.IsBuildTargetSupported(BuildTargetGroup.Standalone, BuildTarget.StandaloneOSX))
+            throw new System.InvalidOperationException("Install macOS Build Support for this Unity version.");
+        const string scenePath = "Assets/Scenes/SingleChapterAdventure.unity";
+        var scene = SceneManager.GetSceneByPath(scenePath);
+        if (scene.IsValid() && scene.isDirty && !EditorSceneManager.SaveScene(scene))
+            throw new System.InvalidOperationException("Could not save the adventure scene.");
+
+        PokerAppIcon.Apply();
         PlayerSettings.productName = "Pocket Poker";
         PlayerSettings.companyName = "Pocket Games";
-        PlayerSettings.defaultScreenWidth = 1280;
-        PlayerSettings.defaultScreenHeight = 800;
+        PlayerSettings.defaultScreenWidth = 2340;
+        PlayerSettings.defaultScreenHeight = 1080;
+        PlayerSettings.defaultIsNativeResolution = false;
+        PlayerSettings.resizableWindow = false;
+        PlayerSettings.allowFullscreenSwitch = false;
         PlayerSettings.fullScreenMode = FullScreenMode.Windowed;
-        var report = BuildPipeline.BuildPlayer(new[] { "Assets/Scenes/BattleDemo.unity" }, "Builds/Pocket Poker.app", BuildTarget.StandaloneOSX, BuildOptions.None);
-        if (report.summary.result != BuildResult.Succeeded) throw new System.Exception("Build failed: " + report.summary.result);
-        Debug.Log("POKER_BUILD_OK");
+        var output = "Builds/macOS-" + System.DateTime.Now.ToString("yyyyMMdd-HHmmss");
+        Directory.CreateDirectory(output);
+        AssetDatabase.SaveAssets();
+        File.WriteAllText(output + "/build-status.txt", "Building: " + scenePath);
+        try
+        {
+            var report = BuildPipeline.BuildPlayer(new[] { scenePath }, output + "/Pocket Poker.app",
+                BuildTarget.StandaloneOSX, BuildOptions.None);
+            var messages = new System.Text.StringBuilder();
+            foreach (var step in report.steps)
+                foreach (var message in step.messages)
+                    messages.AppendLine(message.type + ": " + message.content);
+            File.WriteAllText(output + "/build-messages.txt", messages.ToString());
+            File.WriteAllText(output + "/build-status.txt",
+                report.summary.result + ": " + scenePath + "; errors=" + report.summary.totalErrors);
+            if (report.summary.result != BuildResult.Succeeded)
+                throw new System.Exception("Build failed: " + report.summary.result);
+            Debug.Log("POKER_BUILD_OK: " + output);
+        }
+        catch (System.Exception exception)
+        {
+            File.WriteAllText(output + "/build-status.txt", "Failed: " + exception);
+            throw;
+        }
     }
 }

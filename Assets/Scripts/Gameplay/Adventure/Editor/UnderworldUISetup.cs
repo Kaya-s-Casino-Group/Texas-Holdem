@@ -36,7 +36,9 @@ namespace Poker.Adventure.Editor
                 importer.textureType = TextureImporterType.Default; importer.npotScale = TextureImporterNPOTScale.None;
                 importer.alphaIsTransparency = file.EndsWith("Nodes.png"); importer.mipmapEnabled = false;
                 importer.maxTextureSize = 4096; importer.wrapMode = TextureWrapMode.Clamp;
-                importer.textureCompression = TextureImporterCompression.Uncompressed; importer.SaveAndReimport();
+                importer.textureCompression = TextureImporterCompression.Uncompressed;
+                Poker.EditorTools.PokerBuildAssetPolicy.ApplyStandalone(importer);
+                importer.SaveAndReimport();
             }
             replacements.Clear(); Directory.CreateDirectory(Art + "Materials"); Directory.CreateDirectory(Art + "Prefabs"); AssetDatabase.Refresh();
             atlas = AssetDatabase.LoadAssetAtPath<CardAtlasData>("Assets/Art/CardAtlases/FourBeastsAtlas.asset");

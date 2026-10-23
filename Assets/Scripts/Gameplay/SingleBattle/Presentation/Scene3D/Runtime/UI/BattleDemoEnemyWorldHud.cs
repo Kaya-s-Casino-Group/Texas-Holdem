@@ -104,7 +104,9 @@ namespace Poker.SingleBattle
                 }
                 view.StatusRow = Rect("Statuses", rect, new Vector2(184, 28), Vector2.zero);
                 view.Regeneration = Text("Revive Countdown", rect, new Vector2(200, 36), 20);
-                view.Regeneration.color = BattleDemoEnemyHudModel.AttackColor;
+                view.Regeneration.color = new Color32(193, 136, 239, 255);
+                view.Regeneration.outlineWidth = .25f;
+                view.Regeneration.outlineColor = new Color32(35, 16, 49, 255);
                 view.Regeneration.gameObject.SetActive(false);
                 view.IntentRow = Rect("Intents", rect, new Vector2(210, 42), Vector2.zero);
                 view.Tooltip = Rect("Enemy Badge Tooltip", rect, new Vector2(228, 94), Vector2.zero);

@@ -51,6 +51,7 @@ public static class BattleLayoutWorkshopImport
                         encounter = Encounters[i], actorId = id, actorViewport = viewport, depth = viewport.z,
                         referenceFrustumHeight = camera.orthographic ? 2 * camera.orthographicSize : 2 * viewport.z * Mathf.Tan(camera.fieldOfView * Mathf.Deg2Rad * .5f),
                         referenceAspect = camera.aspect, actorScale = actor.lossyScale,
+                        referenceHudHeight = camera.pixelRect.height / canvas.scaleFactor,
                         cameraRelativeRotation = Quaternion.Inverse(camera.transform.rotation) * actor.rotation,
                         artworkPosition = art.localPosition, artworkRotation = art.localRotation, artworkScale = art.localScale,
                         hudOffset = (hudScreen - (Vector2)camera.WorldToScreenPoint(actor.position)) / canvas.scaleFactor,

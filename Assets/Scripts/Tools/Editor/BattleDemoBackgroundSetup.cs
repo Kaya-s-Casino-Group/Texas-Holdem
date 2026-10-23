@@ -90,6 +90,7 @@ public static class BattleDemoBackgroundSetup
         importer.wrapMode = TextureWrapMode.Clamp; importer.filterMode = FilterMode.Trilinear;
         importer.maxTextureSize = 4096;
         importer.textureCompression = TextureImporterCompression.CompressedHQ;
+        Poker.EditorTools.PokerBuildAssetPolicy.ApplyStandalone(importer);
         importer.SaveAndReimport();
         string path = Art + "/Materials/" + prefix + "_" + (materialName ?? layer) + ".mat";
         var material = AssetDatabase.LoadAssetAtPath<Material>(path);

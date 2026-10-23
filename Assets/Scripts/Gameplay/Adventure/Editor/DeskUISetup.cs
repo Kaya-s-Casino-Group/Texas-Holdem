@@ -34,6 +34,7 @@ namespace Poker.Adventure.Editor
                 string name = Path.GetFileNameWithoutExtension(path);
                 if (name == "ContentButton") importer.spriteBorder = new Vector4(280, 300, 280, 300);
                 if (name == "ContentPanel") importer.spriteBorder = new Vector4(180, 180, 180, 180);
+                Poker.EditorTools.PokerBuildAssetPolicy.ApplyStandalone(importer);
                 importer.SaveAndReimport();
             }
             var roots = scene.GetRootGameObjects();

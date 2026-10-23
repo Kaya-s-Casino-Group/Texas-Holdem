@@ -52,6 +52,8 @@ namespace CardPresentation
         private Sequence visibilityTween;
         private bool wantsVisible = true;
         public event Action Closed;
+        public event Action Shown;
+        public event Action Hidden;
         public bool IsOpen => wantsVisible && isActiveAndEnabled;
         public RectTransform Frame => frame != null ? frame : (frame = (transform.Find("Frame") ?? transform.Find("Safe Area/Frame")) as RectTransform);
         public bool ContainsPointer(Vector2 screenPoint) => IsOpen && Frame != null &&
@@ -252,6 +254,7 @@ namespace CardPresentation
             if (wasOpen) return;
             visibilityTween?.Kill(); visibilityTween = null;
             presentationGroup.blocksRaycasts = presentationGroup.interactable = true;
+            Shown?.Invoke();
             if (!animate || !Application.isPlaying) { if (frame != null) frame.anchoredPosition = frameRest; presentationGroup.alpha = 1; return; }
             if (!wasActive || presentationGroup.alpha <= .001f)
             { if (frame != null) frame.anchoredPosition = frameRest-Vector2.up*entranceDistance; presentationGroup.alpha = 0; }
@@ -320,6 +323,7 @@ namespace CardPresentation
         private void OnDisable()
         {
             visibilityTween?.Kill(); visibilityTween = null;
+            Hidden?.Invoke();
             if (frame != null && presentationGroup != null) frame.anchoredPosition = frameRest;
             Canvas.willRenderCanvases -= RefreshLayoutIfResized;
             if (closeButton != null) closeButton.onClick.RemoveListener(Close);

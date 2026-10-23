@@ -128,6 +128,71 @@ namespace CardPresentation.Tests
             }
         }
 
+        [Test]
+        public void DeckOverviewReturnClosesOverWorldCardsAndRestoresInputOnReopen()
+        {
+            using (var f = new Fixture(1))
+            {
+                var eventsObject = new GameObject("Overview Events", typeof(EventSystem));
+                var cameraObject = new GameObject("Overview Card Camera", typeof(Camera));
+                var disabledObject = new GameObject("Already Disabled Card Input", typeof(CardZoneMouseInput));
+                var overviewObject = Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(DeckOverviewSetup.PrefabPath));
+                CardZoneMouseInput input = null;
+                PriorityTestGraphicRaycaster uiRaycaster = null;
+                try
+                {
+                    foreach (var item in new[] { eventsObject, cameraObject, disabledObject, overviewObject })
+                        SceneManager.MoveGameObjectToScene(item, f.Scene);
+                    var events = eventsObject.GetComponent<EventSystem>();
+                    var camera = cameraObject.GetComponent<Camera>();
+                    var ray = f.RayAt(f.Zone.Views[0]);
+                    camera.transform.SetPositionAndRotation(ray.origin, Quaternion.LookRotation(ray.direction, Vector3.forward));
+                    camera.orthographic = true; camera.orthographicSize = 1;
+                    input = f.Root.AddComponent<CardZoneMouseInput>(); input.Bind(f.Zone, f.Model, camera);
+                    var disabled = disabledObject.GetComponent<CardZoneMouseInput>(); disabled.enabled = false;
+                    var view = overviewObject.GetComponent<DeckOverviewView>(); view.Close(false);
+                    Object.DestroyImmediate(overviewObject.GetComponent<GraphicRaycaster>());
+                    uiRaycaster = overviewObject.AddComponent<PriorityTestGraphicRaycaster>(); uiRaycaster.Target = view.CloseButton.gameObject;
+                    var presenter = overviewObject.AddComponent<DeckOverviewPresenter>();
+                    var fields = new SerializedObject(presenter); fields.FindProperty("view").objectReferenceValue = view;
+                    fields.ApplyModifiedPropertiesWithoutUndo();
+                    var pointer = new PointerEventData(events) { position = camera.WorldToScreenPoint(f.Zone.Views[0].transform.position), button = PointerEventData.InputButton.Left };
+                    var hits = new List<RaycastResult>();
+                    input.Raycast(pointer, hits);
+                    Assert.IsTrue(hits.Any(hit => hit.module == input), "The return position must overlap a real world card.");
+                    for (int cycle = 0; cycle < 2; cycle++)
+                    {
+                        // Runtime raycasters need explicit registration in an EditMode fixture.
+                        if (!RaycasterManager.GetRaycasters().Contains(input)) RaycasterManager.GetRaycasters().Add(input);
+                        presenter.Open(false);
+                        if (!RaycasterManager.GetRaycasters().Contains(uiRaycaster)) RaycasterManager.GetRaycasters().Add(uiRaycaster);
+                        var closeRect = (RectTransform)view.CloseButton.transform;
+                        closeRect.position = new Vector3(pointer.position.x, pointer.position.y, closeRect.position.z);
+                        Assert.IsTrue(RectTransformUtility.RectangleContainsScreenPoint(closeRect, pointer.position));
+                        Assert.IsFalse(input.enabled, "The overview must suspend the overlapping hand.");
+                        Assert.IsFalse(disabled.enabled);
+                        hits.Clear(); events.RaycastAll(pointer, hits);
+                        Assert.IsNotEmpty(hits); Assert.AreSame(view.CloseButton.gameObject, hits[0].gameObject);
+                        ExecuteEvents.ExecuteHierarchy(hits[0].gameObject, pointer, ExecuteEvents.pointerClickHandler);
+                        Assert.IsFalse(view.IsOpen, "Clicking Return through the EventSystem must close the overview.");
+                        Assert.IsFalse(view.gameObject.activeSelf);
+                        Assert.IsTrue(input.enabled, "Closing must restore the previously enabled hand.");
+                        Assert.IsFalse(disabled.enabled, "Closing must preserve an input disabled before opening.");
+                        Assert.IsFalse(f.Model.Cards[0].IsSelected, "The modal click must not select the underlying card.");
+                        hits.Clear(); input.Raycast(pointer, hits);
+                        Assert.IsTrue(hits.Any(hit => hit.module == input), "World card raycasts must resume after every close.");
+                    }
+                }
+                finally
+                {
+                    if (input != null) RaycasterManager.GetRaycasters().Remove(input);
+                    if (uiRaycaster != null) RaycasterManager.GetRaycasters().Remove(uiRaycaster);
+                    Object.DestroyImmediate(overviewObject); Object.DestroyImmediate(disabledObject);
+                    Object.DestroyImmediate(cameraObject); Object.DestroyImmediate(eventsObject);
+                }
+            }
+        }
+
         [Test] public void TouchHoldHoversAndReleaseSelectsOnceThenClearsHover()
         {
             using (var f = new Fixture())

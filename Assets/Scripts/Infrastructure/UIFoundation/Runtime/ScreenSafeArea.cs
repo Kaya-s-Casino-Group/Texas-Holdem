@@ -9,8 +9,25 @@ namespace UIFoundation
         private Canvas canvas;
         private RectTransform content, fittedPanel;
         private Vector3 panelScale;
+        private Vector2 referenceSize;
         public RectTransform Content => content;
         public const float MobilePadding = 16;
+
+        // Authored anchor positions and pixel offsets must share one reference rectangle.
+        public void SetReferenceSize(Vector2 size)
+        {
+            referenceSize = size.x > 0 && size.y > 0 ? size : Vector2.zero;
+            Refresh();
+        }
+
+        public static Rect FitAspect(Rect bounds, float aspect)
+        {
+            if (bounds.width <= 0 || bounds.height <= 0 || aspect <= 0 || float.IsNaN(aspect) || float.IsInfinity(aspect)) return bounds;
+            var size = bounds.width / bounds.height > aspect
+                ? new Vector2(bounds.height * aspect, bounds.height)
+                : new Vector2(bounds.width, bounds.width / aspect);
+            return new Rect(bounds.center - size * .5f, size);
+        }
 
         public static ScreenSafeArea Ensure(Canvas owner, RectTransform fitPanel = null, Transform fullBleed = null)
         {
@@ -80,10 +97,29 @@ namespace UIFoundation
             var viewport = canvas.pixelRect;
             if (viewport.width <= 0 || viewport.height <= 0) return;
             var safe = ScreenRect(canvas);
-            var min = new Vector2((safe.xMin-viewport.xMin)/viewport.width, (safe.yMin-viewport.yMin)/viewport.height);
-            var max = new Vector2((safe.xMax-viewport.xMin)/viewport.width, (safe.yMax-viewport.yMin)/viewport.height);
-            if (content.anchorMin != min) content.anchorMin = min;
-            if (content.anchorMax != max) content.anchorMax = max;
+            if (referenceSize.x > 0 && referenceSize.y > 0)
+            {
+                var fitted = FitAspect(safe, referenceSize.x / referenceSize.y);
+                var center = new Vector2((fitted.center.x - viewport.xMin) / viewport.width,
+                    (fitted.center.y - viewport.yMin) / viewport.height);
+                content.anchorMin = content.anchorMax = center;
+                content.pivot = new Vector2(.5f, .5f);
+                content.anchoredPosition = Vector2.zero;
+                content.sizeDelta = referenceSize;
+                // Use the current Canvas geometry: scaleFactor can lead its rebuilt rect during a viewport change.
+                float unitsPerPixel = ((RectTransform)canvas.transform).rect.height / viewport.height;
+                float contentScale = fitted.height * unitsPerPixel / referenceSize.y;
+                content.localScale = new Vector3(contentScale, contentScale, 1);
+            }
+            else
+            {
+                var min = new Vector2((safe.xMin-viewport.xMin)/viewport.width, (safe.yMin-viewport.yMin)/viewport.height);
+                var max = new Vector2((safe.xMax-viewport.xMin)/viewport.width, (safe.yMax-viewport.yMin)/viewport.height);
+                if (content.anchorMin != min) content.anchorMin = min;
+                if (content.anchorMax != max) content.anchorMax = max;
+                content.offsetMin = content.offsetMax = Vector2.zero;
+                content.localScale = Vector3.one;
+            }
             if (fittedPanel == null) return;
             var size = Vector2.Scale(fittedPanel.rect.size, new Vector2(panelScale.x, panelScale.y));
             if (size.x <= 0 || size.y <= 0) return;

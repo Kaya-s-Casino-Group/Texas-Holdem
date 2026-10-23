@@ -719,8 +719,8 @@ MonoBehaviour:
     artworkPosition: {x: 0, y: 0, z: 0}
     artworkScale: {x: 1, y: 1, z: 1}
     artworkRotation: {x: 0, y: 0, z: 0, w: 1}
-    hudOffset: {x: 14.881836, y: 227.4571}
-    hudViewport: {x: 0.64, y: 0.78541666}
+    hudOffset: {x: 14.881999, y: 227.45709}
+    hudViewport: {x: 0.6398343, y: 0.78541666}
     fixedHud: 1
     hudRoot:
       path: 
@@ -745,8 +745,8 @@ MonoBehaviour:
       anchorMin: {x: 0.5, y: 0.5}
       anchorMax: {x: 0.5, y: 0.5}
       pivot: {x: 0.5, y: 0.5}
-      sizeDelta: {x: 560, y: 83.73114}
-      position: {x: -177.6, y: 86, z: 0}
+      sizeDelta: {x: 403.7268, y: 47.779}
+      position: {x: -32.3, y: 14.8, z: 0}
       scale: {x: 1, y: 1, z: 1}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       hasText: 0
@@ -898,8 +898,8 @@ MonoBehaviour:
       anchorMin: {x: 0.5, y: 0.5}
       anchorMax: {x: 0.5, y: 0.5}
       pivot: {x: 0.5, y: 0.5}
-      sizeDelta: {x: 433.7139, y: 43.2}
-      position: {x: -183.84312, y: 36.100018, z: 0}
+      sizeDelta: {x: 302.53, y: 30.133}
+      position: {x: -31.265, y: -15.067, z: 0}
       scale: {x: 1, y: 1, z: 1}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       hasText: 0
@@ -915,8 +915,8 @@ MonoBehaviour:
       anchorMin: {x: 0.5, y: 0.5}
       anchorMax: {x: 0.5, y: 0.5}
       pivot: {x: 0.5, y: 0.5}
-      sizeDelta: {x: 210, y: 42}
-      position: {x: -166.1, y: 118.7, z: 0}
+      sizeDelta: {x: 151.3976, y: 23.9662}
+      position: {x: -24.009277, y: 33.45939, z: 0}
       scale: {x: 1, y: 1, z: 1}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       hasText: 0
@@ -1024,8 +1024,8 @@ MonoBehaviour:
     artworkPosition: {x: 0, y: 0, z: 0}
     artworkScale: {x: 1, y: 1, z: 1}
     artworkRotation: {x: 0, y: 0, z: 0, w: 1}
-    hudOffset: {x: 17.41827, y: 75.70761}
-    hudViewport: {x: 0.5501516, y: 0.4677336}
+    hudOffset: {x: 17.418213, y: 75.7076}
+    hudViewport: {x: 0.5500922, y: 0.46773356}
     fixedHud: 0
     hudRoot:
       path: 
@@ -1329,8 +1329,8 @@ MonoBehaviour:
     artworkPosition: {x: 0, y: 0, z: 0}
     artworkScale: {x: 1, y: 1, z: 1}
     artworkRotation: {x: 0, y: 0, z: 0, w: 1}
-    hudOffset: {x: 108.48693, y: 9.002329}
-    hudViewport: {x: 0.83122534, y: 0.48708335}
+    hudOffset: {x: 108.4869, y: 9.002319}
+    hudViewport: {x: 0.8308333, y: 0.48708332}
     fixedHud: 0
     hudRoot:
       path: 
@@ -1634,8 +1634,8 @@ MonoBehaviour:
     artworkPosition: {x: 0, y: 0, z: 0}
     artworkScale: {x: 1, y: 1, z: 1}
     artworkRotation: {x: 0, y: 0, z: 0, w: 1}
-    hudOffset: {x: 146.98761, y: -55.76307}
-    hudViewport: {x: 0.82609105, y: 0.6745833}
+    hudOffset: {x: 146.98755, y: -55.76306}
+    hudViewport: {x: 0.8257051, y: 0.6745833}
     fixedHud: 0
     hudRoot:
       path: 
@@ -1939,8 +1939,8 @@ MonoBehaviour:
     artworkPosition: {x: 0, y: 0, z: 0}
     artworkScale: {x: 1, y: 1, z: 1}
     artworkRotation: {x: 0, y: 0, z: 0, w: 1}
-    hudOffset: {x: -16.562876, y: 99.19092}
-    hudViewport: {x: 0.6948768, y: 0.5368535}
+    hudOffset: {x: -16.562744, y: 99.19092}
+    hudViewport: {x: 0.6946461, y: 0.5368535}
     fixedHud: 0
     hudRoot:
       path: 
@@ -2244,8 +2244,8 @@ MonoBehaviour:
     artworkPosition: {x: 0, y: 0, z: 0}
     artworkScale: {x: 1, y: 1, z: 1}
     artworkRotation: {x: 0, y: 0, z: 0, w: 1}
-    hudOffset: {x: -24.027794, y: 5.4902344}
-    hudViewport: {x: 0.5052369, y: 0.70317334}
+    hudOffset: {x: -24.027832, y: 5.4902344}
+    hudViewport: {x: 0.5052307, y: 0.7031734}
     fixedHud: 0
     hudRoot:
       path: 

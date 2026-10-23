@@ -18,6 +18,8 @@ namespace CardInteraction
         private HashSet<string> knownIds;
         private CardTableState lastState;
         private DeckOverviewData data;
+        private DeckOverviewView inputView;
+        private readonly Dictionary<CardZoneMouseInput, bool> suspendedInputs = new Dictionary<CardZoneMouseInput, bool>();
         private static readonly IReadOnlyDictionary<CardDefinitionId, CardDefinition> definitions = StandardDeck.Cards().ToDictionary(card => card.Id);
         public CardMatchHost Match => match;
         public DeckOverviewView View => view;
@@ -65,6 +67,7 @@ namespace CardInteraction
             var ids = ValidateRoster(roster);
             foreach (var id in ids) owner.State.GetCard(new CardInstanceId(id));
             match = owner; view = target; deckZoneId = deck.Value; rosterIds = ids;
+            BindInputGate();
             knownIds = new HashSet<string>(ids, StringComparer.Ordinal); lastState = null;
             Refresh(true);
         }
@@ -83,6 +86,7 @@ namespace CardInteraction
         public void Open(bool animate = true)
         {
             if (view == null) throw new InvalidOperationException("Configure the deck overview.");
+            BindInputGate();
             view.Show(animate); Canvas.ForceUpdateCanvases(); Refresh(true);
         }
         public void Close() { if (view != null) view.Close(); }
@@ -113,7 +117,43 @@ namespace CardInteraction
             }
             data = new DeckOverviewData(cards); knownIds = nextIds; lastState = state; return data;
         }
-        private void OnEnable() { lastState = null; if (view != null) Refresh(true); }
+        private void BindInputGate()
+        {
+            if (inputView == view) return;
+            UnbindInputGate(); inputView = view;
+            if (inputView == null) return;
+            inputView.Shown += SuspendWorldInput;
+            inputView.Hidden += RestoreWorldInput;
+            if (inputView.IsOpen) SuspendWorldInput();
+        }
+        private void SuspendWorldInput()
+        {
+            // World-card raycasters outrank Canvas controls, including the return button.
+            // Keep them suspended through the exit animation, until the page is actually hidden.
+            if (suspendedInputs.Count != 0 || view == null) return;
+            foreach (var input in view.gameObject.scene.GetRootGameObjects()
+                .SelectMany(root => root.GetComponentsInChildren<CardZoneMouseInput>(true)))
+            {
+                suspendedInputs[input] = input.enabled;
+                input.Controller?.CancelPointer(); input.enabled = false;
+            }
+        }
+        private void RestoreWorldInput()
+        {
+            foreach (var pair in suspendedInputs) if (pair.Key != null) pair.Key.enabled = pair.Value;
+            suspendedInputs.Clear();
+        }
+        private void UnbindInputGate()
+        {
+            if (inputView != null)
+            {
+                inputView.Shown -= SuspendWorldInput;
+                inputView.Hidden -= RestoreWorldInput;
+            }
+            inputView = null; RestoreWorldInput();
+        }
+        private void OnEnable() { lastState = null; BindInputGate(); if (view != null) Refresh(true); }
+        private void OnDisable() => UnbindInputGate();
         private void Update() { if (Application.isPlaying && view != null && view.isActiveAndEnabled) Refresh(); }
     }
 }

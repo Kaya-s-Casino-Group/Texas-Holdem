@@ -138,6 +138,7 @@ namespace Poker.SingleBattle
         private void RefreshRelicIcons()
         {
             if (relicIcons == null || host?.State == null || host.Player == null) return;
+            DeskLayout?.InvalidateLayout(); // Pooled icons may be rebound with no hierarchy/count change.
             var relics = host.State.Duel.Player(host.Player.ParticipantId).Relics.Relics;
             while (relicIconViews.Count < relics.Count)
             {

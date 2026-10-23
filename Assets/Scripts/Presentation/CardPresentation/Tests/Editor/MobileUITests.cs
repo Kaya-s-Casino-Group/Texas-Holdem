@@ -41,6 +41,55 @@ namespace CardPresentation.Tests
             finally { UnityEngine.Object.DestroyImmediate(root); UnityEngine.Object.DestroyImmediate(target); }
         }
 
+        [Test]
+        public void AuthoredAnchorsAndOffsetsKeepOneAspectAcrossViewports()
+        {
+            var cameraRoot = new GameObject("Authored UI camera", typeof(Camera));
+            var root = new GameObject("Authored UI", typeof(RectTransform), typeof(Canvas));
+            RenderTexture target = null;
+            try
+            {
+                var camera = cameraRoot.GetComponent<Camera>();
+                var canvas = root.GetComponent<Canvas>();
+                canvas.renderMode = RenderMode.ScreenSpaceCamera; canvas.worldCamera = camera;
+                canvas.planeDistance = 1; canvas.scaleFactor = 1.5f;
+                var node = new GameObject("Mixed anchors and offsets", typeof(RectTransform)).GetComponent<RectTransform>();
+                node.SetParent(root.transform, false);
+                node.anchorMin = new Vector2(.62f, .7f); node.anchorMax = new Vector2(.85f, .8f);
+                node.sizeDelta = new Vector2(86, -7); node.anchoredPosition = new Vector2(120, 15);
+                var layout = ScreenSafeArea.Ensure(canvas);
+                var reference = new Vector2(1856, 850);
+                var corners = new Vector3[4];
+                Vector2? firstPosition = null;
+                foreach (var resolution in new[] { new Vector2Int(960, 720), new Vector2Int(1280, 720), new Vector2Int(2340, 1080) })
+                {
+                    camera.targetTexture = null;
+                    if (target != null) Object.DestroyImmediate(target);
+                    target = new RenderTexture(resolution.x, resolution.y, 0); camera.targetTexture = target;
+                    Canvas.ForceUpdateCanvases(); layout.SetReferenceSize(reference); Canvas.ForceUpdateCanvases();
+                    var fitted = ScreenSafeArea.FitAspect(ScreenSafeArea.ScreenRect(canvas), reference.x / reference.y);
+                    layout.Content.GetWorldCorners(corners);
+                    var bottomLeft = RectTransformUtility.WorldToScreenPoint(camera, corners[0]);
+                    var topRight = RectTransformUtility.WorldToScreenPoint(camera, corners[2]);
+                    string context = $"{resolution}: canvas {canvas.pixelRect}, camera {camera.pixelRect}, rect {((RectTransform)canvas.transform).rect}, scale {canvas.scaleFactor}, corners {bottomLeft} / {topRight}, fitted {fitted}";
+                    Assert.That(Vector2.Distance(bottomLeft, fitted.min), Is.LessThan(.1f), context);
+                    Assert.That(Vector2.Distance(topRight, fitted.max), Is.LessThan(.1f), context);
+                    node.GetWorldCorners(corners);
+                    foreach (var corner in corners)
+                        Assert.IsTrue(fitted.Contains(RectTransformUtility.WorldToScreenPoint(camera, corner)), resolution.ToString());
+                    var position = RectTransformUtility.WorldToScreenPoint(camera, node.position) - fitted.min;
+                    position = new Vector2(position.x / fitted.width, position.y / fitted.height);
+                    if (firstPosition.HasValue) Assert.That(Vector2.Distance(position, firstPosition.Value), Is.LessThan(.0001f));
+                    else firstPosition = position;
+                }
+            }
+            finally
+            {
+                Object.DestroyImmediate(root); Object.DestroyImmediate(cameraRoot);
+                if (target != null) Object.DestroyImmediate(target);
+            }
+        }
+
         [Test] public void UIAlwaysUsesInputSystemAndPreservesBindingsWhenDevicesChange()
         {
             var root = new GameObject("Input provider test", typeof(EventSystem), typeof(StandaloneInputModule));

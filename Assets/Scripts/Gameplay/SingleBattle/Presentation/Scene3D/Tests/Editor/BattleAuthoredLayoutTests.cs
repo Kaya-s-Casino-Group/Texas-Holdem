@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
@@ -167,6 +168,79 @@ namespace Poker.SingleBattle.Tests
                 StringAssert.Contains("复活倒计时", hand.Find("Revive Countdown").GetComponent<TMP_Text>().text);
                 Near(hand.Find("Revive Countdown").position, hand.Find("Intents").position, "countdown uses edited intent position");
                 Near(((RectTransform)hand.Find("Intents")).anchoredPosition, intentPosition, "regeneration uses edited intent row");
+            }
+        }
+
+        [Test]
+        public void BossCompositionAndHudScaleTogetherAcrossAspectRatios()
+        {
+            using (var f = new Fixture("single-chapter-wrath"))
+            {
+                RenderTexture target = null;
+                var originalTarget = f.Camera.targetTexture;
+                try
+                {
+                    void Resize(Vector2Int resolution)
+                    {
+                        var next = new RenderTexture(resolution.x, resolution.y, 0);
+                        f.Camera.targetTexture = next;
+                        f.Camera.ResetAspect();
+                        if (target != null) UnityEngine.Object.DestroyImmediate(target);
+                        target = next;
+                        f.Refresh();
+                    }
+
+                    Dictionary<string, Vector2> Capture()
+                    {
+                        var points = new Dictionary<string, Vector2>();
+                        foreach (var actor in f.Host.Enemies)
+                        {
+                            // Basis points check both placement and size of every boss part.
+                            points[actor.DisplayId + "/origin"] = f.Camera.WorldToScreenPoint(actor.transform.position);
+                            points[actor.DisplayId + "/right"] = f.Camera.WorldToScreenPoint(actor.transform.TransformPoint(Vector3.right));
+                            points[actor.DisplayId + "/up"] = f.Camera.WorldToScreenPoint(actor.transform.TransformPoint(Vector3.up));
+                            foreach (var name in new[] { "Health Bar", "Intents" })
+                            {
+                                var rect = (RectTransform)f.View(actor.DisplayId).Find(name);
+                                Assert.NotNull(rect, actor.DisplayId + "/" + name);
+                                var corners = new Vector3[4];
+                                rect.GetWorldCorners(corners);
+                                for (int i = 0; i < corners.Length; i++)
+                                    points[actor.DisplayId + "/" + name + "/" + i] = RectTransformUtility.WorldToScreenPoint(null, corners[i]);
+                            }
+                        }
+                        return points;
+                    }
+
+                    var entry = f.Layout.Profile.Find("single-chapter-wrath", "enemy");
+                    var referenceSize = new Vector2Int(Mathf.RoundToInt(720 * entry.referenceAspect), 720);
+                    Resize(referenceSize);
+                    var reference = Capture();
+                    foreach (var resolution in new[] { referenceSize, new Vector2Int(1024, 768), new Vector2Int(1600, 900), new Vector2Int(2520, 1080) })
+                    {
+                        Resize(resolution);
+                        float scale = Mathf.Min((float)resolution.x / referenceSize.x, (float)resolution.y / referenceSize.y);
+                        var translation = ((Vector2)resolution - (Vector2)referenceSize * scale) * .5f;
+                        for (int refresh = 0; refresh < 2; refresh++)
+                        {
+                            var actual = Capture();
+                            Assert.AreEqual(reference.Count, actual.Count);
+                            foreach (var point in reference)
+                            {
+                                // Half a pixel permits rounding the reference aspect to texture dimensions.
+                                Assert.That(Vector2.Distance(actual[point.Key], translation + point.Value * scale), Is.LessThan(.5f),
+                                    resolution + "/refresh " + refresh + "/" + point.Key);
+                            }
+                            if (refresh == 0) f.Refresh(); // Reapplying must not accumulate HUD scaling.
+                        }
+                    }
+                }
+                finally
+                {
+                    f.Camera.targetTexture = originalTarget;
+                    f.Camera.ResetAspect();
+                    if (target != null) UnityEngine.Object.DestroyImmediate(target);
+                }
             }
         }
 

@@ -3,6 +3,7 @@ using Poker.SingleBattle;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UIFoundation;
 
 namespace Poker.Adventure
 {
@@ -46,22 +47,54 @@ namespace Poker.Adventure
             Label(gold, "金币 " + run.Gold, new Rect(.10f, .24f, .80f, .50f), 21, Gold, TextAlignmentOptions.Center);
             var progress = DeskPanel(header, "Journey Status", new Rect(.38f, 0, .28f, 1), "MenuButton");
             Label(progress, "第一章 · 破碎王庭", new Rect(.10f, .18f, .80f, .64f), 25, Paper, TextAlignmentOptions.Center);
-            DeskButton(header, "设置", new Rect(.80f, 0, .08f, 1), AudioSettings, true, "Button", 21);
+            DeskButton(header, "设置", new Rect(.80f, 0, .08f, 1), GameSettings, true, "Button", 21);
             DeskButton(header, "保存并返回", new Rect(.89f, 0, .11f, 1), host.ReturnToMenu, !host.IsBusy, "Button", 21);
         }
 
-        private void AudioSettings()
+        private void GameSettings()
         {
-            var modal = Modal("设置 · 声音");
+            var modal = Modal("设置");
             var audio = AdventureAudioController.FindInScene(gameObject.scene);
             if (audio == null)
             {
-                Label(modal, "此场景尚未绑定声音配置。", new Rect(.08f, .40f, .84f, .20f), 28, Paper, TextAlignmentOptions.Center);
-                return;
+                Label(modal, "此场景尚未绑定声音配置。", new Rect(.10f, .52f, .80f, .20f), 28, Paper, TextAlignmentOptions.Center);
             }
-            AudioSlider(modal, "背景音乐", .61f, audio.MusicVolume, value => audio.MusicVolume = value);
-            AudioSlider(modal, "音效", .36f, audio.EffectsVolume, value => audio.EffectsVolume = value);
-            Label(modal, "拖动调整音量 · 最左侧为静音", new Rect(.10f, .13f, .80f, .08f), 23, Muted, TextAlignmentOptions.Center);
+            else
+            {
+                AudioSlider(modal, "背景音乐", .68f, audio.MusicVolume, value => audio.MusicVolume = value);
+                AudioSlider(modal, "音效", .48f, audio.EffectsVolume, value => audio.EffectsVolume = value);
+            }
+            if (PokerDisplaySettings.SupportsDesktopResolution)
+            {
+                var selected = PokerDisplaySettings.SelectedPreset;
+                Label(modal, "窗口分辨率", new Rect(.10f, .32f, .80f, .07f), 28, Paper);
+                var resolution = Label(modal, "", new Rect(.23f, .21f, .40f, .08f), 27, Gold, TextAlignmentOptions.Center);
+                var status = Label(modal, "应用后自动保存", new Rect(.10f, .10f, .80f, .07f), 22, Muted, TextAlignmentOptions.Center);
+                Action refresh = () =>
+                {
+                    var size = PokerDisplaySettings.GetResolution(selected);
+                    resolution.text = size.x + " × " + size.y;
+                    status.text = selected == PokerDisplaySettings.SelectedPreset ? "当前设置 · 下次启动沿用" : "点击应用以切换分辨率";
+                };
+                DeskButton(modal, "上一项", new Rect(.10f, .20f, .13f, .10f), () =>
+                {
+                    selected = (selected + PokerDisplaySettings.PresetCount - 1) % PokerDisplaySettings.PresetCount;
+                    refresh();
+                }, size: 21);
+                DeskButton(modal, "下一项", new Rect(.63f, .20f, .13f, .10f), () =>
+                {
+                    selected = (selected + 1) % PokerDisplaySettings.PresetCount;
+                    refresh();
+                }, size: 21);
+                DeskButton(modal, "应用", new Rect(.78f, .20f, .12f, .10f), () =>
+                {
+                    PokerDisplaySettings.SelectPreset(selected);
+                    refresh();
+                }, size: 23);
+                refresh();
+            }
+            else
+                Label(modal, "拖动调整音量 · 最左侧为静音", new Rect(.10f, .20f, .80f, .08f), 23, Muted, TextAlignmentOptions.Center);
         }
 
         private void AudioSlider(RectTransform parent, string caption, float y, float initial, Action<float> changed)

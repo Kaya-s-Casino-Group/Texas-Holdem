@@ -131,6 +131,28 @@ namespace Poker.SingleBattle
             if (warning != null) warning.enabled = false;
         }
 
+        // The workshop can override the PSD placement after composition. Keep the glow
+        // attached to the resulting body instead of leaving it on the old viewport fit.
+        public void AlignWarningToBody()
+        {
+            if (!IsComposed || warning == null || !warning.enabled || artwork.Warning == null) return;
+            foreach (var pair in assigned)
+            {
+                if (pair.Key == null || pair.Value != artwork.Parts[0] || pair.Key.Visual == null) continue;
+                var body = pair.Key.Visual.Find("Artwork");
+                if (body == null) return;
+                var pixels = pair.Value.Pixels;
+                var glow = artwork.Warning.Pixels;
+                var offset = new Vector3((glow.center.x - pixels.x) / pixels.width - .5f,
+                    .5f - (glow.center.y - pixels.y) / pixels.height, 0);
+                warning.transform.SetPositionAndRotation(body.TransformPoint(offset), body.rotation);
+                var size = Vector3.Scale(body.lossyScale, new Vector3(glow.width / pixels.width, glow.height / pixels.height, 1));
+                var parent = warning.transform.parent != null ? warning.transform.parent.lossyScale : Vector3.one;
+                warning.transform.localScale = new Vector3(size.x / parent.x, size.y / parent.y, size.z / parent.z);
+                return;
+            }
+        }
+
         private void LateUpdate() { if (Application.isPlaying) TryApply(host != null ? host.Display : null); }
         private void OnDisable() { if (warning != null) warning.enabled = false; }
     }

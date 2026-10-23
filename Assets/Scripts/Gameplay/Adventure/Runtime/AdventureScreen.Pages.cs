@@ -40,7 +40,7 @@ namespace Poker.Adventure
             DeskButton(page, "开始新旅程", new Rect(x, top, width, height), () => { setupPage = "role"; Refresh(); }, !host.HasUnfinishedRun, "MenuButton", 29);
             DeskButton(page, host.HasUnfinishedRun ? "继续旅程" : "查看上局结算", new Rect(x, top - step, width, height), () => host.Resume(), host.HasSavedRun, "MenuButton", 29);
             DeskButton(page, "塔罗图鉴", new Rect(x, top - step * 2, width, height), () => { setupPage = "collection"; Refresh(); }, true, "MenuButton", 29);
-            DeskButton(page, "设置", new Rect(x, top - step * 3, width, height), AudioSettings, true, "MenuButton", 29);
+            DeskButton(page, "设置", new Rect(x, top - step * 3, width, height), GameSettings, true, "MenuButton", 29);
             DeskButton(page, "玩法说明", new Rect(x, top - step * 4, width, height), HowToPlay, true, "MenuButton", 29);
             if (host.HasUnfinishedRun)
                 DeskButton(page, "放弃当前旅程", new Rect(x, top - step * 5, width, height), ConfirmAbandon, true, "MenuButton", 29);

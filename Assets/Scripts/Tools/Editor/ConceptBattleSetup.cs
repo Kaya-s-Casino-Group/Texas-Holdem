@@ -54,6 +54,7 @@ public static class ConceptBattleSetup
                 }
                 UnityEngine.Object.DestroyImmediate(texture);
             }
+            Poker.EditorTools.PokerBuildAssetPolicy.ApplyStandalone(importer);
             importer.SaveAndReimport();
         }
         SaveLayout();

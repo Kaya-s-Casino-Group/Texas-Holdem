@@ -31,6 +31,7 @@ namespace Poker.SingleBattle.Editor
                 importer.filterMode = FilterMode.Bilinear;
                 var settings = new TextureImporterSettings(); importer.ReadTextureSettings(settings);
                 settings.spriteMeshType = SpriteMeshType.FullRect; importer.SetTextureSettings(settings);
+                Poker.EditorTools.PokerBuildAssetPolicy.ApplyStandalone(importer);
                 importer.SaveAndReimport();
                 return new BattleDemoRelicArt.Entry { definitionId = id, sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path) };
             }).ToArray();

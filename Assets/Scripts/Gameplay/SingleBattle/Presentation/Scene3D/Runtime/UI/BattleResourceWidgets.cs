@@ -37,7 +37,11 @@ namespace Poker.SingleBattle
                 overlay = ConceptBattleSkin.Art(frame, "Action Frame Overlay", "Frames/frame_action_points", new Rect(0, 0, 1, 1), false).transform;
             // uGUI draws children above their parent. Move the frame art into its own child so it occludes the liquid.
             var originalFrame = frame.GetComponent<Image>(); if (originalFrame != null) originalFrame.enabled = false;
-            overlay.SetAsFirstSibling(); node.SetAsFirstSibling(); backing.SetAsFirstSibling();
+            // Establish the final order directly; moving all three to the front dirties an
+            // otherwise unchanged Canvas on every presentation refresh.
+            if (backing.GetSiblingIndex() != 0) backing.SetSiblingIndex(0);
+            if (node.GetSiblingIndex() != 1) node.SetSiblingIndex(1);
+            if (overlay.GetSiblingIndex() != 2) overlay.SetSiblingIndex(2);
             return liquid;
         }
 

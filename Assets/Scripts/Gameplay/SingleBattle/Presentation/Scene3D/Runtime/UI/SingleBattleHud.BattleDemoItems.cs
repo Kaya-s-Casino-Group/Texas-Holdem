@@ -47,6 +47,7 @@ namespace Poker.SingleBattle
         { if (!relicUseOpen) relicHoverCloseAt = Time.unscaledTime + .18f; }
         private void HideRelicHover()
         {
+            if (relicUseOpen) DeskLayout?.InvalidateLayout();
             if (relicHoverPanel != null) relicHoverPanel.gameObject.SetActive(false);
             relicHoverId = relicReplacementId = null; relicHoverState = null;
             relicUseOpen = false;
@@ -59,6 +60,7 @@ namespace Poker.SingleBattle
             if (GetComponent<BattleDemoRelicArt>() == null || host?.State == null || host.Player == null) return;
             var relic = host.State.Duel.Player(host.Player.ParticipantId).Relics.Relics.FirstOrDefault(item => item.InstanceId == id);
             if (relic == null) return;
+            if (relicUseOpen != forUse || relicHoverId != id) DeskLayout?.InvalidateLayout();
             if (relicHoverId != id) relicReplacementId = null;
             relicUseOpen = forUse;
             relicHoverId = id; relicHoverAnchor = anchor; KeepRelicHover();

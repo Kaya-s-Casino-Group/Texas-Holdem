@@ -96,6 +96,7 @@ namespace Poker.SingleBattle.Editor
                 importer.textureCompression = TextureImporterCompression.Uncompressed;
                 importer.isReadable = name != "WarningGlow"; // Alpha-aware selection of overlapping hands.
                 importer.wrapMode = TextureWrapMode.Clamp; importer.maxTextureSize = 2048;
+                Poker.EditorTools.PokerBuildAssetPolicy.ApplyStandalone(importer);
                 importer.SaveAndReimport();
                 var texture = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
                 string materialPath = Folder + name + ".mat";

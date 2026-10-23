@@ -24,6 +24,8 @@ namespace Poker.SingleBattle
         private float battleToolsTop;
         public Button BattleToolsButton => battleToolsToggle;
         public string SelectedItemId => selectedItem;
+        internal DeskBattleLayout DeskLayout { get; set; }
+        private bool UsesDeskLayout => DeskLayout != null && DeskLayout.isActiveAndEnabled;
 
         private void EnsureBattleTools()
         {
@@ -133,13 +135,14 @@ namespace Poker.SingleBattle
             string key = host.Player.ParticipantId.Value + "/" + string.Join("|", choices.Select(choice => choice.Slot + "=" + choice.SelectedId)) + "/" + selectedItem + "/" + selectedItemTarget + "/" + (GetComponent<BattleDemoRelicArt>()?.Version ?? 0);
             bool changed = force || contextChanged || !ReferenceEquals(battleToolsState, state) || !ReferenceEquals(battleToolsCandidate, candidate) || key != battleToolsKey;
             bool needsTarget = choices.Any(choice => choice.Required && string.IsNullOrEmpty(choice.SelectedId));
-            battleToolsToggle.GetComponentInChildren<TMP_Text>().text = "行动点 " + ResourceValue(host.Display, host.Player.ParticipantId.Value, "actions") +
-                " · 金币 " + state.GoldFor(host.Player.ParticipantId) + " · " + (battleToolsExpanded ? "收起操作" : needsTarget ? "请选择目标" :
-                    GetComponent<BattleDemoRelicArt>() != null ? "选敌 / 预览" : "选敌 / 道具 / 预览");
+            if (!UsesDeskLayout)
+                battleToolsToggle.GetComponentInChildren<TMP_Text>().text = "行动点 " + ResourceValue(host.Display, host.Player.ParticipantId.Value, "actions") +
+                    " · 金币 " + state.GoldFor(host.Player.ParticipantId) + " · " + (battleToolsExpanded ? "收起操作" : needsTarget ? "请选择目标" :
+                        GetComponent<BattleDemoRelicArt>() != null ? "选敌 / 预览" : "选敌 / 道具 / 预览");
             battleToolsBody.gameObject.SetActive(battleToolsExpanded);
             if (!battleToolsExpanded) return;
             float parentHeight = ((RectTransform)transform).rect.height;
-            battleToolsBody.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Mathf.Clamp(parentHeight - 100, 240, 490));
+            if (!UsesDeskLayout) battleToolsBody.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Mathf.Clamp(parentHeight - 100, 240, 490));
             if (changed)
             {
                 foreach (var row in battleToolsRows) { row.SetActive(false); Destroy(row); }

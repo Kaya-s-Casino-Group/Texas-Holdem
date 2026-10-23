@@ -1,5 +1,5 @@
 using System;
-using System.Linq;
+using System.Collections.Generic;
 using CardPresentation;
 using UnityEngine;
 
@@ -24,25 +24,58 @@ namespace CardInteraction
         {
             get
             {
-                if (!Ready) return false;
-                if (hand.Match.Commands != null)
-                    return hand.Match.Commands.CanPlay(hand.CaptureSelection()) && hand.Cards.Any(card => card.Interaction.IsSelected) &&
-                        hand.Cards.Where(card => card.Interaction.IsSelected).All(card => card.Card.CanPlay &&
-                            hand.GetComponent<HandZoneView>().TryGetView(card.Id, out var visual) && visual.isActiveAndEnabled &&
-                            visual.Surface != null && visual.Surface.GetComponent<Renderer>() is Renderer renderer && renderer.enabled);
-                var destination = Played;
-                if (!Ready || playRoute == null || !playRoute.isActiveAndEnabled || playRoute.IsTransferring ||
-                    playRoute.Source != hand.GetComponent<HandZoneView>() || destination == null || !destination.IsRunning ||
-                    !destination.isActiveAndEnabled || !playRoute.Destination.isActiveAndEnabled ||
-                    playRoute.Source.CardPrefab != playRoute.Destination.CardPrefab) return false;
-                var selected = hand.Cards.Where(card => card.Interaction.IsSelected).ToArray();
-                return selected.Length > 0 && selected.Length <= PlayedZoneView.SlotCount - destination.Cards.Count &&
-                    selected.All(card => card.Card.CanPlay && playRoute.Source.TryGetView(card.Id, out var visual) &&
-                        visual.isActiveAndEnabled && visual.Surface != null && visual.Surface.GetComponent<Renderer>() is Renderer renderer && renderer.enabled);
+                var request = Ready ? hand.CaptureSelection() : null;
+                return HasSelection(request) && CanPlaySelection(request, hand.Cards);
             }
         }
-        public bool CanDiscard => Ready && (hand.Match.Commands == null || hand.Match.Commands.CanDiscard(hand.CaptureSelection())) && hand.Cards.Any(card => card.Interaction.IsSelected) &&
-            hand.Cards.Where(card => card.Interaction.IsSelected).All(card => card.Card.CanDiscard);
+        public bool CanDiscard
+        {
+            get
+            {
+                var request = Ready ? hand.CaptureSelection() : null;
+                return HasSelection(request) && CanDiscardSelection(request, hand.Cards);
+            }
+        }
+        private static bool HasSelection(CardSelectionRequest request) => request != null && request.Cards.Count > 0;
+        private bool CanPlaySelection(CardSelectionRequest request, IReadOnlyList<CardZoneCardState> cards)
+        {
+            if (!HasSelection(request)) return false;
+            if (hand.Match.Commands != null)
+            {
+                if (!hand.Match.Commands.CanPlay(request)) return false;
+            }
+            else
+            {
+                var destination = Played;
+                if (playRoute == null || !playRoute.isActiveAndEnabled || playRoute.IsTransferring ||
+                    playRoute.Source != hand.GetComponent<HandZoneView>() || destination == null || !destination.IsRunning ||
+                    !destination.isActiveAndEnabled || !playRoute.Destination.isActiveAndEnabled ||
+                    playRoute.Source.CardPrefab != playRoute.Destination.CardPrefab ||
+                    request.Cards.Count > PlayedZoneView.SlotCount - destination.Cards.Count) return false;
+            }
+            var view = hand.GetComponent<HandZoneView>();
+            int selected = 0;
+            foreach (var card in cards)
+            {
+                if (!card.Interaction.IsSelected) continue;
+                selected++;
+                if (!card.Card.CanPlay || !view.TryGetView(card.Id, out var visual) || !visual.isActiveAndEnabled ||
+                    visual.Surface == null || !(visual.Surface.GetComponent<Renderer>() is Renderer renderer) || !renderer.enabled)
+                    return false;
+            }
+            return selected == request.Cards.Count;
+        }
+        private bool CanDiscardSelection(CardSelectionRequest request, IReadOnlyList<CardZoneCardState> cards)
+        {
+            if (!HasSelection(request) || hand.Match.Commands != null && !hand.Match.Commands.CanDiscard(request)) return false;
+            int selected = 0;
+            foreach (var card in cards)
+            {
+                if (!card.Interaction.IsSelected) continue;
+                selected++; if (!card.Card.CanDiscard) return false;
+            }
+            return selected == request.Cards.Count;
+        }
 
         public void Configure(CardZonePlayHost source, HandActionPanelView view, CardZoneTransferPresenter route = null)
         {
@@ -71,7 +104,13 @@ namespace CardInteraction
         public void Refresh()
         {
             if (panel == null) return;
-            panel.SetState(CanPlay, CanDiscard, Ready, hand != null && hand.SortOrder == CardZoneSortOrder.SuitFirst);
+            bool ready = Ready;
+            // Capture one immutable request for both buttons. An empty hand selection must not
+            // enter gameplay legality queries just to rediscover that both actions are disabled.
+            var request = ready ? hand.CaptureSelection() : null;
+            var cards = HasSelection(request) ? hand.Cards : null;
+            panel.SetState(CanPlaySelection(request, cards), CanDiscardSelection(request, cards), ready,
+                hand != null && hand.SortOrder == CardZoneSortOrder.SuitFirst);
         }
         private void Subscribe()
         {

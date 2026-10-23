@@ -34,7 +34,12 @@ namespace Poker.SingleBattle
         private readonly Dictionary<string, ShieldSnapshot> shieldFrames = new Dictionary<string, ShieldSnapshot>();
         private readonly List<string> feedback = new List<string>();
         private InteractionSession interaction;
-        private string candidateKey;
+        private string candidateKey, candidateTargetSelection;
+        private CardDuelState candidateState, candidateAuthorityState;
+        private CardDuelEngine candidateEngine;
+        private ParticipantId candidateActor;
+        private bool candidateInputAllowed;
+        private readonly HashSet<CardInstanceId> candidateSelection = new HashSet<CardInstanceId>();
         public BattleSessionResult LastResolution { get; private set; }
         public BattleDisplaySnapshot Display => presentationDirector != null ? presentationDirector.Display.Current : null;
         public InteractionSession Interaction => interaction ?? (interaction = new InteractionSession(
@@ -217,13 +222,32 @@ namespace Poker.SingleBattle
         public void RefreshCandidate()
         {
             if (State == null || actions == null || actions.Hand == null || !actions.Hand.IsRunning || playerActor == null) return;
-            var selected = actions.Hand.CaptureSelection().Cards.OrderBy(x => x.Value, StringComparer.Ordinal).ToArray();
-            var targetBindings = ResolvePlayTargetBindings(selected);
+            var selection = actions.Hand.CaptureSelection().Cards;
             bool allowed = CanReceivePlayerInput;
-            string key = State.Table.MatchId + "/" + State.Revision + "/" + playerActor.ParticipantId + "/" + allowed + "/" + string.Join(",", selected.Select(x => x.Value)) + "/" + PlayTargetSelectionKey;
-            if (key == candidateKey) return; candidateKey = key;
+            string targetSelection = PlayTargetSelectionKey;
+            // Resolve targets only after an input changes. Reconcile itself evaluates the hand and
+            // effects, so a cache check after Reconcile still pays those costs on every idle frame.
+            if (candidateKey != null && ReferenceEquals(candidateState, State) &&
+                ReferenceEquals(candidateAuthorityState, AuthorityState) && ReferenceEquals(candidateEngine, Engine) &&
+                candidateActor == playerActor.ParticipantId && candidateInputAllowed == allowed &&
+                candidateTargetSelection == targetSelection && SameCandidateSelection(selection)) return;
+            var selected = selection.OrderBy(x => x.Value, StringComparer.Ordinal).ToArray();
+            var targetBindings = ResolvePlayTargetBindings(selected);
+            candidateState = State; candidateAuthorityState = AuthorityState; candidateEngine = Engine;
+            candidateActor = playerActor.ParticipantId; candidateInputAllowed = allowed;
+            candidateSelection.Clear(); foreach (var id in selected) candidateSelection.Add(id);
+            // Reconciliation can remove a dead target or choose the only living target automatically.
+            candidateTargetSelection = PlayTargetSelectionKey;
+            candidateKey = State.Table.MatchId + "/" + State.Revision + "/" + playerActor.ParticipantId + "/" + allowed + "/" +
+                string.Join(",", selected.Select(x => x.Value)) + "/" + candidateTargetSelection;
             long version = Interaction.BeginRequest(State.Table.MatchId.ToString(), playerActor.ParticipantId.Value, State.Revision, selected.Select(x => x.Value));
             Interaction.Apply(BattleInteractionQueries.Query(State, Engine, playerActor.ParticipantId, selected, allowed, version, targetBindings: targetBindings));
+        }
+        private bool SameCandidateSelection(IReadOnlyList<CardInstanceId> selected)
+        {
+            if (selected.Count != candidateSelection.Count) return false;
+            for (int i = 0; i < selected.Count; i++) if (!candidateSelection.Contains(selected[i])) return false;
+            return true;
         }
         private void LateUpdate() => RefreshCandidate();
         public void SnapToState() => SynchronizeBattle();

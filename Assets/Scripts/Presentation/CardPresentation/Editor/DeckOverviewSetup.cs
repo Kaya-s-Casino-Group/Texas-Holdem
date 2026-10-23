@@ -191,6 +191,7 @@ namespace CardPresentation.Editor
             importer.filterMode = FilterMode.Point; importer.mipmapEnabled = false;
             importer.textureCompression = TextureImporterCompression.Uncompressed;
             importer.maxTextureSize = 2048; importer.alphaIsTransparency = true; importer.npotScale = TextureImporterNPOTScale.None;
+            Poker.EditorTools.PokerBuildAssetPolicy.ApplyStandalone(importer);
             importer.SaveAndReimport(); return AssetDatabase.LoadAssetAtPath<Sprite>(path);
         }
         private static RectTransform Box(string name, Transform parent, Vector2 position, Vector2 size, Color color)

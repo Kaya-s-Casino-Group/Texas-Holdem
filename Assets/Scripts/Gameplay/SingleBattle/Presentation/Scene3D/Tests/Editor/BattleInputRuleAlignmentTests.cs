@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Reflection;
 using System.Xml.Linq;
 using CardInteraction;
 using CardPresentation;
@@ -96,6 +97,75 @@ namespace Poker.SingleBattle.Tests
                 Assert.AreEqual(4, damage.Length); Assert.AreEqual(chosen, damage.Last().Effect.Target.Value);
                 foreach (var enemy in f.Host.Enemies)
                     Assert.AreEqual(preview.State.Duel.Combat.Get(enemy.ParticipantId).Health, f.Host.AuthorityState.Duel.Combat.Get(enemy.ParticipantId).Health);
+            }
+        }
+
+        [Test] public void StableCandidatePollingReusesTargetsAndLocalInputsStillInvalidate()
+        {
+            using (var f = new Fixture())
+            {
+                f.Cards(FullHouse());
+                var state = f.Host.State;
+                var candidate = f.Host.Candidate;
+                var choices = f.Host.PlayTargetChoices;
+                for (int frame = 0; frame < 30; frame++)
+                {
+                    f.Host.RefreshCandidate();
+                    Assert.AreSame(candidate, f.Host.Candidate);
+                    Assert.AreSame(choices, f.Host.PlayTargetChoices, "Idle polling must not rerun target discovery.");
+                }
+                string slot = choices.Single().Slot;
+                foreach (var target in f.Host.Enemies.Skip(1))
+                {
+                    Assert.IsTrue(f.Host.SelectPlayTarget(slot, target.ParticipantId.Value));
+                    Assert.AreSame(state, f.Host.State);
+                    Assert.AreNotSame(candidate, f.Host.Candidate);
+                    Assert.AreEqual(target.ParticipantId.Value, f.Host.PlayTargetChoices.Single().SelectedId);
+                    candidate = f.Host.Candidate; choices = f.Host.PlayTargetChoices;
+                    for (int frame = 0; frame < 30; frame++)
+                    {
+                        f.Host.RefreshCandidate();
+                        Assert.AreSame(candidate, f.Host.Candidate); Assert.AreSame(choices, f.Host.PlayTargetChoices);
+                    }
+                    var preview = f.Host.PreviewSelectedPlay(); Assert.IsTrue(preview.Accepted);
+                    Assert.AreEqual(target.ParticipantId, preview.Events.Last(item => item.Effect.Kind == CombatEffectKind.Damage).Effect.Target);
+                }
+                f.Hand.SetInteraction(f.Hand.Cards.Last().Id, default);
+                f.Hand.Publish(); f.HandView.CompleteTransitions(); f.Host.RefreshCandidate();
+                Assert.AreNotSame(candidate, f.Host.Candidate);
+                Assert.AreEqual(4, f.Host.Candidate.SelectedIds.Count);
+                candidate = f.Host.Candidate;
+                f.Host.SetHandGuideOpen(true);
+                Assert.AreNotSame(candidate, f.Host.Candidate); Assert.IsFalse(f.Host.Candidate.CanPlay);
+                f.Host.SetHandGuideOpen(false);
+                Assert.AreSame(state, f.Host.State);
+                Assert.AreNotSame(candidate, f.Host.Candidate);
+            }
+        }
+
+        [Test] public void SameRevisionReplacementSnapshotCannotReuseCandidateCache()
+        {
+            using (var f = new Fixture())
+            {
+                f.Cards(FullHouse()); f.Host.SetHandGuideOpen(true);
+                var original = f.Host.State;
+                // Immutable snapshots can be replaced without advancing their numeric revision.
+                // Keep input blocked in both snapshots so readiness alone cannot invalidate the cache.
+                var replacement = (CardDuelState)typeof(object).GetMethod("MemberwiseClone", BindingFlags.Instance | BindingFlags.NonPublic)
+                    .Invoke(original, null);
+                var stateProperty = typeof(SingleBattleSceneAdapter).GetProperty("PresentedState");
+                try
+                {
+                    var candidate = f.Host.Candidate;
+                    Assert.AreEqual(original.Revision, replacement.Revision);
+                    stateProperty.SetValue(f.Host, replacement);
+                    f.Host.RefreshCandidate();
+                    Assert.AreNotSame(candidate, f.Host.Candidate);
+                    candidate = f.Host.Candidate; var choices = f.Host.PlayTargetChoices;
+                    f.Host.RefreshCandidate();
+                    Assert.AreSame(candidate, f.Host.Candidate); Assert.AreSame(choices, f.Host.PlayTargetChoices);
+                }
+                finally { stateProperty.SetValue(f.Host, original); f.Host.SetHandGuideOpen(false); }
             }
         }
 

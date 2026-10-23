@@ -94,6 +94,74 @@ namespace CardPresentation.Tests
             }
         }
 
+        [Test] public void SortPresentationSurvivesRepeatedPresenterRefreshesAndSelectionChanges()
+        {
+            using (var f = new Fixture())
+            {
+                var rank = f.Panel.RankSortButton.GetComponentInChildren<TMP_Text>();
+                var suit = f.Panel.SuitSortButton.GetComponentInChildren<TMP_Text>();
+                Assert.AreEqual("点数理牌", rank.text); Assert.AreEqual("花色理牌", suit.text);
+                Assert.AreEqual((Color)new Color32(255, 208, 105, 255), rank.color);
+                Assert.AreEqual(Color.white, suit.color);
+                f.Panel.SetSortPresentation("点数", "花色", Color.gray, Color.yellow);
+                foreach (bool suitFirst in new[] { false, true, false })
+                {
+                    if (suitFirst) f.Presenter.SortBySuit(); else f.Presenter.SortByRank();
+                    for (int frame = 0; frame < 30; frame++)
+                    {
+                        f.Presenter.Refresh();
+                        Assert.AreEqual("点数", rank.text); Assert.AreEqual("花色", suit.text);
+                        Assert.AreEqual(suitFirst ? Color.gray : Color.yellow, rank.color);
+                        Assert.AreEqual(suitFirst ? Color.yellow : Color.gray, suit.color);
+                    }
+                }
+            }
+        }
+
+        private sealed class CountingCommands : ICardMatchCommands
+        {
+            public bool CanInteract { get; set; } = true;
+            public bool Allowed = true;
+            public int PlayChecks, DiscardChecks, Plays, Discards;
+            public CardSelectionRequest PlayRequest, DiscardRequest;
+            public bool CanPlay(CardSelectionRequest request) { PlayChecks++; PlayRequest = request; return Allowed; }
+            public bool CanDiscard(CardSelectionRequest request) { DiscardChecks++; DiscardRequest = request; return Allowed; }
+            public int Play(CardSelectionRequest request, bool animate) { Plays++; return request.Cards.Count; }
+            public int Discard(CardSelectionRequest request, bool animate) { Discards++; return request.Cards.Count; }
+        }
+
+        [Test] public void EmptySelectionSkipsRuleChecksAndButtonsShareOneCapturedRequest()
+        {
+            using (var f = new Fixture())
+            {
+                var commands = new CountingCommands();
+                var match = f.Host.Match;
+                var state = match.State;
+                var cards = state.Zones.SelectMany(zone => match.ReadCards(zone.Id)).ToArray();
+                match.StartExternalMatch(commands, state, cards);
+                for (int frame = 0; frame < 30; frame++) f.Presenter.Refresh();
+                Assert.IsFalse(f.Presenter.CanPlay); Assert.IsFalse(f.Presenter.CanDiscard);
+                Assert.AreEqual(0, commands.PlayChecks); Assert.AreEqual(0, commands.DiscardChecks);
+                Assert.IsFalse(f.Panel.PlayButton.interactable); Assert.IsFalse(f.Panel.DiscardButton.interactable);
+
+                f.Host.SetInteraction("queen", new CardInteractionState(isSelected: true));
+                f.Host.Publish(); f.View.CompleteTransitions(); f.Presenter.Refresh();
+                Assert.AreEqual(1, commands.PlayChecks); Assert.AreEqual(1, commands.DiscardChecks);
+                Assert.AreSame(commands.PlayRequest, commands.DiscardRequest,
+                    "Both availability checks must consume the same immutable input captured by Refresh.");
+                Assert.IsTrue(f.Panel.PlayButton.interactable); Assert.IsTrue(f.Panel.DiscardButton.interactable);
+
+                // Submission checks current authority again, even if the last rendered buttons were enabled.
+                commands.Allowed = false; f.Presenter.Play(); f.Presenter.Discard();
+                Assert.Greater(commands.PlayChecks, 1); Assert.Greater(commands.DiscardChecks, 1);
+                Assert.AreEqual(0, commands.Plays); Assert.AreEqual(0, commands.Discards);
+                int checks = commands.PlayChecks + commands.DiscardChecks;
+                commands.CanInteract = false; f.Presenter.Refresh();
+                Assert.AreEqual(checks, commands.PlayChecks + commands.DiscardChecks);
+                Assert.IsFalse(f.Panel.PlayButton.interactable); Assert.IsFalse(f.Panel.DiscardButton.interactable);
+            }
+        }
+
         [Test] public void RuntimeDeckIsSerializedAndRestartedWithoutRefillOrMutatingStartupData()
         {
             using (var f = new Fixture())

@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UIFoundation;
@@ -29,6 +28,7 @@ namespace Poker.SingleBattle
             { cameraPosition = viewCamera.transform.position; cameraRotation = viewCamera.transform.rotation; hasCameraPose = true; }
             var safe = Application.isPlaying ? ScreenSafeArea.CameraRect(viewCamera) : viewCamera.pixelRect;
             var pixels = viewCamera.pixelRect;
+            if (pixels.width <= 0 || pixels.height <= 0) return;
             foreach (var actor in host.Enemies)
             {
                 var entry = profile.Find(host.ContentEncounterId, actor.DisplayId);
@@ -40,17 +40,21 @@ namespace Poker.SingleBattle
                 }
                 float height = viewCamera.orthographic ? 2 * viewCamera.orthographicSize :
                     2 * entry.depth * Mathf.Tan(viewCamera.fieldOfView * Mathf.Deg2Rad * .5f);
-                var viewport = new Vector2((safe.x - pixels.x + safe.width * entry.actorViewport.x) / pixels.width,
-                    (safe.y - pixels.y + safe.height * entry.actorViewport.y) / pixels.height);
+                // Position and size must use the same fitted artboard. Stretching only the
+                // centers separates the boss's body and hands when the window aspect changes.
+                var board = ScreenSafeArea.FitAspect(safe, entry.referenceAspect);
+                var viewport = new Vector2((board.x - pixels.x + board.width * entry.actorViewport.x) / pixels.width,
+                    (board.y - pixels.y + board.height * entry.actorViewport.y) / pixels.height);
                 actor.transform.SetPositionAndRotation(cameraPosition + cameraRotation * new Vector3(
                     (viewport.x - .5f) * height * viewCamera.aspect, (viewport.y - .5f) * height, entry.depth),
                     cameraRotation * entry.cameraRelativeRotation);
-                float fit = Mathf.Min(safe.height / pixels.height, safe.width / pixels.width * viewCamera.aspect / entry.referenceAspect);
+                float fit = board.height / pixels.height;
                 var size = entry.actorScale * (height / entry.referenceFrustumHeight * fit);
                 var parentScale = actor.transform.parent != null ? actor.transform.parent.lossyScale : Vector3.one;
                 actor.transform.localScale = new Vector3(size.x / parentScale.x, size.y / parentScale.y, size.z / parentScale.z);
                 ApplyArtwork(actor, entry);
             }
+            host.GetComponent<WrathBossArtworkLayout>()?.AlignWarningToBody();
         }
 
         static void ApplyArtwork(EnemyBattleActor actor, BattleLayoutProfile.Entry entry)
@@ -67,13 +71,16 @@ namespace Poker.SingleBattle
             if (entry == null && host.UsesExternalCommands) entry = profile.Find("single-chapter-battle-1", "enemy");
             if (entry == null) return;
             entry.hudRoot.Apply(root, false);
+            var safe = Application.isPlaying ? ScreenSafeArea.CameraRect(viewCamera) : viewCamera.pixelRect;
+            var board = ScreenSafeArea.FitAspect(safe, entry.referenceAspect);
+            float pixelScale = board.height / Mathf.Max(1, entry.referenceHudHeight);
+            root.localScale *= pixelScale / Mathf.Max(.001f, canvas.scaleFactor);
             Vector2 screen;
             if (entry.fixedHud)
             {
-                var safe = Application.isPlaying ? ScreenSafeArea.CameraRect(viewCamera) : viewCamera.pixelRect;
-                screen = safe.position + Vector2.Scale(safe.size, entry.hudViewport);
+                screen = board.position + Vector2.Scale(board.size, entry.hudViewport);
             }
-            else screen = (Vector2)viewCamera.WorldToScreenPoint(actor.transform.position) + entry.hudOffset * canvas.scaleFactor;
+            else screen = (Vector2)viewCamera.WorldToScreenPoint(actor.transform.position) + entry.hudOffset * pixelScale;
             RectTransformUtility.ScreenPointToLocalPointInRectangle((RectTransform)root.parent, screen, null, out var local);
             // Convert from parent-local coordinates to the authored anchor reference.
             var parent = (RectTransform)root.parent;

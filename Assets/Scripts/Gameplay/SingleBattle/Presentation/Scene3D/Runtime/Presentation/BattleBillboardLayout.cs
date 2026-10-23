@@ -13,10 +13,17 @@ namespace Poker.SingleBattle
         [SerializeField] private float artworkAspect = 1;
         private Rect lastViewport, lastSafe;
         private float lastAspect;
+        private float referenceAspect;
         private Vector3 cameraPosition;
         private Quaternion cameraRotation;
         private bool initialized;
         public Rect ViewportArea => viewportArea;
+
+        public void SetReferenceAspect(float aspect)
+        {
+            if (Mathf.Approximately(referenceAspect, aspect)) return;
+            referenceAspect = aspect; initialized = false; Refresh();
+        }
 
         public void SetDepth(float depth)
         {
@@ -51,6 +58,7 @@ namespace Poker.SingleBattle
             var viewport = viewCamera.pixelRect;
             if (viewport.width <= 0 || viewport.height <= 0) return;
             var safe = Application.isPlaying ? ScreenSafeArea.CameraRect(viewCamera) : viewport;
+            safe = ScreenSafeArea.FitAspect(safe, referenceAspect);
             if (initialized && Application.isPlaying && viewport == lastViewport && safe == lastSafe &&
                 Mathf.Approximately(viewCamera.aspect, lastAspect)) return;
             if (!initialized || !Application.isPlaying)
