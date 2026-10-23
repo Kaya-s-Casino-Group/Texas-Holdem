@@ -26,7 +26,7 @@ namespace Poker.SingleBattle.Tests
         private const string ContentPath = "Packages/com.kaya.battle-engine/Content/StandardSingleBattle-2026-10-21.xml";
         private const string Encounter = "standard-wrath-thousand-hands";
         private const string OpeningText = "警告：每存活一只手，暴怒攻击力+5！！";
-        private const string UltimateText = "警告：Boss有五只手臂，将释放大招！！";
+        private const string UltimateText = "警告：Boss有五只手臂，将于下一回合释放大招！！";
         private readonly List<string> errors = new List<string>();
         private readonly HashSet<string> regenerationFloats = new HashSet<string>();
         private SingleBattleSceneAdapter host;

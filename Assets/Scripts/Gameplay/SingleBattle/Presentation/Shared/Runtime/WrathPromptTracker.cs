@@ -10,7 +10,7 @@ namespace Poker.BattlePresentation
     public static class WrathPromptText
     {
         public const string Opening = "警告：每存活一只手，暴怒攻击力+5！！";
-        public const string Ultimate = "警告：Boss有五只手臂，将释放大招！！";
+        public const string Ultimate = "警告：Boss有五只手臂，将于下一回合释放大招！！";
         public static WrathIntentIcon IconFor(string actionId) => actionId == "strike" || actionId == "strike-2"
             ? WrathIntentIcon.Attack : actionId == "guard" ? WrathIntentIcon.Defense :
                 actionId == "charge" ? WrathIntentIcon.Charge : WrathIntentIcon.Unknown;

@@ -28,7 +28,7 @@ namespace Poker.BattlePresentation.Tests
             Assert.IsNull(tracker.Observe(Snapshot()).OpeningText);
             Assert.IsNotNull(tracker.Observe(Snapshot("another-battle")).OpeningText);
             Assert.IsNull(tracker.Observe(Snapshot()).OpeningText, "Revisiting an older battle must not replay its opening.");
-            Assert.AreEqual("警告：Boss有五只手臂，将释放大招！！", WrathPromptText.Ultimate);
+            Assert.AreEqual("警告：Boss有五只手臂，将于下一回合释放大招！！", WrathPromptText.Ultimate);
         }
 
         [Test]

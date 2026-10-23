@@ -108,7 +108,7 @@ namespace Poker.BattlePresentation.Tests
             Assert.AreEqual(1, display.Resource("enemy", "wrath.charges").Value);
             Assert.AreEqual(129, display.Resource("enemy", "wrath.ultimateDamage").Value);
             StringAssert.Contains("第 6 轮", display.Labels["wrath.ultimate"]);
-            StringAssert.StartsWith("警告：Boss有五只手臂，将释放大招！！", display.Labels["wrath.ultimate"]);
+            StringAssert.StartsWith("警告：Boss有五只手臂，将于下一回合释放大招！！", display.Labels["wrath.ultimate"]);
             StringAssert.Contains("普攻", display.Labels["wrath.intent/0"]);
             StringAssert.Contains("伤害 43", display.Labels["intent/enemy"]);
             StringAssert.DoesNotContain("伤害 129", display.Labels["intent/enemy"], "Additional damage must not be mixed into the regular intent.");

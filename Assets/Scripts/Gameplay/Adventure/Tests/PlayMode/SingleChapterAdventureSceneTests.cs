@@ -278,14 +278,64 @@ namespace Poker.Adventure.Tests
         }
 
         [UnityTest]
+        public IEnumerator SevenStationBossShowsReadableOpeningAndWarningsBeforeRoundTwoAndEightUltimates()
+        {
+            yield return ReachBattle("boss", settleTarget: false);
+            yield return WaitForWrathPrompt("Wrath Opening Warning", true);
+            var openingArea = AssertReadableWrathPrompt("Wrath Opening Warning", "每存活一只手");
+            yield return CaptureWrathProof("boss-opening-warning");
+            yield return Idle();
+            var view = host.BattleView;
+            Assert.IsTrue(view.Playback.ApplyAdmin(host.Revision, new BattleAdminPatch(
+                vitals: new[] { new BattleAdminVitals(host.Adventure.PlayerId, 100000, 100000) },
+                relics: new[] { new BattleAdminRelics(host.Adventure.PlayerId, Array.Empty<BattleAdminRelic>()) })).Accepted);
+            yield return Idle();
+            yield return WaitForWrathPrompt("Wrath Opening Warning", false);
+            Assert.AreEqual(0, view.State.Duel.CompletedRounds);
+            AssertWrathWarning(false);
+            while (view.State.Duel.CompletedRounds < 8)
+            {
+                int previousRound = view.State.Duel.CompletedRounds;
+                long previousHealth = view.Player.DisplayUnit.Health;
+                yield return EndAdventureRound();
+                int round = view.State.Duel.CompletedRounds;
+                Assert.Greater(round, previousRound, "Each real end-turn must advance the seven-station battle.");
+                bool warning = round == 1 || round == 7;
+                AssertWrathWarning(warning);
+                if (warning)
+                {
+                    Assert.AreEqual(round + 1, WrathBossQuery.Read(view.State.Duel).ReleaseRound);
+                    var warningArea = AssertReadableWrathPrompt("Wrath Ultimate Warning", "将于下一回合释放大招");
+                    Assert.Less(Vector2.Distance(openingArea.center, warningArea.center), 1.5f,
+                        "The persistent warning must reuse the opening banner's visible position.");
+                    Assert.Less(Vector2.Distance(openingArea.size, warningArea.size), 1.5f);
+                    yield return CaptureWrathProof("boss-round-" + round + "-warning");
+                }
+                if (round == 2 || round == 8)
+                {
+                    string body = view.Display.Labels["wrath.body"];
+                    var hits = view.LastResolution.Timeline.Select(entry => entry.RuleEvent).OfType<CombatEvent>()
+                        .Where(hit => hit.Effect.Kind == CombatEffectKind.Damage && hit.Effect.Source.Value == body &&
+                            hit.Effect.Target == host.Adventure.PlayerId).Select(hit => hit.SettledDamage).ToArray();
+                    CollectionAssert.AreEqual(round == 2 ? new long[] { 33, 99 } : new long[] { 159 }, hits,
+                        "The actual regular action must resolve before the extra ultimate; round 8 charges before its 3D hit.");
+                    Assert.AreEqual(round == 2 ? 132 : 159, previousHealth - view.Player.DisplayUnit.Health);
+                    yield return CaptureWrathProof("boss-round-" + round + "-released");
+                }
+            }
+            Assert.IsTrue(view.Enemies.All(actor => actor.DisplayUnit.IsAlive),
+                "Both warnings and releases must be exercised with all five original hands alive.");
+        }
+
+        [UnityTest]
         public IEnumerator SevenStationBossSeversAndRegeneratesFiveOriginalActorsWithPsdArtwork()
         {
             yield return ReachBattle("boss");
             var view = host.BattleView;
             AssertRoster(6);
             AssertRemotePresentation();
-            yield return Capture("boss");
-            Assert.AreEqual(1500, view.Enemies[0].DisplayUnit.MaxHealth);
+            yield return CaptureWrathProof("boss");
+            Assert.AreEqual(2000, view.Enemies[0].DisplayUnit.MaxHealth);
             Assert.AreEqual(33, WrathBossQuery.Read(view.State.Duel).Attack);
             Assert.IsTrue(view.GetComponent<BattleDemoTargetSelection>().ChooseTarget(view.Enemies[0]));
             var hands = view.Enemies.Skip(1).ToArray();
@@ -305,14 +355,15 @@ namespace Poker.Adventure.Tests
                 Assert.AreEqual(1, ((BattleDemoAshPresenter)hand.Presentation).Progress);
                 var world = FindEnemyWorldHud(hand);
                 Assert.IsTrue(world.gameObject.activeInHierarchy);
-                var badge = world.Find("Intents").GetComponentsInChildren<BattleDemoEnemyBadgeTooltip>().Single();
-                StringAssert.Contains("再生", badge.Description);
-                Assert.AreEqual("8", badge.GetComponentInChildren<TMP_Text>().text);
+                Assert.IsFalse(world.Find("Intents").gameObject.activeSelf);
+                var countdown = world.Find("Revive Countdown").GetComponent<TMP_Text>();
+                Assert.IsTrue(countdown.isActiveAndEnabled);
+                Assert.AreEqual("复活倒计时 8", countdown.text);
                 Assert.IsFalse(world.Find("Health Bar").gameObject.activeSelf);
             }
             Assert.AreEqual(8, WrathBossQuery.Read(view.State.Duel).Attack);
             Assert.AreEqual(6, ActiveEnemyHudCount());
-            yield return Capture("boss-severed");
+            yield return CaptureWrathProof("boss-severed");
             host.ReturnToMenu(); Assert.IsTrue(host.IsAtMenu);
             Assert.IsTrue(host.Resume()); yield return Idle();
             CollectionAssert.AreEqual(hands, view.Enemies.Skip(1), "Menu/resume must not replace dead actors.");
@@ -328,8 +379,8 @@ namespace Poker.Adventure.Tests
                 Assert.Less(Vector3.Distance(positions[i], hands[i].transform.position), .0001f);
                 var world = FindEnemyWorldHud(hands[i]);
                 Assert.IsTrue(world.Find("Health Bar").gameObject.activeSelf);
-                Assert.IsFalse(world.Find("Intents").GetComponentsInChildren<BattleDemoEnemyBadgeTooltip>()
-                    .Any(badge => badge.Description.Contains("再生")));
+                Assert.IsTrue(world.Find("Intents").gameObject.activeSelf);
+                Assert.IsFalse(world.Find("Revive Countdown").gameObject.activeSelf);
             }
             Assert.AreEqual(53, WrathBossQuery.Read(view.State.Duel).Attack);
             foreach (var hand in hands)
@@ -337,7 +388,7 @@ namespace Poker.Adventure.Tests
                     "Regenerated hands retain the remote target selection path.");
             AssertRoster(6);
             AssertRemotePresentation();
-            yield return Capture("boss-regenerated");
+            yield return CaptureWrathProof("boss-regenerated");
         }
 
         private void AssertRemotePresentation()
@@ -351,34 +402,95 @@ namespace Poker.Adventure.Tests
             var view = host.BattleView;
             if (view.Display.Labels.TryGetValue("wrath.body", out var bodyId))
             {
-                var camera = view.gameObject.scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<Camera>(true))
-                    .Single(item => item.CompareTag("MainCamera"));
                 var body = view.Enemies.Single(actor => actor.DisplayId == bodyId);
                 var health = FindEnemyWorldHud(body).Find("Health Bar").GetComponent<RectTransform>();
-                Assert.Greater(camera.WorldToViewportPoint(health.position).y, .87f,
-                    "The boss health bar belongs at the top of the battle view, not below its feet.");
-                float ScreenWidth(RectTransform rect)
+                var bossArea = ScreenArea(health);
+                var viewport = new Rect(0, 0, Screen.width, Screen.height);
+                var profile = view.GetComponent<BattleAuthoredLayout>().Profile;
+                foreach (var actor in view.Enemies)
                 {
-                    var corners = new Vector3[4]; rect.GetWorldCorners(corners);
-                    return Vector3.Distance(camera.WorldToScreenPoint(corners[0]), camera.WorldToScreenPoint(corners[3]));
+                    var bar = FindEnemyWorldHud(actor).Find("Health Bar").GetComponent<RectTransform>();
+                    var area = ScreenArea(bar);
+                    Assert.IsTrue(viewport.Contains(area.min) && viewport.Contains(area.max), actor.name + " health must stay visible.");
+                    var authored = profile.Find(view.ContentEncounterId, actor.DisplayId).nodes.Single(node => node.path == "Health Bar");
+                    Assert.Less(Vector3.Distance(authored.position, bar.anchoredPosition3D), .01f,
+                        "Keep the user's authored health-bar placement: " + actor.name);
+                    if (actor != body) Assert.IsFalse(bossArea.Overlaps(area), "A hand health bar must not cover the boss header.");
                 }
-                float bossWidth = ScreenWidth(health);
-                foreach (var hand in view.Enemies.Where(actor => actor != body))
-                    Assert.Less(ScreenWidth(FindEnemyWorldHud(hand).Find("Health Bar").GetComponent<RectTransform>()), bossWidth * .20f,
-                        "Hands retain compact ordinary-enemy UI beneath the large boss header.");
             }
+        }
+
+        private Transform WrathPrompt(string name) => host.BattleView.gameObject.scene.GetRootGameObjects()
+            .SelectMany(root => root.GetComponentsInChildren<SingleBattleHud>(true)).Single().transform.Find(name);
+
+        private IEnumerator WaitForWrathPrompt(string name, bool visible)
+        {
+            float deadline = Time.realtimeSinceStartup + 10;
+            while ((WrathPrompt(name)?.gameObject.activeInHierarchy == true) != visible && Time.realtimeSinceStartup < deadline)
+                yield return null;
+            Assert.AreEqual(visible, WrathPrompt(name)?.gameObject.activeInHierarchy == true, name);
+        }
+
+        private void AssertWrathWarning(bool visible)
+        {
+            Assert.AreEqual(visible, WrathBossQuery.Read(host.BattleView.State.Duel).WarningActive);
+            Assert.AreEqual(visible, WrathPrompt("Wrath Ultimate Warning").gameObject.activeInHierarchy);
+            Assert.AreEqual(visible, host.BattleView.GetComponent<WrathBossArtworkLayout>().WarningVisible,
+                "The PSD glow and the persistent banner must follow the same presented warning.");
+        }
+
+        private Rect AssertReadableWrathPrompt(string name, string message)
+        {
+            Canvas.ForceUpdateCanvases();
+            var root = WrathPrompt(name).GetComponent<RectTransform>();
+            Assert.IsTrue(root.gameObject.activeInHierarchy, name);
+            var background = root.GetComponent<Image>(); Assert.IsNotNull(background);
+            Assert.Greater(background.color.a, .8f); Assert.Less(Mathf.Max(background.color.r, background.color.g, background.color.b), .25f);
+            Assert.GreaterOrEqual(root.rect.height / ((RectTransform)root.parent).rect.height, .12f,
+                "The warning needs the enlarged opening banner, rather than the old narrow strip.");
+            var label = root.Find("Warning").GetComponent<TMP_Text>(); label.ForceMeshUpdate();
+            StringAssert.Contains(message, label.text);
+            Assert.Greater(label.color.r, .8f); Assert.Less(label.color.g, .4f); Assert.Less(label.color.b, .4f);
+            Assert.GreaterOrEqual(label.fontSize, 30); Assert.IsFalse(label.isTextTruncated);
+            Assert.LessOrEqual(label.textInfo.lineCount, 2);
+            Assert.LessOrEqual(label.preferredHeight, label.rectTransform.rect.height + 1, "All warning lines must fit the dark background.");
+            var area = ScreenArea(root); var viewport = new Rect(0, 0, Screen.width, Screen.height);
+            Assert.IsTrue(viewport.Contains(area.min) && viewport.Contains(area.max), name + " must stay fully visible.");
+            return area;
+        }
+
+        private static Rect ScreenArea(RectTransform rect)
+        {
+            var canvas = rect.GetComponentInParent<Canvas>();
+            var camera = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
+            var corners = new Vector3[4]; rect.GetWorldCorners(corners);
+            var points = corners.Select(corner => RectTransformUtility.WorldToScreenPoint(camera, corner)).ToArray();
+            return Rect.MinMaxRect(points.Min(point => point.x), points.Min(point => point.y),
+                points.Max(point => point.x), points.Max(point => point.y));
+        }
+
+        private IEnumerator CaptureWrathProof(string name)
+        {
+            yield return null; Canvas.ForceUpdateCanvases();
+            string path = Path.GetFullPath(Path.Combine(Output, name + ".png"));
+            if (File.Exists(path)) File.Delete(path);
+            ScreenCapture.CaptureScreenshot(path);
+            float deadline = Time.realtimeSinceStartup + 5;
+            do { yield return null; } while (!File.Exists(path) && Time.realtimeSinceStartup < deadline);
+            Assert.IsTrue(File.Exists(path), "Screenshot was not produced: " + path);
         }
 
         private Transform FindEnemyWorldHud(EnemyBattleActor actor) =>
             host.BattleView.gameObject.scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<Transform>(true))
                 .Single(item => item.name == "Enemy World HUD " + actor.name);
 
-        private IEnumerator ReachBattle(string target)
+        private IEnumerator ReachBattle(string target, bool settleTarget = true)
         {
             Assert.IsTrue(host.NewRun(host.AvailableTarots.First().Id, 312));
             foreach (string id in new[] { "battle-1", "chest", "battle-2", "rest-1", "elite", "rest-2", "boss" })
             {
                 Assert.IsTrue(host.ExecuteAdventure(new AdventureCommand(AdventureCommandKind.EnterNode, id)), host.Message);
+                if (id == target && !settleTarget) yield break;
                 yield return Idle();
                 if (id == target) yield break;
                 if (host.Adventure.Phase == AdventurePhase.Battle) yield return WinBattle();
@@ -492,8 +604,8 @@ namespace Poker.Adventure.Tests
 
         private void AssertPhase(AdventurePhase phase)
         { Assert.IsFalse(host.IsAtMenu); Assert.AreEqual(phase, host.Adventure.Phase, host.Message); }
-        private static int ActiveEnemyHudCount() => Object.FindObjectsOfType<Canvas>().Count(canvas =>
-            canvas.isActiveAndEnabled && canvas.name.StartsWith("Enemy World HUD ", StringComparison.Ordinal));
+        private static int ActiveEnemyHudCount() => Object.FindObjectsOfType<RectTransform>().Count(rect =>
+            rect.gameObject.activeInHierarchy && rect.name.StartsWith("Enemy World HUD ", StringComparison.Ordinal));
         private void AssertRoster(int count)
         {
             Assert.AreEqual(count, host.BattleView.Enemies.Count); Assert.AreEqual(count, host.Session.State.Duel.Enemies.Count);

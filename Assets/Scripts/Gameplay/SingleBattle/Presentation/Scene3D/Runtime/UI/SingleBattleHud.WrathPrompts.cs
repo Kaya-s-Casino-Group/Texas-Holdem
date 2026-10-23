@@ -18,7 +18,7 @@ namespace Poker.SingleBattle
         private readonly WrathPromptTracker wrathPromptTracker = new WrathPromptTracker();
         private readonly List<WrathIntentView> wrathIntentViews = new List<WrathIntentView>();
         private readonly Dictionary<string, WrathHandMarker> wrathHandMarkers = new Dictionary<string, WrathHandMarker>();
-        private RectTransform wrathOpening;
+        private RectTransform wrathOpening, wrathUltimate;
         private TMP_Text wrathOpeningText, wrathRulesButtonText, wrathUltimatePrompt;
         private float wrathOpeningUntil;
         private bool wrathOpeningPinned, wrathPromptsVisible, wrathUltimateActive;
@@ -50,19 +50,17 @@ namespace Poker.SingleBattle
             if (wrathOpening != null) return;
             wrathOpening = new GameObject("Wrath Opening Warning", typeof(RectTransform), typeof(Image)).GetComponent<RectTransform>();
             wrathOpening.SetParent(transform, false); wrathOpening.gameObject.layer = gameObject.layer;
-            SetWrathRect(wrathOpening, new Vector2(.20f, .46f), new Vector2(.90f, .55f), Vector2.zero, Vector2.zero);
+            SetWrathRect(wrathOpening, new Vector2(.20f, .4375f), new Vector2(.90f, .5725f), Vector2.zero, Vector2.zero);
             wrathOpening.GetComponent<Image>().color = new Color32(30, 9, 14, 240); wrathOpening.GetComponent<Image>().raycastTarget = false;
-            wrathOpeningText = WrathLabel(wrathOpening, "Warning", 24); wrathOpeningText.alignment = TextAlignmentOptions.Center;
+            wrathOpeningText = WrathLabel(wrathOpening, "Warning", 36); wrathOpeningText.alignment = TextAlignmentOptions.Center;
             wrathOpeningText.color = new Color32(255, 52, 65, 255);
-            SetWrathRect(wrathOpeningText.rectTransform, Vector2.zero, Vector2.one, new Vector2(12, 5), new Vector2(-12, -5));
+            SetWrathRect(wrathOpeningText.rectTransform, Vector2.zero, Vector2.one, new Vector2(18, 8), new Vector2(-18, -8));
             wrathOpening.gameObject.SetActive(false);
-            wrathUltimatePrompt = WrathLabel(transform, "Wrath Ultimate Warning", 24);
+            wrathUltimate = Instantiate(wrathOpening, transform);
+            wrathUltimate.name = "Wrath Ultimate Warning";
+            wrathUltimatePrompt = wrathUltimate.GetComponentInChildren<TMP_Text>(true);
             wrathUltimatePrompt.text = WrathPromptText.Ultimate;
-            wrathUltimatePrompt.alignment = TextAlignmentOptions.Center;
-            wrathUltimatePrompt.color = new Color32(255, 52, 65, 255);
-            wrathUltimatePrompt.outlineWidth = .18f; wrathUltimatePrompt.outlineColor = new Color32(45, 0, 4, 255);
-            SetWrathRect(wrathUltimatePrompt.rectTransform, new Vector2(.20f, .77f), new Vector2(.90f, .84f), Vector2.zero, Vector2.zero);
-            wrathUltimatePrompt.gameObject.SetActive(false);
+            wrathUltimate.gameObject.SetActive(false);
         }
 
         private void EnsureWrathDemoPromptViews()
@@ -178,8 +176,9 @@ namespace Poker.SingleBattle
         {
             bool adventure = host != null && host.UsesExternalCommands;
             bool visible = isActiveAndEnabled && (adventure ? wrathPromptsVisible : wrathPanel != null && wrathPanel.gameObject.activeInHierarchy);
-            if (wrathOpening != null) wrathOpening.gameObject.SetActive(visible && Time.unscaledTime < wrathOpeningUntil);
-            if (wrathUltimatePrompt != null) wrathUltimatePrompt.gameObject.SetActive(visible && adventure && wrathUltimateActive);
+            bool openingVisible = visible && Time.unscaledTime < wrathOpeningUntil;
+            if (wrathOpening != null) wrathOpening.gameObject.SetActive(openingVisible);
+            if (wrathUltimate != null) wrathUltimate.gameObject.SetActive(visible && adventure && wrathUltimateActive && !openingVisible);
             if (wrathRulesButtonText != null) wrathRulesButtonText.text = wrathOpeningPinned ? "收起说明" : "规则说明";
             var camera = ResolveIntentCamera();
             foreach (var marker in wrathHandMarkers.Values)

@@ -34,8 +34,7 @@ namespace Poker.SingleBattle.Tests
                 Assert.NotNull(content);
                 if (suppressBinding)
                 {
-                    // Keep five living hands while observing the round-five warning's player window.
-                    // The production binding would automatically advance the session through round six.
+                    // Keep player windows observable without binding automatically advancing the session.
                     var xml = XDocument.Parse(content.text);
                     xml.Root.Element("Enemies").Elements("Enemy")
                         .Single(enemy => (string)enemy.Attribute("id") == "wrath-binding")
@@ -201,8 +200,8 @@ namespace Poker.SingleBattle.Tests
         {
             using (var fixture = new Fixture(suppressBinding: true))
             {
-                for (int round = 0; round < 5; round++) fixture.Round();
-                Assert.AreEqual(5, fixture.Host.Display.CompletedRounds);
+                fixture.Round();
+                Assert.AreEqual(1, fixture.Host.Display.CompletedRounds);
                 Assert.AreEqual(1, fixture.Host.Display.Resource("enemy", "wrath.warning").Value);
                 var warning = fixture.Intents("enemy").SingleOrDefault(badge => badge.Description.Contains("大招预警"));
                 Assert.NotNull(warning, "The existing intent row must expose the pending additional ultimate.");
@@ -211,7 +210,7 @@ namespace Poker.SingleBattle.Tests
                 var tooltip = fixture.View("enemy").Find("Enemy Badge Tooltip");
                 Assert.IsTrue(tooltip.gameObject.activeSelf);
                 string text = tooltip.GetComponentInChildren<TMP_Text>().text;
-                StringAssert.Contains("第 6 轮", text); StringAssert.Contains("129", text);
+                StringAssert.Contains("第 2 轮", text); StringAssert.Contains("99", text);
                 StringAssert.Contains("断手", text); StringAssert.Contains("眩晕", text);
                 fixture.Edit(new BattleAdminPatch(vitals: new[] { new BattleAdminVitals(new ParticipantId("hand-1"), health: 0) }));
                 Assert.IsFalse(fixture.Intents("enemy").Any(badge => badge.Description.Contains("大招预警")));
@@ -256,7 +255,7 @@ namespace Poker.SingleBattle.Tests
                 // when it currently has block. Establish that final row before starting hover.
                 fixture.Edit(new BattleAdminPatch(vitals: new[] {
                     new BattleAdminVitals(actor.ParticipantId, block: 1) }));
-                var badge = fixture.Intents(actor.DisplayId).Single(item => item.Description == "攻击：6 伤害");
+                var badge = fixture.Intents(actor.DisplayId).Single(item => item.Description == "攻击：15 伤害");
                 var tooltip = fixture.View(actor.DisplayId).Find("Enemy Badge Tooltip");
                 badge.OnPointerEnter(null);
                 fixture.RefreshWorldOnly();
@@ -276,7 +275,7 @@ namespace Poker.SingleBattle.Tests
                 Assert.IsTrue(tooltip.gameObject.activeSelf, "A shield change must not close the unchanged attack explanation.");
                 blockTooltip.OnPointerExit(null);
                 Assert.IsTrue(tooltip.gameObject.activeSelf, "Another badge's pointer exit must not close the hovered explanation.");
-                Assert.AreEqual("攻击：6 伤害", tooltip.GetComponentInChildren<TMP_Text>().text);
+                Assert.AreEqual("攻击：15 伤害", tooltip.GetComponentInChildren<TMP_Text>().text);
             }
         }
 
@@ -288,8 +287,8 @@ namespace Poker.SingleBattle.Tests
                 var actor = fixture.Host.Enemies.Single();
                 var badge = fixture.Intents(actor.DisplayId).Single();
                 Assert.AreEqual(BattleDemoEnemySymbol.Sword, badge.GetComponentInChildren<BattleDemoEnemyIcon>().Symbol);
-                Assert.AreEqual("6", badge.GetComponentInChildren<TMP_Text>().text);
-                Assert.AreEqual("攻击：6 伤害", badge.Description);
+                Assert.AreEqual("15", badge.GetComponentInChildren<TMP_Text>().text);
+                Assert.AreEqual("攻击：15 伤害", badge.Description);
                 Assert.AreEqual(BattleDemoEnemyHudModel.AttackColor, badge.GetComponentInChildren<BattleDemoEnemyIcon>().color);
             }
         }
