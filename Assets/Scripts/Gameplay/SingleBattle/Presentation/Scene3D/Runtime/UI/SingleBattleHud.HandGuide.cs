@@ -18,13 +18,13 @@ namespace Poker.SingleBattle
     {
         [Header("牌型指南入口")]
         [SerializeField] private Button guideEntry;
-        private Button guideClose, guideFlushButton;
+        private Button guideClose, guideFlushButton, guidePureFlushButton, guideStraightFlushButton;
         private bool ownsGuideEntry;
         private RectTransform guideOverlay, guideCardRow, guideFormulaContent;
         private TMP_Text guideHeading, guideAvailability, guideTags, guideIndex, guideNotice, guideFormula, guideRuleSummary;
         private ScrollRect guideFormulaScroll;
         private HandGuideType guideType = HandGuideType.HighCard;
-        private bool guideFlush;
+        private bool guideFlush, guideAttributeFlush;
         private CardDuelState guideState;
         private CardDuelState guideCacheState;
         private CardDuelEngine guideCacheEngine;
@@ -170,8 +170,17 @@ namespace Poker.SingleBattle
             {
                 var type = types[i];
                 guideTypeButtons[type] = GuideButton(left, type.ToString(), BattleHandGuideText.TypeName(type),
-                    () => { if (guideType == type) return; guideType = type; RebuildHandGuide(); }, new Rect(0, i * .080f, 1, .068f));
+                    () => {
+                        bool ordinaryEntry = guideAttributeFlush && (type == HandGuideType.HighCard || type == HandGuideType.Straight);
+                        if (guideType == type && !(ordinaryEntry && guideFlush)) return;
+                        guideType = type; if (ordinaryEntry) guideFlush = false;
+                        RebuildHandGuide();
+                    }, new Rect(0, i * .080f, 1, .068f));
             }
+            guidePureFlushButton = GuideButton(left, "Flush", "同花",
+                () => { guideType = HandGuideType.HighCard; guideFlush = true; RebuildHandGuide(); }, new Rect(0, 0, 1, .061f));
+            guideStraightFlushButton = GuideButton(left, "Straight Flush", "同花顺",
+                () => { guideType = HandGuideType.Straight; guideFlush = true; RebuildHandGuide(); }, new Rect(0, 0, 1, .061f));
             guideFlushButton = GuideButton(left, "Flush Filter", "同花筛选：关", () => { guideFlush = !guideFlush; RebuildHandGuide(); }, new Rect(0, .87f, 1, .10f));
             var divider = GuideRect(body, "Divider", new Rect(.245f, 0, .0015f, 1));
             divider.gameObject.AddComponent<Image>().color = new Color32(89, 80, 62, 255);
@@ -217,11 +226,17 @@ namespace Poker.SingleBattle
             string targets = string.Join("|", host.PlayTargetChoices.Select(choice => choice.Slot + ":" + choice.SelectedId));
             if (guideCacheTargetSelection != targets)
             { guideCacheTargetSelection = targets; guideTexts.Clear(); }
+            var rule = guideState.Duel.Player(actor).Rules.EffectRule as ConfiguredHandEffectRule;
+            guideAttributeFlush = rule?.ModernScoring == true && rule.FlushAsAttribute;
+            LayoutGuideTypes();
             foreach (var pair in guideTypeButtons)
             {
-                pair.Value.GetComponent<Image>().color = pair.Key == guideType ? new Color32(104, 77, 40, 255) : new Color32(42, 44, 47, 255);
+                bool selected = pair.Key == guideType && !(guideAttributeFlush && guideFlush && (guideType == HandGuideType.HighCard || guideType == HandGuideType.Straight));
+                pair.Value.GetComponent<Image>().color = selected ? new Color32(104, 77, 40, 255) : new Color32(42, 44, 47, 255);
                 pair.Value.GetComponentInChildren<TMP_Text>().text = BattleHandGuideText.TypeName(pair.Key);
             }
+            guidePureFlushButton.GetComponent<Image>().color = guideFlush && guideType == HandGuideType.HighCard ? new Color32(104, 77, 40, 255) : new Color32(42, 44, 47, 255);
+            guideStraightFlushButton.GetComponent<Image>().color = guideFlush && guideType == HandGuideType.Straight ? new Color32(104, 77, 40, 255) : new Color32(42, 44, 47, 255);
             guideFlushButton.GetComponentInChildren<TMP_Text>().text = "同花筛选：" + (guideFlush ? "开" : "关");
             guideFlushButton.GetComponent<Image>().color = guideFlush ? new Color32(104, 77, 40, 255) : new Color32(42, 44, 47, 255);
             QueueHandGuidePreloads();
@@ -229,10 +244,29 @@ namespace Poker.SingleBattle
             PresentHandGuideBasicRules();
         }
 
+        private void LayoutGuideTypes()
+        {
+            // Legacy content treats Flush as a separate scoring category; these two queries are
+            // valid shortcuts only for the attribute-based rules, so retain its original list.
+            guidePureFlushButton.gameObject.SetActive(guideAttributeFlush);
+            guideStraightFlushButton.gameObject.SetActive(guideAttributeFlush);
+            int row = 0;
+            float step = guideAttributeFlush ? .070f : .080f, height = guideAttributeFlush ? .061f : .068f;
+            foreach (HandGuideType type in Enum.GetValues(typeof(HandGuideType)))
+            {
+                ConceptBattleSkin.Place(guideTypeButtons[type].transform, new Rect(0, row++ * step, 1, height));
+                if (!guideAttributeFlush || type != HandGuideType.Straight) continue;
+                ConceptBattleSkin.Place(guidePureFlushButton.transform, new Rect(0, row++ * step, 1, height));
+                ConceptBattleSkin.Place(guideStraightFlushButton.transform, new Rect(0, row++ * step, 1, height));
+            }
+        }
+
         private void PresentHandGuideBasicRules(HandGuideResult result = null)
         {
             ClearGuideHighlights(); ClearGuideCards();
-            guideHeading.text = BattleHandGuideText.TypeName(guideType) + (guideFlush ? " · 同花" : ""); guideHeading.color = GuidePaper;
+            guideHeading.text = guideAttributeFlush ? BattleHandGuideText.TypeName(guideType, guideFlush) :
+                BattleHandGuideText.TypeName(guideType) + (guideFlush ? " · 同花" : "");
+            guideHeading.color = GuidePaper;
             guideIndex.text = ""; guideTags.text = "基本规则";
             guideAvailability.text = result == null ? "基本规则" : result.Availability == HandGuideAvailability.Impossible ? "当前牌组无法补齐" : "暂未找到组合";
             guideNotice.text = result?.Availability == HandGuideAvailability.Impossible ? "牌型条件与效果见下方" :
@@ -334,7 +368,11 @@ namespace Poker.SingleBattle
             guideIndex.text = "方案 " + (index + 1) + " / " + guideResult.Candidates.Count + (guideResult.Truncated ? "+" : ""); guideIndex.color = color;
             guideAvailability.text = text.Availability; guideTags.text = string.Join("  ", text.EffectTags.Select(tag => "[" + tag + "]"));
             guideNotice.text = candidate.MissingCount > 0 ? "补齐示例 · 来自牌库 / 弃牌，不代表下次抽牌" : "对应颜色的手牌正在高亮 · 多个方案自动轮换";
-            SetGuideFormula(string.Join("\n", text.FormulaLines) + "\n\n当前目标结算\n" + string.Join("\n", text.SettlementLines), resetScroll);
+            var player = guideState.Duel.Player(host.Player.ParticipantId);
+            var basicRules = BattleHandGuideText.BasicRuleLines(guideType, guideFlush, player,
+                host.Engine.Scoring, host.Engine.Duel.Definition.StatusCatalog);
+            SetGuideFormula("本局组合预览\n" + string.Join("\n", text.FormulaLines) + "\n\n当前目标结算\n" + string.Join("\n", text.SettlementLines) +
+                "\n\n基础规则（与本局数值对照）\n" + string.Join("\n", basicRules), resetScroll);
             PresentGuideCards(candidate, color);
         }
         private void PresentGuideCards(HandGuideCandidate candidate, Color color)

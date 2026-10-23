@@ -264,14 +264,8 @@ namespace Poker.SingleBattle
                     : previous.Labels.TryGetValue("intentWait/" + unit.Id, out var waitReason)
                         ? new[] { new BattleDemoEnemyHudModel.Badge(BattleDemoEnemySymbol.Wait, ConceptBattleSkin.Gold, "", waitReason) }
                         : BattleDemoEnemyHudModel.Intents(view.Actor.ReadIntent()?.Action, charge, enemy?.BehaviorState?.Intent);
-                if (!previous.IsFinished && previous.Resource(unit.Id, "wrath.warning")?.Value == 1)
-                {
-                    long release = previous.Resource(unit.Id, "wrath.releaseRound")?.Value ?? -1;
-                    long damage = previous.Resource(unit.Id, "wrath.ultimateDamage")?.Value ?? 0;
-                    intents = intents.Concat(new[] { new BattleDemoEnemyHudModel.Badge(BattleDemoEnemySymbol.Sword,
-                        BattleDemoEnemyHudModel.AttackColor, "!", "大招预警：第 " + release +
-                        " 轮常规动作后追加\n当前预计基础伤害 " + damage + "\n断手或眩晕本体可打断") }).ToArray();
-                }
+                // The timed warning and boss artwork glow already present the pending ultimate.
+                // Keep actual damage forecasts here without a second, attack-shaped warning.
                 while (view.Intents.Count < intents.Count) view.Intents.Add(Icon("Intent " + view.Intents.Count, view.IntentRow, false, view));
                 for (int i = 0; i < view.Intents.Count; i++)
                 {

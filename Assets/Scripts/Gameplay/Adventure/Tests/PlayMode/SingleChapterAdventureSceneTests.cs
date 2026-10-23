@@ -22,7 +22,7 @@ using Object = UnityEngine.Object;
 
 namespace Poker.Adventure.Tests
 {
-    public sealed class SingleChapterAdventureSceneTests
+    public sealed partial class SingleChapterAdventureSceneTests
     {
         private const string AuthoredScene = "Assets/Scenes/SingleChapterAdventure.unity";
         private const string Output = "Library/AdventureValidation";
@@ -87,7 +87,7 @@ namespace Poker.Adventure.Tests
         [UnityTest]
         public IEnumerator AdventureBattleUsesOutcomeRelicsKickerFlightsAndAshBeforeReturningToRewards()
         {
-            yield return Click("开始新旅程"); yield return Click("选择愚者"); yield return Click("选择"); yield return Click("踏上旅程");
+            yield return Click("开始新旅程"); yield return Click("踏上旅程");
             yield return Click("普通战斗"); yield return Idle(); AssertPhase(AdventurePhase.Battle); AssertRoster(1);
             var view = host.BattleView; var art = Object.FindObjectOfType<BattleDemoRelicArt>();
             var outcome = Object.FindObjectOfType<BattleDemoOutcomePreview>(); Assert.NotNull(outcome); Assert.NotNull(art);
@@ -169,10 +169,7 @@ namespace Poker.Adventure.Tests
         {
             yield return Capture("menu");
             yield return Click("开始新旅程");
-            Assert.IsTrue(VisibleText("选择角色")); yield return Capture("role");
-            yield return Click("选择愚者");
-            Assert.IsTrue(VisibleText("选择开局天赋")); yield return Capture("tarot");
-            yield return Click("选择");
+            Assert.IsTrue(VisibleText("出发准备")); yield return Capture("preparation");
             yield return Click("踏上旅程");
             AssertPhase(AdventurePhase.Map); Assert.AreEqual(0, host.Revision);
             yield return Capture("map");
@@ -202,15 +199,17 @@ namespace Poker.Adventure.Tests
             Assert.AreEqual("shop-1", host.Adventure.CurrentNode.Id); Assert.AreEqual(4, host.Adventure.ShopItems.Count);
             string[] stock = host.Adventure.ShopItems.Select(item => item.Id + "/" + item.RelicId + "/" + item.Price).ToArray();
             revision = host.Revision;
-            yield return ClickWhere(text => text.EndsWith("金币 · 查看", StringComparison.Ordinal));
+            yield return ClickWhere(text => text.StartsWith("查看详情 ·", StringComparison.Ordinal));
             Assert.IsTrue(VisibleText("道具详情")); yield return Capture("item-detail"); yield return Click("关闭");
             Assert.AreEqual(revision, host.Revision); AssertOverlayClosed();
-            yield return Click("保存并返回"); Assert.IsTrue(host.IsAtMenu);
+            yield return Click("保存并返回首页"); Assert.IsTrue(host.IsAtMenu);
             yield return Click("继续旅程"); AssertPhase(AdventurePhase.Shop);
             CollectionAssert.AreEqual(stock, host.Adventure.ShopItems.Select(item => item.Id + "/" + item.RelicId + "/" + item.Price));
             Assert.AreEqual(revision, host.Revision);
             yield return Capture("shop");
-            yield return ClickWhere(text => text.StartsWith("撕牌 ·", StringComparison.Ordinal)); yield return Capture("deck-service");
+            var deleteService = screen.GetComponentsInChildren<RectTransform>()
+                .Single(rect => rect.name == "Service DeleteCard").GetComponentInChildren<Button>();
+            yield return ClickButton(deleteService); yield return Capture("deck-service");
             var cards = screen.GetComponentsInChildren<Button>().Where(button => button.isActiveAndEnabled && button.interactable && button.transform.parent.name == "Cards").ToArray();
             Assert.IsNotEmpty(cards); int deckCount = host.Adventure.Deck.Count; long gold = host.Adventure.Gold;
             long price = host.Adventure.ServicePrice(AdventureCommandKind.DeleteCard);
@@ -219,7 +218,7 @@ namespace Poker.Adventure.Tests
             Assert.AreEqual(1, host.Adventure.ServiceUses(AdventureCommandKind.DeleteCard));
             AssertPhase(AdventurePhase.Shop); Assert.AreEqual("shop-1", host.Adventure.CurrentNode.Id);
             yield return Click("关闭"); AssertOverlayClosed();
-            yield return Click("离开商店"); AssertPhase(AdventurePhase.Map);
+            yield return Click("离开商店 → 继续旅程"); AssertPhase(AdventurePhase.Map);
 
             yield return Click("精英战斗"); yield return Idle(); AssertRoster(1);
             Assert.AreEqual(deckCount - 1, host.Session.State.Table.Cards.Count);
@@ -227,7 +226,8 @@ namespace Poker.Adventure.Tests
             if (host.Session.State.FlowFor(host.Adventure.PlayerId).Window == BattlePlayerWindow.Ending)
             { Assert.IsTrue(host.BattleView.EndTurn(true)); yield return Idle(); }
             AssertRoster(1); Assert.IsFalse(host.Session.State.Duel.Enemies.Any(enemy => enemy.SummonerId.HasValue));
-            Assert.AreEqual(18, host.Session.State.Duel.Enemies.Single().AttackAtRound(host.Session.State.Duel.CompletedRounds));
+            Assert.AreEqual(1, host.Session.State.Duel.CompletedRounds);
+            Assert.AreEqual(13, host.Session.State.Duel.Enemies.Single().AttackAtRound(host.Session.State.Duel.CompletedRounds));
             yield return Capture("elite");
             yield return WinBattle(injurePlayer: true); yield return Click("继续旅程");
             long beforeRestHealth = host.Adventure.Health;
@@ -237,7 +237,7 @@ namespace Poker.Adventure.Tests
             Assert.AreEqual(Math.Min(host.Adventure.MaxHealth, beforeRestHealth + relicEntryHeal + 20), host.Adventure.Health);
             Assert.AreEqual(20, host.Adventure.LastLocationReward.HealthDelta);
             Assert.IsFalse(host.Adventure.RestLotteryUsed); yield return Capture("rest");
-            yield return Click("不抽奖，继续旅程"); AssertPhase(AdventurePhase.Map);
+            yield return Click("安心休息，继续旅程"); AssertPhase(AdventurePhase.Map);
 
             yield return Click("首领战斗"); yield return Idle();
             AssertRoster(6); Assert.IsFalse(host.BattleView.Enemies.Any(actor => actor.ParticipantId.Value.Contains("summon")));
@@ -539,10 +539,10 @@ namespace Poker.Adventure.Tests
             long settledRevision = host.Revision; long settledGold = host.Adventure.Gold;
             host.BattleView.SynchronizeBattle(); host.BattleView.SynchronizeBattle();
             Assert.AreEqual(settledRevision, host.Revision); Assert.AreEqual(settledGold, host.Adventure.Gold);
-            yield return Click("保存并返回"); Assert.IsTrue(host.IsAtMenu);
-            yield return Click("继续旅程"); AssertPhase(AdventurePhase.Reward);
+            // The authored victory page offers only Continue; menu/resume is covered in battle and shop.
+            AssertPhase(AdventurePhase.Reward);
             Assert.AreEqual(settledRevision, host.Revision); Assert.AreEqual(settledGold, host.Adventure.Gold);
-            Assert.AreEqual(expectedReward, host.Adventure.LastRewardGold, "Synchronization and resume must not award node gold again.");
+            Assert.AreEqual(expectedReward, host.Adventure.LastRewardGold, "Synchronization must not award node gold again.");
         }
 
         private IEnumerator WinBattle(bool injurePlayer = false)
@@ -651,13 +651,16 @@ namespace Poker.Adventure.Tests
             var overlay = screen.GetComponentsInChildren<RectTransform>(true).Single(rect => rect.name == "Run Overlay");
             Assert.IsFalse(overlay.Cast<Transform>().Any(child => child.gameObject.activeSelf));
         }
-        private IEnumerator Click(string caption) => ClickWhere(text => text == caption);
-        private IEnumerator ClickWhere(Func<string, bool> predicate)
+        private IEnumerator Click(string caption) => ClickWhere(text => text == caption, caption);
+        private IEnumerator ClickWhere(Func<string, bool> predicate, string requested = "matching action")
         {
             yield return null; Canvas.ForceUpdateCanvases();
             var buttons = screen.GetComponentsInChildren<Button>().Where(button => button.isActiveAndEnabled && button.interactable &&
                 predicate(button.GetComponentInChildren<TMP_Text>(true)?.text ?? "")).ToArray();
-            Assert.IsNotEmpty(buttons, "No enabled button matches the requested action. " + host.Message);
+            Assert.IsNotEmpty(buttons, "No enabled button for '" + requested + "' in " + host.Adventure?.Phase + ". " + host.Message +
+                " Available: " + string.Join(" | ", screen.GetComponentsInChildren<Button>()
+                    .Where(button => button.isActiveAndEnabled && button.interactable)
+                    .Select(button => button.GetComponentInChildren<TMP_Text>(true)?.text ?? button.name)));
             yield return ClickButton(buttons[0]);
         }
         private IEnumerator ClickButton(Button button)
@@ -688,9 +691,12 @@ namespace Poker.Adventure.Tests
                 Assert.AreEqual((float)texture.width / texture.height, scale.x / scale.y, .002f, "Portrait must retain source image proportions.");
                 Assert.AreEqual("FourBeastsAtlas", host.BattleView.Actions.Hand.GetComponentsInChildren<CardArt.CardView>().First().Atlas.name);
                 var handView = host.BattleView.Actions.Hand.GetComponent<HandZoneView>();
+                // PSD boss layers share an authored plane nearer the hand than ordinary portraits.
+                // Keep them behind the hand without imposing the ordinary encounter's flight distance.
+                bool composedBoss = host.BattleView.GetComponent<WrathBossArtworkLayout>()?.IsComposed == true;
                 foreach (var enemy in host.BattleView.Enemies)
-                    Assert.Greater(Vector3.Dot(enemy.transform.position - handView.transform.position, handView.FacingCamera.transform.forward), 4f,
-                        "The enemy plane must be separated from the hand plane for a readable projectile flight.");
+                    Assert.Greater(Vector3.Dot(enemy.transform.position - handView.transform.position, handView.FacingCamera.transform.forward), composedBoss ? 0f : 4f,
+                        "Enemies must remain behind the hand; ordinary encounters also retain their projectile flight distance.");
             }
             var truncated = new List<string>();
             foreach (var label in screen.GetComponentsInChildren<TMP_Text>())

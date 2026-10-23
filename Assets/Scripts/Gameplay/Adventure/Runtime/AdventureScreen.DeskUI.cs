@@ -47,8 +47,9 @@ namespace Poker.Adventure
             Label(gold, "金币 " + run.Gold, new Rect(.10f, .24f, .80f, .50f), 21, Gold, TextAlignmentOptions.Center);
             var progress = DeskPanel(header, "Journey Status", new Rect(.38f, 0, .28f, 1), "MenuButton");
             Label(progress, "第一章 · 破碎王庭", new Rect(.10f, .18f, .80f, .64f), 25, Paper, TextAlignmentOptions.Center);
-            DeskButton(header, "设置", new Rect(.80f, 0, .08f, 1), GameSettings, true, "Button", 21);
-            DeskButton(header, "保存并返回", new Rect(.89f, 0, .11f, 1), host.ReturnToMenu, !host.IsBusy, "Button", 21);
+            DeskButton(header, "设置", new Rect(.76f, .14f, .08f, .72f), GameSettings, true, "Button", 20);
+            var home = DeskButton(header, "保存并返回首页", new Rect(.85f, .14f, .15f, .72f), host.ReturnToMenu, !host.IsBusy, "Button", 20);
+            home.GetComponentInChildren<TMP_Text>().color = Muted;
         }
 
         private void GameSettings()

@@ -195,26 +195,25 @@ namespace Poker.SingleBattle.Tests
             }
         }
 
-        [Test]
-        public void UltimateWarningAddsARedExistingIntentBadgeAndItsTooltipDisappearsWhenAHandDies()
+        [TestCase(false)]
+        [TestCase(true)]
+        public void UltimateWarningKeepsDamageForecastWithoutAnExtraAttackExclamationBadge(bool concept)
         {
-            using (var fixture = new Fixture(suppressBinding: true))
+            using (var fixture = new Fixture(suppressBinding: true, concept: concept))
             {
                 fixture.Round();
                 Assert.AreEqual(1, fixture.Host.Display.CompletedRounds);
                 Assert.AreEqual(1, fixture.Host.Display.Resource("enemy", "wrath.warning").Value);
-                var warning = fixture.Intents("enemy").SingleOrDefault(badge => badge.Description.Contains("大招预警"));
-                Assert.NotNull(warning, "The existing intent row must expose the pending additional ultimate.");
-                Assert.AreEqual(BattleDemoEnemyHudModel.AttackColor, warning.GetComponentInChildren<BattleDemoEnemyIcon>().color);
-                warning.OnPointerEnter(null);
-                var tooltip = fixture.View("enemy").Find("Enemy Badge Tooltip");
-                Assert.IsTrue(tooltip.gameObject.activeSelf);
-                string text = tooltip.GetComponentInChildren<TMP_Text>().text;
-                StringAssert.Contains("第 2 轮", text); StringAssert.Contains("99", text);
-                StringAssert.Contains("断手", text); StringAssert.Contains("眩晕", text);
+                var intents = fixture.Intents("enemy");
+                Assert.IsFalse(intents.Any(badge => badge.Description.Contains("大招预警")),
+                    "The timed warning and artwork glow own the warning, not a third attack plate.");
+                Assert.IsTrue(intents.Any(badge => badge.Description.Contains("33")), "Keep the regular damage forecast.");
+                Assert.IsTrue(intents.Any(badge => badge.Description.Contains("99")), "Keep the actual ultimate damage forecast.");
                 fixture.Edit(new BattleAdminPatch(vitals: new[] { new BattleAdminVitals(new ParticipantId("hand-1"), health: 0) }));
+                Assert.AreEqual(0, fixture.Host.Display.Resource("enemy", "wrath.warning").Value);
                 Assert.IsFalse(fixture.Intents("enemy").Any(badge => badge.Description.Contains("大招预警")));
-                Assert.IsFalse(tooltip.gameObject.activeSelf);
+                Assert.IsFalse(fixture.Intents("enemy").Any(badge => badge.Description.Contains("99")),
+                    "Interrupting the ultimate must also remove its damage forecast.");
             }
         }
 

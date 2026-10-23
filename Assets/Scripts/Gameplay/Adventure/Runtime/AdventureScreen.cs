@@ -139,8 +139,9 @@ namespace Poker.Adventure
             Label(modal, host.ItemDescription(item.RelicId), new Rect(.07f, .29f, .86f, .39f), 24, Paper);
             var command = new AdventureCommand(AdventureCommandKind.BuyRelic, item.Id);
             bool allowed = Preview(command);
-            Button(modal, item.Price + " 金币 · 购买", new Rect(.07f, .08f, .58f, .12f), () => host.ExecuteAdventure(command), allowed, true);
-            if (!allowed) Label(modal, "金币不足、栏位已满或持有数量已达上限", new Rect(.07f, .21f, .86f, .06f), 18, Muted);
+            bool bought = host.Adventure.PurchasedItemIds.Contains(item.Id);
+            Button(modal, bought ? "已售出" : "确认购买 · " + item.Price + " 金币", new Rect(.07f, .08f, .58f, .12f), () => host.ExecuteAdventure(command), allowed, true);
+            if (!allowed && !bought) Label(modal, "金币不足、栏位已满或持有数量已达上限", new Rect(.07f, .21f, .86f, .06f), 18, Muted);
         }
 
 

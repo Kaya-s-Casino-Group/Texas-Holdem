@@ -29,7 +29,7 @@ namespace Poker.Adventure
         }
         private void Menu()
         {
-            if (setupPage == "role") { RoleSelection(); return; }
+            if (setupPage == "prepare") { JourneyPreparation(); return; }
             if (setupPage == "tarot") { TarotSelection(false); return; }
             if (setupPage == "collection") { TarotSelection(true); return; }
             RitualSkin.Place(page, new Rect(0, 0, 1, 1));
@@ -37,7 +37,7 @@ namespace Poker.Adventure
                 DeskArt(page, "Shuffled Fate", DeskPixels(566, -8, 787, 439), "MenuLogo", true);
             else Label(page, "SHUFFLED\nFATE", new Rect(.35f, .69f, .31f, .25f), 76, Paper, TextAlignmentOptions.Center);
             const float x = .3562f, width = .2876f, top = .5375f, step = .1002f, height = .0762f;
-            DeskButton(page, "开始新旅程", new Rect(x, top, width, height), () => { setupPage = "role"; Refresh(); }, !host.HasUnfinishedRun, "MenuButton", 29);
+            DeskButton(page, "开始新旅程", new Rect(x, top, width, height), () => { setupPage = "prepare"; selectedTarot = null; Refresh(); }, !host.HasUnfinishedRun, "MenuButton", 29);
             DeskButton(page, host.HasUnfinishedRun ? "继续旅程" : "查看上局结算", new Rect(x, top - step, width, height), () => host.Resume(), host.HasSavedRun, "MenuButton", 29);
             DeskButton(page, "塔罗图鉴", new Rect(x, top - step * 2, width, height), () => { setupPage = "collection"; Refresh(); }, true, "MenuButton", 29);
             DeskButton(page, "设置", new Rect(x, top - step * 3, width, height), GameSettings, true, "MenuButton", 29);
@@ -46,15 +46,22 @@ namespace Poker.Adventure
                 DeskButton(page, "放弃当前旅程", new Rect(x, top - step * 5, width, height), ConfirmAbandon, true, "MenuButton", 29);
             else Label(page, "单章七站 · 自动保存", new Rect(x, .035f, width, .045f), 20, Muted, TextAlignmentOptions.Center);
         }
-        private void RoleSelection()
+        private void JourneyPreparation()
         {
-            Title(page, "选择角色", "以牌型决定进攻，以弃牌积累防御。");
+            var available = host.AvailableTarots;
+            if (available.Count != 1) { TarotSelection(false); return; }
+            var tarot = available[0];
+            selectedTarot = tarot.Id;
+            Title(page, "出发准备", "以牌型决定进攻，以弃牌积累防御。");
             var card = DeskPanel(page, "Character", new Rect(.08f, .04f, .84f, .68f));
             RitualSkin.Picture(card, "Wanderer Portrait", new Rect(.015f, .015f, .43f, .97f), heroArt);
-            Label(card, "愚者", new Rect(.49f, .70f, .44f, .16f), 50, Paper);
-            Label(card, "孤身踏入王庭的持牌者", new Rect(.49f, .56f, .44f, .10f), 24, Gold);
-            Label(card, "选择手牌，组成牌型。\n出牌造成伤害，弃牌获得防御。\n收集遗物，改造牌库，走完七站旅程。", new Rect(.49f, .25f, .44f, .27f), 25, Paper);
-            Button(card, "选择愚者", new Rect(.49f, .07f, .43f, .13f), () => { setupPage = "tarot"; selectedTarot = null; Refresh(); }, true, true);
+            Label(card, "开局天赋 · " + tarot.Name, new Rect(.49f, .74f, .44f, .13f), 36, Gold);
+            Label(card, tarot.Description, new Rect(.49f, .53f, .44f, .17f), 25, Paper);
+            var player = host.Content.Encounters[host.Definition.StartingEncounterId].Players.Single();
+            long baseHealth = host.Content.Players[player.TemplateId].Definition.MaxHealth;
+            long maxHealth = checked((long)decimal.Floor(baseHealth * tarot.MaxHealthMultiplier));
+            Label(card, "最大生命 " + baseHealth + " → " + maxHealth + "\n已默认选择 · 可直接开始旅程", new Rect(.49f, .29f, .44f, .18f), 25, Paper);
+            Button(card, "踏上旅程", new Rect(.49f, .07f, .43f, .13f), () => { if (host.NewRun(selectedTarot)) setupPage = null; }, true, true);
             BackToMenu();
         }
         private void TarotSelection(bool readOnly)
@@ -97,10 +104,18 @@ namespace Poker.Adventure
                 var item = run.ShopItems[i]; bool bought = run.PurchasedItemIds.Contains(item.Id);
                 int quality = host.Content.Relics[item.RelicId].Definition.Quality;
                 var tile = DeskPanel(cabinet, "Stock " + i, DeskPixels(732 + i * stockWidth, 212, stockWidth - 7, 367), "ShopCard");
+                var detail = tile.gameObject.AddComponent<Button>();
+                detail.targetGraphic = tile.GetComponent<Image>();
+                var colors = detail.colors;
+                colors.highlightedColor = new Color(1.15f, 1.1f, .92f);
+                colors.pressedColor = new Color(.72f, .65f, .55f);
+                detail.colors = colors;
+                detail.onClick.AddListener(() => ItemDetail(item));
+                AdventureAudioController.BindButton(detail);
                 RelicIcon(tile, item.RelicId, new Rect(.17f, .44f, .66f, .45f));
                 Label(tile, host.ItemName(item.RelicId), new Rect(.07f, .29f, .86f, .13f), 26, Paper, TextAlignmentOptions.Center);
                 Label(tile, "品质 " + quality + (quality == 5 ? " · 高风险" : ""), new Rect(.05f, .18f, .90f, .10f), 18, Muted, TextAlignmentOptions.Center);
-                DeskButton(tile, bought ? "已售出" : item.Price + " 金币", new Rect(.10f, .04f, .80f, .13f), () => ItemDetail(item), !bought, "Button", 21);
+                DeskButton(tile, bought ? "已售出 · 查看详情" : "查看详情 · " + item.Price + " 金币", new Rect(.07f, .04f, .86f, .13f), () => ItemDetail(item), true, "Button", 21);
             }
             var kinds = new[] { AdventureCommandKind.DuplicateCard, AdventureCommandKind.ChangeSuit, AdventureCommandKind.DeleteCard };
             var symbols = new[] { "ServiceDuplicate", "ServiceSuit", "ServiceDelete" };
@@ -115,7 +130,11 @@ namespace Poker.Adventure
                 DeskButton(tile, price + " 金币", new Rect(.10f, .06f, .80f, .17f), () => OpenService(kind), run.Gold >= price, "Button", 22);
             }
             Inventory(footer, new Rect(0, .06f, .65f, .88f), true);
-            ContinueButton("离开商店");
+            var leave = DeskButton(footer, "离开商店 → 继续旅程", new Rect(.65f, .34f, .35f, .92f),
+                () => host.ExecuteAdventure(new AdventureCommand(AdventureCommandKind.Continue)), run.CanContinue, "MenuButton", 30);
+            leave.GetComponentInChildren<TMP_Text>().color = Gold;
+            var outline = leave.GetComponent<Outline>();
+            outline.enabled = true; outline.effectColor = Gold; outline.effectDistance = Vector2.one;
         }
         private void Rest()
         {
@@ -125,11 +144,13 @@ namespace Poker.Adventure
             Label(blessing, "篝火休息 · 已恢复 " + run.Definition.RestHeal + " 点生命", new Rect(.19f, .18f, .69f, .64f), 25, Gold, TextAlignmentOptions.Center);
             var health = DeskPanel(page, "Camp Health", DeskPixels(304, 233, 248, 211));
             Label(health, "生命\n" + run.Health + " / " + run.MaxHealth, new Rect(.10f, .17f, .80f, .66f), 29, Paper, TextAlignmentOptions.Center);
-            var body = DeskPanel(page, "Camp", DeskPixels(914, 207, 300, 231));
-            Label(body, run.RestLotteryUsed ? "命运已揭晓" : "火光中的机遇", new Rect(.08f, .68f, .84f, .22f), 27, Gold, TextAlignmentOptions.Center);
-            Label(body, run.RestLotteryUsed ? RewardText() : "免费抽奖一次\n道具或金币可能增加，也可能减少。", new Rect(.09f, .17f, .82f, .48f), 22, Paper, TextAlignmentOptions.Center);
+            var body = DeskPanel(page, "Camp", DeskPixels(864, 207, 480, 280));
+            Label(body, run.RestLotteryUsed ? "命运已揭晓" : "命运抽奖 · 有风险", new Rect(.08f, .72f, .84f, .18f), 27, Gold, TextAlignmentOptions.Center);
+            Label(body, run.RestLotteryUsed ? RewardText() :
+                "免费参与1次，无入场费。\n可能失去道具，或最多500金币\n（不超过当前余额）。\n也可能获得奖励，可选择不抽奖。",
+                new Rect(.09f, .13f, .82f, .54f), 22, Paper, TextAlignmentOptions.Center);
             if (!run.RestLotteryUsed)
-                DeskButton(page, "免费抽奖", DeskPixels(944, 452, 240, 66), () => host.ExecuteAdventure(new AdventureCommand(AdventureCommandKind.DrawRestReward)), run.CanDrawRestReward, "Button", 25);
+                DeskButton(page, "免费抽奖 · 有风险", DeskPixels(944, 507, 320, 76), () => host.ExecuteAdventure(new AdventureCommand(AdventureCommandKind.DrawRestReward)), run.CanDrawRestReward, "Button", 25);
             ContinueButton(run.RestLotteryUsed ? "继续旅程" : "安心休息，继续旅程");
         }
         private void Chest()

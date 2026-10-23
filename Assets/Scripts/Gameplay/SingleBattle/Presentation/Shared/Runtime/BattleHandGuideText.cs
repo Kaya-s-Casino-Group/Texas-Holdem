@@ -32,6 +32,8 @@ namespace Poker.BattlePresentation
             if (type == HandGuideType.FiveOfAKind) return "五条";
             return Enum.TryParse(type.ToString(), out HandCategory category) ? BattleDisplayProjector.HandName(category) : type.ToString();
         }
+        public static string TypeName(HandGuideType type, bool requireFlush) => requireFlush && type == HandGuideType.HighCard ? "同花" :
+            requireFlush && type == HandGuideType.Straight ? "同花顺" : TypeName(type) + (requireFlush && type != HandGuideType.RoyalFlush ? " · 同花" : "");
         public static string AvailabilityText(HandGuideResult result)
         {
             if (result.Error != CardDuelError.None) return "查询不可用：" + BattlePresentationRuleText.Error(result.Error);
@@ -49,8 +51,10 @@ namespace Poker.BattlePresentation
             var candidate = preview.Candidate;
             CandidateId = candidate.Id; Revision = candidate.Revision;
             Heading = candidate.Category == HandCategory.StraightFlush ? "皇家同花顺" :
-                candidate.Category == HandCategory.FiveOfAKind ? "五条" : BattleDisplayProjector.HandName(candidate.Category);
-            if (candidate.IsFlush) Heading += " · 同花";
+                candidate.IsFlush && candidate.Category == HandCategory.HighCard ? "同花" :
+                candidate.IsFlush && candidate.Category == HandCategory.Straight ? "同花顺" :
+                (candidate.Category == HandCategory.FiveOfAKind ? "五条" : BattleDisplayProjector.HandName(candidate.Category)) +
+                (candidate.IsFlush ? " · 同花" : "");
             Availability = candidate.MissingCount == 0 ? "已凑齐 · 100%" : "可补齐 · 还差 " + candidate.MissingCount + " 张";
             Notice = candidate.MissingCount == 0 ? "按当前组合预览" : "补齐示例 · 使用牌库或可洗回的弃牌，不代表下次抽牌";
             HighlightCardIds = Array.AsReadOnly(candidate.Cards.Where(c => !c.IsMissing).Select(c => c.Card.Id.Value).ToArray());
@@ -62,9 +66,9 @@ namespace Poker.BattlePresentation
             if (preview.Error != CardDuelError.None) formula.Add("预览不可用：" + BattlePresentationRuleText.Error(preview.Error));
             else
             {
-                formula.Add("计分：" + ScoreFormula(preview.Score));
+                formula.Add("本局计分（含等级、卡牌与遗物修正）：" + ScoreFormula(preview.Score));
                 foreach (var component in preview.Score.Components)
-                    formula.Add(BattleDisplayProjector.HandName(component.Category) + "分项：" + ScoreFormula(component));
+                    formula.Add(BattleDisplayProjector.HandName(component.Category) + "分项计分：" + ScoreFormula(component));
                 var steps = preview.BaseEffects?.Steps ?? Array.Empty<BattleEffectStep>();
                 if (steps.Count(s => s.Effect.Kind == CombatEffectKind.Damage) > 1) tags.Add("连击");
                 foreach (var step in steps)
@@ -114,21 +118,37 @@ namespace Poker.BattlePresentation
             var query = new BattleLimitQuery(player.Rules, player.Relics);
             int straight = resolver.ResolveValue(query, BattleRuleValueKey.MinStraightCards).Value;
             int flush = resolver.ResolveValue(query, BattleRuleValueKey.MinFlushCards).Value;
+            var rule = player.Rules.EffectRule as ConfiguredHandEffectRule;
             string summary;
             switch (type)
             {
-                case HandGuideType.HighCard: summary = "高牌：按最高单张计分，组合不能形成更高牌型。"; break;
+                case HandGuideType.HighCard:
+                    summary = requireFlush && rule?.PureFlushScoresAllCards == true
+                        ? "同花：至少 " + flush + " 张牌花色相同；纯同花按组成同花的牌面点数合计计分。"
+                        : "高牌：按最高单张计分，组合不能形成更高牌型。"; break;
                 case HandGuideType.OnePair: summary = "一对：2 张点数相同的牌，按这一对计分。"; break;
                 case HandGuideType.TwoPair: summary = "两对：2 组不同点数的对子，按两对计分。"; break;
                 case HandGuideType.ThreeOfAKind: summary = "三条：3 张点数相同的牌，按这三张计分。"; break;
-                case HandGuideType.Straight: summary = "顺子：至少 " + straight + " 张点数连续的牌；A 可作最低点或最高点，不能跨端连接。"; break;
+                case HandGuideType.Straight:
+                    summary = (requireFlush ? "同花顺" : "顺子") + "：至少 " + straight + " 张点数连续的牌，逐张结算伤害；A 可作最低点或最高点，不能跨端连接。";
+                    if (rule?.WheelAceScoresOne == true) summary += "仅 A2345 中的 A 按 1 点计分。";
+                    break;
                 case HandGuideType.FullHouse: summary = "葫芦：3 张相同点数的牌，加另一个点数的对子；三条与对子分别计分。"; break;
                 case HandGuideType.FourOfAKind: summary = "四条：4 张点数相同的牌，按这四张计分。"; break;
                 case HandGuideType.FiveOfAKind: summary = "五条：5 张点数相同的牌，需要牌组中实际存在足够的同点数牌。"; break;
                 case HandGuideType.RoyalFlush: summary = "皇家同花顺：以 A 为最高点的同花顺，普通五张规则下为同花色的 10、J、Q、K、A。"; break;
                 default: summary = "不限牌型：按最高可结算牌型计分，同花可作为额外属性叠加。"; break;
             }
-            return summary + (requireFlush || type == HandGuideType.RoyalFlush ? "\n同花条件：至少 " + flush + " 张牌花色相同。" : "");
+            if (!requireFlush && type != HandGuideType.RoyalFlush) return summary;
+            bool pureFlush = type == HandGuideType.HighCard && rule?.PureFlushScoresAllCards == true;
+            if (!pureFlush) summary += "\n同花条件：至少 " + flush + " 张牌花色相同。";
+            var flushEffects = new List<string>();
+            if (rule?.ModernScoring == true && type != HandGuideType.RoyalFlush)
+                flushEffects.Add("同花额外 ×" + N(rule.FlushDamageMultiplier));
+            var healing = rule?.FlushBonus.FirstOrDefault(step => step.Kind == CombatEffectKind.Heal &&
+                step.Target.Group == EffectTargetGroup.Self && step.Amount?.Kind == EffectAmountKind.FlushBaseTotalScale);
+            if (healing != null) flushEffects.Add("基础治疗" + N(healing.Amount.Value * 100) + "%（未计遗物）");
+            return (flushEffects.Count > 0 ? string.Join(" · ", flushEffects) + "\n" : "") + summary;
         }
 
         public static IReadOnlyList<string> BasicRuleLines(HandGuideType type, bool requireFlush, BattlePlayerTurn player,
@@ -138,9 +158,24 @@ namespace Poker.BattlePresentation
             var rule = player.Rules.EffectRule as ConfiguredHandEffectRule;
             var category = type == HandGuideType.RoyalFlush ? HandCategory.StraightFlush :
                 Enum.TryParse(type.ToString(), out HandCategory parsed) ? parsed : HandCategory.HighCard;
+            bool flush = requireFlush || type == HandGuideType.RoyalFlush;
+            bool components = type == HandGuideType.FullHouse && rule?.FullHouseComponentDamage == true;
+            decimal flushFactor = flush && rule?.ModernScoring == true && type != HandGuideType.RoyalFlush ? rule.FlushDamageMultiplier : 1;
+            lines.Add("基础倍率为等级 1、未计遗物和卡牌强化；本局修正值见组合预览。");
             if (type == HandGuideType.Any) lines.Add("计分由最高可结算牌型决定；选择具体牌型可查看对应公式与效果。");
-            else if (type == HandGuideType.FullHouse && rule?.FullHouseComponentDamage == true)
-            { AddScore(HandCategory.ThreeOfAKind, "三条分项"); AddScore(HandCategory.OnePair, "对子分项"); }
+            else if (components)
+            {
+                foreach (var step in rule.Entries.Single(e => e.Category == HandCategory.FullHouse).Effects.Where(e => e.Kind == CombatEffectKind.Damage))
+                {
+                    bool triple = step.Amount?.Kind == EffectAmountKind.ThreeOfAKindTotalScale;
+                    bool pair = step.Amount?.Kind == EffectAmountKind.OnePairTotalScale;
+                    if (!triple && !pair) { AddEffect(step); continue; }
+                    var hand = triple ? HandCategory.ThreeOfAKind : HandCategory.OnePair;
+                    decimal multiplier = (triple ? rule.FullHouseTripleBaseMultiplier : null) ?? scoring.Rule(hand).BaseMultiplier;
+                    AddScore(hand, triple ? "三条分项伤害" : "对子分项伤害", multiplier, step.Amount.Value, TargetLabel(step.Target));
+                }
+                lines.Add("三条与对子独立计分、分别取整结算；上方基础倍率已包含各分项技能系数。");
+            }
             else if (type != HandGuideType.RoyalFlush) AddScore(category, "牌型计分");
             if (rule != null)
             {
@@ -148,24 +183,32 @@ namespace Poker.BattlePresentation
                 {
                     var entry = rule.Entries.FirstOrDefault(e => e.Category == category &&
                         (e.Variant == HandEffectVariant.Any || e.Variant == HandEffectVariant.Royal));
-                    if (entry != null) foreach (var step in entry.Effects) AddEffect(step);
+                    if (entry != null) foreach (var step in entry.Effects)
+                        if (!components || step.Kind != CombatEffectKind.Damage) AddEffect(step);
                 }
-                bool flush = requireFlush || type == HandGuideType.RoyalFlush;
                 if (flush && rule.ModernScoring && type != HandGuideType.RoyalFlush)
-                    lines.Add("同花计分加成：计分倍率额外乘 " + N(rule.FlushDamageMultiplier));
+                    lines.Add("同花额外 ×" + N(rule.FlushDamageMultiplier) + "，已包含在上方倍率中。");
                 if (flush) foreach (var step in rule.FlushBonus) AddEffect(step);
                 else lines.Add("满足同花条件时，还会叠加同花效果。");
             }
             else lines.Add("具体效果由当前战斗规则决定。");
+            if (rule?.WheelAceScoresOne == true)
+                lines.Add("A 的基础点数：A2345 中按 1，其余按 " + scoring.CardPoints.GetBasePoints(Rank.Ace) + "；同花治疗沿用本次牌面基础点数。");
             lines.Add("卡牌强化、遗物和目标状态会改变实际结算。");
             return lines.AsReadOnly();
 
-            void AddScore(HandCategory hand, string label)
+            void AddScore(HandCategory hand, string label, decimal? baseMultiplier = null, decimal skillFactor = 1, string target = null)
             {
                 var score = scoring.Rule(hand); int level = player.Rules.HandLevels.LevelFor(hand);
                 decimal points = score.BasePoints + (decimal)(level - 1) * score.PointsPerLevel;
-                decimal multiplier = score.BaseMultiplier + (level - 1) * score.MultiplierPerLevel;
-                lines.Add(label + "（等级 " + level + "）：向下取整((计分牌点数" + (points != 0 ? " + " + N(points) : "") + ") × " + N(multiplier) + ")");
+                decimal original = baseMultiplier ?? score.BaseMultiplier;
+                decimal multiplier = original + (level - 1) * score.MultiplierPerLevel;
+                lines.Add(label + "：基础倍率 ×" + N(original * flushFactor * skillFactor) + (target == null ? "" : "（" + target + "）"));
+                string cardPoints = hand == HandCategory.HighCard && flush && rule?.PureFlushScoresAllCards == true
+                    ? "同花牌点数合计" : hand == HandCategory.Straight && rule?.ModernScoring == true ? "每张计分牌点数" : "计分牌点数合计";
+                string formula = "向下取整((" + cardPoints + (points != 0 ? " + " + N(points) : "") + ") × " + N(multiplier * flushFactor) + ")";
+                if (skillFactor != 1) formula = "向下取整(" + formula + " × " + N(skillFactor) + ")";
+                lines.Add("当前等级 " + level + "（未计遗物/卡牌强化）：" + formula);
             }
             void AddEffect(ConfiguredEffectStep step)
             {
