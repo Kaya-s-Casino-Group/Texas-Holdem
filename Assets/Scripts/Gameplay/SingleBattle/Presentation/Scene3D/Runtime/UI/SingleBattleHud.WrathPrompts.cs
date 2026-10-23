@@ -129,7 +129,9 @@ namespace Poker.SingleBattle
                 foreach (var marker in wrathHandMarkers.Values) marker.FloatStarted = float.NegativeInfinity;
             }
             foreach (var marker in wrathHandMarkers.Values) marker.Visible = false;
-            foreach (var hand in snapshot.Units.Where(unit => snapshot.Labels.ContainsKey("wrath.hand/" + unit.Id)))
+            // Adventure keeps the existing purple world-HUD countdown as its only regeneration prompt.
+            foreach (var hand in snapshot.Units.Where(unit => !host.UsesExternalCommands &&
+                snapshot.Labels.ContainsKey("wrath.hand/" + unit.Id)))
             {
                 if (!wrathHandMarkers.TryGetValue(hand.Id, out var marker))
                 { if (hand.IsAlive) continue; marker = CreateWrathHandMarker(hand.Id); wrathHandMarkers.Add(hand.Id, marker); }
