@@ -29,12 +29,13 @@ namespace Poker.SingleBattle.Editor
             var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(IconPath);
             if (sprite == null) throw new InvalidOperationException("Import the hand guide sprite before installing its entry.");
             var button = data.FindProperty("guideEntry").objectReferenceValue as Button;
+            if (button == null) button = hud.transform.Find("Hand Guide")?.GetComponent<Button>() ?? hud.transform.Find("Safe Area/Hand Guide")?.GetComponent<Button>();
             if (button == null) button = icon.parent.Find("Hand Guide")?.GetComponent<Button>();
             if (button == null)
             {
                 var go = new GameObject("Hand Guide", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
                 Undo.RegisterCreatedObjectUndo(go, "创建牌型指南入口");
-                go.transform.SetParent(icon.parent, false);
+                go.transform.SetParent(hud.transform.Find("Safe Area") ?? hud.transform, false);
                 button = go.GetComponent<Button>();
             }
             Undo.RecordObject(hud, "绑定牌型指南入口");
@@ -54,7 +55,7 @@ namespace Poker.SingleBattle.Editor
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);
             Selection.activeGameObject = button.gameObject;
-            Debug.Log("Saved hand guide entry in SingleChapterAdventure: Gameplay/UI/DrawPileIcon/Hand Guide.");
+            Debug.Log("Saved hand guide entry in SingleChapterAdventure: Gameplay/UI/Battle HUD/Hand Guide.");
         }
     }
 }

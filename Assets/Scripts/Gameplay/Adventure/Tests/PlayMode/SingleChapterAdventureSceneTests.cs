@@ -47,6 +47,9 @@ namespace Poker.Adventure.Tests
             yield return null;
             host = Object.FindObjectsOfType<AdventureSceneHost>().Single();
             screen = Object.FindObjectsOfType<AdventureScreen>().Single();
+            float startupDeadline = Time.realtimeSinceStartup + 30;
+            while (host.IsLoading && Time.realtimeSinceStartup < startupDeadline) yield return null;
+            Assert.IsFalse(host.IsLoading, "Startup warmup timed out.");
             Assert.IsNotNull(host.Definition, host.Message);
             Assert.IsFalse(host.HasSavedRun, "The validation copy must not read the user's run save.");
             Assert.IsTrue(host.IsAtMenu); Assert.IsNotNull(EventSystem.current);

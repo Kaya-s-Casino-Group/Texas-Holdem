@@ -78,14 +78,18 @@ namespace CardArt
             if (groups == null || colors == null || groups.Length != colors.Length) throw new ArgumentException("One color per combination is required.");
             this.groups = new CardBreathingOutline[groups.Length][]; this.colors = (Color[])colors.Clone();
             for (int i = 0; i < groups.Length; i++) this.groups[i] = (CardBreathingOutline[])(groups[i] ?? throw new ArgumentException("Null group.")).Clone();
+            Clear();
         }
         public void Tick(double elapsedSeconds, double secondsPerGroup = 2)
         {
             if (double.IsNaN(elapsedSeconds) || double.IsInfinity(elapsedSeconds) || elapsedSeconds < 0 ||
                 double.IsNaN(secondsPerGroup) || double.IsInfinity(secondsPerGroup) || secondsPerGroup <= 0) throw new ArgumentOutOfRangeException();
-            Clear(); if (groups.Length == 0) return;
+            if (groups.Length == 0) return;
             double turn = elapsedSeconds / secondsPerGroup;
-            ActiveIndex = (int)(Math.Floor(turn) % groups.Length);
+            int next = (int)(Math.Floor(turn) % groups.Length);
+            if (ActiveIndex >= 0 && ActiveIndex != next)
+                foreach (var outline in groups[ActiveIndex]) if (outline != null) outline.Clear();
+            ActiveIndex = next;
             Pulse = (float)Math.Pow(Math.Sin(Math.PI * (turn - Math.Floor(turn))), 2);
             foreach (var outline in groups[ActiveIndex]) if (outline != null) outline.SetPulse(colors[ActiveIndex], Pulse);
         }

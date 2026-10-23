@@ -32,7 +32,7 @@ namespace Poker.SingleBattle
             internal EnemyBattleActor Actor;
             internal Transform Surface;
             internal RectTransform Root, Fill, Health, StatusRow, IntentRow, Tooltip;
-            internal TMP_Text HealthText, TooltipText;
+            internal TMP_Text HealthText, TooltipText, Regeneration;
             internal CanvasGroup Visibility;
             internal IconView Block;
             internal BattleDemoEnemyBadgeTooltip OpenTooltip;
@@ -103,6 +103,9 @@ namespace Poker.SingleBattle
                     view.Block.Value.rectTransform.anchoredPosition = new Vector2(17, 0); view.Block.Value.fontSize = 17;
                 }
                 view.StatusRow = Rect("Statuses", rect, new Vector2(184, 28), Vector2.zero);
+                view.Regeneration = Text("Revive Countdown", rect, new Vector2(200, 36), 20);
+                view.Regeneration.color = BattleDemoEnemyHudModel.AttackColor;
+                view.Regeneration.gameObject.SetActive(false);
                 view.IntentRow = Rect("Intents", rect, new Vector2(210, 42), Vector2.zero);
                 view.Tooltip = Rect("Enemy Badge Tooltip", rect, new Vector2(228, 94), Vector2.zero);
                 Image(view.Tooltip, new Color32(25, 23, 32, 249));
@@ -230,10 +233,19 @@ namespace Poker.SingleBattle
                     previous.Labels.ContainsKey("wrath.hand/" + unit.Id);
                 bool visible = host.Enemies.Contains(view.Actor) && view.Actor.isActiveAndEnabled && unit != null &&
                     (unit.IsAlive || regenerating);
-                if (!visible) view.OpenTooltip?.Hide?.Invoke();
+                if (!visible || regenerating) view.OpenTooltip?.Hide?.Invoke();
                 view.Root.gameObject.SetActive(visible); if (!visible) continue;
                 view.Health.gameObject.SetActive(!regenerating);
                 view.StatusRow.gameObject.SetActive(!regenerating);
+                view.IntentRow.gameObject.SetActive(!regenerating);
+                view.Regeneration.gameObject.SetActive(regenerating);
+                SetVisible(view.Block, !regenerating && unit.Block > 0);
+                if (regenerating)
+                {
+                    // A severed hand only shows its countdown, never the normal HUD or intent plate.
+                    view.Regeneration.text = regeneration.Value == 0 ? "本轮复活" : "复活倒计时 " + regeneration.Value;
+                    continue;
+                }
                 bool bossBody = host.UsesExternalCommands && previous.Labels.TryGetValue("wrath.body", out var bodyId) && bodyId == unit.Id;
                 view.HealthText.text = (bossBody ? "暴怒  " : "") + unit.Health + " / " + unit.MaxHealth;
                 float fraction = unit.MaxHealth > 0 ? Mathf.Clamp01((float)unit.Health / unit.MaxHealth) : 0;
@@ -241,35 +253,22 @@ namespace Poker.SingleBattle
                 view.Fill.anchorMax = new Vector2((1 + 182 * fraction) / 184, 16f / 17);
                 view.Fill.offsetMin = view.Fill.offsetMax = Vector2.zero;
                 if (conceptLayout) view.Health.GetComponent<ConceptHealthBar>().Present(bossBody ? "boss" : "minion", fraction);
-                SetVisible(view.Block, !regenerating && unit.Block > 0);
                 Set(view.Block, new BattleDemoEnemyHudModel.Badge(BattleDemoEnemySymbol.Shield, BattleDemoEnemyHudModel.ShieldColor, unit.Block.ToString(), "当前护盾：" + unit.Block));
-                IReadOnlyList<BattleDemoEnemyHudModel.Badge> intents;
-                if (regenerating)
+                var enemy = host.PresentedState.Duel.Enemies.FirstOrDefault(actor => actor.Id.Value == unit.Id);
+                var wrath = enemy?.Behavior?.Wrath;
+                long? charge = wrath != null && enemy.BehaviorState?.Intent?.Id == wrath.ChargeActionId
+                    ? wrath.AttackPerCharge : (long?)null;
+                IReadOnlyList<BattleDemoEnemyHudModel.Badge> intents = previous.IsFinished ? new BattleDemoEnemyHudModel.Badge[0]
+                    : previous.Labels.TryGetValue("intentWait/" + unit.Id, out var waitReason)
+                        ? new[] { new BattleDemoEnemyHudModel.Badge(BattleDemoEnemySymbol.Wait, ConceptBattleSkin.Gold, "", waitReason) }
+                        : BattleDemoEnemyHudModel.Intents(view.Actor.ReadIntent()?.Action, charge, enemy?.BehaviorState?.Intent);
+                if (!previous.IsFinished && previous.Resource(unit.Id, "wrath.warning")?.Value == 1)
                 {
-                    // Keep the original actor's world UI; the resolver owns the countdown and revival.
-                    string remaining = regeneration.Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
-                    intents = new[] { new BattleDemoEnemyHudModel.Badge(BattleDemoEnemySymbol.Heal,
-                        BattleDemoEnemyHudModel.AttackColor, remaining, regeneration.Value == 0
-                            ? "再生：本轮敌方阶段再生" : "再生：剩余 " + remaining + " 轮") };
-                }
-                else
-                {
-                    var enemy = host.PresentedState.Duel.Enemies.FirstOrDefault(actor => actor.Id.Value == unit.Id);
-                    var wrath = enemy?.Behavior?.Wrath;
-                    long? charge = wrath != null && enemy.BehaviorState?.Intent?.Id == wrath.ChargeActionId
-                        ? wrath.AttackPerCharge : (long?)null;
-                    intents = previous.IsFinished ? new BattleDemoEnemyHudModel.Badge[0]
-                        : previous.Labels.TryGetValue("intentWait/" + unit.Id, out var waitReason)
-                            ? new[] { new BattleDemoEnemyHudModel.Badge(BattleDemoEnemySymbol.Wait, ConceptBattleSkin.Gold, "", waitReason) }
-                            : BattleDemoEnemyHudModel.Intents(view.Actor.ReadIntent()?.Action, charge, enemy?.BehaviorState?.Intent);
-                    if (!previous.IsFinished && previous.Resource(unit.Id, "wrath.warning")?.Value == 1)
-                    {
-                        long release = previous.Resource(unit.Id, "wrath.releaseRound")?.Value ?? -1;
-                        long damage = previous.Resource(unit.Id, "wrath.ultimateDamage")?.Value ?? 0;
-                        intents = intents.Concat(new[] { new BattleDemoEnemyHudModel.Badge(BattleDemoEnemySymbol.Sword,
-                            BattleDemoEnemyHudModel.AttackColor, "!", "大招预警：第 " + release +
-                            " 轮常规动作后追加\n当前预计基础伤害 " + damage + "\n断手或眩晕本体可打断") }).ToArray();
-                    }
+                    long release = previous.Resource(unit.Id, "wrath.releaseRound")?.Value ?? -1;
+                    long damage = previous.Resource(unit.Id, "wrath.ultimateDamage")?.Value ?? 0;
+                    intents = intents.Concat(new[] { new BattleDemoEnemyHudModel.Badge(BattleDemoEnemySymbol.Sword,
+                        BattleDemoEnemyHudModel.AttackColor, "!", "大招预警：第 " + release +
+                        " 轮常规动作后追加\n当前预计基础伤害 " + damage + "\n断手或眩晕本体可打断") }).ToArray();
                 }
                 while (view.Intents.Count < intents.Count) view.Intents.Add(Icon("Intent " + view.Intents.Count, view.IntentRow, false, view));
                 for (int i = 0; i < view.Intents.Count; i++)
@@ -277,11 +276,6 @@ namespace Poker.SingleBattle
                     var badge = view.Intents[i]; SetVisible(badge, i < intents.Count);
                     if (i >= intents.Count) continue;
                     Set(badge, intents[i]); badge.Root.anchoredPosition = new Vector2((i - (intents.Count - 1) * .5f) * 75, 0);
-                }
-                if (regenerating)
-                {
-                    foreach (var badge in view.Statuses) SetVisible(badge, false);
-                    continue;
                 }
                 while (view.Statuses.Count < unit.Statuses.Count) view.Statuses.Add(Icon("Status " + view.Statuses.Count, view.StatusRow, true, view));
                 for (int i = 0; i < view.Statuses.Count; i++)
@@ -344,6 +338,7 @@ namespace Poker.SingleBattle
                 view.IntentRow.anchoredPosition = new Vector2(0, halfHeight + 28);
                 if (conceptLayout) PositionConcept(view, height, hand);
                 if (conceptLayout && authoredLayout != null) authoredLayout.ApplyHud(view.Actor, view.Root, screenCanvas);
+                view.Regeneration.rectTransform.position = view.IntentRow.position;
             }
         }
 

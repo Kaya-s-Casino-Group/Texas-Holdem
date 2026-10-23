@@ -11,7 +11,7 @@ namespace Poker.Adventure
 {
     /// <summary>The only run authority. Accepted candidates are saved before replacing the live run.</summary>
     [DefaultExecutionOrder(-500), DisallowMultipleComponent]
-    public sealed class AdventureSceneHost : MonoBehaviour, IBattleSessionCommands
+    public sealed partial class AdventureSceneHost : MonoBehaviour, IBattleSessionCommands
     {
         [SerializeField] private TextAsset battleXml;
         [SerializeField] private TextAsset adventureXml;
@@ -31,7 +31,7 @@ namespace Poker.Adventure
         public BattleAdventureDefinition Definition { get; private set; }
         public bool IsAtMenu { get; private set; } = true;
         public string Message { get; private set; } = "";
-        public bool IsBusy => awaitingPresentation || battleView != null && battleView.IsPresenting;
+        public bool IsBusy => IsLoading || awaitingPresentation || battleView != null && battleView.IsPresenting;
         public bool HasSavedRun => savedSession != null;
         public bool HasUnfinishedRun => (Adventure ?? savedSession) != null && !Terminal(Adventure ?? savedSession);
         public SingleBattleSceneAdapter BattleView => battleView;
@@ -52,6 +52,7 @@ namespace Poker.Adventure
         private void Awake()
         {
             if (battleXml == null || adventureXml == null) return;
+            if (Application.isPlaying && BeginStartup()) return;
             try { Initialize(); }
             catch (Exception error) { Report("配置载入失败：" + error.Message); }
         }

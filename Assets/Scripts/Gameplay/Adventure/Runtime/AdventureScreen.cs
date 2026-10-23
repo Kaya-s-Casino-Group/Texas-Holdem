@@ -33,9 +33,10 @@ namespace Poker.Adventure
         private static readonly Color Panel = new Color32(36, 30, 39, 255);
         private static readonly Color Accent = new Color32(113, 48, 62, 255);
         public AdventureSceneHost Host => host;
+        public TMP_FontAsset Font => font;
         public void Configure(AdventureSceneHost owner, TMP_FontAsset typeface) { host = owner; font = typeface; }
         private void OnEnable() { Subscribe(); }
-        private void Start() { Build(); Refresh(); }
+        private void Start() { if (host == null || !host.IsLoading) { Build(); Refresh(); } }
         private void OnDisable() { if (subscribed) host.Changed -= Refresh; subscribed = false; }
         private void Subscribe()
         { if (host != null && !subscribed) { host.Changed += Refresh; subscribed = true; } }
@@ -66,7 +67,7 @@ namespace Poker.Adventure
         }
         public void Refresh()
         {
-            if (host == null) return;
+            if (host == null || host.IsLoading) return;
             Build(); UpdateBackdrop(); Clear(page); Clear(header); Clear(footer); Clear(overlay);
             header.SetParent(deskLayout, false);
             footer.SetParent(deskLayout, false);

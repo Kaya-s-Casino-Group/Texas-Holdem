@@ -47,6 +47,9 @@ namespace Poker.Adventure.Tests
             yield return EditorSceneManager.LoadSceneAsyncInPlayMode(temporaryScene, new LoadSceneParameters(LoadSceneMode.Single));
             yield return null;
             host = Object.FindObjectsOfType<AdventureSceneHost>().Single();
+            float startupDeadline = Time.realtimeSinceStartup + 30;
+            while (host.IsLoading && Time.realtimeSinceStartup < startupDeadline) yield return null;
+            Assert.IsFalse(host.IsLoading, "Startup warmup timed out.");
             Assert.IsNotNull(host.Definition, host.Message);
             Assert.IsFalse(host.HasSavedRun, "This scene copy must neither read nor write the user's run save.");
             Assert.IsNotNull(EventSystem.current);

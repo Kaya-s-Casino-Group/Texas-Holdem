@@ -163,7 +163,9 @@ namespace Poker.SingleBattle.Tests
                 var hand = f.View("hand-1"); var intentPosition = ((RectTransform)hand.Find("Intents")).anchoredPosition;
                 f.Edit(new BattleAdminVitals(new ParticipantId("hand-1"), health: 0));
                 Assert.IsTrue(hand.gameObject.activeSelf); Assert.IsFalse(hand.Find("Health Bar").gameObject.activeSelf);
-                StringAssert.Contains("再生", hand.Find("Intents").GetComponentInChildren<BattleDemoEnemyBadgeTooltip>().Description);
+                Assert.IsFalse(hand.Find("Intents").gameObject.activeSelf);
+                StringAssert.Contains("复活倒计时", hand.Find("Revive Countdown").GetComponent<TMP_Text>().text);
+                Near(hand.Find("Revive Countdown").position, hand.Find("Intents").position, "countdown uses edited intent position");
                 Near(((RectTransform)hand.Find("Intents")).anchoredPosition, intentPosition, "regeneration uses edited intent row");
             }
         }

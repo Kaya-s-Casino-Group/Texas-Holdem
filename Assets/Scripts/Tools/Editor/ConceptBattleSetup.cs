@@ -169,6 +169,7 @@ public static class ConceptBattleSetup
     static void StartPreviewBattle()
     {
         var host = All<AdventureSceneHost>().Single();
+        if (host.IsLoading) { EditorApplication.delayCall += StartPreviewBattle; return; }
         if (!host.NewRun(host.AvailableTarots.First().Id, 42)) throw new InvalidOperationException(host.Message);
         if (!host.ExecuteAdventure(new AdventureCommand(AdventureCommandKind.EnterNode, host.Adventure.AvailableNodes.First().Id))) throw new InvalidOperationException(host.Message);
         EditorApplication.ExecuteMenuItem("Window/General/Game");

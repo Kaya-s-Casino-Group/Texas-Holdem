@@ -137,10 +137,11 @@ namespace Poker.SingleBattle.Tests
             }
         }
 
-        [Test]
-        public void SeveredHandKeepsItsExistingWorldViewAndShowsTheAuthoritativeRegenerationCountdown()
+        [TestCase(false)]
+        [TestCase(true)]
+        public void SeveredHandShowsOnlyCountdownAndRestoresHudAfterRevival(bool concept)
         {
-            using (var fixture = new Fixture())
+            using (var fixture = new Fixture(concept: concept))
             {
                 var actor = fixture.Host.Enemies.Single(enemy => enemy.DisplayId == "hand-1");
                 var position = actor.transform.position;
@@ -148,15 +149,21 @@ namespace Poker.SingleBattle.Tests
                 fixture.Edit(new BattleAdminPatch(vitals: new[] { new BattleAdminVitals(actor.ParticipantId, health: 0) }));
                 Assert.IsTrue(view.gameObject.activeSelf, "A regenerating hand keeps its existing remote world UI.");
                 Assert.AreEqual(8, fixture.Host.Display.Resource("hand-1", "wrath.reviveRemaining").Value);
-                Assert.AreEqual("8", fixture.Intents("hand-1").Single().GetComponentInChildren<TMP_Text>().text);
-                StringAssert.Contains("再生", fixture.Intents("hand-1").Single().Description);
+                Assert.AreEqual("复活倒计时 8", view.Find("Revive Countdown").GetComponent<TMP_Text>().text);
+                Assert.IsFalse(view.Find("Intents").gameObject.activeSelf);
+                Assert.IsTrue(view.Find("Revive Countdown").gameObject.activeInHierarchy);
                 Assert.IsFalse(view.Find("Health Bar").gameObject.activeSelf);
                 Assert.IsFalse(view.Find("Statuses").gameObject.activeSelf);
                 Assert.IsFalse(view.Find("Current Block").gameObject.activeSelf);
                 Assert.AreEqual(6, view.parent.childCount, "The countdown reuses an existing enemy view.");
                 fixture.Round();
                 Assert.AreSame(view, fixture.View("hand-1"));
-                Assert.AreEqual("7", fixture.Intents("hand-1").Single().GetComponentInChildren<TMP_Text>().text);
+                Assert.AreEqual("复活倒计时 7", view.Find("Revive Countdown").GetComponent<TMP_Text>().text);
+                for (int round = 1; round < 8; round++) fixture.Round();
+                Assert.IsTrue(fixture.Host.Display.Unit("hand-1").IsAlive);
+                Assert.IsTrue(view.Find("Health Bar").gameObject.activeInHierarchy);
+                Assert.IsTrue(view.Find("Intents").gameObject.activeInHierarchy);
+                Assert.IsFalse(view.Find("Revive Countdown").gameObject.activeSelf);
                 Assert.Less(Vector3.Distance(position, actor.transform.position), .00001f);
             }
         }
@@ -225,21 +232,17 @@ namespace Poker.SingleBattle.Tests
         }
 
         [Test]
-        public void ChangedRegenerationDescriptionClosesOnlyItsPreviouslyDisplayedTooltip()
+        public void SeveredHandClosesItsOpenIntentTooltip()
         {
             using (var fixture = new Fixture())
             {
-                fixture.Edit(new BattleAdminPatch(vitals: new[] { new BattleAdminVitals(new ParticipantId("hand-1"), health: 0) }));
                 var badge = fixture.Intents("hand-1").Single();
                 var tooltip = fixture.View("hand-1").Find("Enemy Badge Tooltip");
                 badge.OnPointerEnter(null);
                 Assert.IsTrue(tooltip.gameObject.activeSelf);
-                StringAssert.Contains("8", tooltip.GetComponentInChildren<TMP_Text>().text);
-                fixture.Round();
-                Assert.IsFalse(tooltip.gameObject.activeSelf, "The old eight-round explanation must not outlive its displayed badge value.");
-                badge.OnPointerEnter(null);
-                Assert.IsTrue(tooltip.gameObject.activeSelf);
-                StringAssert.Contains("7", tooltip.GetComponentInChildren<TMP_Text>().text);
+                fixture.Edit(new BattleAdminPatch(vitals: new[] { new BattleAdminVitals(new ParticipantId("hand-1"), health: 0) }));
+                Assert.IsFalse(tooltip.gameObject.activeSelf);
+                Assert.IsFalse(fixture.View("hand-1").Find("Intents").gameObject.activeSelf);
             }
         }
 
