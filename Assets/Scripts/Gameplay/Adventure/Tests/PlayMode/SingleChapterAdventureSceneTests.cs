@@ -290,26 +290,84 @@ namespace Poker.Adventure.Tests
                 vitals: new[] { new BattleAdminVitals(host.Adventure.PlayerId, 100000, 100000) },
                 relics: new[] { new BattleAdminRelics(host.Adventure.PlayerId, Array.Empty<BattleAdminRelic>()) })).Accepted);
             yield return Idle();
-            yield return WaitForWrathPrompt("Wrath Opening Warning", false);
             Assert.AreEqual(0, view.State.Duel.CompletedRounds);
-            AssertWrathWarning(false);
+            AssertWrathWarning(false, false);
             while (view.State.Duel.CompletedRounds < 8)
             {
                 int previousRound = view.State.Duel.CompletedRounds;
                 long previousHealth = view.Player.DisplayUnit.Health;
-                yield return EndAdventureRound();
+                bool expectsWarning = previousRound == 0 || previousRound == 6;
+                global::BattlePresentation.BattleDisplaySnapshot firstWarning = null;
+                float bannerStarted = -1, bannerHidden = -1;
+                Rect? warningArea = null;
+                string warningScreenshot = Path.GetFullPath(Path.Combine(Output,
+                    "boss-round-" + (previousRound + 1) + "-warning.png"));
+                if (expectsWarning && File.Exists(warningScreenshot)) File.Delete(warningScreenshot);
+                Action sampleBanner = () => {
+                    bool visible = WrathPrompt("Wrath Ultimate Warning").gameObject.activeInHierarchy;
+                    if (visible && bannerStarted < 0)
+                    {
+                        bannerStarted = Time.unscaledTime;
+                        warningArea = AssertReadableWrathPrompt("Wrath Ultimate Warning", "将于下一回合释放大招");
+                        Assert.IsFalse(WrathPrompt("Wrath Opening Warning").gameObject.activeInHierarchy,
+                            "An enemy-phase warning takes priority over any remaining opening explanation.");
+                        ScreenCapture.CaptureScreenshot(warningScreenshot);
+                    }
+                    else if (!visible && bannerStarted >= 0 && bannerHidden < 0) bannerHidden = Time.unscaledTime;
+                    else if (visible && bannerHidden >= 0)
+                        Assert.Fail("Refreshing the same pending ultimate must not replay its expired banner.");
+                };
+                Action<global::BattlePresentation.DisplayUpdate> observeWarning = update => {
+                    var snapshot = update.Current;
+                    if (firstWarning == null && snapshot.Labels.TryGetValue("wrath.body", out var body) &&
+                        snapshot.Resource(body, "wrath.warning")?.Value == 1) firstWarning = snapshot;
+                    sampleBanner();
+                };
+                view.PresentationDirector.Display.Changed += observeWarning;
+                try
+                {
+                    yield return EndWrathAdventureRound(sampleBanner);
+                    if (expectsWarning)
+                    {
+                        Assert.NotNull(firstWarning, "The warning must be presented during the actual enemy timeline.");
+                        Assert.GreaterOrEqual(bannerStarted, 0, "The warning must be visible before end-turn playback completes.");
+                        if (previousRound == 0)
+                        {
+                            Assert.AreEqual("enemy", firstWarning.Phase);
+                            Assert.AreEqual(0, firstWarning.CompletedRounds);
+                            Assert.AreEqual(1, firstWarning.Resource(firstWarning.Labels["wrath.body"], "wrath.enemyPhaseActive").Value);
+                            Assert.AreEqual(previousHealth, firstWarning.Unit(host.Adventure.PlayerId.Value).Health,
+                                "Round-one warning starts on enemy-phase entry, before the regular attack deals damage.");
+                        }
+                        float expiryDeadline = bannerStarted + 6;
+                        while (bannerHidden < 0 && Time.unscaledTime < expiryDeadline)
+                        { sampleBanner(); yield return null; }
+                        Assert.That(bannerHidden - bannerStarted, Is.InRange(3.7f, 4.5f),
+                            "The ultimate text must disappear after four unscaled seconds without a player attack.");
+                        Assert.IsTrue(warningArea.HasValue);
+                        Assert.Less(Vector2.Distance(openingArea.center, warningArea.Value.center), 1.5f,
+                            "The timed warning must reuse the opening banner's visible position.");
+                        Assert.Less(Vector2.Distance(openingArea.size, warningArea.Value.size), 1.5f);
+                        Assert.IsTrue(File.Exists(warningScreenshot), "The visible warning proof must be captured before expiry.");
+                    }
+                }
+                finally { view.PresentationDirector.Display.Changed -= observeWarning; }
                 int round = view.State.Duel.CompletedRounds;
                 Assert.Greater(round, previousRound, "Each real end-turn must advance the seven-station battle.");
                 bool warning = round == 1 || round == 7;
-                AssertWrathWarning(warning);
+                AssertWrathWarning(warning, false);
                 if (warning)
                 {
                     Assert.AreEqual(round + 1, WrathBossQuery.Read(view.State.Duel).ReleaseRound);
-                    var warningArea = AssertReadableWrathPrompt("Wrath Ultimate Warning", "将于下一回合释放大招");
-                    Assert.Less(Vector2.Distance(openingArea.center, warningArea.center), 1.5f,
-                        "The persistent warning must reuse the opening banner's visible position.");
-                    Assert.Less(Vector2.Distance(openingArea.size, warningArea.size), 1.5f);
-                    yield return CaptureWrathProof("boss-round-" + round + "-warning");
+                    view.SynchronizeBattle(); view.SynchronizeBattle(); yield return null;
+                    AssertWrathWarning(true, false);
+                    if (round == 1)
+                    {
+                        host.ReturnToMenu(); Assert.IsTrue(host.IsAtMenu);
+                        Assert.IsTrue(host.Resume()); yield return Idle();
+                        AssertWrathWarning(true, false);
+                    }
+                    yield return CaptureWrathProof("boss-round-" + round + "-warning-expired");
                 }
                 if (round == 2 || round == 8)
                 {
@@ -431,12 +489,29 @@ namespace Poker.Adventure.Tests
             Assert.AreEqual(visible, WrathPrompt(name)?.gameObject.activeInHierarchy == true, name);
         }
 
-        private void AssertWrathWarning(bool visible)
+        private IEnumerator EndWrathAdventureRound(Action sampleBanner)
         {
-            Assert.AreEqual(visible, WrathBossQuery.Read(host.BattleView.State.Duel).WarningActive);
-            Assert.AreEqual(visible, WrathPrompt("Wrath Ultimate Warning").gameObject.activeInHierarchy);
-            Assert.AreEqual(visible, host.BattleView.GetComponent<WrathBossArtworkLayout>().WarningVisible,
-                "The PSD glow and the persistent banner must follow the same presented warning.");
+            // Sample during playback: the first warning may expire before the enemy animations finish.
+            for (int pass = 0; pass < 2; pass++)
+            {
+                Assert.IsTrue(host.BattleView.EndTurn(true));
+                float deadline = Time.realtimeSinceStartup + 25;
+                do { sampleBanner(); yield return null; }
+                while (host.IsBusy && Time.realtimeSinceStartup < deadline);
+                Assert.IsFalse(host.IsBusy, "Wrath enemy playback did not return control before the deadline.");
+                sampleBanner();
+                if (host.Session.State.FlowFor(host.Adventure.PlayerId).Window != BattlePlayerWindow.Ending) break;
+            }
+            yield return Idle();
+            sampleBanner();
+        }
+
+        private void AssertWrathWarning(bool active, bool bannerVisible)
+        {
+            Assert.AreEqual(active, WrathBossQuery.Read(host.BattleView.State.Duel).WarningActive);
+            Assert.AreEqual(bannerVisible, WrathPrompt("Wrath Ultimate Warning").gameObject.activeInHierarchy);
+            Assert.AreEqual(active, host.BattleView.GetComponent<WrathBossArtworkLayout>().WarningVisible,
+                "The PSD glow follows the pending ultimate even after its four-second text has disappeared.");
         }
 
         private Rect AssertReadableWrathPrompt(string name, string message)

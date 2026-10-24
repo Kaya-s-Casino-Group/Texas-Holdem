@@ -14,13 +14,16 @@ namespace Poker.SingleBattle
         [Header("暴怒意图图标（留空使用占位图形）")]
         [SerializeField] private Sprite wrathAttackIcon, wrathDefenseIcon, wrathChargeIcon;
         [SerializeField, Min(.1f)] private float wrathOpeningSeconds = 4;
+        [SerializeField, Min(.1f)] private float wrathUltimateSeconds = 4;
         [SerializeField, Min(.1f)] private float wrathRegenerationFloatSeconds = 1.4f;
         private readonly WrathPromptTracker wrathPromptTracker = new WrathPromptTracker();
+        private readonly Dictionary<string, long> wrathUltimatePromptRounds = new Dictionary<string, long>();
         private readonly List<WrathIntentView> wrathIntentViews = new List<WrathIntentView>();
         private readonly Dictionary<string, WrathHandMarker> wrathHandMarkers = new Dictionary<string, WrathHandMarker>();
         private RectTransform wrathOpening, wrathUltimate;
         private TMP_Text wrathOpeningText, wrathRulesButtonText, wrathUltimatePrompt;
         private float wrathOpeningUntil;
+        private float wrathUltimateUntil = float.NegativeInfinity;
         private bool wrathOpeningPinned, wrathPromptsVisible, wrathUltimateActive;
         private string wrathPromptBattle;
 
@@ -126,6 +129,7 @@ namespace Poker.SingleBattle
             if (wrathPromptBattle != snapshot.BattleId)
             {
                 wrathPromptBattle = snapshot.BattleId; wrathOpeningPinned = false; wrathOpeningUntil = float.NegativeInfinity;
+                wrathUltimateUntil = float.NegativeInfinity;
                 foreach (var marker in wrathHandMarkers.Values) marker.FloatStarted = float.NegativeInfinity;
             }
             foreach (var marker in wrathHandMarkers.Values) marker.Visible = false;
@@ -145,6 +149,17 @@ namespace Poker.SingleBattle
             var prompts = wrathPromptTracker.Observe(snapshot, committed: Application.isPlaying);
             if (prompts.OpeningText != null)
             { wrathOpeningText.text = prompts.OpeningText; wrathOpeningUntil = Time.unscaledTime + wrathOpeningSeconds; }
+            if (!wrathUltimateActive) wrathUltimateUntil = float.NegativeInfinity;
+            else if (host.UsesExternalCommands)
+            {
+                long releaseRound = snapshot.Resource(body.Id, "wrath.releaseRound")?.Value ?? -1;
+                // The text has a one-shot clock; the artwork glow continues to follow authority.
+                if (releaseRound > 0 && (!wrathUltimatePromptRounds.TryGetValue(snapshot.BattleId, out long shownRound) || releaseRound > shownRound))
+                {
+                    wrathUltimatePromptRounds[snapshot.BattleId] = releaseRound;
+                    wrathUltimateUntil = Time.unscaledTime + wrathUltimateSeconds;
+                }
+            }
             foreach (var prompt in prompts.Regenerations)
                 if (wrathHandMarkers.TryGetValue(prompt.ActorId, out var marker))
                 { marker.Float.text = prompt.Text; marker.FloatStarted = Time.unscaledTime; }
@@ -178,9 +193,10 @@ namespace Poker.SingleBattle
         {
             bool adventure = host != null && host.UsesExternalCommands;
             bool visible = isActiveAndEnabled && (adventure ? wrathPromptsVisible : wrathPanel != null && wrathPanel.gameObject.activeInHierarchy);
-            bool openingVisible = visible && Time.unscaledTime < wrathOpeningUntil;
+            bool ultimateVisible = visible && adventure && wrathUltimateActive && Time.unscaledTime < wrathUltimateUntil;
+            bool openingVisible = visible && !ultimateVisible && Time.unscaledTime < wrathOpeningUntil;
             if (wrathOpening != null) wrathOpening.gameObject.SetActive(openingVisible);
-            if (wrathUltimate != null) wrathUltimate.gameObject.SetActive(visible && adventure && wrathUltimateActive && !openingVisible);
+            if (wrathUltimate != null) wrathUltimate.gameObject.SetActive(ultimateVisible);
             if (wrathRulesButtonText != null) wrathRulesButtonText.text = wrathOpeningPinned ? "收起说明" : "规则说明";
             var camera = ResolveIntentCamera();
             foreach (var marker in wrathHandMarkers.Values)
@@ -223,6 +239,7 @@ namespace Poker.SingleBattle
         {
             wrathPromptsVisible = wrathUltimateActive = false;
             wrathOpeningPinned = false; wrathOpeningUntil = float.NegativeInfinity;
+            wrathUltimateUntil = float.NegativeInfinity;
             foreach (var marker in wrathHandMarkers.Values)
             { marker.Visible = false; marker.FloatStarted = float.NegativeInfinity; }
             // Keep the tracker's per-battle/round memory when returning to the same adventure battle.

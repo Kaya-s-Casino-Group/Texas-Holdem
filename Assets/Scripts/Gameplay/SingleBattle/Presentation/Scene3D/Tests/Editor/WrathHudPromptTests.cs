@@ -119,24 +119,43 @@ namespace Poker.SingleBattle.Tests
         }
 
         [Test]
-        public void AdventureOpeningFinishesBeforePendingUltimateAppearsAndReleaseHidesItImmediately()
+        public void AdventureUltimateTakesPriorityOverOpeningAndCancellationHidesItImmediately()
         {
             using (var fixture = new AdventurePromptFixture())
             {
                 fixture.Present(false); fixture.OpeningFor(4); fixture.Present(true);
-                Assert.IsTrue(fixture.Text(false).gameObject.activeInHierarchy);
-                Assert.IsFalse(fixture.Text(true).gameObject.activeInHierarchy, "An active opening owns the shared warning position.");
-                fixture.OpeningFor(.01f);
-                Assert.IsFalse(fixture.Text(true).gameObject.activeInHierarchy, "The ultimate must wait through the last part of the opening.");
-                fixture.OpeningFor(-1);
-                Assert.IsFalse(fixture.Text(false).gameObject.activeInHierarchy);
+                Assert.IsFalse(fixture.Text(false).gameObject.activeInHierarchy, "Enemy-phase warning must not wait for the opening banner.");
                 Assert.IsTrue(fixture.Text(true).gameObject.activeInHierarchy);
                 fixture.Present(true);
-                Assert.IsTrue(fixture.Text(true).gameObject.activeInHierarchy, "Refreshing an unchanged warning must keep it visible.");
+                Assert.IsTrue(fixture.Text(true).gameObject.activeInHierarchy);
                 fixture.Present(false);
                 Assert.IsFalse(fixture.Text(true).gameObject.activeInHierarchy, "The first snapshot after cancellation or release must hide the warning.");
-                fixture.Present(true); fixture.Present(true, finished: true);
+                fixture.Present(true, releaseRound: 8); fixture.Present(true, finished: true, releaseRound: 8);
                 Assert.IsFalse(fixture.Text(true).gameObject.activeInHierarchy, "Finishing the battle also clears the warning.");
+            }
+        }
+
+        [Test]
+        public void AdventureUltimateExpiresAfterFourSecondsWithoutRefreshOrMenuReplayingIt()
+        {
+            using (var fixture = new AdventurePromptFixture())
+            {
+                fixture.Present(true);
+                Assert.That(fixture.UltimateRemaining, Is.EqualTo(4).Within(.05f));
+                fixture.ElapseUltimate(3.9f); fixture.Present(true);
+                Assert.IsTrue(fixture.Text(true).gameObject.activeInHierarchy);
+                fixture.ElapseUltimate(.2f); fixture.Present(true);
+                Assert.IsFalse(fixture.Text(true).gameObject.activeInHierarchy, "Unchanged authority must not extend the four-second banner.");
+                Invoke(fixture.Hud, "HideWrathPrompts"); fixture.Present(true);
+                Assert.IsFalse(fixture.Text(true).gameObject.activeInHierarchy, "Reopening the same battle must not replay the same warning.");
+                fixture.Present(false); fixture.Present(true);
+                Assert.IsFalse(fixture.Text(true).gameObject.activeInHierarchy, "An older timeline snapshot must not replay a consumed warning.");
+                fixture.Present(true, releaseRound: 8);
+                Assert.IsTrue(fixture.Text(true).gameObject.activeInHierarchy, "A later ultimate receives its own four-second warning.");
+                fixture.ElapseUltimate(4.1f);
+                Assert.IsFalse(fixture.Text(true).gameObject.activeInHierarchy);
+                fixture.Present(true, battle: "next-battle");
+                Assert.IsTrue(fixture.Text(true).gameObject.activeInHierarchy, "Another battle has its own warning sequence.");
             }
         }
 
@@ -204,13 +223,24 @@ namespace Poker.SingleBattle.Tests
             public TMP_Text Text(bool ultimate) => (TMP_Text)typeof(SingleBattleHud)
                 .GetField(ultimate ? "wrathUltimatePrompt" : "wrathOpeningText", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(Hud);
             public Image Background(bool ultimate) => Text(ultimate).GetComponentInParent<Image>(true);
-            public void Present(bool warning, bool finished = false)
+            public void Present(bool warning, bool finished = false, long releaseRound = 2, string battle = "prompt-battle")
             {
-                var snapshot = new BattleDisplaySnapshot("prompt-battle", "player", 1, "player", 0, finished ? "Won" : null,
+                var snapshot = new BattleDisplaySnapshot(battle, "player", 1, "player", 0, finished ? "Won" : null,
                     new[] { new UnitDisplayData("body", "暴怒", "enemy", 2000, 2000, 0, 0, 0) },
-                    zones: null, resources: new[] { new ResourceDisplayData("body", "wrath.warning", warning ? 1 : 0) },
+                    zones: null, resources: new[] { new ResourceDisplayData("body", "wrath.warning", warning ? 1 : 0),
+                        new ResourceDisplayData("body", "wrath.releaseRound", warning ? releaseRound : -1) },
                     hasStarted: true, labels: new Dictionary<string, string> { ["wrath.body"] = "body" });
                 Invoke(Hud, "RefreshWrathPrompts", snapshot); Canvas.ForceUpdateCanvases();
+            }
+            public float UltimateRemaining => (float)(typeof(SingleBattleHud)
+                .GetField("wrathUltimateUntil", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(Hud)
+                ?? float.PositiveInfinity) - Time.unscaledTime;
+            public void ElapseUltimate(float seconds)
+            {
+                // Advance the banner clock without changing its authoritative warning snapshot.
+                var deadline = typeof(SingleBattleHud).GetField("wrathUltimateUntil", BindingFlags.Instance | BindingFlags.NonPublic);
+                if (deadline != null) deadline.SetValue(Hud, (float)deadline.GetValue(Hud) - seconds);
+                Invoke(Hud, "UpdateWrathPromptViews"); Canvas.ForceUpdateCanvases();
             }
             public void OpeningFor(float remaining)
             {
