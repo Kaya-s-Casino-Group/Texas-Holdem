@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 namespace Poker.SingleBattle
 {
-    public enum BattleDemoEnemySymbol { Sword, Shield, Poison, Stun, Immunity, Reflect, LifeSteal, Overheal, Armor, Heal, Buff, Debuff, Cards, Cleanse, Unknown, Wait }
+    public enum BattleDemoEnemySymbol { Sword, Shield, Poison, Stun, Immunity, Reflect, LifeSteal, Overheal, Armor, Heal, Buff, Debuff, Cards, Cleanse, Unknown, Wait, Bleeding }
 
     /// <summary>Scene-local vector symbols, drawn directly by uGUI so world-space icons remain sharp.</summary>
     [RequireComponent(typeof(CanvasRenderer))]
@@ -79,6 +79,7 @@ namespace Poker.SingleBattle
                 case BattleDemoEnemySymbol.Stun:
                     Star(0, .09f, .26f); shade = bright; Star(-.32f, -.19f, .13f); Star(.32f, .25f, .12f); break;
                 case BattleDemoEnemySymbol.LifeSteal:
+                case BattleDemoEnemySymbol.Bleeding:
                     Polygon(new Vector2(0, .45f), new Vector2(.28f, .04f), new Vector2(.30f, -.16f), new Vector2(.14f, -.37f), new Vector2(-.14f, -.37f), new Vector2(-.30f, -.16f), new Vector2(-.28f, .04f));
                     shade = bright; Polygon(new Vector2(-.11f, .12f), new Vector2(-.21f, -.12f), new Vector2(-.11f, -.23f)); break;
                 case BattleDemoEnemySymbol.Heal:

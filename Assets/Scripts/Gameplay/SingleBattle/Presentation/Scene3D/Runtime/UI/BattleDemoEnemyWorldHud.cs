@@ -68,7 +68,8 @@ namespace Poker.SingleBattle
             UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(root, gameObject.scene); uiRoot = root.transform;
             root.layer = 5;
             screenCanvas = root.GetComponent<Canvas>();
-            screenCanvas.renderMode = RenderMode.ScreenSpaceOverlay; screenCanvas.sortingOrder = 20;
+            // Badge hover must win over the portrait target canvas (20), below the main HUD (30).
+            screenCanvas.renderMode = RenderMode.ScreenSpaceOverlay; screenCanvas.sortingOrder = 21;
             var scaler = root.GetComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = new Vector2(1280, 720); scaler.matchWidthOrHeight = 1;
@@ -165,9 +166,14 @@ namespace Poker.SingleBattle
                 if (key != null) view.Art.sprite = ConceptBattleSkin.Get("Icons/" + key);
                 view.Value.color = badge.Symbol == BattleDemoEnemySymbol.Sword ? new Color32(209, 67, 72, 255) : ConceptBattleSkin.Paper;
                 if (view.Status) view.Value.text = badge.Symbol == BattleDemoEnemySymbol.Shield ? "护盾 " + badge.Value : badge.Description.Length <= 4 ? badge.Description + " " + badge.Value : badge.Value;
-                if (view.Caption != null) view.Caption.text = badge.Symbol == BattleDemoEnemySymbol.Wait
-                    ? (badge.Description == "准备行动" ? "准备\n<size=80%>即将行动</size>" : "等待\n<size=80%>下回合</size>")
-                    : ConceptCaption(badge.Symbol) + "\n<size=80%>下次行动</size>";
+                if (view.Caption != null)
+                {
+                    // Keep the longer forecast label inside its column, clear of the icon and damage number.
+                    view.Caption.margin = badge.Symbol == BattleDemoEnemySymbol.Sword ? new Vector4(-8, 0, 0, 0) : Vector4.zero;
+                    view.Caption.text = badge.Symbol == BattleDemoEnemySymbol.Wait
+                        ? (badge.Description == "准备行动" ? "准备\n<size=80%>即将行动</size>" : "等待\n<size=80%>下回合</size>")
+                        : ConceptCaption(badge.Symbol) + (badge.Symbol == BattleDemoEnemySymbol.Sword ? "" : "\n<size=80%>下次行动</size>");
+                }
             }
             BattleBadgeText.Apply(view.Value);
             string description = detail ?? badge.Description;
@@ -185,7 +191,7 @@ namespace Poker.SingleBattle
                 case BattleDemoEnemySymbol.Stun: return "icon_stun";
                 case BattleDemoEnemySymbol.Immunity: return "icon_immunity";
                 case BattleDemoEnemySymbol.Reflect: return "icon_reflect";
-                case BattleDemoEnemySymbol.LifeSteal: return "icon_bleeding";
+                case BattleDemoEnemySymbol.LifeSteal: case BattleDemoEnemySymbol.Bleeding: return "icon_bleeding";
                 case BattleDemoEnemySymbol.Overheal: return "icon_overheal";
                 case BattleDemoEnemySymbol.Heal: return "icon_heal";
                 case BattleDemoEnemySymbol.Buff: return "icon_buff";
@@ -199,13 +205,14 @@ namespace Poker.SingleBattle
         {
             switch(symbol)
             {
-                case BattleDemoEnemySymbol.Sword: return "攻击";
+                case BattleDemoEnemySymbol.Sword: return "<size=9>预计\n伤害</size>";
                 case BattleDemoEnemySymbol.Shield: return "防御";
                 case BattleDemoEnemySymbol.Poison: return "中毒";
                 case BattleDemoEnemySymbol.Stun: return "眩晕";
                 case BattleDemoEnemySymbol.Immunity: return "免疫";
                 case BattleDemoEnemySymbol.Reflect: return "盾反";
                 case BattleDemoEnemySymbol.LifeSteal: return "吸血";
+                case BattleDemoEnemySymbol.Bleeding: return "流血";
                 case BattleDemoEnemySymbol.Overheal: return "溢疗";
                 case BattleDemoEnemySymbol.Armor: return "护甲";
                 case BattleDemoEnemySymbol.Heal: return "治疗";

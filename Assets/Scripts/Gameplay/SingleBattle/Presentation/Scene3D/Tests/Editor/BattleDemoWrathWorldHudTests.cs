@@ -254,7 +254,7 @@ namespace Poker.SingleBattle.Tests
                 // when it currently has block. Establish that final row before starting hover.
                 fixture.Edit(new BattleAdminPatch(vitals: new[] {
                     new BattleAdminVitals(actor.ParticipantId, block: 1) }));
-                var badge = fixture.Intents(actor.DisplayId).Single(item => item.Description == "攻击：15 伤害");
+                var badge = fixture.Intents(actor.DisplayId).Single(item => item.Description == "预计伤害：15（格挡前）");
                 var tooltip = fixture.View(actor.DisplayId).Find("Enemy Badge Tooltip");
                 badge.OnPointerEnter(null);
                 fixture.RefreshWorldOnly();
@@ -274,7 +274,7 @@ namespace Poker.SingleBattle.Tests
                 Assert.IsTrue(tooltip.gameObject.activeSelf, "A shield change must not close the unchanged attack explanation.");
                 blockTooltip.OnPointerExit(null);
                 Assert.IsTrue(tooltip.gameObject.activeSelf, "Another badge's pointer exit must not close the hovered explanation.");
-                Assert.AreEqual("攻击：15 伤害", tooltip.GetComponentInChildren<TMP_Text>().text);
+                Assert.AreEqual("预计伤害：15（格挡前）", tooltip.GetComponentInChildren<TMP_Text>().text);
             }
         }
 
@@ -287,7 +287,7 @@ namespace Poker.SingleBattle.Tests
                 var badge = fixture.Intents(actor.DisplayId).Single();
                 Assert.AreEqual(BattleDemoEnemySymbol.Sword, badge.GetComponentInChildren<BattleDemoEnemyIcon>().Symbol);
                 Assert.AreEqual("15", badge.GetComponentInChildren<TMP_Text>().text);
-                Assert.AreEqual("攻击：15 伤害", badge.Description);
+                Assert.AreEqual("预计伤害：15（格挡前）", badge.Description);
                 Assert.AreEqual(BattleDemoEnemyHudModel.AttackColor, badge.GetComponentInChildren<BattleDemoEnemyIcon>().color);
             }
         }

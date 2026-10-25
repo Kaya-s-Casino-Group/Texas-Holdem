@@ -105,6 +105,8 @@ namespace Poker.SingleBattle
                 snapshot.Labels.TryGetValue("status/" + hero.Id, out var heroStatus);
                 snapshot.Labels.TryGetValue("status/" + primaryEnemy.Id, out var monsterStatus);
                 PresentActorStatuses(playerStatuses, heroStatus);
+                if (UsesDeskLayout) BattlePlayerBleedingCue.Present(playerStatuses, host.State.Duel, hero.Id,
+                    host.Engine.Duel.Definition.StatusCatalog, heroStatus);
                 PresentActorStatuses(enemyStatuses, monsterStatus);
             }
             if (energy != null) energy.text = "剩余行动点 " + ResourceValue(snapshot, hero.Id, "actions") +

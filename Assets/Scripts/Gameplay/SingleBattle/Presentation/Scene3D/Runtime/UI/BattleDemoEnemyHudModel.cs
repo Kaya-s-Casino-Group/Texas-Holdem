@@ -30,6 +30,7 @@ namespace Poker.SingleBattle
             switch (id)
             {
                 case "bleed": symbol = BattleDemoEnemySymbol.Poison; color = PoisonColor; name = "中毒"; break;
+                case "elite-bleeding": symbol = BattleDemoEnemySymbol.Bleeding; color = AttackColor; name = "流血"; break;
                 case "stun": symbol = BattleDemoEnemySymbol.Stun; color = Gold; name = "眩晕"; break;
                 case "control-immunity": symbol = BattleDemoEnemySymbol.Immunity; color = new Color32(111, 203, 247, 255); name = "控制免疫"; break;
                 case "shield-reflect": symbol = BattleDemoEnemySymbol.Reflect; color = ShieldColor; name = "盾反"; break;
@@ -46,8 +47,10 @@ namespace Poker.SingleBattle
             if (preview == null || !preview.Accepted) return new[] { new Badge(BattleDemoEnemySymbol.Unknown, Gold, "?", "意图不可用") };
             if (preview.IsSkipped) return new[] { new Badge(BattleDemoEnemySymbol.Stun, Gold, "", "眩晕：跳过本次行动") };
             var badges = new List<Badge>();
+            // Reapplying a status is an announced effect; its later consumption and decay are bookkeeping.
             var effects = BattleDisplayProjector.IntentEvents(preview, plannedAction).Where(item => item.Effect?.Source == preview.Source &&
-                item.Provenance?.Origin == CombatEffectOrigin.Primary && !(item is CombatStatusChangedEvent)).ToArray();
+                item.Provenance?.Origin == CombatEffectOrigin.Primary && (!(item is CombatStatusChangedEvent changed) ||
+                    changed.Reason == CombatStatusChangeReason.Refreshed && item.Effect.Kind == CombatEffectKind.ApplyStatus)).ToArray();
             foreach (var group in effects.GroupBy(item => new { item.Effect.Kind, Status = item.Effect.Status?.DefinitionId.Value,
                 Amount = item is CombatEvent hit ? hit.SettledAmount : item.Effect.Status?.Stacks ?? item.Effect.Amount, item.Effect.Target }))
             {
@@ -56,7 +59,14 @@ namespace Poker.SingleBattle
                 Badge badge;
                 switch (group.Key.Kind)
                 {
-                    case CombatEffectKind.Damage: badge = new Badge(BattleDemoEnemySymbol.Sword, AttackColor, value, "攻击：" + value + " 伤害"); break;
+                    case CombatEffectKind.Damage:
+                        var bleeding = group.OfType<CombatEvent>().Where(hit => hit.SettledAmount > 0 && hit.IncomingModification != null)
+                            .SelectMany(hit => hit.IncomingModification.Triggers)
+                            .Where(trigger => trigger.SourceId == "incoming.attack-per-stack")
+                            .Select(trigger => trigger.Reason).Distinct().ToArray();
+                        badge = new Badge(BattleDemoEnemySymbol.Sword, AttackColor, value, "预计伤害：" + value + "（格挡前）" +
+                            (bleeding.Length == 0 ? "" : "\n已含流血加伤：" + string.Join("；", bleeding)));
+                        break;
                     case CombatEffectKind.GainBlock:
                         badge = wrathChargeIncrease.HasValue && amount == 0 && group.Key.Target == preview.Source
                             ? new Badge(BattleDemoEnemySymbol.Buff, Gold, "+" + Number(wrathChargeIncrease.Value),
