@@ -1,0 +1,64 @@
+{
+  "unityVersion": "2022.3.62f3",
+  "platform": "EditMode",
+  "result": "Passed",
+  "total": 174,
+  "passed": 174,
+  "failed": 0,
+  "skipped": 0,
+  "durationSeconds": 18.4055307,
+  "compilerAndShaderErrorCount": 0,
+  "assemblies": [
+    {
+      "name": "BattlePresentation.Tests.Editor.dll",
+      "result": "Passed",
+      "total": 16,
+      "passed": 16,
+      "failed": 0
+    },
+    {
+      "name": "BattlePresentation.Unity.Tests.Editor.dll",
+      "result": "Passed",
+      "total": 20,
+      "passed": 20,
+      "failed": 0
+    },
+    {
+      "name": "CardArt.Tests.Editor.dll",
+      "result": "Passed",
+      "total": 84,
+      "passed": 84,
+      "failed": 0
+    },
+    {
+      "name": "Poker.BattleHosting.Tests.Editor.dll",
+      "result": "Passed",
+      "total": 7,
+      "passed": 7,
+      "failed": 0
+    },
+    {
+      "name": "Poker.BattlePresentation.Shared.Tests.dll",
+      "result": "Passed",
+      "total": 9,
+      "passed": 9,
+      "failed": 0
+    },
+    {
+      "name": "Poker.EditorTools.Tests.dll",
+      "result": "Passed",
+      "total": 4,
+      "passed": 4,
+      "failed": 0
+    },
+    {
+      "name": "RetroRendering.Tests.Editor.dll",
+      "result": "Passed",
+      "total": 34,
+      "passed": 34,
+      "failed": 0
+    }
+  ],
+  "fullResults": "Library/PalamedesValidation/editmode.xml",
+  "log": "Library/PalamedesValidation/editor.log"
+}

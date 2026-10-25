@@ -1,5 +1,7 @@
 # Battle Presentation
 
+Palamedes retains this generic framework. The old Scene3D actors, HandZoneView, card interaction library, HUD and authored scenes have been removed; references to them below describe the archived integration. New frontends provide their own implementations of the retained contracts.
+
 `BattlePresentation.Runtime` is a pure C# assembly with `noEngineReferences: true`. It references neither Unity nor the battle rules. A rule bridge supplies immutable projected facts; frontends supply object bindings and actions.
 
 ## Data ownership

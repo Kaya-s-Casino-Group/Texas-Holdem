@@ -314,6 +314,7 @@ namespace CardArt.Tests
         public void SharedTintUniformCannotPassAsPerCardInstancing()
         {
             var input = File.ReadAllText("Assets/GameAssets/CardArt/Shaders/CardDeferredInput.hlsl")
+                .Replace("\"CardSurfaceCommon.hlsl\"", "\"Assets/GameAssets/CardArt/Shaders/CardSurfaceCommon.hlsl\"")
                 .Replace("UNITY_DEFINE_INSTANCED_PROP(float4, _ColorTint)", "")
                 .Replace("half4 _BaseColor;", "half4 _BaseColor;\n    float4 _ColorTint;")
                 .Replace("UNITY_ACCESS_INSTANCED_PROP(CardInstances, _ColorTint)", "_ColorTint");

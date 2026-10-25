@@ -1,6 +1,0 @@
-{
-  "name": "Poker.RunFlow.Editor",
-  "rootNamespace": "Poker.RunFlow.Editor",
-  "references": ["Poker.RunFlow.Runtime", "PokerEngine.Core", "PokerEngine.Abilities", "PokerEngine.Scoring", "PokerEngine.Runs", "PokerEngine.Composition", "Poker.EditorTools"],
-  "includePlatforms": ["Editor"]
-}

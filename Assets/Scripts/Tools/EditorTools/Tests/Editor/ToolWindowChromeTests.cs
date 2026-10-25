@@ -50,12 +50,13 @@ namespace Poker.EditorTools.Tests
             yield return null;
             yield return null;
             var origin = window.position.position;
+            var initialSize = window.position.size;
             Resize(new Vector2(100, 80));
-            Assert.AreEqual(new Vector2(540, 400), window.position.size, window.EventTrace);
+            AssertSize(initialSize + new Vector2(100, 80));
             Resize(new Vector2(-1000, -1000));
-            Assert.AreEqual(window.minSize, window.position.size);
+            AssertSize(window.minSize);
             Resize(new Vector2(1000, 1000));
-            Assert.AreEqual(window.maxSize, window.position.size);
+            AssertSize(window.maxSize);
             Assert.AreEqual(origin, window.position.position);
         }
 
@@ -87,15 +88,16 @@ namespace Poker.EditorTools.Tests
         {
             yield return null;
             yield return null;
+            var initialSize = window.position.size;
             var start = new Vector2(window.position.width - 14, window.position.height - 11);
             Send(EventType.MouseDown, start);
             Send(EventType.MouseUp, start);
             Send(EventType.MouseDrag, start + new Vector2(60, 60));
-            Assert.AreEqual(new Vector2(440, 320), window.position.size);
+            Assert.AreEqual(initialSize, window.position.size);
             Send(EventType.MouseDown, start);
             window.Chrome.Release();
             Send(EventType.MouseDrag, start + new Vector2(60, 60));
-            Assert.AreEqual(new Vector2(440, 320), window.position.size);
+            Assert.AreEqual(initialSize, window.position.size);
         }
 
         [UnityTest]
@@ -108,6 +110,14 @@ namespace Poker.EditorTools.Tests
             Send(EventType.MouseDrag, new Vector2(140, 140));
             Send(EventType.MouseUp, new Vector2(140, 140));
             Assert.AreEqual(original, window.position);
+        }
+
+        private void AssertSize(Vector2 expected)
+        {
+            // Native windows round logical points to physical pixels on high-DPI displays.
+            float tolerance = 1f / EditorGUIUtility.pixelsPerPoint;
+            Assert.That(window.position.width, Is.EqualTo(expected.x).Within(tolerance), window.EventTrace);
+            Assert.That(window.position.height, Is.EqualTo(expected.y).Within(tolerance), window.EventTrace);
         }
 
         private void Resize(Vector2 delta)

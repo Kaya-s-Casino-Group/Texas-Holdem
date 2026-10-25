@@ -1,5 +1,0 @@
-{
-  "name": "Poker.DrawBattle.Runtime",
-  "references": ["PokerEngine.Core", "PokerEngine.Abilities", "PokerEngine.Scoring", "PokerEngine.Draw", "CardInteraction.Runtime", "CardPresentation.Runtime", "CardMatch.Runtime"],
-  "rootNamespace": "Poker.DrawBattle"
-}

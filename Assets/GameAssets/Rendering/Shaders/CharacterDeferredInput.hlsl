@@ -11,6 +11,8 @@ CBUFFER_START(UnityPerMaterial)
     half _BumpScale;
     half _Metallic;
     half _Roughness;
+    half _UsePackedMR;
+    half _Cull;
     half _OcclusionStrength;
     float _OutlineWidth;
     half4 _OutlineColor;
@@ -19,5 +21,6 @@ TEXTURE2D(_BaseMap); SAMPLER(sampler_BaseMap);
 TEXTURE2D(_BumpMap); SAMPLER(sampler_BumpMap);
 TEXTURE2D(_MetallicMap); SAMPLER(sampler_MetallicMap);
 TEXTURE2D(_RoughnessMap); SAMPLER(sampler_RoughnessMap);
+TEXTURE2D(_PackedMRMap); SAMPLER(sampler_PackedMRMap);
 TEXTURE2D(_OcclusionMap); SAMPLER(sampler_OcclusionMap);
 #endif

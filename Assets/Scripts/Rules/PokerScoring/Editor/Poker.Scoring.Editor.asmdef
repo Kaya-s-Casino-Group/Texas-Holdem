@@ -1,6 +1,0 @@
-{
-  "name": "Poker.Scoring.Editor",
-  "rootNamespace": "Poker.Scoring.Editor",
-  "references": ["Poker.Scoring.Runtime", "PokerEngine.Core", "PokerEngine.Scoring"],
-  "includePlatforms": ["Editor"]
-}

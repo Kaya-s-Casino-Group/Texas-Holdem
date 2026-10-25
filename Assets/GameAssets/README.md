@@ -1,17 +1,12 @@
-# 模块资源
+# Palamedes 基础表现资源
 
-这里保存自研模块使用的预制件、配置、Shader、材质和贴图。对应 C# 代码位于 [Scripts](../Scripts/README.md)，不同表现风格继续分开存放。
+本目录保留：
 
-| 目录 | 内容 |
-| --- | --- |
-| `SingleBattle/Content` | 原有示例场景的 XML 规则与编成（保留原数值） |
-| `SingleBattle/Presentation/Scene3D` | 3D 盾牌与 Shader |
-| `SingleBattle/Presentation/Minimal2D/Art` | 最简 2D 卡牌与矩形角色资源 |
-| `CardArt` | 卡牌预制件、配置、Shader 与通用贴图 |
-| `CardPresentation` | 卡牌 UI、预制件、音效 Resources |
-| `PokerScoring/Profiles` | 计分配置 |
-| `RunFlow/Configs` | 流程配置 |
-| `Rendering` | 渲染 Shader、材质、贴图与预制件 |
-| `Editor/Shaders` | 编辑器资源验证 Shader |
+- `CardArt`：卡牌预制体、材质、外观配置、Shader 与效果纹理。
+- `Rendering`：管线 Shader、Include、噪声纹理、萤火虫材质与预制体。
+- `SingleBattle/Hosting`：最小会话入口预制体。
+- `SingleBattle/Presentation/Scene3D/Shaders`：护盾 Shader 源码。
+- `CardPresentation/UI/Shaders`：Canvas 卡牌 Shader 源码。
+- `Editor/Shaders`：渲染验证 Shader。
 
-迁移保留原 `.meta` / GUID，不重新生成资源。通用美术与原始牌面仍在 `Assets/Art`，场景仍在 `Assets/Scenes`，固定管线和 Renderer 仍在 `Assets/Settings`。
+保留 Shader 的目录名不代表对应旧前端仍存在。卡牌图集、网格和原始牌面位于 `Assets/Art`，Renderer 配置位于 `Assets/Settings`；规则和共享 XML 仍由外部规则包提供。

@@ -95,7 +95,7 @@ MonoBehaviour:
     saturation: 0.9
     tint: {r: 1, g: 0.97, b: 0.9, a: 1}
     tintStrength: 0.576
-    vignette: 0.429
+    vignette: 0.091
     vignetteSoftness: 0.05
     colorLevels: 10
     posterization: 0.499

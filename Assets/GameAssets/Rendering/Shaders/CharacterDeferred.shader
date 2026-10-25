@@ -10,6 +10,9 @@ Shader "Rendering/Character Deferred Outline"
         _Metallic ("Metallic Multiplier", Range(0,1)) = 0
         [NoScaleOffset] _RoughnessMap ("Roughness (R)", 2D) = "white" {}
         _Roughness ("Roughness Multiplier", Range(0,1)) = .75
+        [Toggle] _UsePackedMR ("Use Packed Metallic / Roughness", Float) = 0
+        [NoScaleOffset] _PackedMRMap ("Metallic (R), Roughness (G)", 2D) = "white" {}
+        [Enum(UnityEngine.Rendering.CullMode)] _Cull ("Cull", Float) = 2
         [NoScaleOffset] _OcclusionMap ("Occlusion (R)", 2D) = "white" {}
         _OcclusionStrength ("Occlusion Strength", Range(0,1)) = 1
         _OutlineWidth ("Outline Width (World Units)", Range(0,.02)) = .0008
@@ -18,7 +21,7 @@ Shader "Rendering/Character Deferred Outline"
     SubShader
     {
         Tags { "RenderPipeline"="UniversalPipeline" "RenderType"="Opaque" "Queue"="Geometry" "UniversalMaterialType"="Lit" }
-        Cull Back
+        Cull [_Cull]
         ZWrite On
         ZTest LEqual
         HLSLINCLUDE

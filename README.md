@@ -1,18 +1,29 @@
-不要压力老人
+# Palamedes
 
-项目目录与模块职责见 [脚本目录说明](Assets/Scripts/README.md)，模块资源见 [资源目录说明](Assets/GameAssets/README.md)，分批变更见 [CHANGELOG](CHANGELOG.md)。
+Unity 表现层重构基线，基于 `legacy-3d-scenes` 建立。当前保留自研渲染管线、Card Instancing、全部 Shader、基础会话桥接与通用表现调度；旧战斗场景、角色/环境资产库、HUD、手牌交互和其他 Unity 玩法前端已清理。
 
+## 保留模块
 
-规则与策划工具现独立维护于 [BattleToolkit](https://github.com/Kaya-s-Casino-Group/BattleToolkit)（私有仓库）。策划只拉该小仓库，Windows 双击 `start.cmd`、macOS 双击 `start.command`；启动器自动准备 .NET 环境并打开配置试玩网页。
+- 内嵌 URP 14.0.12 与渲染扩展：`Packages/com.unity.render-pipelines.universal`、`Assets/Scripts/Infrastructure/Rendering`。
+- 卡牌实例化与美术工具：`Assets/Scripts/Presentation/CardArt`、`Assets/GameAssets/CardArt`，包括共享网格、材质、图集及原始牌面。
+- Shader：保留原路径、Include 和 `.meta`；部分环境目录现在只保存 Shader。
+- 会话接入：`Assets/Scripts/Gameplay/SingleBattle/Hosting`、`Presentation/Shared`。
+- 通用表现：`Assets/Scripts/Presentation/BattlePresentation`，包含显示快照、时间线、动作和交互协议。
 
-首次拉取或切换主工程版本后，先更新子模块，再打开 Unity：
+完整保留范围、依赖与迁移记录见 [表现层保留清单](Tools/UnityPresentationRetention/README.md)。
 
-```sh
-git submodule update --init --recursive
-```
+## 规则边界
 
-Unity 通过 `External/BattleToolkit/Engine` 本地包引用规则与共享 XML。当前场景内容在 `External/BattleToolkit/Engine/Content/SingleBattleDemoNew.xml`。主工程固定子模块提交，更新引擎或 XML 时先提交/推送小仓库，再提交主工程中的子模块版本；旧 SO 和表现层仍由主工程维护。更多说明见 [独立工具文档](External/BattleToolkit/README.md)。
+C# 规则、玩法、结算和共享 XML 位于 `External/BattleToolkit` 子仓库，通过 `com.kaya.battle-engine` 本地 UPM 包引用。本次清理不修改其代码、工作区提交或主仓库记录的 gitlink。
 
-日常协作见 [两个仓库的协作流程](External/BattleToolkit/COLLABORATION.md)：策划在小仓库交付 XML；纯规则、工具改动也在小仓库提交；Unity 集成方选择通过 CI 的 SHA，验证后在本仓库提交子模块版本与必要的场景适配。拉取主工程后执行 `git submodule update --init --recursive`，即可同步主工程采用的规则与配置。
+当前本地规则工作区可能比旧分支记录的 gitlink 新。已有工作区不要为了打开本分支自动执行子模块更新；首次克隆时才按仓库记录初始化，并按项目协作流程选择接入更新的规则版本。
 
-主动接入小仓库新版本时，可双击根目录 `sync-battle-toolkit.cmd`（Windows）或 `sync-battle-toolkit.command`（macOS）：检查两边工作区、选择四项 CI 均通过的版本并再次确认后更新；不覆盖本地改动，不自动提交。用法和前置条件见 [一键同步说明](Tools/BattleToolkitSync/README.md)。
+Unity 接入层提交命令、查询规则并投影结果；动画、输入与显示时间线不拥有玩法结算。
+
+## 开发与验证
+
+使用 Unity 2022.3.62f3。当前没有默认游戏场景，Build Settings 的场景列表为空，后续在此基线上新建前端。
+
+`Assets/GameAssets/SingleBattle/Hosting/BattleSceneHostMinimal.prefab` 保留为无角色、无卡牌视图的会话接入入口。卡牌与渲染模块的编辑器工具和测试仍保留，卡牌验证场景可由对应工具生成。
+
+旧完整 3D 工程可在 `legacy-3d-scenes` 分支查看。`Tools` 下其他历史说明记录旧实现，不代表 Palamedes 当前保留了对应场景或前端。

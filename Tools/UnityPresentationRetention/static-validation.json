@@ -1,0 +1,22 @@
+{
+  "checkedAt": "2026-10-24T07:43:17.708Z",
+  "validation": "Static filesystem, serialized GUID, assembly references and rule-content hashes. Unity tests are reported separately.",
+  "counts": {
+    "assetFiles": 691,
+    "shaders": 40,
+    "includes": 26,
+    "ruleFilesHashed": 783
+  },
+  "missingKeptFiles": [],
+  "missingAdditionalAssets": [],
+  "remainingDeletedAssets": [],
+  "missingMeta": [],
+  "orphanMeta": [],
+  "missingReferences": [],
+  "duplicateAssetGuids": [],
+  "missingAssemblyReferences": [],
+  "forbiddenAssemblies": [],
+  "alteredRules": [],
+  "buildScenesEmpty": true,
+  "passed": true
+}

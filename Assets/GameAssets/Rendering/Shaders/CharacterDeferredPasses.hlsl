@@ -43,13 +43,19 @@ half3 CharacterNormalWS(CharacterVaryings input)
     return NormalizeNormalPerPixel(TransformTangentToWorld(normalTS,
         half3x3(input.tangentWS.xyz, bitangentWS, input.normalWS)));
 }
-FragmentOutput CharacterGBuffer(CharacterVaryings input)
+FragmentOutput CharacterGBuffer(CharacterVaryings input, FRONT_FACE_TYPE face : FRONT_FACE_SEMANTIC)
 {
     UNITY_SETUP_INSTANCE_ID(input);
     UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
     half3 albedo = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.uv).rgb * _BaseColor.rgb;
     half metallic = saturate(SAMPLE_TEXTURE2D(_MetallicMap, sampler_MetallicMap, input.uv).r * _Metallic);
     half smoothness = 1 - saturate(SAMPLE_TEXTURE2D(_RoughnessMap, sampler_RoughnessMap, input.uv).r * _Roughness);
+    if (_UsePackedMR > 0.5)
+    {
+        half2 mr = SAMPLE_TEXTURE2D(_PackedMRMap, sampler_PackedMRMap, input.uv).rg;
+        metallic = saturate(mr.r * _Metallic);
+        smoothness = 1 - saturate(mr.g * _Roughness);
+    }
     half occlusion = lerp(1, SAMPLE_TEXTURE2D(_OcclusionMap, sampler_OcclusionMap, input.uv).r, _OcclusionStrength);
     half alpha = 1;
     BRDFData brdf;
@@ -57,7 +63,7 @@ FragmentOutput CharacterGBuffer(CharacterVaryings input)
     InputData data = (InputData)0;
     data.positionWS = input.positionWS;
     data.positionCS = input.positionCS;
-    data.normalWS = CharacterNormalWS(input);
+    data.normalWS = CharacterNormalWS(input) * IS_FRONT_VFACE(face, 1, -1);
     data.viewDirectionWS = GetWorldSpaceNormalizeViewDir(input.positionWS);
     data.normalizedScreenSpaceUV = GetNormalizedScreenSpaceUV(input.positionCS);
     // Animated character: light probes / SH, not static lightmaps.
@@ -68,11 +74,11 @@ FragmentOutput CharacterGBuffer(CharacterVaryings input)
     // Direct lighting, shadows and screen-space AO remain the deferred renderer's responsibility.
     return BRDFDataToGbuffer(brdf, data, smoothness, gi, occlusion);
 }
-half4 CharacterDepthNormals(CharacterVaryings input) : SV_Target
+half4 CharacterDepthNormals(CharacterVaryings input, FRONT_FACE_TYPE face : FRONT_FACE_SEMANTIC) : SV_Target
 {
     UNITY_SETUP_INSTANCE_ID(input);
     UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
-    return half4(PackNormal(CharacterNormalWS(input)), 0);
+    return half4(PackNormal(CharacterNormalWS(input) * IS_FRONT_VFACE(face, 1, -1)), 0);
 }
 
 // Shared visible silhouette of all characters, rendered without normal expansion.

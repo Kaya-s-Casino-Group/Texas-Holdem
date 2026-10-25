@@ -1,7 +1,0 @@
-{
-  "name": "Poker.Battle2DValidation.Tests.PlayMode",
-  "references": ["Poker.Battle2DValidation.Runtime", "Poker.BattleHosting.Runtime", "BattlePresentation.Runtime", "BattlePresentation.Unity", "PokerEngine.Core", "PokerEngine.Composition", "PokerEngine.Combat", "PokerEngine.Scoring", "PokerEngine.Encounters", "Unity.ugui"],
-  "optionalUnityReferences": ["TestAssemblies"],
-  "autoReferenced": false,
-  "defineConstraints": ["UNITY_EDITOR"]
-}

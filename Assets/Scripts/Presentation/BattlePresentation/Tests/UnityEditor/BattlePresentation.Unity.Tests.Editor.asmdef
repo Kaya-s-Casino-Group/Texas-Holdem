@@ -1,7 +1,7 @@
 {
   "name": "BattlePresentation.Unity.Tests.Editor",
   "rootNamespace": "BattlePresentation.Unity.Tests",
-  "references": ["BattlePresentation.Runtime", "BattlePresentation.Unity", "Unity.TextMeshPro", "Unity.ugui"],
+  "references": ["BattlePresentation.Runtime", "BattlePresentation.Unity", "Unity.TextMeshPro", "UnityEngine.UI"],
   "includePlatforms": ["Editor"],
   "overrideReferences": true,
   "precompiledReferences": ["nunit.framework.dll"],

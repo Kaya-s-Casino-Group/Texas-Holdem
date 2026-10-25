@@ -1,7 +1,0 @@
-{
-  "name": "CardMatch.Runtime",
-  "rootNamespace": "CardInteraction",
-  "references": [
-    "PokerEngine.Core"
-  ]
-}

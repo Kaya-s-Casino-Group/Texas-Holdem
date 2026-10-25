@@ -1,5 +1,0 @@
-{
-  "name": "Poker.DrawBattle.Editor",
-  "references": ["Poker.DrawBattle.Runtime", "CardInteraction.Runtime", "CardPresentation.Runtime", "PokerEngine.Core", "CardMatch.Runtime"],
-  "includePlatforms": ["Editor"]
-}

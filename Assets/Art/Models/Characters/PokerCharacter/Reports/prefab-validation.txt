@@ -1,9 +1,0 @@
-Prefab=Assets/Art/Models/Characters/PokerCharacter/PokerCharacter.prefab
-Root position=(0,0,0); rotation=(0,0,0); scale=(1,1,1)
-Up=+Y; Forward=+Z; Units=meters; original character size preserved
-Geometry bounds=Center: (0.001907, 0.488165, 0.017162), Extents: (0.194221, 0.488165, 0.104129)
-Sole height=0.00000003; foot midpoint=(0.000000, 0.081997, 0.000000)
-Humanoid valid=True; fingers=30
-Finger curl=-0.65; baked geometry valid
-Finger curl=0; baked geometry valid
-Finger curl=0.65; baked geometry valid

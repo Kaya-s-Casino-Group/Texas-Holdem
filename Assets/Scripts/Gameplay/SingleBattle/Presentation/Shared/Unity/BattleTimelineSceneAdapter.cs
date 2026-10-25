@@ -79,15 +79,18 @@ namespace Poker.BattlePresentation
             var next = (ids ?? Array.Empty<string>()).Select(id => new CardInstanceId(id)).OrderBy(id => id.Value, StringComparer.Ordinal).ToArray();
             selected.Clear(); selected.AddRange(next); RefreshCandidate();
         }
-        public BattleSessionResult PlaySelected(bool animate = true) => Submit(CardDuelAction.Play, animate);
-        public BattleSessionResult DiscardSelected(bool animate = true) => Submit(CardDuelAction.Discard, animate);
-        public BattleSessionResult EndTurn(bool animate = true) => Submit(CardDuelAction.EndTurn, animate);
-        private BattleSessionResult Submit(CardDuelAction action, bool animate)
+        public BattleSessionResult PlaySelected(bool animate = true) => SubmitAction(CardDuelAction.Play, selected.ToArray(), animate: animate);
+        public BattleSessionResult DiscardSelected(bool animate = true) => SubmitAction(CardDuelAction.Discard, selected.ToArray(), animate: animate);
+        public BattleSessionResult EndTurn(bool animate = true) => SubmitAction(CardDuelAction.EndTurn, animate: animate);
+
+        /// <summary>Forwards a player intent, including manual draw and target bindings, to the rule authority.</summary>
+        public BattleSessionResult SubmitAction(CardDuelAction action, IEnumerable<CardInstanceId> cards = null,
+            IEnumerable<ParticipantId> targets = null, BattleTargetBindings targetBindings = null, int drawCount = 0, bool animate = true)
         {
             if (!CanAct) throw new InvalidOperationException("This battle is not accepting player input.");
-            var cards = action == CardDuelAction.EndTurn ? Array.Empty<CardInstanceId>() : selected.ToArray();
+            var submitted = (cards ?? Array.Empty<CardInstanceId>()).ToArray();
             interaction.BeginCommit();
-            var result = host.Playback.Submit(ObserverId, action, cards, animate: animate);
+            var result = host.Playback.Submit(ObserverId, action, submitted, targets, animate, targetBindings, drawCount);
             if (!result.Accepted) RefreshCandidate();
             return result;
         }

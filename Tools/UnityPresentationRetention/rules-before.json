@@ -1,0 +1,3139 @@
+{
+  "head": "b788c096e553633f18fe62d00c3d8deab1b61341",
+  "branch": null,
+  "parentIndex": "160000 7a0036e1f58b69a6257d1903e9f44056905d7aaa 0\tExternal/BattleToolkit",
+  "files": [
+    {
+      "path": ".gitattributes",
+      "sha256": "8AF9D97F834760C3A4E0F3D22950F5B729E26F5D5FDE06D4B9FBCB3B4D60B13F"
+    },
+    {
+      "path": ".github/workflows/standalone.yml",
+      "sha256": "B5E7EF725582C9FB7511B9E9B459929EB33C7F371622351C71FBB75B1BFCE849"
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "F19B17792949659962D3DF35EE2D340F427A6EA7F88DB2DECBED93E36C74FF1D"
+    },
+    {
+      "path": "Build/BattleToolkit.Host/BattleToolkit.Host.csproj",
+      "sha256": "5A46922C1CF9FEE9273A131A546C44AA086B5FB32EF95268C5E8CAFA7B6EA6B5"
+    },
+    {
+      "path": "Build/Directory.Build.props",
+      "sha256": "A8AA7974C43176A43C63220376D5410F4DC7D9DE4EF6FD65427CCBBEA44B316C"
+    },
+    {
+      "path": "Build/PokerEngine.Abilities/PokerEngine.Abilities.csproj",
+      "sha256": "09A2F58DCFEA982D0D52D2DF317442A51B2E987EE68E578CD35E29701552C265"
+    },
+    {
+      "path": "Build/PokerEngine.Combat/PokerEngine.Combat.csproj",
+      "sha256": "21AB52B7C394DFC39E9242DBB25E00F447E2984D4857F7A91415B6D0C7CFB345"
+    },
+    {
+      "path": "Build/PokerEngine.Composition/PokerEngine.Composition.csproj",
+      "sha256": "86A0FEA976D1ACAA49957FDD01F38146F5270F492EED9D24F94AED9AC7CA40B7"
+    },
+    {
+      "path": "Build/PokerEngine.Core/PokerEngine.Core.csproj",
+      "sha256": "E743318B8E742A41017F7F2D483E396A6DF61D024773BA90200F09E827F7D305"
+    },
+    {
+      "path": "Build/PokerEngine.Draw/PokerEngine.Draw.csproj",
+      "sha256": "7C4CA85222A7383D606BC0B11FFF8BBD44F032DC699D7CBDEA12380EDDA4C7E9"
+    },
+    {
+      "path": "Build/PokerEngine.Encounters/PokerEngine.Encounters.csproj",
+      "sha256": "11BA054EF353FBF62E41D9CFEC35236813AB5A20DFF523350840EC27176E9AB7"
+    },
+    {
+      "path": "Build/PokerEngine.Holdem/PokerEngine.Holdem.csproj",
+      "sha256": "C887E4BF18A5FC7DA49C1E74C46B04419B45F437998A18C332FF3F6120652B02"
+    },
+    {
+      "path": "Build/PokerEngine.Progression/PokerEngine.Progression.csproj",
+      "sha256": "5F5B09152FD1DFD8B6657053C3C6527B322059D392C177C295BAA5C4EAF213BF"
+    },
+    {
+      "path": "Build/PokerEngine.Runs/PokerEngine.Runs.csproj",
+      "sha256": "EE2E31C14DFA8725DCCAE96AD2900381B4F23796E54B85259CD9C2E0D092B954"
+    },
+    {
+      "path": "Build/PokerEngine.Scoring/PokerEngine.Scoring.csproj",
+      "sha256": "17C640DDAEDCC71650130C296ABDF8AE4B5ECDEED390E003899CD0C3596016C7"
+    },
+    {
+      "path": "Build/README.md",
+      "sha256": "53AA2CE27169C8277B747BD9B1931A6206D5DBB399566DB1F130D7B2F74791A8"
+    },
+    {
+      "path": "CHANGELOG.md",
+      "sha256": "14FFB2087D7DB3140C12AA6F5989175AF2B6AA33D7728B1F2EAD02A64BD198A2"
+    },
+    {
+      "path": "COLLABORATION.md",
+      "sha256": "15E12B54B5E7A6CD19050A2CF9BA3A84E3033EC5060E86B53A51D84E8D878BF7"
+    },
+    {
+      "path": "Engine/Content.meta",
+      "sha256": "BD5085CFFD2E70ADBCAB858E18F13425D60FCD9A7311299AEADD5C02051F7B3D"
+    },
+    {
+      "path": "Engine/Content/final.xml",
+      "sha256": "083A9D3D1817B255EB4EF85D111B877F6CC395DDB893585CC45A5BA29D2CEE17"
+    },
+    {
+      "path": "Engine/Content/final.xml.meta",
+      "sha256": "4C4EB52AB3656D20555F365CABD05232B585E6AE67095E0918FB73F9E3FF8F05"
+    },
+    {
+      "path": "Engine/Content/README.md",
+      "sha256": "1D7DAA350BA16D32F9FD39FCDF88DBE5959595B50F04415DDAC54F622BFA21B7"
+    },
+    {
+      "path": "Engine/Content/README.md.meta",
+      "sha256": "9EB759FE04844C1BD2643CD2C4592892927A5C20A0CD6A9A34C121C67F3EB020"
+    },
+    {
+      "path": "Engine/Content/SingleBattleDemoNew.xml",
+      "sha256": "3EEB3283BA8629684774E39EEE4129276F2C074E35F0AFA3F696AF45E546B28D"
+    },
+    {
+      "path": "Engine/Content/SingleBattleDemoNew.xml.meta",
+      "sha256": "3A651BE210AE29D553DD4A4DA395B2A4FEBFAA84431A1D389D2DF5566D9E6E80"
+    },
+    {
+      "path": "Engine/Content/SingleChapter.md",
+      "sha256": "D78611331954035E6080791F4550432798AE53CEAACE00AE430E3D1EEA6B47C2"
+    },
+    {
+      "path": "Engine/Content/SingleChapter.md.meta",
+      "sha256": "7826B24FED6953594F500D8DF79A27B2A36298AAE1FA4EBC8BDF432DCC9317F4"
+    },
+    {
+      "path": "Engine/Content/SingleChapterAdventure.xml",
+      "sha256": "C0F5D7011F9F759B2D62FFF2FC592E072CF6FAA0C9A2E722D3C768C1C2437375"
+    },
+    {
+      "path": "Engine/Content/SingleChapterAdventure.xml.meta",
+      "sha256": "0DFCB7CC3C69E18AE94D0351A1A3DBEFD6A73D14CB37C7F848C743983D00A712"
+    },
+    {
+      "path": "Engine/Content/SingleChapterBattle.xml",
+      "sha256": "1A0A96CA346C937622BD805596F556867E4F28B0A749414ED8E0B4D97ED3185F"
+    },
+    {
+      "path": "Engine/Content/SingleChapterBattle.xml.meta",
+      "sha256": "0542453F1E0850223ADA5B14F8DC6A77CAE337816B0EB78268C3044B10E357FF"
+    },
+    {
+      "path": "Engine/Content/StandardAdventure.xml",
+      "sha256": "91C186A020B22991D09FE083B1972D033B558DF19DF3C473B552D73FAA75C897"
+    },
+    {
+      "path": "Engine/Content/StandardAdventure.xml.meta",
+      "sha256": "6DEEC9AFDCE3143D434323478BE8FA224946E1F372B09410E22D5CFADD5F752C"
+    },
+    {
+      "path": "Engine/Content/StandardSingleBattle-2026-10-20.xml",
+      "sha256": "5629043418CC950DB18255E06F922F74A35D4BA7FDA5176F12E14DBA34510DDC"
+    },
+    {
+      "path": "Engine/Content/StandardSingleBattle-2026-10-20.xml.meta",
+      "sha256": "55B72A7153246510177E3C825737025C1AF75D1592C1FB082EABACFB24706A62"
+    },
+    {
+      "path": "Engine/Content/StandardSingleBattle-2026-10-21.xml",
+      "sha256": "04A0D38CBD713B4759EC4B1B97CAC961F6EDFE508ADF0316FAE6CDFB2A2C5BC4"
+    },
+    {
+      "path": "Engine/Content/StandardSingleBattle-2026-10-21.xml.meta",
+      "sha256": "01EC571FB7598449A0C42F1EB26A28EEEDC5FFA710A10F51198E5AA6C130DB5E"
+    },
+    {
+      "path": "Engine/Content/StandardSingleBattle.xml",
+      "sha256": "A21845C1DCC07717F13DAE1BBC91CA6A51E0A5119863B0A442C61B1FF815DF1D"
+    },
+    {
+      "path": "Engine/Content/StandardSingleBattle.xml.meta",
+      "sha256": "6BB97A5E212B0E1E785FDE3C4055F14D40A12C286C8E33C12E1B389DB56DCD3E"
+    },
+    {
+      "path": "Engine/Content/Templates.meta",
+      "sha256": "B714FCFD716246991F50386D88F94076A3B154F50670552B4B9BF2D8DC6CA479"
+    },
+    {
+      "path": "Engine/Content/Templates/01_VenomStraight.xml",
+      "sha256": "3AAF7DF1665C6BEDDA82503FC760D6C4AA565166620B12A267388A9897237AF5"
+    },
+    {
+      "path": "Engine/Content/Templates/01_VenomStraight.xml.meta",
+      "sha256": "84C894D275C59B6A5E1FC3D25CF757BBB73F6CC299EFE3F1CA3CE9D38776A7F5"
+    },
+    {
+      "path": "Engine/Content/Templates/02_ThornBastion.xml",
+      "sha256": "9DF766478ADF55398654F2D13A58D0FCAAC656EB72D63543F4B499DCEA425C21"
+    },
+    {
+      "path": "Engine/Content/Templates/02_ThornBastion.xml.meta",
+      "sha256": "F0F44545EB79D1458DC4E2EB6857A92EE023041E056D2B1629E36E28E7EC4B29"
+    },
+    {
+      "path": "Engine/Content/Templates/03_CrimsonChalice.xml",
+      "sha256": "11939B3B0F842EA3833CB30815E6F953EB427BCB7374D50748A1BFAFC3DCEC85"
+    },
+    {
+      "path": "Engine/Content/Templates/03_CrimsonChalice.xml.meta",
+      "sha256": "6EA680E10378530EDB6FEF2E719399239A1AC067F411DFA3D244314411D5435B"
+    },
+    {
+      "path": "Engine/Content/Templates/04_PlagueChapel.xml",
+      "sha256": "8A130D7DE004AC612C55CCC719F37A621F9581DF0B4E49D8C63613EF1D7CFED8"
+    },
+    {
+      "path": "Engine/Content/Templates/04_PlagueChapel.xml.meta",
+      "sha256": "97CDBAB991F9053511DC5F562DA2934A7F058A40FE7A0B39B91452B69FFFD6B9"
+    },
+    {
+      "path": "Engine/Content/Templates/05_TwinVanguard.xml",
+      "sha256": "436A959F7D289AEF1CDCFEB62DD7A99331063F059B5B43E205FDAEEB82569D80"
+    },
+    {
+      "path": "Engine/Content/Templates/05_TwinVanguard.xml.meta",
+      "sha256": "8A3055B2F3EA9C4602531DFCA7ABFEDDC541913A3F892B81436A26BF85350D3C"
+    },
+    {
+      "path": "Engine/Content/Templates/06_RelicOrder.xml",
+      "sha256": "E5705470E15C3E9DCA4A23B1114F3CD480AB07C052159D676A80095E089DB632"
+    },
+    {
+      "path": "Engine/Content/Templates/06_RelicOrder.xml.meta",
+      "sha256": "FF58CA24BEA2F56738397DCC5DF53840953A84CBB16F4652684C6A7D997FA3DA"
+    },
+    {
+      "path": "Engine/Content/Templates/07_RotationGrunt.xml",
+      "sha256": "992203EB473FF7078B2985FB2978B185F05C9A243551438541A85CA2601A1330"
+    },
+    {
+      "path": "Engine/Content/Templates/07_RotationGrunt.xml.meta",
+      "sha256": "D70022EB2C3F1BCE86E426053B6ACE7D9C1C3F5FC61BB7F5649DB2D49E21FE36"
+    },
+    {
+      "path": "Engine/Content/Templates/08_ArmoredSummoner.xml",
+      "sha256": "5034EAF41709112E265CEC3ABCFAA3E0CBFC45382FFD1B134B88A4E3CCEA4EFB"
+    },
+    {
+      "path": "Engine/Content/Templates/08_ArmoredSummoner.xml.meta",
+      "sha256": "DA64ED3B4CF5E035477E1A49E051E7B1DC0BA2B836ECA6E49879D2EBCEEE95FD"
+    },
+    {
+      "path": "Engine/Content/Templates/09_GluttonyBoss.xml",
+      "sha256": "CC9CC16D87CC2AD4E19EAC0AA32D0441A3B47897A5A2D0919FA6A3DC60A5657C"
+    },
+    {
+      "path": "Engine/Content/Templates/09_GluttonyBoss.xml.meta",
+      "sha256": "C1FF564F45D0243889EDE509F46C372FFE267CD58ADD3ACDAA5B702A37A095D5"
+    },
+    {
+      "path": "Engine/Content/Templates/10_WrathThousandHands.xml",
+      "sha256": "2AD9A82D5FA163990B5F77D7E14DF8B54816F2CB53C10364CBFA95C5EE31F374"
+    },
+    {
+      "path": "Engine/Content/Templates/10_WrathThousandHands.xml.meta",
+      "sha256": "F04E6493369E9C1475B1D0483BF238F30003CC4DDF044D626F414B0E6AF53090"
+    },
+    {
+      "path": "Engine/Content/Templates/11_BleedingElite.xml",
+      "sha256": "B9B937C59224D8D7166D0D0DF80F08F0A85CD2F4FF35D26C955506DCFD5B0595"
+    },
+    {
+      "path": "Engine/Content/Templates/11_BleedingElite.xml.meta",
+      "sha256": "5F48EBF7F2B4A822E304098EE8182ABA95A3335382B651A74BED465D88B80E62"
+    },
+    {
+      "path": "Engine/Content/Templates/README.md",
+      "sha256": "B0B604A07E433325CE23464B4E2BDF0921261CCC60816F3A6BE83932B1F71CFD"
+    },
+    {
+      "path": "Engine/Content/Templates/README.md.meta",
+      "sha256": "F441D33BE378D7CA6E84AA45E35F44D87DF354EF4C8138CE1E106D131763B750"
+    },
+    {
+      "path": "Engine/package.json",
+      "sha256": "E05718EF14B45FECC43E4772CA389086CC9995A329677C455C161C5F2A428C33"
+    },
+    {
+      "path": "Engine/package.json.meta",
+      "sha256": "2CB8D17A5BA74ACB49D179734A9C485C3D18472E1DE3C6EA80D9F99218AC9E1C"
+    },
+    {
+      "path": "Engine/README.md",
+      "sha256": "1EDA4C4E79332AE6990925E97466E36013B2CD14371253B194F184A9245DE105"
+    },
+    {
+      "path": "Engine/README.md.meta",
+      "sha256": "87A1A1B95719A2A7975B477C29531D5D7A3CF0A05520CF1BF90E9DDDCD79E396"
+    },
+    {
+      "path": "Engine/Runtime.meta",
+      "sha256": "286825DECCC1FDB59A88FF9090BF16A0C48A211E9B06B059A2A8744E61FB368F"
+    },
+    {
+      "path": "Engine/Runtime/Abilities.meta",
+      "sha256": "4F17E1B9A1842A8F6AB0008355447AA018F2E9570F4E3580E3F253A1BB08B4AD"
+    },
+    {
+      "path": "Engine/Runtime/Abilities/AbilityDefinition.cs",
+      "sha256": "BC0DDDD75505F2E8147E14AA847E86E1B4B63EA5DDD080DF8F1965424B8243E7"
+    },
+    {
+      "path": "Engine/Runtime/Abilities/AbilityDefinition.cs.meta",
+      "sha256": "B7D3C37F1E0A04141F8B7A56EA2CFDF02D3C853FADA0EA9192788F92E060337F"
+    },
+    {
+      "path": "Engine/Runtime/Abilities/AbilityEligibility.cs",
+      "sha256": "96BE367AAB2D027582002E5C6C256D3BC62C05B68EF7C8368D83A9504F5FFFD9"
+    },
+    {
+      "path": "Engine/Runtime/Abilities/AbilityEligibility.cs.meta",
+      "sha256": "C54953C9CAF41E37F7D40FE706D4EF495B8A4BB4E0C64DE25C597A1058BB7A68"
+    },
+    {
+      "path": "Engine/Runtime/Abilities/AbilityHooks.cs",
+      "sha256": "39BC52F7BC2014494DDD16C785B95A5D1768E27EE6E663BB4684AB9B7494B02C"
+    },
+    {
+      "path": "Engine/Runtime/Abilities/AbilityHooks.cs.meta",
+      "sha256": "CAE3E44E58A7A6EDF26B986895862338B83687C38EFDFE20373C427A73722DCD"
+    },
+    {
+      "path": "Engine/Runtime/Abilities/AbilityLifecycle.cs",
+      "sha256": "81632AC6AFA03156B695474B70008676864CD3B3ACE3AD958F5AA734C90FB84B"
+    },
+    {
+      "path": "Engine/Runtime/Abilities/AbilityLifecycle.cs.meta",
+      "sha256": "85892E5279BA669AE2694784814B35BF4D314CDF346D552A899889851E21CC43"
+    },
+    {
+      "path": "Engine/Runtime/Abilities/AbilityMemory.cs",
+      "sha256": "EA68ADB7C06AB76E565FAD20E8F719CB2AE0748BADFBE9C0A5EB2414640D80A4"
+    },
+    {
+      "path": "Engine/Runtime/Abilities/AbilityMemory.cs.meta",
+      "sha256": "6D44F27BC36657F161DB231DCC416FA9E177D164FEC1F3555F7E461E3D7ACD61"
+    },
+    {
+      "path": "Engine/Runtime/Abilities/AbilityState.cs",
+      "sha256": "5591FD2ABEBF3E509FBDC579F113CD147972113217C281B5D70FD8DB56238CFF"
+    },
+    {
+      "path": "Engine/Runtime/Abilities/AbilityState.cs.meta",
+      "sha256": "C61DACF27E6711FAA9506DC9D1CECF8FA0614242089EA783EF4193EEB44BB3B4"
+    },
+    {
+      "path": "Engine/Runtime/Abilities/AbilityWorld.cs",
+      "sha256": "4FDD6FF637BC5DBDA7F516BFA16F1CA5D68F9C97936F6E60A26DD47CF805999D"
+    },
+    {
+      "path": "Engine/Runtime/Abilities/AbilityWorld.cs.meta",
+      "sha256": "261199327F9E0DF197034F248792AB915CA6C5392710DB15EE2F309B3A9E9716"
+    },
+    {
+      "path": "Engine/Runtime/Abilities/AbilityWorldValidator.cs",
+      "sha256": "7D6FF0BC4A47EF95712472EA17E5459A507C1ADEB3C7D7EA6F4D38EDA3896441"
+    },
+    {
+      "path": "Engine/Runtime/Abilities/AbilityWorldValidator.cs.meta",
+      "sha256": "E2C9FE9CA5DDD095F6AC401645C5B8DD59675B4FE294F4E4F89EE0BACAA2F61C"
+    },
+    {
+      "path": "Engine/Runtime/Abilities/Content.meta",
+      "sha256": "1D26661D0FF26612F7FF621D2523BE612BA0E2F475F12264D872AC09395CD3E2"
+    },
+    {
+      "path": "Engine/Runtime/Abilities/Content/ContentCatalog.cs",
+      "sha256": "71CAB690C6BE759898D4046BE32E9A98EF45245E2151ED05D5FB637A72135C25"
+    },
+    {
+      "path": "Engine/Runtime/Abilities/Content/ContentCatalog.cs.meta",
+      "sha256": "723C318B26DF2A21B57534DA6DB30F1564872ED82EEC075AF01A058773053AA4"
+    },
+    {
+      "path": "Engine/Runtime/Abilities/Decisions.meta",
+      "sha256": "570CCBD76698A400F81F260C684EF693EBF332C7C1A7879D6526EA547E28307B"
+    },
+    {
+      "path": "Engine/Runtime/Abilities/Decisions/DecisionState.cs",
+      "sha256": "94E5AAE6016C64F205CC030EB9C28185E1A88730C0B389CEC3AD8AA23C5421F6"
+    },
+    {
+      "path": "Engine/Runtime/Abilities/Decisions/DecisionState.cs.meta",
+      "sha256": "A6F564A9F0EFFE6A29446303D17DFB7BD29CE7A1AF235C70B8D2590D788DD075"
+    },
+    {
+      "path": "Engine/Runtime/Abilities/Decisions/SelectionSpec.cs",
+      "sha256": "155F745B7CAEF470E4B0B96BCE45CF31265E91C1BC47D736019CCE7BEFBB92DD"
+    },
+    {
+      "path": "Engine/Runtime/Abilities/Decisions/SelectionSpec.cs.meta",
+      "sha256": "C99364C3F4EA85B357B8F4562CBA11AB5C1C1F8167DC76113C99E1DE12956BFB"
+    },
+    {
+      "path": "Engine/Runtime/Abilities/EffectIntents.cs",
+      "sha256": "7A0BBB1BF672C8D73E5826F91B49EE7B63ABD0572A60BBE4483DA86255FCA620"
+    },
+    {
+      "path": "Engine/Runtime/Abilities/EffectIntents.cs.meta",
+      "sha256": "D1CAB1690EA278AAC036738E5869C7F942F6DC6E63737274A74CD5F4AB672E85"
+    },
+    {
+      "path": "Engine/Runtime/Abilities/Execution.meta",
+      "sha256": "395FB89AA2114658A961868D965EBD3EB4ACD33B4555F3F30961A759ACC81215"
+    },
+    {
+      "path": "Engine/Runtime/Abilities/Execution/AbilityRuntime.cs",
+      "sha256": "4D0B2C530DC2FE9F379859CAA2190D0A319893296F2FE9D916421F50D305B0EE"
+    },
+    {
+      "path": "Engine/Runtime/Abilities/Execution/AbilityRuntime.cs.meta",
+      "sha256": "AF5666776F4BC54A7A4B79C81ACD48BAD9D02896AF4C5D1F7A530A42D2C36B6B"
+    },
+    {
+      "path": "Engine/Runtime/Abilities/Knowledge.meta",
+      "sha256": "978C080ECFFABCC5601B99DC875883478D1490D60826D96B1B1DB59BDEA364F8"
+    },
+    {
+      "path": "Engine/Runtime/Abilities/Knowledge/KnowledgeState.cs",
+      "sha256": "C64DBEFD3860DB31B50E15BAEC31B90803E33218127C215424AA2DC795B8A688"
+    },
+    {
+      "path": "Engine/Runtime/Abilities/Knowledge/KnowledgeState.cs.meta",
+      "sha256": "58BCC9CD25A122558AB407B2C8FC90D7C693332E090806335253C8187178B1C1"
+    },
+    {
+      "path": "Engine/Runtime/Abilities/PokerEngine.Abilities.asmdef",
+      "sha256": "6844E646C847C027E03E47C9600DFE1C797293E0FEFF56172ADF51329E44711B"
+    },
+    {
+      "path": "Engine/Runtime/Abilities/PokerEngine.Abilities.asmdef.meta",
+      "sha256": "EE9C58E63860BF73E1DB00E4035E8E22E802DD9FD6B97A48D57A41CD95BB8D5C"
+    },
+    {
+      "path": "Engine/Runtime/Abilities/RuleQueries.cs",
+      "sha256": "79627DEDD1E726F7173953F057B8D2A1239764910A849C2B1F4DC26BA83E3D76"
+    },
+    {
+      "path": "Engine/Runtime/Abilities/RuleQueries.cs.meta",
+      "sha256": "BF2EB4C4F96EDE12370D8DF91135840AC085D17793FB9A0F3CB2D4F63E5811F2"
+    },
+    {
+      "path": "Engine/Runtime/Combat.meta",
+      "sha256": "A6DFC0AB604D3BEC70715426D51A50A5A296B25D871511F84CBF7E3007893491"
+    },
+    {
+      "path": "Engine/Runtime/Combat/AttackContext.cs",
+      "sha256": "842C7D67E7EE36A240FBB5A6403924C7BFB7D501318E2BBEE02B981278D94F18"
+    },
+    {
+      "path": "Engine/Runtime/Combat/AttackContext.cs.meta",
+      "sha256": "28081C2333C5C178E4CC2AA1506670EFFD82415FC2175C2D015F0B0163C322E8"
+    },
+    {
+      "path": "Engine/Runtime/Combat/CombatAmountModifiers.cs",
+      "sha256": "D2F57463E52A52CDB41C974A047071D0157E51D1D3F21CAC2E492D299F9FCAE9"
+    },
+    {
+      "path": "Engine/Runtime/Combat/CombatAmountModifiers.cs.meta",
+      "sha256": "F5E01957E9CC893F5A77BB65D559ADCE9A839F500CEA18C24735983B480B91BA"
+    },
+    {
+      "path": "Engine/Runtime/Combat/CombatEngine.cs",
+      "sha256": "1E92FAE7EEFD2CD7EC5F0829218FBF1220DFA0ED10E5A4B8897EA81C11001B21"
+    },
+    {
+      "path": "Engine/Runtime/Combat/CombatEngine.cs.meta",
+      "sha256": "775FF44098FFBCA9D049F4CFD995DC1E12DC2F84ECF5DC78FD90471A3CEC9E50"
+    },
+    {
+      "path": "Engine/Runtime/Combat/CombatInteractions.cs",
+      "sha256": "633BDAF83C18817F93D8CB89876586EEC6F09DF4DB0CC37A18EB56942692DDE1"
+    },
+    {
+      "path": "Engine/Runtime/Combat/CombatInteractions.cs.meta",
+      "sha256": "FB988E1ACCF7F902FBA27012DD04431B01153B3D03CFA28DD099FD08661B8EDB"
+    },
+    {
+      "path": "Engine/Runtime/Combat/CombatReactionRuntime.cs",
+      "sha256": "533027C6C056BB2FFA54A33446A46311BC7C8FA13C64A752CC32B9796B00B7DF"
+    },
+    {
+      "path": "Engine/Runtime/Combat/CombatReactionRuntime.cs.meta",
+      "sha256": "520258A36FE98BDF70A474D0A881ECB8FC6A7F2241F39FE36210F6FCEEBC1057"
+    },
+    {
+      "path": "Engine/Runtime/Combat/CombatReactions.cs",
+      "sha256": "98553F1668844FAE960AAFC3E7F94F9E5F5D948DEB1D6EEB831984F625FDFCBC"
+    },
+    {
+      "path": "Engine/Runtime/Combat/CombatReactions.cs.meta",
+      "sha256": "BD458A766E4AD2008EBA7D64FF4F000B2C0D43D04A2E5C880DCAC2C4007A2429"
+    },
+    {
+      "path": "Engine/Runtime/Combat/CombatRuleEvent.cs",
+      "sha256": "103D0F439FB374C4D5261D458262E737A8DA268426FA8C3A76EF33F4B2CF1934"
+    },
+    {
+      "path": "Engine/Runtime/Combat/CombatRuleEvent.cs.meta",
+      "sha256": "D3111ADD3EB28B6E37319632533E028E9EB90E446A152050D482C1804F7C59C0"
+    },
+    {
+      "path": "Engine/Runtime/Combat/CombatState.cs",
+      "sha256": "0B8A490EB1E4C5BED70953F784E06F29159F4E46C0AC38C301E0FFB4546576B6"
+    },
+    {
+      "path": "Engine/Runtime/Combat/CombatState.cs.meta",
+      "sha256": "2F3CC4A0E7FCC3FDB1BFF8BF4822B454FC6AE69BCD2FF3A571599A9CC4D13353"
+    },
+    {
+      "path": "Engine/Runtime/Combat/CombatStatusDefinition.cs",
+      "sha256": "86435B0787FA813AC0D0D23E8A367D71E74A3B1661DC90D0175213D28C7EEC38"
+    },
+    {
+      "path": "Engine/Runtime/Combat/CombatStatusDefinition.cs.meta",
+      "sha256": "DAE8E394D87CEEF63EE8B3ABE06BDC2B80DCB7D7207B4D3D7CF8F5E136685F7B"
+    },
+    {
+      "path": "Engine/Runtime/Combat/CombatStatusLifecycle.cs",
+      "sha256": "8483BD4F96314366AFC9D06F743DA30CDBD2C9FF1B87373D6A4927AFF5503091"
+    },
+    {
+      "path": "Engine/Runtime/Combat/CombatStatusLifecycle.cs.meta",
+      "sha256": "AD910FAE6D757E6BDF59482DDAE6AB922365F087FB293D97FE940C690E5453BB"
+    },
+    {
+      "path": "Engine/Runtime/Combat/CombatStatusReactions.cs",
+      "sha256": "3438355E66BB2F1B794F5D4B8701465F93026A77828489EFA8748A70A71A587A"
+    },
+    {
+      "path": "Engine/Runtime/Combat/CombatStatusReactions.cs.meta",
+      "sha256": "C89FB0DBA46D2B08F6CD51ACE1CF8CA9FDFF4CCCBF90EFDA0D002A16A2DE4B4E"
+    },
+    {
+      "path": "Engine/Runtime/Combat/CombatTargetChain.cs",
+      "sha256": "93F3315D74A0CF6277B21DDC52924775209152EAA7CD157F74E88F216A74FFB7"
+    },
+    {
+      "path": "Engine/Runtime/Combat/CombatTargetChain.cs.meta",
+      "sha256": "4F4C2D80A250E71C193816CF9A57E9F1B394349992F6EF64A6589A5DECF19B7D"
+    },
+    {
+      "path": "Engine/Runtime/Combat/CombatTargetSpec.cs",
+      "sha256": "E2765218E1A7A5F276D78966A700339A24612C2ED36AACB30083D29749694A74"
+    },
+    {
+      "path": "Engine/Runtime/Combat/CombatTargetSpec.cs.meta",
+      "sha256": "E19CFB2B339941B543E22D17E8B6EF98B88E182C270A380FD9E7ED10ACA504A4"
+    },
+    {
+      "path": "Engine/Runtime/Combat/CombatTiming.cs",
+      "sha256": "A1A1E28D8B0478AF497B3002D30CA1D6C36C3BEB6ECA5EEE4B624324B91FE754"
+    },
+    {
+      "path": "Engine/Runtime/Combat/CombatTiming.cs.meta",
+      "sha256": "0920E3A5A2D7EFAAB226899481B3AC0BDC9EA7898BB948B9B8CB5C30C151B96E"
+    },
+    {
+      "path": "Engine/Runtime/Combat/DamageModifiers.cs",
+      "sha256": "2AA917A2ABFEA4973C0CD9C20871B9911DD2361721AF0495CE581ABB80427987"
+    },
+    {
+      "path": "Engine/Runtime/Combat/DamageModifiers.cs.meta",
+      "sha256": "0B5CF938EC74FC85036A30F3B032C6C87240FE62AED9F2BCDC4468147BE17497"
+    },
+    {
+      "path": "Engine/Runtime/Combat/DamageRequest.cs",
+      "sha256": "DF98D1C99C8C2A077F30A26A717F04868415F8DC4931CD8B4BE331A7B4A176F2"
+    },
+    {
+      "path": "Engine/Runtime/Combat/DamageRequest.cs.meta",
+      "sha256": "840BF417101C1D7F4302179BC0DB2A91A374DF6016E4EBFD1FF997EB792B1122"
+    },
+    {
+      "path": "Engine/Runtime/Combat/PokerEngine.Combat.asmdef",
+      "sha256": "7C4F8203142AB0722D060CEFF2948402F59F39D8A81FD815589F38E319398922"
+    },
+    {
+      "path": "Engine/Runtime/Combat/PokerEngine.Combat.asmdef.meta",
+      "sha256": "1EF143257ADBECBF538E2CE19C69FF47855C39CA00F6F3C70C52850285954658"
+    },
+    {
+      "path": "Engine/Runtime/Combat/README.md",
+      "sha256": "490CC9C23CF63AAE1643324BF9875550A97FDDA18B8EAEC424A111B9DD7523E7"
+    },
+    {
+      "path": "Engine/Runtime/Combat/README.md.meta",
+      "sha256": "8D1459EA53B24F3ED5ACD34A770979BA23DDDCFD86F57443C03BF0484239FE13"
+    },
+    {
+      "path": "Engine/Runtime/Combat/ScaledDamageModifiers.cs",
+      "sha256": "2165F20F910A6299901EAAEF4B13E434752D6D79B85A2AB42313C19DC3BFF0C8"
+    },
+    {
+      "path": "Engine/Runtime/Combat/ScaledDamageModifiers.cs.meta",
+      "sha256": "C3242C683CB5A2733A698B0AF38E89C3414DCCD4C8DB642348C90DED14892BB5"
+    },
+    {
+      "path": "Engine/Runtime/Composition.meta",
+      "sha256": "C830AC440338F144D1C337DF9BA26EEA8499FE4C1A220452C2BB9808861B8B58"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Adventure.meta",
+      "sha256": "40EADA476CA0B3321ADA9D91F686F73066634F9CFF659FBB71A13AD5193DFCCA"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Adventure/BattleAdventureAdmin.cs",
+      "sha256": "6F3272500161A07FB813A99F6A3624ADE4F886D6CD7DFE33B0413B8256159E95"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Adventure/BattleAdventureAdmin.cs.meta",
+      "sha256": "C856AFEDCAF879FB9B3775143FD36DB04E1B038A68BC1A957DD118E0B73B3940"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Adventure/BattleAdventureDefinition.cs",
+      "sha256": "1A43D6A133C4379C4D7F16A0BC4BA41E3C2787CDCF2A55F51143CE7FF418A1C4"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Adventure/BattleAdventureDefinition.cs.meta",
+      "sha256": "F55F3DF03C029DE33CE1D5D5690A20B8D94B8DD1C16EBB69EF56D4DFFA03D148"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Adventure/BattleAdventureEconomy.cs",
+      "sha256": "A9E3C497C43BC2570AAACC73587B135617F0AD2F1E2290B7B7A2287B6B2594C9"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Adventure/BattleAdventureEconomy.cs.meta",
+      "sha256": "551DAE3400CDE589B39B5D346701E879A1EDDF29792BF3628A3F76C07A933B37"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Adventure/BattleAdventureSession.cs",
+      "sha256": "B1C15995865780A059F2BF500C5E2FB89C9F63FABBAB7200918D9016F8C21D15"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Adventure/BattleAdventureSession.cs.meta",
+      "sha256": "E51BA26CCACF06F5CE2E9052D70A53FCB27BD3DE992539972971D6DEFC130863"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Adventure/BattleAdventureSnapshot.cs",
+      "sha256": "20AA491C05347C8EABA4CAD77F253C85A691629267101CF0B4F19FEFA182CAF3"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Adventure/BattleAdventureSnapshot.cs.meta",
+      "sha256": "5C73E0465BA5DABF0B811D9DB68E6F8E6AB31768A45C993A64D3B16DCDACC234"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Adventure/BattleAdventureXml.cs",
+      "sha256": "5E68DAFBD176105356F4AF9C474AA4DE32B5B63B86BD8F74BE66DDF45B588648"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Adventure/BattleAdventureXml.cs.meta",
+      "sha256": "C90709C435732F45D3E7D82E3B70DD66236FE72F5DE41E53F09D46102354EAE6"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Adventure/README.md",
+      "sha256": "80908E9E8D0FC6B2311F361C5351F137491CDBE2A3D64855EB600636845CB33E"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Adventure/README.md.meta",
+      "sha256": "5AE7E2BCAEB9CDE4727C187C0F3940D9C07D1302B58E18D99D46C00943AA415D"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Content.meta",
+      "sha256": "316A4A884783F0B6F95F0D0E9AB13B744F0EE4E28FEFF09938A83795CCF3C29F"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Content/BattleContentCombinationValidation.cs",
+      "sha256": "393E0DD47F46787792AC2449821C6F8590BF3668A2739FD6CDE71D54A939402E"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Content/BattleContentCombinationValidation.cs.meta",
+      "sha256": "D7819D3A7FECD65B2DC018A58D7E427143DD2A2C0B9B5ACC08299F3791DB7EA4"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Content/BattleContentCompiler.cs",
+      "sha256": "5AE0837A75D1F2FC7F0604C42EBF5B0BB8F89FC87790CD66F2F16C9FBA3098CF"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Content/BattleContentCompiler.cs.meta",
+      "sha256": "30FC52E0E5EA3615F5BB70D49F2BAC0B5FAECD31D073BD6147961B5286840AEA"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Content/BattleContentDefinitions.cs",
+      "sha256": "1D19DA3B0107355A4142621B3BA66EC11BB733B87C1998FB38DE5814785025E7"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Content/BattleContentDefinitions.cs.meta",
+      "sha256": "10C4B5D00DD8468E407839B035C7F06107CCDB83F77F6DD706936DBF1D1BFFB3"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Content/BattleContentEffects.cs",
+      "sha256": "BE8BFE2B3E84939A4737A8386D334A4C595653351A5BFB31F10976574E734D3A"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Content/BattleContentEffects.cs.meta",
+      "sha256": "BA0D97D121DBCCF48566040E299F2E464C64006893D422F46D8A1FA0D99C5FED"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Content/BattleContentEnemyBehavior.cs",
+      "sha256": "80760FA049DF5765DBD875463D28ADB58E1A52C3887B02D35F1D9C774EF01CA0"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Content/BattleContentEnemyBehavior.cs.meta",
+      "sha256": "39B74C862F325647A30113E5136579A2C87CD5E6EBD4FE78C5A438254D323A8E"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Content/BattleContentFactory.cs",
+      "sha256": "190C5BF529FEFA34F40A9DD78FE8DABE1EF6274D4A3297861BE4001B40D5E2BE"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Content/BattleContentFactory.cs.meta",
+      "sha256": "045F43FAA2156DF84928EC7891C59D20943E2A4DBFEC82304C3F056C8B65C57B"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Content/BattleContentModels.cs",
+      "sha256": "9C62F4BF13942279BD4BCC479C4963376377D5124B49D721C5A62AF88B451A44"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Content/BattleContentModels.cs.meta",
+      "sha256": "2ED306226EDC9EAA7D5C1FD766A9F8E493985E0BBECE4E725F577109F7859F06"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Content/BattleContentRelics.cs",
+      "sha256": "143BC590FC3E704E08D02C37702B2296272C5F5B41105F19DE639290BC77927D"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Content/BattleContentRelics.cs.meta",
+      "sha256": "433EB0080BF35AD93DAAC47D14BD1C742FC6BAA6AFD1255EEA5A6AD565E25C40"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Content/BattleContentSource.cs",
+      "sha256": "99428F4D4EBB32A07E7396CE5031D46C601E89A6F5E27128891429A968462F2E"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Content/BattleContentSource.cs.meta",
+      "sha256": "3097CE8632AFFBB3BE73F2AE0B64EEDDE20DD115E28C6BDD212F7E38F76E3C98"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Content/BattleContentXmlReader.cs",
+      "sha256": "1E19C8CD1F13364C259ED8399A4305BBAA9F96E22B98D6EDAB6E949049123E8F"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Content/BattleContentXmlReader.cs.meta",
+      "sha256": "BDE40FF8BADA258578C34E141370590A324E6790E0926E1FF013C65DCC32592B"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Content/ConfiguredBattleEffects.cs",
+      "sha256": "AA165D0A3709EEE40AA93A7EA1915D4BC433753C379AD6740E693BDE31F24056"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Content/ConfiguredBattleEffects.cs.meta",
+      "sha256": "5B952999FC704A703E455E1388131F22A71B6F134B9EE04559B35268B9C2E4D4"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Content/ConfiguredCompatibleHandEffects.cs",
+      "sha256": "46CCE126DEB38E605DD4CE7002688C18F5AAD44B9510D53A9319A9F5572325BF"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Content/ConfiguredCompatibleHandEffects.cs.meta",
+      "sha256": "DCDE7946C99CD8D49A8D81AF9BE92CEC3044C86A919347A9CFEC17641C252451"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Content/DesignAlignment1726.md",
+      "sha256": "86D3B2A2595CAB0C6237217A3201C195200CF388D3250B37D60D81144C5AA017"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Content/DesignAlignment1726.md.meta",
+      "sha256": "C00425B5B68F24DA0E0480F0C9D9C924508DADC0347B342A992229693AF9C304"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Content/EnemyBehavior.md",
+      "sha256": "66A4EB1E911220D31126969A2B0B8E2579468CA27A539103AE9E4B18387AA163"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Content/EnemyBehavior.md.meta",
+      "sha256": "B32E371DA9D3BCE4C7EB8558FC007FA8E92C7A6680A4A922C45E2F534B0D281D"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Content/Examples.meta",
+      "sha256": "C9A528CB56709FC7050CBA8083075C78E09743E7905E505A1D76E1D7B9A5BC00"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Content/Examples/battle-content.xml",
+      "sha256": "7F6FED6AE0D3E9507551C0C58C5E0F27D72CFBF223EB193FEFFE4F25564CC669"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Content/Examples/battle-content.xml.meta",
+      "sha256": "5894DD57927B5D5432898D967ADCC7A5389D566FB0ECB4396681B04D5913E36F"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Content/README.md",
+      "sha256": "D20CC97A7C1F2CBA70A6715375DAA93361F740A2FC3CB74BF4433AA9B1B98317"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Content/README.md.meta",
+      "sha256": "04AFE8CE161832CEDD865EFE970E7C86EB0F3FECA3F72D5FCBC97AC52F5AE35B"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters.meta",
+      "sha256": "B45E9D88D5473488C09C729A0EBEC07C4500285E63E98669AA286EE23F6A56F6"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/BattleActorDamageRules.cs",
+      "sha256": "620E0890575AA8607901E930E93C5C464C9569FAB2BF14672D976036D8709DDE"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/BattleActorDamageRules.cs.meta",
+      "sha256": "75E1EF15686977F41F0A86ACBCDF80C27A53CED3CF0F839E8DAF65C83A983C0A"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/BattleActorTargetRules.cs",
+      "sha256": "BD2C3A47DEF95A235A8C91E813F5E172736929BCF41854B3F6EB8B06609CBFEA"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/BattleActorTargetRules.cs.meta",
+      "sha256": "FF7C10541B3986702155C524E743AA48412EFDC5BB1363B12A62C79334495D99"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/BattleAdminCommands.cs",
+      "sha256": "6C37F1AFCA3F5F42E06AC4C2DFAFA552CAECBD87F16A3C5C132966AAE604A5CC"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/BattleAdminCommands.cs.meta",
+      "sha256": "10444C2BCFB3CFFAE874C3DEFCCDED21DCFDA28F4B1238B5305B62FA75EB1241"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/BattleAdminPatch.cs",
+      "sha256": "ABF72A77FD9B434E77345F540C9A75ADD9CBD2BF4A4656E42C0443647CA9ECDA"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/BattleAdminPatch.cs.meta",
+      "sha256": "0CCA4660B68868F672725B842015B2A6870DC81F0C0EC3FDC21975B4D9D4FDF5"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/BattleAllyTargetPolicy.cs",
+      "sha256": "C36E5E4D0B0D845D0A930A9BD34AED4134B8E7A1DD51215FAA2728D7166CC40A"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/BattleAllyTargetPolicy.cs.meta",
+      "sha256": "7CFD9BF7002BC2B29FF6AA5CD9447FE240CE964B3ED50BB5298FEAA68DD40CDF"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/BattleEffectBinder.cs",
+      "sha256": "DD78DB402D46EB60B28722445EB3B490BDDF13258B5D05760AF7F5036975598D"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/BattleEffectBinder.cs.meta",
+      "sha256": "1EC2890B692AA6BFBAF4755879E2FE0AB051FC596B7A2D6EBF3FD260384C3780"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/BattleEffectPlan.cs",
+      "sha256": "44D73B465266AED47DCFA4E88768331FFF4D4E9249E21E52DECCD95CB115B1DC"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/BattleEffectPlan.cs.meta",
+      "sha256": "8CBDFF322BC2E408EEDA7024BA7F3FE52A35C1C63402C8C33120DD75E4A639A1"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/BattleEffectSequence.cs",
+      "sha256": "A4BEAF78F2404B8275F0BD7B38FA6602B58D00540A13A5A46C590DF0FD6BF7C8"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/BattleEffectSequence.cs.meta",
+      "sha256": "10826CA40DEA35DAEF83D025CC0CA7DA8FF788A1D089CA3928CC24BAD0B12AAD"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/BattleHandLevels.cs",
+      "sha256": "B9995DF6CF8676547A14C0E9A09C62F66CECEFCA35F498D042A70741361646E1"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/BattleHandLevels.cs.meta",
+      "sha256": "332F590E0BAF01DFEB0E66CEF4C77BE68DC0133A3EB0831F41AABF6C1534C1D5"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/BattleHost.cs",
+      "sha256": "F444504E6F73EF0CEA16B4ACD20CB42016F4D9EBF781C65FFA6AA482716E1C82"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/BattleHost.cs.meta",
+      "sha256": "A750FF8AA944BD55CB14E8A4E14C2FBD237631F6847EC68EE06A1997A3348008"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/BattleItemCommands.cs",
+      "sha256": "3C1E17B9808107CB9E4675B5017B48E3C4C31C2B0CA00621DABDC1C7C96C65A8"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/BattleItemCommands.cs.meta",
+      "sha256": "0B69F058C078B361BD7203C4D07126A1F8E2954C4EB967C6A84273FDC9C2BCA6"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/BattleItems.cs",
+      "sha256": "B150DF14D82F2C0C749CC4F3DCDFDBF6229CA4EF4AC04BEE97710326CD44050D"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/BattleItems.cs.meta",
+      "sha256": "50958B4780BE8F875D32392CA0CA62BB61CD7691503CD8E51E187F4C3FF1EF90"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/BattleRelics.cs",
+      "sha256": "C17BA7875A0CA21609BDBE9D43FD681D3AFD0B89D5498A42CB7884909A73BD98"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/BattleRelics.cs.meta",
+      "sha256": "FE740D699492D9841BD8DB918E5A46FD89A788C65E2798AD42D0F55B93AF16CE"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/BattleRelicSnapshotCodec.cs",
+      "sha256": "A26E960D74E1F54855EFFA957B6652E4050C416FBA7B0DFB4844B694B6E3108D"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/BattleRelicSnapshotCodec.cs.meta",
+      "sha256": "B9C58FE60287CEC56B8281FA6AAA073897CA97AEC619E8B90C534CA5E1F2C773"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/BattleSession.cs",
+      "sha256": "D96400D55261CF91BF63548859DDA246F80986EFDCD15676F83DF33C4F364F4A"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/BattleSession.cs.meta",
+      "sha256": "8971B553E7C19A21DCCA0CD9DF81119FD08A1804302B8339C919D46C596B9061"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/BattleSessionPlayback.cs",
+      "sha256": "2E78A8772D515453F8535CCDF659E1C2456E74EEE36E4399BA24245EE056414A"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/BattleSessionPlayback.cs.meta",
+      "sha256": "53F0EDE42BD339F17273D43AD5CFAD81FCD4BFAFE4437307CEFC1EEEF80DCE08"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/BattleStatusTiming.cs",
+      "sha256": "99813AAE61642D4C0A93B526BF174A51B7900FFDD56DFCDF2951381AC09CDCFD"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/BattleStatusTiming.cs.meta",
+      "sha256": "7A37F55BE6064A9DC1996CE471575B686EC388B7488D25A08AAC7F7549D4732C"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/BattleTargetPolicy.cs",
+      "sha256": "DC966C7D61693FC4898A7A816706510A2B7A81B7CFBF15FB3F05835C3E35DC3D"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/BattleTargetPolicy.cs.meta",
+      "sha256": "A5B568ABBC32CAB45670D4FA2E4054EE595EB848222AE5DBA55C7835EFD8A830"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/BattleTargetResolver.cs",
+      "sha256": "5DED0799026609A09BEE71634E0862260328CC2D9E6A968DB104CA5E5975F03B"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/BattleTargetResolver.cs.meta",
+      "sha256": "8F7DA1A0E62C80FA2528AA2BA086C1A31F93FC8E34CBBF47CB4093B9A232A6B9"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/BattleTimeline.cs",
+      "sha256": "1A9326EDC2C35E2C6947423FC1A3667E3DC83143AE168CC8F89C554C3747DA45"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/BattleTimeline.cs.meta",
+      "sha256": "C55C6410647C5EE98329D0BCEAB7B3CA8243EC937D42F9FD49E04F9746B0F201"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/BattleTurnFlow.cs",
+      "sha256": "3268B3D08C14DF32906C4C319C8E3887F4267DE04F0873E61D7214AB08F9728C"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/BattleTurnFlow.cs.meta",
+      "sha256": "237581F7A7D22A3DC06E38BF87B09FFC6BD7ECA98AE779F12B77461C40AB718E"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/CardDuelEngine.cs",
+      "sha256": "923910F3991A7EAD96BC1C6F2FD7C78FDEC3DF2D425CC4B9F1A28A7A75CF76ED"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/CardDuelEngine.cs.meta",
+      "sha256": "133D7AC639DFAAEECB005BB649CE8B59A13C1BE41A178A3D1DE00C884B0ABA4B"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/CardDuelFlow.cs",
+      "sha256": "DB650C5D277F3417D514604485C983E427910B40777AC7CD1D7B709EB23AB384"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/CardDuelFlow.cs.meta",
+      "sha256": "90416A5D0D53E48C32DE2301761D97AA9B6CBDA2AE4506470CB74A7DE5149E76"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/CardDuelHandGuide.cs",
+      "sha256": "40B921F09CC657FEAC7E9C881D8B96005F6EF899C9B398E0B22158534C5F6EAD"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/CardDuelHandGuide.cs.meta",
+      "sha256": "196214632C436125180916F14462E0850DFF5E28D96C92D442B790F928429826"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/ChipBlockRewardRule.cs",
+      "sha256": "9F85CA6D2EA67EC279773694008FB046FF6D1D952E1FDA13115D6A5971268458"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/ChipBlockRewardRule.cs.meta",
+      "sha256": "8B3D6593913AC3356F43C17E17626DD012ED9EAEE1A9DB5ADA2D5E2312A9A621"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/DiscardReward.cs",
+      "sha256": "C8086F76A131B1702AB87A9B177B671D54D848AB1DB1A05E4B2A6AE0A2F01AF7"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/DiscardReward.cs.meta",
+      "sha256": "A25784D8136ABBF61ECB7BF576BFA88981D3EDF6DF73BBADD8B8C760799B78DC"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/DrawRunAdapter.cs",
+      "sha256": "9668C443C87CD353050BC5B1BAD6A4DF99640D07D7707D0F41080261A08BBD1D"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/DrawRunAdapter.cs.meta",
+      "sha256": "3B9EEAF34D6A2E6B6BB0876EA834E14DF49FC34643B5D2F7F0BAA3C96D88BDC6"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/EffectTargetSpec.cs",
+      "sha256": "44B12ED1F54948FE82E39F7E4EEE0B08CD852D4109D7FC9E7F60C5AB20E1C02E"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/EffectTargetSpec.cs.meta",
+      "sha256": "409C4A20C037CCACAE42DE896B2408EC578ADB78093145F0FF95C5AD0D95FAEF"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/EnemyActionPreview.cs",
+      "sha256": "B1959DB9C82BCA15AD0814F44E645FA8B6BF61CC0697DF0C55244A8D046791CF"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/EnemyActionPreview.cs.meta",
+      "sha256": "AAB095F576AAD589859128223A48FD43342ECCEFFE0BF17FC6DFB3AF7AD1BB6D"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/EnemyBattleEffects.cs",
+      "sha256": "0F62C092AA5A65551552615FB2BF0507ED997EB339894ADE0A717418AC21818B"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/EnemyBattleEffects.cs.meta",
+      "sha256": "A3412D7C8FE00D86D5C91AE2F0F67D52689EC6999C28DDBDD7A8096F58E9034A"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/EnemyBehavior.cs",
+      "sha256": "24676211155AA1B229F712C1AF88A96E58875DC74255EC5BFBE69CECBEC33CE1"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/EnemyBehavior.cs.meta",
+      "sha256": "8EAB8E9349507C7C6D661BF324B2902788DCAB6F1F858B20CBF1B8A13D4EC033"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/EnemyLinkRules.cs",
+      "sha256": "704AAF63F7A43E89E072679DB4672E70A161190EA7B18570718D95D0B8C74E86"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/EnemyLinkRules.cs.meta",
+      "sha256": "3FE5D7BE0CC6958B55E8495E88019B0E2DAA1AD2E82FB457040C5EC0915F1349"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/HandGuide.cs",
+      "sha256": "A169D9C33B65474EB1D5A76AE96B029C9CA59C709F23DD525A3EAD05A71DF3E2"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/HandGuide.cs.meta",
+      "sha256": "CEED71AC5BF752D3B94626A7AAB1397089E5604800A4BD2B5A635EA5509E3D81"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/HoldemRunAdapter.cs",
+      "sha256": "EB9F6C504FB92E8F1214FFEC838C0AF16D02B7F388F7CDE6E22DD2834F0BA377"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/HoldemRunAdapter.cs.meta",
+      "sha256": "5FDA9FD3441C50728145365FD44EBD9786071054460EEC86C8F27FE955FF5C0A"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/IBattleSessionCommands.cs",
+      "sha256": "81694BF233D7CC407FB10ABAB5031F321E54F797E523F3BB3492A84088575ECD"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/IBattleSessionCommands.cs.meta",
+      "sha256": "F6DC82BCE93D5C1672C809E4013FA909B8BE748188126C37576B00E47CD1DF26"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/IBattleSessionPresentation.cs",
+      "sha256": "D8D0586E5B7E3DE9C1C771362F96906D691C6ED4686251BEB9873D478EA52338"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/IBattleSessionPresentation.cs.meta",
+      "sha256": "334586976929CAFAAB5F1F90620BB3875708E25911BBF7988EEF4EE3A3CA839F"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/OpponentTargetPolicy.cs",
+      "sha256": "45A54BEA95B98FDFC0D75E0BBB8C8B0ACE1CF655304F4BE456904A68DC60214F"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/OpponentTargetPolicy.cs.meta",
+      "sha256": "B1B56A214AF2D3376385259D428908386D08E370A9DE2072FFD725B6F4B2ED2C"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/PerCardBlockRewardRule.cs",
+      "sha256": "170CA522CF51382196E4BA9C3A5E817E8BD018EC07E179DB08A4F6BEA795AEBA"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/PerCardBlockRewardRule.cs.meta",
+      "sha256": "C947D009BAB08B278CF8FDA517745707BC995080415D890CC1285BA2B98FE9F9"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/PokerHandEffectProfile.cs",
+      "sha256": "ABC72E4557A6317AB2F4E92B8EB25B2C29818EC87985A9FA32DC16CBF94A0131"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/PokerHandEffectProfile.cs.meta",
+      "sha256": "B2DDB0669651C5575656AC484422E450DC516530DD16C1965C4C394253083E55"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/PokerHandEffectRule.cs",
+      "sha256": "8D5079D6375E95179B2F2EF3C6E18EBB9991AF38702021B27DBC2A167648BE81"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/PokerHandEffectRule.cs.meta",
+      "sha256": "9567A8FF3311D4F510402F6AA20342900D06DB5A7F97FD9731C1B766F980FA61"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/RelicActionDefinition.cs",
+      "sha256": "C6C475A379F2EF0E2DA6AC3B680544DFCFD11500680A35282233C50F97B4CE1A"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/RelicActionDefinition.cs.meta",
+      "sha256": "7BEE289E25B78DE907D774412286163C35489064D02A01EFF333BC99459DAF0F"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/RelicBoundaryDefinition.cs",
+      "sha256": "80E86321D2B6F612BF3EE65961F0D76922F064A9D042B393353C63106878AE9B"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/RelicBoundaryDefinition.cs.meta",
+      "sha256": "52C5F33CB621AE0E4B47BC198407AAB26F9336E04DB923F386BFB3DC3DF19E04"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/RelicHandEffectModifiers.cs",
+      "sha256": "D0D12BD2313CA98C6E0C049278C9CDF15C0E68D9BE59007088AE183FC17AAFDA"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/RelicHandEffectModifiers.cs.meta",
+      "sha256": "39D1613E06753F57C1535BC1B3D50C6D54DACF293C66329FA972C2C77494001C"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/RelicNumericModifiers.cs",
+      "sha256": "78BAF474EE7791F6CC87CE2D1C1FCD696B671F7563C17168C94D2ADF03679F98"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/RelicNumericModifiers.cs.meta",
+      "sha256": "1F4EC7914775CEF6EE513E3935D704A25636EC5838BC904415938F9A8FAA4558"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/RelicPrograms.cs",
+      "sha256": "2EB57299D75957D1979FE1F1BAD2F14AC6C8AAC0F0575639011E7A8ACB6D9628"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/RelicPrograms.cs.meta",
+      "sha256": "2DCB464C10F15FAB5DB947DC5455269523423220534A44252D5E5A05F7D40D7B"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/RelicRuleModifiers.cs",
+      "sha256": "136D60439387BCA745218EFA93A1615FF02A9E03AD94C40A805A4B8D35D72C4E"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/RelicRuleModifiers.cs.meta",
+      "sha256": "6F0433717D7F82B0F982B108DEC4F58C2CA9B00FB61FC8C19C19CB323244973E"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/RelicTriggerDefinition.cs",
+      "sha256": "2D068CA830322D005116EE4D17EF30EA390B6DAB708146C0F824FF07A984BE0F"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/RelicTriggerDefinition.cs.meta",
+      "sha256": "B001226C104F631860A809B89BB84B7513FF3E9B03AEBDB7381374B389351725"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/RelicTriggerRuntime.cs",
+      "sha256": "30104E4AE88B31F0111A2577CE342C99F03FB6007B8284820CDAD7F0E83A3868"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/RelicTriggerRuntime.cs.meta",
+      "sha256": "7C3B23BA5E28387744DFCC2C0EA89227301E605B0CBC4AA1B2FC34F93E587AAC"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/RunAbilityLoadout.cs",
+      "sha256": "2043F942E7711572C4A7B7A3911F437B09A02351DB441B5D5135BAFF188825B5"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/RunAbilityLoadout.cs.meta",
+      "sha256": "ACBF2CFCA7898F9C786273A176CAE9CE15826841DB1E740F08CEBC640525CF2B"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/ScoredDuelEngine.cs",
+      "sha256": "9461D28FE90064EEBB2B3EF518BE36DAC23A51B8BEDAE911AC5FF7566B2ADC31"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/ScoredDuelEngine.cs.meta",
+      "sha256": "5AD29750F5221D853EFE7AB79297B556AEBA963A045E4A4F528A03C0117F87AD"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/ScoredDuelSnapshotCodec.cs",
+      "sha256": "729FEC01FAE5AFA067D17F2A20DE601C2D10F8360ED29416B7A66591A49F2D01"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/ScoredDuelSnapshotCodec.cs.meta",
+      "sha256": "BF859A86AEE999B3F8E019F87641B19EFBBEFA4012DF24DEB1CC1AAA0BB67D27"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/ScoredDuelState.cs",
+      "sha256": "02EC5EB2C86EAA9A7B474D152D23AE7C291957647961FB5C4A091F4397D18306"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/ScoredDuelState.cs.meta",
+      "sha256": "FE1131794A761BB7FADE25BD75A9BF9CAE3C0655530F125BD62D39E28E89E66F"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/ScoredHandDamage.cs",
+      "sha256": "056E680253940B6E12305B99E49DFA675BEEB7958C98DED7D5379AA8CC8CFD1A"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/ScoredHandDamage.cs.meta",
+      "sha256": "62ABDA65FF60156FF3F4C5721597E571923F95B6392B7DCD3CD9E9EF899EA7AC"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/ScoredHandEffects.cs",
+      "sha256": "E97A3C77EE7ED305B4A303371A8FEA84972BC7CEC35C0DB07DB5BB2D8A06D76A"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/ScoredHandEffects.cs.meta",
+      "sha256": "D7B392B0209512B9FB2FD4992DA98145F077C6AA1998A8F8D64F0E274509B8FE"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/TeamBattleEnemyBehavior.cs",
+      "sha256": "4FA976406F87952F190F18E8C0D3851CA875B4810130D353A8F114763C09D710"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/TeamBattleEnemyBehavior.cs.meta",
+      "sha256": "2CC0893100647B66A66988C46F04B4FDAC2C756BECD4C590A03B1D44A8ADA2E9"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/TeamBattleEngine.cs",
+      "sha256": "6424F315F8A3AFF2EAA4289E466C1FAA5AD8BAC9229AC4735EBA442409B6C35D"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/TeamBattleEngine.cs.meta",
+      "sha256": "70D80A4A873E9595B7D9B490572B9BEDA6323A072A1230F1547E7FA03646AC39"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/TeamBattleWrathBoss.cs",
+      "sha256": "7AF5689CAE823716D22BF11DFECE5F75EDAFCF154C1E24AE2611EC76F8E6EF36"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/TeamBattleWrathBoss.cs.meta",
+      "sha256": "195C1603FF8D5F7B1A2ABA9CAF0BF62E9A1F8A1AEBCACB3CEB72568706C14AF4"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/WrathBoss.cs",
+      "sha256": "619C4F2BFF8EE085BA846D49FBDC821E04696AFC9B990870804385E84E0C6D51"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/WrathBoss.cs.meta",
+      "sha256": "C27DC16C7B597711DCD4D9696719E61271708C9796F3C327B088F80E1A520E32"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/WrathHandEffectRestrictions.cs",
+      "sha256": "8D08AC8370D0324E0119C0956D36E4627EA9AD3076C18854A613D645AC68AB78"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Encounters/WrathHandEffectRestrictions.cs.meta",
+      "sha256": "E3F115E0A03A4377758DEDE55AA2A0B82114EEACD3F63515BD587B4101CA344F"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Examples.meta",
+      "sha256": "F90273E4F5A1BB9B8E7F66D24D5C8610F6369AB55682EC86F67D2090AC74A0B6"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Examples/ExampleRunContent.cs",
+      "sha256": "E045539B9F802A5DE57A2520A2B26278F33A273D0A9E6AEDED948A7FA154014E"
+    },
+    {
+      "path": "Engine/Runtime/Composition/Examples/ExampleRunContent.cs.meta",
+      "sha256": "FD7BE6AD6056DB4F4F4E82B1DDED33D6BD71B2B4CA00FDCD31731023602AD418"
+    },
+    {
+      "path": "Engine/Runtime/Composition/PokerEngine.Composition.asmdef",
+      "sha256": "F5D3A2D36CB3C40C3154B1C86A20A93F9974F916267A5D2625E74E980BAAA7F2"
+    },
+    {
+      "path": "Engine/Runtime/Composition/PokerEngine.Composition.asmdef.meta",
+      "sha256": "4A29D8005E0EFE477D5B221F86D24058584251F7049DB82A9D5BB680C3796F17"
+    },
+    {
+      "path": "Engine/Runtime/Composition/RunProgressionSettlement.cs",
+      "sha256": "1B209164777BA0174D21F287BE305B6076A2BA439F2FF73713E0F5E499722E8D"
+    },
+    {
+      "path": "Engine/Runtime/Composition/RunProgressionSettlement.cs.meta",
+      "sha256": "2992A49F6178083589E99100902591D584AEACC0563171AC38E7F21375F3FF4B"
+    },
+    {
+      "path": "Engine/Runtime/Core.meta",
+      "sha256": "FE40E5C899D4A0B8A200FA2F79E226EBE18F6D2AA8ED41129030B78325A2334F"
+    },
+    {
+      "path": "Engine/Runtime/Core/Cards.meta",
+      "sha256": "5D10786085B9127E5E144BE72B2563CF0FC1444CC0D4A994FBF6F838A840C346"
+    },
+    {
+      "path": "Engine/Runtime/Core/Cards/CardDefinition.cs",
+      "sha256": "A93CE2AB45A6F0AE743458E381AF92FAF966F225FD05712A0DB1796933655C87"
+    },
+    {
+      "path": "Engine/Runtime/Core/Cards/CardDefinition.cs.meta",
+      "sha256": "0C7CEB29EBBE282D91B1985FC15301324E84FF6727E7A110CD84B9C18479C068"
+    },
+    {
+      "path": "Engine/Runtime/Core/Cards/CardEffects.cs",
+      "sha256": "D9FC3D4F945A2A95FDE062A5FABB96E6E5EF60623B0D741CBBAC5913EB332C3B"
+    },
+    {
+      "path": "Engine/Runtime/Core/Cards/CardEffects.cs.meta",
+      "sha256": "44E253989732383200BD6B9DB0EA600D183076A24B2B83D1E3543BC02BAD8A25"
+    },
+    {
+      "path": "Engine/Runtime/Core/Cards/CardFace.cs",
+      "sha256": "6ADF9498149F329510231855634B658726FD0AE637BF09BEF1D617BF907689B0"
+    },
+    {
+      "path": "Engine/Runtime/Core/Cards/CardFace.cs.meta",
+      "sha256": "80AB9E97457277C25337FE4B3DFE9AE3DE3E89C170FD9E35BC56F1B67CDBCF8C"
+    },
+    {
+      "path": "Engine/Runtime/Core/Cards/CardState.cs",
+      "sha256": "CC38B0BCA562883BB26F4574A694FA97B693F32ACFEE1AE01C5DC88BD3622D48"
+    },
+    {
+      "path": "Engine/Runtime/Core/Cards/CardState.cs.meta",
+      "sha256": "C49B8BED71FC30802D2378613CEF2335661E9C08D9CF100CAADAAA5DC426A765"
+    },
+    {
+      "path": "Engine/Runtime/Core/Cards/CardTableSession.cs",
+      "sha256": "26F1F0257B2A066D3BDE9AC0A5282570766C5736CD47F48547A15C8661133BAE"
+    },
+    {
+      "path": "Engine/Runtime/Core/Cards/CardTableSession.cs.meta",
+      "sha256": "0029637D40B964351C24EC211EA417D1BB61F129126D53CE5827FABAFC150057"
+    },
+    {
+      "path": "Engine/Runtime/Core/Cards/CardTableSnapshotCodec.cs",
+      "sha256": "18E2E0F4649946D4966B16689F2148CBE36EF11B4F3BB5FB74CB155B2DEB2994"
+    },
+    {
+      "path": "Engine/Runtime/Core/Cards/CardTableSnapshotCodec.cs.meta",
+      "sha256": "382DE46E85DC21636C7FACA45AE6EC2F0F23916C2915E58B4EE0DECF34B65089"
+    },
+    {
+      "path": "Engine/Runtime/Core/Cards/CardZoneOperations.cs",
+      "sha256": "942D5C0AF96E72BADA3505E50E7149B07763391F9ECB14BE9EC79765B0BE065A"
+    },
+    {
+      "path": "Engine/Runtime/Core/Cards/CardZoneOperations.cs.meta",
+      "sha256": "F787CC8246B84C83992CC5F2FA4CD1B5678E1BF9085E43D220B1A13DB5363321"
+    },
+    {
+      "path": "Engine/Runtime/Core/Cards/StandardDeck.cs",
+      "sha256": "711A6B89CA78E86E13BC440A08D0026D646165862C96EE419EF9CF6D71278C3E"
+    },
+    {
+      "path": "Engine/Runtime/Core/Cards/StandardDeck.cs.meta",
+      "sha256": "D68A2F214BC8E2F69F5597664D62384F73FE1E828E4D5DE918F28CB2EF06EA1C"
+    },
+    {
+      "path": "Engine/Runtime/Core/Poker.meta",
+      "sha256": "F3F913D978A0A7472C34B081DEB2708061C723F7F57188AFD90BC6107FB37842"
+    },
+    {
+      "path": "Engine/Runtime/Core/Poker/HandEvaluation.cs",
+      "sha256": "CBFAE1F1889BEB7D4FB0E9FF09B394C0393B325D2B4825BA3E1E83392E24C672"
+    },
+    {
+      "path": "Engine/Runtime/Core/Poker/HandEvaluation.cs.meta",
+      "sha256": "28C713AF45BEA98AD28F6509097D5DC67351C84451D6CD4695D0C857B94D07E0"
+    },
+    {
+      "path": "Engine/Runtime/Core/Poker/PokerExpandedCandidates.cs",
+      "sha256": "44F76E413B7BD64EA7E23E6184EFB263FF429B3E3870CA4AFA6115581703CA86"
+    },
+    {
+      "path": "Engine/Runtime/Core/Poker/PokerExpandedCandidates.cs.meta",
+      "sha256": "6C8FC98CE401A1556E24878900C374BC393D2A366831326A7FA9472E84D6E15A"
+    },
+    {
+      "path": "Engine/Runtime/Core/Poker/PokerHandClassifier.cs",
+      "sha256": "F73B976CD05EE798DEBBD29DDA67BB8CECEF05F23C890D1A509EA6065CE55913"
+    },
+    {
+      "path": "Engine/Runtime/Core/Poker/PokerHandClassifier.cs.meta",
+      "sha256": "F826DFC7C7B138A0D888AE0540E726F80763C02149CFCA9756EE5365AF81269C"
+    },
+    {
+      "path": "Engine/Runtime/Core/Poker/PokerHandCompatibility.cs",
+      "sha256": "C57724F9C5F08E5E883EFB10C4FF8992AC5EF6294788CF3B12D8563017764767"
+    },
+    {
+      "path": "Engine/Runtime/Core/Poker/PokerHandCompatibility.cs.meta",
+      "sha256": "EC996529CB6591AD3E976B6828EE5E4416C5C852B221F21B8FCA9F1C039D6067"
+    },
+    {
+      "path": "Engine/Runtime/Core/PokerEngine.Core.asmdef",
+      "sha256": "3CEE3052F952F0D145E97AAC1FC4EC7C2FF4142B2797024359BDF6529C2D5003"
+    },
+    {
+      "path": "Engine/Runtime/Core/PokerEngine.Core.asmdef.meta",
+      "sha256": "BAD1F5D7BA9F5BD42A4FB5920E3B25376DE3D35102C743402CEFBE901B8EB425"
+    },
+    {
+      "path": "Engine/Runtime/Core/Primitives.meta",
+      "sha256": "38586C709B5DA5ADF7C2B5AEF2320708B1EEFB23AF6E298132E40F00B9F89FBC"
+    },
+    {
+      "path": "Engine/Runtime/Core/Primitives/AbilityDefinitionId.cs",
+      "sha256": "A64932DB394C823BAD55694B29BAE5AD918DF7B671AD2F229BAFE207995ED798"
+    },
+    {
+      "path": "Engine/Runtime/Core/Primitives/AbilityDefinitionId.cs.meta",
+      "sha256": "A354CBBF4CC007015820B7B8BB70C028BD6D881FD909940ACFC29C492EEBA6EA"
+    },
+    {
+      "path": "Engine/Runtime/Core/Primitives/AbilityInstanceId.cs",
+      "sha256": "F9222CC3749D66D9720D27035682061E65F7B8242AD09A3DC9F45DC808A0F44C"
+    },
+    {
+      "path": "Engine/Runtime/Core/Primitives/AbilityInstanceId.cs.meta",
+      "sha256": "F4673226EFB369D95246882011A4EC6BFFB2F179CA54E2776B1A0A36168D2889"
+    },
+    {
+      "path": "Engine/Runtime/Core/Primitives/CardDefinitionId.cs",
+      "sha256": "136DCD0E27ECB2FA3BDDF79C057930245EABD64B511EA21496242924B09791C8"
+    },
+    {
+      "path": "Engine/Runtime/Core/Primitives/CardDefinitionId.cs.meta",
+      "sha256": "C2FC3F628C03BC0E4FCCE8941E9DAAB8B4DD95C4B4F6FD904A1EE799DAD3C830"
+    },
+    {
+      "path": "Engine/Runtime/Core/Primitives/CardInstanceId.cs",
+      "sha256": "379A56CC1CA6E5917D28B079D46316C52556EC12766366C8FFA76886BC286686"
+    },
+    {
+      "path": "Engine/Runtime/Core/Primitives/CardInstanceId.cs.meta",
+      "sha256": "568257ED184F010B8E0C14CFD82D617F52427E01AF9E52BF42F00941AE031F77"
+    },
+    {
+      "path": "Engine/Runtime/Core/Primitives/Chips.cs",
+      "sha256": "D2FD068D21C92C2F886371BCC026E69724230B3C98B7C4F3E55D4E5ABD01D7C5"
+    },
+    {
+      "path": "Engine/Runtime/Core/Primitives/Chips.cs.meta",
+      "sha256": "B032DCBD38D1029ECF8A1B1DE14941D59A36A97753D44F855037E266A3C547F2"
+    },
+    {
+      "path": "Engine/Runtime/Core/Primitives/DecisionId.cs",
+      "sha256": "FFF205121B2E9952179F694ABA0FCBB47A550ECC0C70B953D61D9C979DEE7A07"
+    },
+    {
+      "path": "Engine/Runtime/Core/Primitives/DecisionId.cs.meta",
+      "sha256": "01BAB8A0DA61AE4265C530004838AC848080F1706A8C0198B2B38EB27DAC754F"
+    },
+    {
+      "path": "Engine/Runtime/Core/Primitives/Guard.cs",
+      "sha256": "89772DD19E08BB443744C1880EDBA57E40712B125AD48D8FE06B8ADFDFA4C7D3"
+    },
+    {
+      "path": "Engine/Runtime/Core/Primitives/Guard.cs.meta",
+      "sha256": "682F8E6E07E5F9E12BB21BA98A061CE5E7E5A9D200913ED08E5D6E034FDC3C98"
+    },
+    {
+      "path": "Engine/Runtime/Core/Primitives/HandId.cs",
+      "sha256": "E292D2A3D5D3490BADB5AE1FFE6316338469D91196ED520BCC71279933F80082"
+    },
+    {
+      "path": "Engine/Runtime/Core/Primitives/HandId.cs.meta",
+      "sha256": "CB9B978E6ABABD377C4E252AD31D091CD6B372C6D98717C1748F83D2BEC28714"
+    },
+    {
+      "path": "Engine/Runtime/Core/Primitives/KnowledgeGrantId.cs",
+      "sha256": "DD21CDC06C1AA2FB6E9692CE5A7CCCFFCEA63E34D632DB066423C66053FBCA4B"
+    },
+    {
+      "path": "Engine/Runtime/Core/Primitives/KnowledgeGrantId.cs.meta",
+      "sha256": "299FBC1A3D485B2215109CB2B8E5B65EF02372C0BF92B0F30DB9A44EE48FFD75"
+    },
+    {
+      "path": "Engine/Runtime/Core/Primitives/MatchId.cs",
+      "sha256": "21E79F5B2DAB1ABE43D5331D78BA4DD482CA6E80B77B21116CEB51E279122A35"
+    },
+    {
+      "path": "Engine/Runtime/Core/Primitives/MatchId.cs.meta",
+      "sha256": "490E1A4CDF157841A8F7F529DDA4BBE8C330299A0E0BFDF86350B2DEB6605469"
+    },
+    {
+      "path": "Engine/Runtime/Core/Primitives/ParticipantId.cs",
+      "sha256": "50EFBA899F0FD0F74D0C7E4014A9111319E356DCAB3882AF879E059A839E2CC6"
+    },
+    {
+      "path": "Engine/Runtime/Core/Primitives/ParticipantId.cs.meta",
+      "sha256": "BC53E0F0D18B506B251B5948499FD4ED2B916855C609D1E94021193CE6A07C1F"
+    },
+    {
+      "path": "Engine/Runtime/Core/Primitives/SeatId.cs",
+      "sha256": "932742B4C206CEA810897A08388C4EC90F3D5CF69B48D46C83D1D771C6E7ED30"
+    },
+    {
+      "path": "Engine/Runtime/Core/Primitives/SeatId.cs.meta",
+      "sha256": "0E9D11EC17203BDFC68E8341BD41D6F2F91A2F856A5C6E88834BE81C00C3DCA7"
+    },
+    {
+      "path": "Engine/Runtime/Core/Primitives/StatusDefinitionId.cs",
+      "sha256": "ECA3737449BBFA9C481FD95A1EC77C2320347D04E7BADD8CE1062583AFEBD3CE"
+    },
+    {
+      "path": "Engine/Runtime/Core/Primitives/StatusDefinitionId.cs.meta",
+      "sha256": "B47D96E4FBD91CDC9B21ECA57BC365A209419E634F74AA7125F6FC0958882F2C"
+    },
+    {
+      "path": "Engine/Runtime/Core/Primitives/StatusInstanceId.cs",
+      "sha256": "A90FA3F83D7E144D18AF3D08D0B5B60C81836C37ABD422F2503668258C54365F"
+    },
+    {
+      "path": "Engine/Runtime/Core/Primitives/StatusInstanceId.cs.meta",
+      "sha256": "408DE1F778AA310107CF864E6261E0363CE9E3CC8A34ABA22666F3B0E2362088"
+    },
+    {
+      "path": "Engine/Runtime/Core/Primitives/ZoneId.cs",
+      "sha256": "91B97757EFF17F0772961BF9E84AB473579592881B78BA42EAED2661F2033387"
+    },
+    {
+      "path": "Engine/Runtime/Core/Primitives/ZoneId.cs.meta",
+      "sha256": "DD59D83EB8849AC4567B5CAA92EB92E2C309B755ED88A8E40D4978ED96107303"
+    },
+    {
+      "path": "Engine/Runtime/Core/Random.meta",
+      "sha256": "461994045F4F0DE46AF1F6426AACA49CB8C9479980724FBE41D5CD2A4B1FECB1"
+    },
+    {
+      "path": "Engine/Runtime/Core/Random/DeckShuffler.cs",
+      "sha256": "99C47B81AFC359071BD4D3A36E2D123DFD1F01658C9286BBD18E2BA27792DE01"
+    },
+    {
+      "path": "Engine/Runtime/Core/Random/DeckShuffler.cs.meta",
+      "sha256": "F01928F0C7277D9532C6FC91EADDBDC0115427C1212141D225BBC66395095178"
+    },
+    {
+      "path": "Engine/Runtime/Core/State.meta",
+      "sha256": "51D0AA97B925276FE8266C9C34DEBAE9873B13A722017450E5F1D1E0A5B2E8DA"
+    },
+    {
+      "path": "Engine/Runtime/Core/State/RandomState.cs",
+      "sha256": "01082A3C311C41AEBF9138889E65C74B5F9C2A4585A2F41DF4D3BBF4246D15CE"
+    },
+    {
+      "path": "Engine/Runtime/Core/State/RandomState.cs.meta",
+      "sha256": "C3329006A9B37683CDBCDF87E82FB391DDF6289EE16AE230D2A5801FC4629141"
+    },
+    {
+      "path": "Engine/Runtime/Core/State/ResourceState.cs",
+      "sha256": "434BD70F6E6C81572B00B45266D70D9E5C93B2A9DC9589239EB03AC7DE508F71"
+    },
+    {
+      "path": "Engine/Runtime/Core/State/ResourceState.cs.meta",
+      "sha256": "C298B52A8FFFA4F6CA92F47D113E528CEB2E4DEB6DBDE8241926A1C1C8586CDE"
+    },
+    {
+      "path": "Engine/Runtime/Core/State/SnapshotException.cs",
+      "sha256": "1A499CD39BC6CE653324C25E1A7E1EB09C2DF0A6393F3C0865C9052A2D7282A1"
+    },
+    {
+      "path": "Engine/Runtime/Core/State/SnapshotException.cs.meta",
+      "sha256": "BB24D8F98EBD9331A5E0E7B59E66F307CC5CF178F1D2C3BFB98A1D2BCB9D6ABE"
+    },
+    {
+      "path": "Engine/Runtime/Core/State/StateValidationException.cs",
+      "sha256": "CBA00400867428CD5D27CFB95E5F0D6EC797CED35C37C9C69AFE0C00F82A12B7"
+    },
+    {
+      "path": "Engine/Runtime/Core/State/StateValidationException.cs.meta",
+      "sha256": "970F3B7A4A50120CD870BFB84B0B4ACE2B7B770E2F7D9FAB93669B62AB64C4EE"
+    },
+    {
+      "path": "Engine/Runtime/Draw.meta",
+      "sha256": "849A84DF79C29B82B698346FA181538E84E4F3E0C2B627DC9AED85CF28058E20"
+    },
+    {
+      "path": "Engine/Runtime/Draw/DrawEngine.cs",
+      "sha256": "9CDE50CA24BDCE97DEBEF51EAC16102F6AF27EE2ED97A6231A5952EE3871C2CE"
+    },
+    {
+      "path": "Engine/Runtime/Draw/DrawEngine.cs.meta",
+      "sha256": "524D6766658CD81B7F318280125951D8F61A2061648075215CA04C7363F900F9"
+    },
+    {
+      "path": "Engine/Runtime/Draw/DrawModels.cs",
+      "sha256": "B794EFBAAC0448756E7DD62E78158610454B27966CE784043BECADBB3EDEB214"
+    },
+    {
+      "path": "Engine/Runtime/Draw/DrawModels.cs.meta",
+      "sha256": "16769B7DEF29163410EA542F1FBCA3575CAC0BD13FA477576FEDCC7CECB622DE"
+    },
+    {
+      "path": "Engine/Runtime/Draw/DrawSnapshotCodec.cs",
+      "sha256": "17F58652DF77B66DA23966AC9EA8C291BF2A3EAF50B8E3EBF94071737DDEC521"
+    },
+    {
+      "path": "Engine/Runtime/Draw/DrawSnapshotCodec.cs.meta",
+      "sha256": "6E27B3426C4929C6857B1D1A5A1E73F3DF00F1A769D5873388AEDE7DA20D5C69"
+    },
+    {
+      "path": "Engine/Runtime/Draw/DrawValidation.cs",
+      "sha256": "BA33F228B4A770D9DE5CA5131093EDDF0ED50CCFD1B7B7C10A81FAFA4F2BCD1C"
+    },
+    {
+      "path": "Engine/Runtime/Draw/DrawValidation.cs.meta",
+      "sha256": "3B316FD694887B26552C27AF8FEC7D4DF7292176A630323DCBA90EA20270771B"
+    },
+    {
+      "path": "Engine/Runtime/Draw/PokerEngine.Draw.asmdef",
+      "sha256": "E1E76F89FFE7594E3759269F8B04AD5B974E392E3F0D8BF6D58B6C0702A84D0F"
+    },
+    {
+      "path": "Engine/Runtime/Draw/PokerEngine.Draw.asmdef.meta",
+      "sha256": "9D58C0FF46CA4D07AFEE949683C4B944B86E9E5521DE60BBCB0C23490990DCEE"
+    },
+    {
+      "path": "Engine/Runtime/Encounters.meta",
+      "sha256": "F79784A4F6F23C35AB169B0829DF25E92C93125443F57AF8E4D736538A4FD912"
+    },
+    {
+      "path": "Engine/Runtime/Encounters/EncounterContext.cs",
+      "sha256": "A74DD879C087192E6430B54005178677982EBE22EC4858FF165D4F73247D67B5"
+    },
+    {
+      "path": "Engine/Runtime/Encounters/EncounterContext.cs.meta",
+      "sha256": "32EDB98517B4624DE8D3786EAD18695E102F8EEECD88AD3699D8A2D37A749A1A"
+    },
+    {
+      "path": "Engine/Runtime/Encounters/EncounterDefinition.cs",
+      "sha256": "E9C699185E02F6D3D8950C5B7612604F5C7F0035D52C6083B7252731DCE70625"
+    },
+    {
+      "path": "Engine/Runtime/Encounters/EncounterDefinition.cs.meta",
+      "sha256": "6530E21B1D1BB1688FF7A3AB9C42882CF05C7ABD65E9A94DE47911E2309D64A3"
+    },
+    {
+      "path": "Engine/Runtime/Encounters/EncounterProgress.cs",
+      "sha256": "BAFA2EBA0B87179DFFCFC82730B204A7035CECE57A4358FB63F1C1AEA97F6D34"
+    },
+    {
+      "path": "Engine/Runtime/Encounters/EncounterProgress.cs.meta",
+      "sha256": "B474C4442C23E4F50AE4FFCE88D544F682AE6C0641E213DF2669F166CD12D204"
+    },
+    {
+      "path": "Engine/Runtime/Encounters/EncounterResult.cs",
+      "sha256": "7F30D9099E1F5C9D6B787644973DBE39A75DF1DAA40384591DA95B10644296F5"
+    },
+    {
+      "path": "Engine/Runtime/Encounters/EncounterResult.cs.meta",
+      "sha256": "D33DE0AC5311A756455A61FA6AF84BBC23CEAA2D5CDC44C2A364BB5E16A4C351"
+    },
+    {
+      "path": "Engine/Runtime/Encounters/PokerEngine.Encounters.asmdef",
+      "sha256": "45772A6C137D7B492842355020715F4C68BDFA24D1ACF4C782B7E6B9909CE8A5"
+    },
+    {
+      "path": "Engine/Runtime/Encounters/PokerEngine.Encounters.asmdef.meta",
+      "sha256": "115F4FA9227D106A747E20627BD876AB5A134AFA29400C9D3126E1A87E6301A7"
+    },
+    {
+      "path": "Engine/Runtime/Encounters/README.md",
+      "sha256": "4A6018ABA3A395B4C97B66D7BB4A15C0320B06C3C566D635A9A2F188CC9B76B8"
+    },
+    {
+      "path": "Engine/Runtime/Encounters/README.md.meta",
+      "sha256": "041BAE9784DD8152CC2FE7EA0684EA8413851A0AD2D0304370BC27184F6B766F"
+    },
+    {
+      "path": "Engine/Runtime/Holdem.meta",
+      "sha256": "6AD287405752B2D2C5B3530864B03B7FBE9BA0412DC7947B26D9B6DDAF276205"
+    },
+    {
+      "path": "Engine/Runtime/Holdem/Abilities.meta",
+      "sha256": "619364D3A4A577B82D1C2750474279D25074550842F0718CB0039AE27B43FA88"
+    },
+    {
+      "path": "Engine/Runtime/Holdem/Abilities/HoldemAbilityAdapter.cs",
+      "sha256": "1A450064A43961FD066304BCFDD069C35639A6DEB6D21417D0445EE2CA79A3E1"
+    },
+    {
+      "path": "Engine/Runtime/Holdem/Abilities/HoldemAbilityAdapter.cs.meta",
+      "sha256": "C90908497B19DE29A4B7E9E2A35084DDB23B60090A8C1ED1C81420039CD1772C"
+    },
+    {
+      "path": "Engine/Runtime/Holdem/Definitions.meta",
+      "sha256": "6A264D2201498A772E58C8DA6F7D5ED07EE96AEE49169A7BCA5509E83DC816B0"
+    },
+    {
+      "path": "Engine/Runtime/Holdem/Definitions/MatchDefinition.cs",
+      "sha256": "02F4FA3668B5D9F27EAA0130DEBA5929119CB5AD6D1CA0541FEEACEFBB372D44"
+    },
+    {
+      "path": "Engine/Runtime/Holdem/Definitions/MatchDefinition.cs.meta",
+      "sha256": "1F7F5259D442FBA13D54D588768F74959AE4A4F356951EFB0F878144EDC4B2B7"
+    },
+    {
+      "path": "Engine/Runtime/Holdem/Execution.meta",
+      "sha256": "AC739BA6BF201CF8033DE9A2C48869FC6A842AA9CE89FDEC9383D40D32E7C0F7"
+    },
+    {
+      "path": "Engine/Runtime/Holdem/Execution/HoldemMatchEngine.cs",
+      "sha256": "36A07EB241997FD26C3441E013CF93DAB98209BBEF34F15E27DA04F5A10DC3A9"
+    },
+    {
+      "path": "Engine/Runtime/Holdem/Execution/HoldemMatchEngine.cs.meta",
+      "sha256": "409A7F9AD1FD8C70A197F29720EC996B006786D017002A6BBD835A10A67CD65F"
+    },
+    {
+      "path": "Engine/Runtime/Holdem/Execution/MatchCommands.cs",
+      "sha256": "2BF7A12F51B6DA46DB5E0AD97BAD5562D9868E8FAA7C78999D01CC44A28A0767"
+    },
+    {
+      "path": "Engine/Runtime/Holdem/Execution/MatchCommands.cs.meta",
+      "sha256": "95773EFDC9A4883C066E65B315C652E4D37B531D52CF53EAF4D35F677145AE6F"
+    },
+    {
+      "path": "Engine/Runtime/Holdem/Persistence.meta",
+      "sha256": "D35C8E75611A308D691D1412CF5BCE627D882BF62944F157DCE2E840FA25615B"
+    },
+    {
+      "path": "Engine/Runtime/Holdem/Persistence/MatchSnapshotCodec.cs",
+      "sha256": "6F217E8C5228D8AACE244A49E110455C57A18EA948D602912C80A9A68AC84BFF"
+    },
+    {
+      "path": "Engine/Runtime/Holdem/Persistence/MatchSnapshotCodec.cs.meta",
+      "sha256": "FDC8088C3278C8BC2C681B5894AF5944250D09913BA42BAC49205314CFE09379"
+    },
+    {
+      "path": "Engine/Runtime/Holdem/PokerEngine.Holdem.asmdef",
+      "sha256": "3AA55C1645AE39742F05325B203C076275A0273AA5D4B9449E7F5200B250C649"
+    },
+    {
+      "path": "Engine/Runtime/Holdem/PokerEngine.Holdem.asmdef.meta",
+      "sha256": "A105A230A0C4C74520D6C0C49328B353931619B4B0F98E086C3155D1A9D61D48"
+    },
+    {
+      "path": "Engine/Runtime/Holdem/Rules.meta",
+      "sha256": "C4118E1977F109FFD439A868BC905476FCE29145A3744CD13FD653A8C6024A38"
+    },
+    {
+      "path": "Engine/Runtime/Holdem/Rules/StandardHoldem.cs",
+      "sha256": "9341CCE1DA5F3CA0D7C374977BDF69C408E965F72CD86887F336D3BBC681DFA2"
+    },
+    {
+      "path": "Engine/Runtime/Holdem/Rules/StandardHoldem.cs.meta",
+      "sha256": "49C049F073767A469C32C7A058C9F0FC453E3E770D17DDEE8B383B949892A0C3"
+    },
+    {
+      "path": "Engine/Runtime/Holdem/State.meta",
+      "sha256": "F0ABCE7C301EF0E19FC2DAB1DAFE842D77DC71150C738FCD03263F23AFA600A0"
+    },
+    {
+      "path": "Engine/Runtime/Holdem/State/BettingRoundState.cs",
+      "sha256": "B7DDD8FA580671458419042635F8016BE5EB914B3EA96B5BFD4FCA1802B46AD0"
+    },
+    {
+      "path": "Engine/Runtime/Holdem/State/BettingRoundState.cs.meta",
+      "sha256": "E9DD684796B651EDD91EFF3B5FEBDF99B3BEE9B64A4B94EEE6A4B8602C9BF18B"
+    },
+    {
+      "path": "Engine/Runtime/Holdem/State/HoldemKeys.cs",
+      "sha256": "9AF4E83C5744BE67FBE212D836C54B0D1C74E12984877CA75CCF63A2AA05A747"
+    },
+    {
+      "path": "Engine/Runtime/Holdem/State/HoldemKeys.cs.meta",
+      "sha256": "DECE353FCD823A3937535540650DAF5787268614696B8EA6B52F0C0DD6E6BA0D"
+    },
+    {
+      "path": "Engine/Runtime/Holdem/State/MatchState.cs",
+      "sha256": "42FEE68FB2CD95638C020157C919448E9852DC9ED7C2F99242413B9824E9C372"
+    },
+    {
+      "path": "Engine/Runtime/Holdem/State/MatchState.cs.meta",
+      "sha256": "3A6DE924FF8EA6F41D44D357AE2324E1863CED50D7E2461399D523F1C0A7ECBD"
+    },
+    {
+      "path": "Engine/Runtime/Holdem/State/ParticipantState.cs",
+      "sha256": "CBC194E47023FAB0DEFBCE61752303CEA6FAAB46259AE2200AD5CBCF53D1043E"
+    },
+    {
+      "path": "Engine/Runtime/Holdem/State/ParticipantState.cs.meta",
+      "sha256": "E508E8EC626A7F949107C6ACBB0EA32253C3B4E5AF49258A18DF37BC4390B74D"
+    },
+    {
+      "path": "Engine/Runtime/Holdem/State/SettlementState.cs",
+      "sha256": "1AE959AFE77ABAE0F5F5302B62CDF6ABBDD62D292EAC1A11AE82D4624911BCA0"
+    },
+    {
+      "path": "Engine/Runtime/Holdem/State/SettlementState.cs.meta",
+      "sha256": "1402AC66445A0A967ADD6006AD11031B7CB39C74C526CA8BE59A77ADEDD14622"
+    },
+    {
+      "path": "Engine/Runtime/Holdem/Validation.meta",
+      "sha256": "9CA356D14A5D6C1B5B31599ED930D959E0A8899307B0F595142221EDADB53EBB"
+    },
+    {
+      "path": "Engine/Runtime/Holdem/Validation/AbilityStateValidation.cs",
+      "sha256": "6D7F62E713CED267E29B2EA52BE077D9FD8944EB1236217C1892CF6DCAD3C7C7"
+    },
+    {
+      "path": "Engine/Runtime/Holdem/Validation/AbilityStateValidation.cs.meta",
+      "sha256": "517B8521108656BBC62D1D88E41376E9B48C853F8A84EE1CA69A25A605E798A8"
+    },
+    {
+      "path": "Engine/Runtime/Holdem/Validation/StateValidator.cs",
+      "sha256": "487DB4176752C7A7A3DF7B72FCA6DA37A160435FE61D85C9CFA8FDB2C3A8E597"
+    },
+    {
+      "path": "Engine/Runtime/Holdem/Validation/StateValidator.cs.meta",
+      "sha256": "B93D71AC80F14E8AFAF56A5D07DE9DE7D57001C3102A422FFF4796ED9A0744A5"
+    },
+    {
+      "path": "Engine/Runtime/link.xml",
+      "sha256": "10F1C539BB24F790B4EDFC642FC635F1FEE9519FE6DCA5B1CEEC46C2EC067575"
+    },
+    {
+      "path": "Engine/Runtime/link.xml.meta",
+      "sha256": "FEF911FC4AEBC04E373EDACA04E22A9D20692C8AEF3CF0C8374CE4CA1AA9AA1C"
+    },
+    {
+      "path": "Engine/Runtime/Progression.meta",
+      "sha256": "8FC3D428888B0FDCDD74A5FA46702F5A50DA75E041AFA325D5EC6C0B776EAF93"
+    },
+    {
+      "path": "Engine/Runtime/Progression/PokerEngine.Progression.asmdef",
+      "sha256": "F668BB3684589C1A4956C7479ECE076F3482FE2BCF8858F0B228367FCA0478B9"
+    },
+    {
+      "path": "Engine/Runtime/Progression/PokerEngine.Progression.asmdef.meta",
+      "sha256": "7BF5242C761D5066140C86A952D48C2D755F74702A619A942F4D01A21BD6F075"
+    },
+    {
+      "path": "Engine/Runtime/Progression/ProgressionDefinition.cs",
+      "sha256": "4624B47E70EDB5AA52E245A7821FC3DBB874CA5F91CEC876692B7B37F94AFDD1"
+    },
+    {
+      "path": "Engine/Runtime/Progression/ProgressionDefinition.cs.meta",
+      "sha256": "22786F62FA5F841D28920482A8BE4E333FDE6EA1B7499B2E4186CF1169800F70"
+    },
+    {
+      "path": "Engine/Runtime/Progression/ProgressionEngine.cs",
+      "sha256": "C620DF1FD201DE91C7AFD5BA2A0CC044E8EC0ED30E38968126BB4B4248B26527"
+    },
+    {
+      "path": "Engine/Runtime/Progression/ProgressionEngine.cs.meta",
+      "sha256": "BA9AA3286530606E95D49CDD689477A4208612D5AEEDC3E397B7B65FBF80BA34"
+    },
+    {
+      "path": "Engine/Runtime/Progression/ProgressionModels.cs",
+      "sha256": "6226C32F4534E19B60D8BFEBE0C277CDA8CB688093772E0BC38B4280764C2AB4"
+    },
+    {
+      "path": "Engine/Runtime/Progression/ProgressionModels.cs.meta",
+      "sha256": "3B8D29D66DAE83C1CA8CD9A28672F8BA6D317A1554699DD667A896BCABA19153"
+    },
+    {
+      "path": "Engine/Runtime/Progression/ProgressionSnapshotCodec.cs",
+      "sha256": "0F6C14180E60592EC5EEAF3DB0D4EBC2BE724D7875ACEF2CC871543B2B637BE5"
+    },
+    {
+      "path": "Engine/Runtime/Progression/ProgressionSnapshotCodec.cs.meta",
+      "sha256": "6C98762D7406F732BE915226E91AAF5F19B256036AF30DD55C105404424F2CDB"
+    },
+    {
+      "path": "Engine/Runtime/Progression/ProgressionValidator.cs",
+      "sha256": "9CC281D53A48D46A8903AFFF3577E3385AADE4B8577E24F9DBD120DA358DD39A"
+    },
+    {
+      "path": "Engine/Runtime/Progression/ProgressionValidator.cs.meta",
+      "sha256": "BD865944D9DDFAFE65DF43C7711D884D868C980320FF6758A8CFC2E4F84903B2"
+    },
+    {
+      "path": "Engine/Runtime/Progression/README.md",
+      "sha256": "3F7F19F217B622459C0942ED62C858F1A5992AE0CEBAE1129A80CCBB2D680E37"
+    },
+    {
+      "path": "Engine/Runtime/Progression/README.md.meta",
+      "sha256": "BC19A21FD843E51CDBA67DE8D0369123A9E892A4EFF7557D925186E8FBD4807F"
+    },
+    {
+      "path": "Engine/Runtime/Runs.meta",
+      "sha256": "079A389344612648C382CB07E7142E27D0E33AE276E8FD2F076B7B2E995BA009"
+    },
+    {
+      "path": "Engine/Runtime/Runs/Persistence.meta",
+      "sha256": "AFA05CB76AA6584543E449B1E8FE019B6A4EB68D3763AB5F68D691018F1D9037"
+    },
+    {
+      "path": "Engine/Runtime/Runs/Persistence/RunSnapshotCodec.cs",
+      "sha256": "C869DD8D523765C139CF88BE5403A71C19F6515936428A0F0B2FD0AA2938D9B6"
+    },
+    {
+      "path": "Engine/Runtime/Runs/Persistence/RunSnapshotCodec.cs.meta",
+      "sha256": "8000CE794BBED3402996E31EAA22BB6704D6D5EF7372919BF12F164D3D3FCA16"
+    },
+    {
+      "path": "Engine/Runtime/Runs/PokerEngine.Runs.asmdef",
+      "sha256": "E49A53B1870E3A17988AA4CFCEE991C39C05291E2DBB93E90D89A0B408CA2E67"
+    },
+    {
+      "path": "Engine/Runtime/Runs/PokerEngine.Runs.asmdef.meta",
+      "sha256": "A120088094F94A08ED82B2E26A1BBCD416F92093DDD49EF2C1314974840DD50C"
+    },
+    {
+      "path": "Engine/Runtime/Runs/RunEncounter.cs",
+      "sha256": "2687D979C286F0AE6D9AB062EE759A70FF4FEFA5DBAC51ACD11CAEC5C806F0EF"
+    },
+    {
+      "path": "Engine/Runtime/Runs/RunEncounter.cs.meta",
+      "sha256": "DAEF64D228C822BCC7B3229183861EF65CFCC505A15723B7AF9D856FD4C673FC"
+    },
+    {
+      "path": "Engine/Runtime/Runs/RunEngine.cs",
+      "sha256": "83C4D83372BEC94A5EFB39622FB8AF1D481FAC726A2FD40F71F8C1DB063D8A29"
+    },
+    {
+      "path": "Engine/Runtime/Runs/RunEngine.cs.meta",
+      "sha256": "1321A557225727D4C592F113660FD7796675D50B7609E2C6B7A357EDA0CA0A37"
+    },
+    {
+      "path": "Engine/Runtime/Runs/RunFloors.cs",
+      "sha256": "73EEF6A4B7AEB76B8B45BA92828AAEEDA426DEC050DD0EED43B454B72E3A3CB6"
+    },
+    {
+      "path": "Engine/Runtime/Runs/RunFloors.cs.meta",
+      "sha256": "DAF52F9C9D86B9B957E52AF889DFD17D8FF8A56D67D45CB22CFED98EAEDA1D9B"
+    },
+    {
+      "path": "Engine/Runtime/Runs/RunModels.cs",
+      "sha256": "5C5BE3391AC6DD2CBD52DA148C62FDDD0198729B7BF8C9BD0B9E75908502608C"
+    },
+    {
+      "path": "Engine/Runtime/Runs/RunModels.cs.meta",
+      "sha256": "63242B6CE72C38D7611A9A400D48A555C765D6DBFBFDA172C633DCECEBEE7DF6"
+    },
+    {
+      "path": "Engine/Runtime/Runs/RunNodes.cs",
+      "sha256": "3FFFD3B2A102B80A27E3616B95951ECC299487FEB6B3F2F6380889CD8C11C77F"
+    },
+    {
+      "path": "Engine/Runtime/Runs/RunNodes.cs.meta",
+      "sha256": "BDD6BAFEC4037285E06A3A87C1C8DD4D81DE7CC57CA418D1A35462F2B348FEE2"
+    },
+    {
+      "path": "Engine/Runtime/Runs/RunValidator.cs",
+      "sha256": "1D0480F4F387FBFD5C33668EAAF5CDAFBC4C14FEC8FB156D1791A938D2FDEE22"
+    },
+    {
+      "path": "Engine/Runtime/Runs/RunValidator.cs.meta",
+      "sha256": "02B9064D9A191AEF19E491623B202D3E2D4E6E74BA518C9529BF9D4C3A91919E"
+    },
+    {
+      "path": "Engine/Runtime/Scoring.meta",
+      "sha256": "675C7EC23E54DD928ABE2B12EFBCC8F4F6A8CA2C8E1C6FE1B0FD4FBA8D241713"
+    },
+    {
+      "path": "Engine/Runtime/Scoring/CardPointProfile.cs",
+      "sha256": "C8F4C06DD0FB930100DE5CFA4F3C1639FDAFBBC5CAE02962A63E22E45005B902"
+    },
+    {
+      "path": "Engine/Runtime/Scoring/CardPointProfile.cs.meta",
+      "sha256": "FCB0116338911A98AF1108FA68028010212399787EC9529B541D0E025D78F756"
+    },
+    {
+      "path": "Engine/Runtime/Scoring/CardScoreRules.cs",
+      "sha256": "57446273646B2C7F73786DCEA8315FE19EF594EDD2AC1AF78171B753AEBE8FCF"
+    },
+    {
+      "path": "Engine/Runtime/Scoring/CardScoreRules.cs.meta",
+      "sha256": "24E959BD68F481E0E8ADF34466259223CB96DCE8B656B7298CD112A5B0884E69"
+    },
+    {
+      "path": "Engine/Runtime/Scoring/PokerEngine.Scoring.asmdef",
+      "sha256": "B82A4630BE4658CD0A26F57E385AA4C0C05DDA1F9B7B1F401CDAB2468BB448DD"
+    },
+    {
+      "path": "Engine/Runtime/Scoring/PokerEngine.Scoring.asmdef.meta",
+      "sha256": "1B974BDA31FA58A8E4A7342174915CF5C2ACC8D414EF7D112FB40C4B4E9E212F"
+    },
+    {
+      "path": "Engine/Runtime/Scoring/ScoreEngine.cs",
+      "sha256": "D357682AF7A971392ED8C2148C5807B326697BAE87B2434E03ABA58BC766351E"
+    },
+    {
+      "path": "Engine/Runtime/Scoring/ScoreEngine.cs.meta",
+      "sha256": "903FF5D31AADEF8E9EA8F405853E477F955337A3651FA414341CD8A698C5783A"
+    },
+    {
+      "path": "Engine/Runtime/Scoring/ScoreProfile.cs",
+      "sha256": "23CA9D41F03CE6B6F4BA315F5CCFE57965AF4FF662C3D0F7924650B7285D823C"
+    },
+    {
+      "path": "Engine/Runtime/Scoring/ScoreProfile.cs.meta",
+      "sha256": "D6B03A8F835563B9C5144EEB692D620CA9403028E68450B133486CEA6EE08CCC"
+    },
+    {
+      "path": "Engine/Tests.meta",
+      "sha256": "1742AAFD04F0037A870E433E431931C6F53154CACCE9D43E7441CB232D304CE3"
+    },
+    {
+      "path": "Engine/Tests/Editor.meta",
+      "sha256": "0EB5F284540D80C3F12ADA44F6728D1A183C4D4C11C6A37BB91EE3AF6884720A"
+    },
+    {
+      "path": "Engine/Tests/Editor/AbilityFoundationTests.cs",
+      "sha256": "BF8AE4CA2A6570C616751D59EA5F03A247A37D3FE4266AF7BAEAFB68B5490E67"
+    },
+    {
+      "path": "Engine/Tests/Editor/AbilityFoundationTests.cs.meta",
+      "sha256": "EDAB1F3F84CB31B1CD71AD9D88391D51F0CD2A6809C462BDF2C4B6B412458B66"
+    },
+    {
+      "path": "Engine/Tests/Editor/AbilityModuleTests.cs",
+      "sha256": "823AF444868AC2381429D17064F60C3760046E911C1BAB800789B860561BAEE9"
+    },
+    {
+      "path": "Engine/Tests/Editor/AbilityModuleTests.cs.meta",
+      "sha256": "DB3F14822E9AADD106E0979260D7BB8AF818BEEA251520DCC1AC453E90AC885D"
+    },
+    {
+      "path": "Engine/Tests/Editor/AdventureEconomyTests.cs",
+      "sha256": "62B701687C39D058D1EB10CF23BE2888C1F5D5D92D7F942FB19476E189973070"
+    },
+    {
+      "path": "Engine/Tests/Editor/AdventureEconomyTests.cs.meta",
+      "sha256": "D5130282E9220D74BABA17C67555A45A19B8AE8FD03C194F3B2C4E23F3BF315B"
+    },
+    {
+      "path": "Engine/Tests/Editor/AttackContextTests.cs",
+      "sha256": "E894A4A5CB464EF7129521A56EF735794D56A6D9C2F370F7D2DAC01D6F0E2FD4"
+    },
+    {
+      "path": "Engine/Tests/Editor/AttackContextTests.cs.meta",
+      "sha256": "24B7D83AAA4E85CB6CEDBF7C1358E98C60178B129F52225F0AC8E63AFBC492A6"
+    },
+    {
+      "path": "Engine/Tests/Editor/BattleAdminRelicRoundMemoryTests.cs",
+      "sha256": "B6C9D8AAA28374733956770F63E70773949E335FBE927BCD24BF258F911EBDE9"
+    },
+    {
+      "path": "Engine/Tests/Editor/BattleAdminRelicRoundMemoryTests.cs.meta",
+      "sha256": "A1831DC5459D0C228DD307F7174822BCC326F4B227D36A2D8B6BA7887119943B"
+    },
+    {
+      "path": "Engine/Tests/Editor/BattleAdminTests.cs",
+      "sha256": "980598087F3E4E59277BE2758A269D77C4AB42470C5261BF314F3DF6A5794E82"
+    },
+    {
+      "path": "Engine/Tests/Editor/BattleAdminTests.cs.meta",
+      "sha256": "97A92D68F4A6A0CACC01E6BEA6E50DBE347E7991B2AD89EABAA1616A10C92A00"
+    },
+    {
+      "path": "Engine/Tests/Editor/BattleAdventureAdminTests.cs",
+      "sha256": "BF074BE2169EC4C7425FD37EBDD82E3950BE81ECBA6E2C5AE62880A97D3589F0"
+    },
+    {
+      "path": "Engine/Tests/Editor/BattleAdventureAdminTests.cs.meta",
+      "sha256": "810F9372CA9964577658460B683544BBDAC23AB75D5FD412BECFFD2CEEA70C7C"
+    },
+    {
+      "path": "Engine/Tests/Editor/BattleAdventureTests.cs",
+      "sha256": "4C56B0EF4A8B1EB19D1633E519EAB6CBFE35547230F86E8530CF235AB0BFAF31"
+    },
+    {
+      "path": "Engine/Tests/Editor/BattleAdventureTests.cs.meta",
+      "sha256": "7414CE58BCD6FF5F9FFC08398B40DA9C0207F6B55F044AD2E4051EEAFB1E8F9E"
+    },
+    {
+      "path": "Engine/Tests/Editor/BattleConfigurationTests.cs",
+      "sha256": "F18CE24AC1D7B4FA8276D06D0F3566432929E8FA978FFDECDA6A8A07A68D8110"
+    },
+    {
+      "path": "Engine/Tests/Editor/BattleConfigurationTests.cs.meta",
+      "sha256": "8CF1ECE6A5F66956E103A9304BB9BC6373D37CF3FCBA050C1F3B8FB50AD75846"
+    },
+    {
+      "path": "Engine/Tests/Editor/BattleContentCombinationTests.cs",
+      "sha256": "9160F2E9787CA08643C8A48758B6201BA58F5EDA2F6000DB99756483313CFD29"
+    },
+    {
+      "path": "Engine/Tests/Editor/BattleContentCombinationTests.cs.meta",
+      "sha256": "A8A30E76998080A384CAE19627D48FB268735CCE3AF7AAF3E9514561D1F25224"
+    },
+    {
+      "path": "Engine/Tests/Editor/BattleContentEffectCompilationTests.cs",
+      "sha256": "DBB9895308C6129F978BE171ED3893D77F34087C7AA3D5C5BD3560CC27742D0E"
+    },
+    {
+      "path": "Engine/Tests/Editor/BattleContentEffectCompilationTests.cs.meta",
+      "sha256": "63DBBFC9EEC9141A2244FC817C89D26B5CED275D7DE849BFA792AD6BC0C8E114"
+    },
+    {
+      "path": "Engine/Tests/Editor/BattleContentIntegrationTests.cs",
+      "sha256": "02741E655321BFF82F3DD50C774E5D49606A45F5E59DE5F7519D2261D990DE1A"
+    },
+    {
+      "path": "Engine/Tests/Editor/BattleContentIntegrationTests.cs.meta",
+      "sha256": "A3274D9820E194D7A98A0C7E9C2102EB08B27A8D63EB59AC9BC79B2317B08F9D"
+    },
+    {
+      "path": "Engine/Tests/Editor/BattleContentXmlReaderTests.cs",
+      "sha256": "16543B4BF500DAF408E08A790145EA55CF1234317A1B888B2451E5E2E180A5AE"
+    },
+    {
+      "path": "Engine/Tests/Editor/BattleContentXmlReaderTests.cs.meta",
+      "sha256": "AA268068C142F8948DE2367593A87D4B421178014CAED7C65170412394D63E27"
+    },
+    {
+      "path": "Engine/Tests/Editor/BattleEffectPlanTests.cs",
+      "sha256": "4DAB27A3B45A691EE800FA624EC1CAB5AB40D76E4102F6802B82A289FFCC7F69"
+    },
+    {
+      "path": "Engine/Tests/Editor/BattleEffectPlanTests.cs.meta",
+      "sha256": "9EBE3F87443A399CE145B551B8739CEB0430EACE6B43383CCCBFC936D5D1FF45"
+    },
+    {
+      "path": "Engine/Tests/Editor/BattleHostTests.cs",
+      "sha256": "59C1D7DA6AB5FED407FAB3C49106B572CE65E85416567812B061B1FF5A6730A5"
+    },
+    {
+      "path": "Engine/Tests/Editor/BattleHostTests.cs.meta",
+      "sha256": "D27FC0B69B679D8C19C34D39E1D00B5AE2ED444A95F63BB634EE9238AEE47F41"
+    },
+    {
+      "path": "Engine/Tests/Editor/BattleItemPlaybackTests.cs",
+      "sha256": "1445CD74A9C4C776A374E261D5C7F7DE5A991E45EB424F84DF0970EFF5B39C88"
+    },
+    {
+      "path": "Engine/Tests/Editor/BattleItemPlaybackTests.cs.meta",
+      "sha256": "358EF4ACF7F504D4FA433BD8143C9D38CABCEDF9AEB49D2D1AC9B2D8C5BA480B"
+    },
+    {
+      "path": "Engine/Tests/Editor/BattleItemRoundMemoryTests.cs",
+      "sha256": "9DA4923BA2872249AEF26F17730D489A30C738E07CD931690C12CBFF449F7C1E"
+    },
+    {
+      "path": "Engine/Tests/Editor/BattleItemRoundMemoryTests.cs.meta",
+      "sha256": "828E66DDE9AC00FFED3516FDC046AAE569339FFD937E4BA106498452B5D5A1FA"
+    },
+    {
+      "path": "Engine/Tests/Editor/BattleRelicBindingTests.cs",
+      "sha256": "8D203619B5A6FBB6A8A3AFF0FF4A41746A048A171DE069BBF13104F12BCB50C8"
+    },
+    {
+      "path": "Engine/Tests/Editor/BattleRelicBindingTests.cs.meta",
+      "sha256": "A1DE8FDCCE2FED6346B11A92D2587DA20165EDEB71B115C6DB8E412DA6478737"
+    },
+    {
+      "path": "Engine/Tests/Editor/BattleSessionPlaybackTests.cs",
+      "sha256": "248EFF65A4BDFFF0BFFE0B3B411F6A7562D5BC747C20DE70BC639FB95F8DE863"
+    },
+    {
+      "path": "Engine/Tests/Editor/BattleSessionPlaybackTests.cs.meta",
+      "sha256": "10B8E2BD759EEFE86BF77ABA8C8AD2B0E95C168C70FB37DF08FD8D93B352D636"
+    },
+    {
+      "path": "Engine/Tests/Editor/BattleSessionTests.cs",
+      "sha256": "0470027E662A3DE6F104426D7D9DD1E75852452F01CC2E0848EB5D1AB03536FC"
+    },
+    {
+      "path": "Engine/Tests/Editor/BattleSessionTests.cs.meta",
+      "sha256": "9A2BBA616A44D5B94A06804590F21F91F49E4D05F4F3A7CEF7C135BC5532025B"
+    },
+    {
+      "path": "Engine/Tests/Editor/BattleTemplateContentTests.cs",
+      "sha256": "2E0E9A86D7DA8A8D2BE296647AB883FE0B61C80B8F91BCBF599C796FD5A5B477"
+    },
+    {
+      "path": "Engine/Tests/Editor/BattleTemplateContentTests.cs.meta",
+      "sha256": "6B3B7CFD4F3B08DC3DDAC7746AC987EF4426DBE1B6221487A2553AF41CCE8140"
+    },
+    {
+      "path": "Engine/Tests/Editor/BattleTimelineTests.cs",
+      "sha256": "6B268A5448496455C7AFF61A26DCA293CEC7160A724BB6DEAC30FE92193537A5"
+    },
+    {
+      "path": "Engine/Tests/Editor/BattleTimelineTests.cs.meta",
+      "sha256": "51BCB7964D3867CDED23805069ACDD1E7DEF01ECF6BC418DFF5B85FEE1461D27"
+    },
+    {
+      "path": "Engine/Tests/Editor/BuildAndScoringTests.cs",
+      "sha256": "0B7EB9E41DCA888968D403324AAC6B4DBCB95296915D25A0827C9399450257D2"
+    },
+    {
+      "path": "Engine/Tests/Editor/BuildAndScoringTests.cs.meta",
+      "sha256": "DE03627BD43512E4AB2EB0ABBE51EB1702FD970F84DAB40B4942793905EE23EE"
+    },
+    {
+      "path": "Engine/Tests/Editor/CardDuelTests.cs",
+      "sha256": "D3711498D8539A2E8813B4BFB2B71D9A783BE30986AAA777AB3F62054F65DB4A"
+    },
+    {
+      "path": "Engine/Tests/Editor/CardDuelTests.cs.meta",
+      "sha256": "17ADDC0B53D6DD35E344562A22964D660D09DFB5B431B3289B3001FDFD5FAA91"
+    },
+    {
+      "path": "Engine/Tests/Editor/CardEffectsTests.cs",
+      "sha256": "2ECF3D0ACD4EC04169B5B48709C0CE807390CAB47626EF4F88B2DE70647A1AAC"
+    },
+    {
+      "path": "Engine/Tests/Editor/CardEffectsTests.cs.meta",
+      "sha256": "8842E5AFEC6B8ED073E6636CD727D5C70158C0A72D3CCD7FF31B2A3A1E917657"
+    },
+    {
+      "path": "Engine/Tests/Editor/CardScoreQueryTests.cs",
+      "sha256": "864975570F41EB6C3531CFCC5504A564F693D264A0B779BE210DD9B25C589DAE"
+    },
+    {
+      "path": "Engine/Tests/Editor/CardScoreQueryTests.cs.meta",
+      "sha256": "A15DEDA0A549A13218BA18FEA8FE844783EE8BFDEF904F628F973612F74773B6"
+    },
+    {
+      "path": "Engine/Tests/Editor/CardTableSessionTests.cs",
+      "sha256": "A0737B13284D1AA765D3F7DD0741A9DC47CC1688E97844625549DFC6463D8522"
+    },
+    {
+      "path": "Engine/Tests/Editor/CardTableSessionTests.cs.meta",
+      "sha256": "FB17298EB146C4F04A6D1BEC4F0868F40FC3C81CE6E80EFDFDA8330C8C10A7C8"
+    },
+    {
+      "path": "Engine/Tests/Editor/CardZoneOperationsTests.cs",
+      "sha256": "CCBCEC345D31C357930BAFFC7FC6F9E49D54FB7D1BE637428CE589D8ABA3F4D2"
+    },
+    {
+      "path": "Engine/Tests/Editor/CardZoneOperationsTests.cs.meta",
+      "sha256": "76C147E089351B2D8750C2BA24C6D812E71DF74A1DB512B8B496AB172A628871"
+    },
+    {
+      "path": "Engine/Tests/Editor/CleanseAndRelicOrderTests.cs",
+      "sha256": "E0DC432081092575FF45BFC76BCA54064114F89DED7F4B13E7E502AB3DB63EB0"
+    },
+    {
+      "path": "Engine/Tests/Editor/CleanseAndRelicOrderTests.cs.meta",
+      "sha256": "735218114166C4A0B85D2A8300E43ED264DD3BB7BB87CA727C5547FA252435C3"
+    },
+    {
+      "path": "Engine/Tests/Editor/CombatActionCompletionRuntimeTests.cs",
+      "sha256": "960ADC5CA19852A3B87F5F78DD4AC78F4C66AE4531A6B8E88C3CDC356C9BB02F"
+    },
+    {
+      "path": "Engine/Tests/Editor/CombatActionCompletionRuntimeTests.cs.meta",
+      "sha256": "EC29AA17D9A4F20CC20F9DED03DA6311245BA98DDC33F9262304023F173B38DC"
+    },
+    {
+      "path": "Engine/Tests/Editor/CombatAmountModifierTests.cs",
+      "sha256": "61D7BD8F909452901DFB9FDB333CD958B1E9267A833058E5693DB9E0728C7EFE"
+    },
+    {
+      "path": "Engine/Tests/Editor/CombatAmountModifierTests.cs.meta",
+      "sha256": "90E23F26CF3FB655ED8D25294E2803D8C1906EDF1BD4678989C442E25B5C33FA"
+    },
+    {
+      "path": "Engine/Tests/Editor/CombatBoundaryRuntimeTests.cs",
+      "sha256": "56127B704A542A9CB2A1CC9433060636B08E7148A1C555B2F86D163A5982D879"
+    },
+    {
+      "path": "Engine/Tests/Editor/CombatBoundaryRuntimeTests.cs.meta",
+      "sha256": "634C6FC3A864C1D3CD947521246F4D7956724265C8B3E2F2375BB3529797C13A"
+    },
+    {
+      "path": "Engine/Tests/Editor/CombatEliteBleedingTests.cs",
+      "sha256": "3819DAF91659825DD363A56488C42C43E796F153B7A0CA69395110C58DE526CC"
+    },
+    {
+      "path": "Engine/Tests/Editor/CombatEliteBleedingTests.cs.meta",
+      "sha256": "43C27A902269B930FD50B6AEB728BB518EA6706694C30BE41F7BFFC2E169CBBB"
+    },
+    {
+      "path": "Engine/Tests/Editor/CombatPeriodicTests.cs",
+      "sha256": "6461CCB9AD78F600684359FC7A471EAD172D55CA28100B3C94CAAA967FC48A3B"
+    },
+    {
+      "path": "Engine/Tests/Editor/CombatPeriodicTests.cs.meta",
+      "sha256": "CD4A13C92FC5CAD82631578CAABBA19C5B77841BA05751027E19327578AE15E3"
+    },
+    {
+      "path": "Engine/Tests/Editor/CombatPrimitiveTests.cs",
+      "sha256": "3FE7FC8BA34288D822BD0F1891241A9CD880F23B1194C461797CCDB439CD5941"
+    },
+    {
+      "path": "Engine/Tests/Editor/CombatPrimitiveTests.cs.meta",
+      "sha256": "5921BAB43129E3BAADE2DE9C86DAE3FE7BFA450CA8DEA3465D71CE561A545964"
+    },
+    {
+      "path": "Engine/Tests/Editor/CombatReactionIntegrationTests.cs",
+      "sha256": "6A6C682522CF129564BD9B1D8E3DE2B2150E27D27C37EDD15A68202E621024E0"
+    },
+    {
+      "path": "Engine/Tests/Editor/CombatReactionIntegrationTests.cs.meta",
+      "sha256": "1DCE998505C5A6DFAE89345E25BA28E7552C6918D49CE356113D0508BAD7893E"
+    },
+    {
+      "path": "Engine/Tests/Editor/CombatReactionRuntimeTests.cs",
+      "sha256": "8D5B30AA2C7EA31FD4116C5BF773F566BE09CF306C7CE1F7B57791C8EB692570"
+    },
+    {
+      "path": "Engine/Tests/Editor/CombatReactionRuntimeTests.cs.meta",
+      "sha256": "17B21E495F76D40F5F28D450B6465E04B69C77C313B69A0DF5A6CAD26F235079"
+    },
+    {
+      "path": "Engine/Tests/Editor/CombatReactionTests.cs",
+      "sha256": "F4A1C28AA7F6AB4E2595D1701B7E280D9CF31721E1779C81CF77BF08DB2AC8DA"
+    },
+    {
+      "path": "Engine/Tests/Editor/CombatReactionTests.cs.meta",
+      "sha256": "A4C49C02FBF5C2A39FE680A7B6AC6796404A4DFCC8C8B1FF3BE575CAA3CA638E"
+    },
+    {
+      "path": "Engine/Tests/Editor/CombatStatusBehaviorTests.cs",
+      "sha256": "0FB901E909BF21CD7A8264813E43B8BC3A1051F4350717976AB432283EF787EC"
+    },
+    {
+      "path": "Engine/Tests/Editor/CombatStatusBehaviorTests.cs.meta",
+      "sha256": "826B06FA23AC6AFFDD79AD140B4D6CA9F1ADB6FEF8C5CD534D8C48D04A0C1069"
+    },
+    {
+      "path": "Engine/Tests/Editor/CombatStatusReactionTests.cs",
+      "sha256": "4508E7F033AC5C67EC5B37DEC0C3393B84A7674CFE49C6C01AB075260EB60597"
+    },
+    {
+      "path": "Engine/Tests/Editor/CombatStatusReactionTests.cs.meta",
+      "sha256": "4C91E5A2F737B8D9640726B4F8D12D30C1A8DA06AB556AD7DF0111CB4CC37C9C"
+    },
+    {
+      "path": "Engine/Tests/Editor/CombatTargetTests.cs",
+      "sha256": "9C0888BD72082173F5A5A21EBD90083D2DB4497A22F854B7A811C3E3822C7620"
+    },
+    {
+      "path": "Engine/Tests/Editor/CombatTargetTests.cs.meta",
+      "sha256": "AB662F6429E68640587404E254E7B06630EA5F36B388D197566219DFEA7951F8"
+    },
+    {
+      "path": "Engine/Tests/Editor/CombatTests.cs",
+      "sha256": "07F4DF2771DF73C382E318749EA8E0CF50D1B5919B2E5F579607F70B6358CE61"
+    },
+    {
+      "path": "Engine/Tests/Editor/CombatTests.cs.meta",
+      "sha256": "84F01D79205B2F6575D101C943F2C044842F781FE442531A2247DA7CBD63440A"
+    },
+    {
+      "path": "Engine/Tests/Editor/CombatWrathImmunityTests.cs",
+      "sha256": "8528595BBC974DBE1F8605C0A6B7DC1A376CCDEFDE1C7DB14773D28C260C10E9"
+    },
+    {
+      "path": "Engine/Tests/Editor/CombatWrathImmunityTests.cs.meta",
+      "sha256": "C015C3322AC9170F267A07B977C908EB352151DF6D73EB519F200F001F6A4C13"
+    },
+    {
+      "path": "Engine/Tests/Editor/CompatibleHandMechanismTests.cs",
+      "sha256": "DFC42ABAC05B49AE7225B60873AD5D76883CC845F4F64C3F94E44BBBFE87F4A5"
+    },
+    {
+      "path": "Engine/Tests/Editor/CompatibleHandMechanismTests.cs.meta",
+      "sha256": "1416912FA20D124C38579816977C353264FB7A9A7BDBFF38CC9667EAF7B02A90"
+    },
+    {
+      "path": "Engine/Tests/Editor/DataFoundationTests.cs",
+      "sha256": "35B962206955A7732A76D3AC23156B1FA9CEA2BD477F5A68874F68AD50CC9CEF"
+    },
+    {
+      "path": "Engine/Tests/Editor/DataFoundationTests.cs.meta",
+      "sha256": "DE735F89A4D2277105D49084D578D885AC08ACFFC94151A83645C239016E1FFD"
+    },
+    {
+      "path": "Engine/Tests/Editor/DesignAdventure2951Tests.cs",
+      "sha256": "99654775B87B5F809A2AD40904444DF7561C2C727D45340ADC68FE46A64DC669"
+    },
+    {
+      "path": "Engine/Tests/Editor/DesignAdventure2951Tests.cs.meta",
+      "sha256": "BEEFE987A669F93F200BE80A521F9D415A13C43B9957E9F0233006A9F25A415C"
+    },
+    {
+      "path": "Engine/Tests/Editor/DesignerPoisonFlushTests.cs",
+      "sha256": "E24CA93CAB300C0235809BC5035DF03C0E04BBF478EF14086FEC155B21C403CF"
+    },
+    {
+      "path": "Engine/Tests/Editor/DesignerPoisonFlushTests.cs.meta",
+      "sha256": "8902E8B3AEEC89AD4AFBD9BA371CCC3FCD0EB78FCCFDF619851D438C8E35BD30"
+    },
+    {
+      "path": "Engine/Tests/Editor/DesignFlow2951Tests.cs",
+      "sha256": "4D3A421CFF3A1E0816649948022AA1A1A580BD70D919A46A984183A717307274"
+    },
+    {
+      "path": "Engine/Tests/Editor/DesignFlow2951Tests.cs.meta",
+      "sha256": "8FDED6E8D684A5A61560AE3E91ACDA44F61D936DC8CB8CFE1E26CE24179E6C16"
+    },
+    {
+      "path": "Engine/Tests/Editor/DesignItem2951Tests.cs",
+      "sha256": "F326DC92A7470634AAF24A08F1B11278F7CFE213053245FDB87C189BEED78128"
+    },
+    {
+      "path": "Engine/Tests/Editor/DesignItem2951Tests.cs.meta",
+      "sha256": "47316AA1884F87363CC804989FE1CBEF9BD7CC79B5807F722AC8DBADC80932C7"
+    },
+    {
+      "path": "Engine/Tests/Editor/DesignRelic1726Tests.cs",
+      "sha256": "CE799AA0DC119CD112DD8E68EE0F46366B1366A51B279F5057073B0993FED5F0"
+    },
+    {
+      "path": "Engine/Tests/Editor/DesignRelic1726Tests.cs.meta",
+      "sha256": "91A76721C7DE9154356D72EF25B2BBCEB1AAD9DC9C729788E7D9707B599FA632"
+    },
+    {
+      "path": "Engine/Tests/Editor/DesignRevision1563Tests.cs",
+      "sha256": "314FB4C4D82A816A110C3D6E5BA651ED51F870F830B4F71FA1C0D0386BE47282"
+    },
+    {
+      "path": "Engine/Tests/Editor/DesignRevision1563Tests.cs.meta",
+      "sha256": "5BDC380EA472996578F0999B93413450FE1602532EA9605DA3F76E69419C8078"
+    },
+    {
+      "path": "Engine/Tests/Editor/DesignRevision1582Tests.cs",
+      "sha256": "3B56A50F9CAD1AC91488D1157E5B3A7C159E8CE759068F58F900578535DBBB86"
+    },
+    {
+      "path": "Engine/Tests/Editor/DesignRevision1582Tests.cs.meta",
+      "sha256": "04895E1FFC3BD2670B49C9BA1AB0BA6EC9ADBF5407D8F93CF5CD93E4C8FDF089"
+    },
+    {
+      "path": "Engine/Tests/Editor/DesignRevision1726Tests.cs",
+      "sha256": "BE3D404A42E307A332361944817B699CC6531D6A801A6DE68E75348B0FA3AE7B"
+    },
+    {
+      "path": "Engine/Tests/Editor/DesignRevision1726Tests.cs.meta",
+      "sha256": "DCF80E83438715930064CDC7CE5F68A9B4972E589BFFCA9191A44E14C14642E8"
+    },
+    {
+      "path": "Engine/Tests/Editor/DesignScoring2951Tests.cs",
+      "sha256": "4D430547CC2196D5FE883D2D6C531F53847F29AB35C3C356BB4E4571BEB7484E"
+    },
+    {
+      "path": "Engine/Tests/Editor/DesignScoring2951Tests.cs.meta",
+      "sha256": "2F4B2FDCB72BC6825041604D0B83B74932DFA1E1D42C8ACF2CD1363F1EEB0365"
+    },
+    {
+      "path": "Engine/Tests/Editor/DiscardRewardTests.cs",
+      "sha256": "DC6A85774DB6A3BF9F8D16161FC25EB5282A320F220E0A266FCA28270288C6FE"
+    },
+    {
+      "path": "Engine/Tests/Editor/DiscardRewardTests.cs.meta",
+      "sha256": "81073C7E2DB67DF521F335A098C9DD836033F0A2908AF0F40CBCDD86313E5E44"
+    },
+    {
+      "path": "Engine/Tests/Editor/DrawEngineTests.cs",
+      "sha256": "1D8AC598C9A8B2EF0F5654948C95675783FA26BD5B81E78BF38872C4CEF200F0"
+    },
+    {
+      "path": "Engine/Tests/Editor/DrawEngineTests.cs.meta",
+      "sha256": "EF95DE3F81C6E878297E207FB9C393210C7FB63DEC9F8C545CE3B1F10B03EB8E"
+    },
+    {
+      "path": "Engine/Tests/Editor/EliteBleedingIntegrationTests.cs",
+      "sha256": "79D073273C0B6DC6A205364A587A67B08EA1BED9531D7D122A20CA75BD9CD41C"
+    },
+    {
+      "path": "Engine/Tests/Editor/EliteBleedingIntegrationTests.cs.meta",
+      "sha256": "C067CAEB880FC232E75B5BF378927CB1CA3FA3ACF43BFA1D8C7FE7298BAB5ADB"
+    },
+    {
+      "path": "Engine/Tests/Editor/EliteBleedingInteractionTests.cs",
+      "sha256": "009D7815E75164A9298E18E2A9EBFD778DA41F09DBCFA67EDC4828A95D91AA87"
+    },
+    {
+      "path": "Engine/Tests/Editor/EliteBleedingInteractionTests.cs.meta",
+      "sha256": "D0DEEC7587E23D4DD494C91F4D1F095901CB4F1817254ABD74A87A2768D933EE"
+    },
+    {
+      "path": "Engine/Tests/Editor/EncounterDataTests.cs",
+      "sha256": "D50C2928838E8AFCEF627D5AE07D01A6AE5CD7BE4B340F15B73782993F030139"
+    },
+    {
+      "path": "Engine/Tests/Editor/EncounterDataTests.cs.meta",
+      "sha256": "D379FA41CB5C1650AC8F9D545A169718C264F23A76ABA374AB6DE622921B631D"
+    },
+    {
+      "path": "Engine/Tests/Editor/EncounterIntegrationTests.cs",
+      "sha256": "F78CD455B887C324878C13EDA8769FEFD7B4B8AF29BB91CC0A90C69AE43C69DA"
+    },
+    {
+      "path": "Engine/Tests/Editor/EncounterIntegrationTests.cs.meta",
+      "sha256": "78B99D65AE48E7CF1872237945091E761B2504A5D3CB54829EED1868E886E1D0"
+    },
+    {
+      "path": "Engine/Tests/Editor/EnemyBehaviorTests.cs",
+      "sha256": "4509E33DC43DB7699FC5E5C97A5004020A50E660CF28FFB8F96CAD4765F68A58"
+    },
+    {
+      "path": "Engine/Tests/Editor/EnemyBehaviorTests.cs.meta",
+      "sha256": "D6D06FFFF1EBC29D474D51C3816D6FE84A8AEAD695CB45751F8E76B9E6221944"
+    },
+    {
+      "path": "Engine/Tests/Editor/HandGuideFourOfAKindTests.cs",
+      "sha256": "5220EBBA2A9A1C495859C2119E54B611586B533C7AF92E5CC5D30DB2FB203141"
+    },
+    {
+      "path": "Engine/Tests/Editor/HandGuideFourOfAKindTests.cs.meta",
+      "sha256": "13A791F0F00815F62570C421EF690D5790614D965FC93C14C910D5C5EA502BA9"
+    },
+    {
+      "path": "Engine/Tests/Editor/HandGuideTests.cs",
+      "sha256": "50A58A79A0A07C32C70B9E92FB913BBC4468073D3A0EA7CA9DBAC44044F94079"
+    },
+    {
+      "path": "Engine/Tests/Editor/HandGuideTests.cs.meta",
+      "sha256": "F5608C75D44F9D7076D3B1DE8B7D19A291DED1E8DEC45FE3235649094AB6935A"
+    },
+    {
+      "path": "Engine/Tests/Editor/MatchEngineTests.cs",
+      "sha256": "EDA1931584FEB5601601A01C78F1CA5D178568895A9B40B894FED749F66695CA"
+    },
+    {
+      "path": "Engine/Tests/Editor/MatchEngineTests.cs.meta",
+      "sha256": "91AC38AA7A79BE6DA891E680374064BD60C7E1F92B21618DA687B9F129EB22E1"
+    },
+    {
+      "path": "Engine/Tests/Editor/ModuleBoundaryTests.cs",
+      "sha256": "FBAC499A5DD4B08DFE6CD647EC4DBCD8140359B04B213422D8C5A339653A0EE1"
+    },
+    {
+      "path": "Engine/Tests/Editor/ModuleBoundaryTests.cs.meta",
+      "sha256": "6A8DBD0BE2E7A515BB0D68922FB8364110FF4692DB1160A514371F4748FEC3BF"
+    },
+    {
+      "path": "Engine/Tests/Editor/PerEffectTargetTests.cs",
+      "sha256": "593A9EB05AE3B779651B9099A5FEC3AC1017D5C63ACD80C31C0073E866794445"
+    },
+    {
+      "path": "Engine/Tests/Editor/PerEffectTargetTests.cs.meta",
+      "sha256": "4C26CF6A26BBA84FF9CBB45CD62F01679CABE7AAA69C0E1324341989FAEB9E5E"
+    },
+    {
+      "path": "Engine/Tests/Editor/PeriodicBattleTests.cs",
+      "sha256": "8F54968186398A8A13302C83E52224D77849A039A78691C6CD09F4B24DD43ED6"
+    },
+    {
+      "path": "Engine/Tests/Editor/PeriodicBattleTests.cs.meta",
+      "sha256": "714905B1C71C02E123F4ABFDC8F187234C27B3672B42E84DDDA8FF7ADC85ECDA"
+    },
+    {
+      "path": "Engine/Tests/Editor/PeriodicTimingSubjectTests.cs",
+      "sha256": "0CCCD214A90D3F64B9310EBB82A05C75CA13B6883BCC4E3BC62E6E7F6178C85B"
+    },
+    {
+      "path": "Engine/Tests/Editor/PeriodicTimingSubjectTests.cs.meta",
+      "sha256": "25CE2EB1CB6511FDD885D2EE376751D72219743D653E6FF1EC634601B512DA79"
+    },
+    {
+      "path": "Engine/Tests/Editor/PlayerTurnTests.cs",
+      "sha256": "89484ED5F66ADFF6843942BCEEED8DF52AF2A70F182812F5F9FCC546748452D2"
+    },
+    {
+      "path": "Engine/Tests/Editor/PlayerTurnTests.cs.meta",
+      "sha256": "1B689A80DD8D5D6D34839210B4E45A1E1A0D54871ADBAD8A464A826ECF25957B"
+    },
+    {
+      "path": "Engine/Tests/Editor/PokerEngine.Tests.Editor.asmdef",
+      "sha256": "320D1CDC2FA7B3EA44094F76C9E7CA594586243EB0027252DC2ED52FDAF50331"
+    },
+    {
+      "path": "Engine/Tests/Editor/PokerEngine.Tests.Editor.asmdef.meta",
+      "sha256": "CB97E9F9242E01812899BF4EAA1B3DADC1F4D076B46DB024BB68F6C7A62AA450"
+    },
+    {
+      "path": "Engine/Tests/Editor/PokerHandCompatibilityRegressionTests.cs",
+      "sha256": "41017CE2B1240E6762086CA8E5F032411F3B8BB8CBFA09F9285DC78789A75670"
+    },
+    {
+      "path": "Engine/Tests/Editor/PokerHandCompatibilityRegressionTests.cs.meta",
+      "sha256": "A690A3BFD64AC5A3CF52DB17E5025A3444CE5F0E3BA8E5EF1C69D6284A71940D"
+    },
+    {
+      "path": "Engine/Tests/Editor/PokerHandEffectIntegrationTests.cs",
+      "sha256": "5557D01180CBB71772CBA0C340A097298E554C713606BB48C24FEDDF83F79125"
+    },
+    {
+      "path": "Engine/Tests/Editor/PokerHandEffectIntegrationTests.cs.meta",
+      "sha256": "A4655C092FC59A461646F772F4E051D5597C93C4C84574FB051B0235B6A94EFA"
+    },
+    {
+      "path": "Engine/Tests/Editor/PokerHandEffectRuleTests.cs",
+      "sha256": "7243C8E419E919FE414D98A88B99E321B9D4855CB16D742FC9D5E2227DEB30C7"
+    },
+    {
+      "path": "Engine/Tests/Editor/PokerHandEffectRuleTests.cs.meta",
+      "sha256": "713BE93EE0B2B46E840509F8E49EFA2026663171BF9748EFB5EAD4464B63595F"
+    },
+    {
+      "path": "Engine/Tests/Editor/ProgressionTests.cs",
+      "sha256": "04AD20218E26E4A8009F4D6BA519DEECE5309FACAC3B7F3350981C0F3B2EC75D"
+    },
+    {
+      "path": "Engine/Tests/Editor/ProgressionTests.cs.meta",
+      "sha256": "8D61D5110C47A736DEFFE06A7839F0CF6D21B4C92546106772D4EA2C87C33AD7"
+    },
+    {
+      "path": "Engine/Tests/Editor/RelicActionBattleTests.cs",
+      "sha256": "AD31D46AAF31F1454C685C33F213C098FBCBCCD9074958DD844E92C01781C82D"
+    },
+    {
+      "path": "Engine/Tests/Editor/RelicActionBattleTests.cs.meta",
+      "sha256": "D973083F6382DD77610AB8905C7D4CCBA1B45521706B356F71F7AE1A09856B66"
+    },
+    {
+      "path": "Engine/Tests/Editor/RelicActionTransactionTests.cs",
+      "sha256": "839F9E0C19C6BAADDBC5E4FC52306C0C2A6384FE75E26D5E29159E8A960E334C"
+    },
+    {
+      "path": "Engine/Tests/Editor/RelicActionTransactionTests.cs.meta",
+      "sha256": "68C74B863C365268922AC57003766ABEA89A43E936246683B78050B1023D6191"
+    },
+    {
+      "path": "Engine/Tests/Editor/RelicBoundaryBattleTests.cs",
+      "sha256": "637D74F13210BC5D41FB62BE794C8F86635B42287CE3DC730CEBF40E344FCA25"
+    },
+    {
+      "path": "Engine/Tests/Editor/RelicBoundaryBattleTests.cs.meta",
+      "sha256": "D196E7A9E7828DBD08D69A94D47E3798688768691C7AECFE09674417DA5358D9"
+    },
+    {
+      "path": "Engine/Tests/Editor/RelicBoundaryTransactionTests.cs",
+      "sha256": "3B387DECFA4C7E559713A11BDA4110F28E046181730EC8194926224744D2DD8D"
+    },
+    {
+      "path": "Engine/Tests/Editor/RelicBoundaryTransactionTests.cs.meta",
+      "sha256": "01CC540929C30D9BBF70A4E89F4DB143A222A23FB7C78627D6F944E655EE327C"
+    },
+    {
+      "path": "Engine/Tests/Editor/RelicCompatibilityTests.cs",
+      "sha256": "79ACFD1BF29D295BA48CB907F9FDCEC7F03E809DD5433F921659B42EC86F8705"
+    },
+    {
+      "path": "Engine/Tests/Editor/RelicCompatibilityTests.cs.meta",
+      "sha256": "26FED69804622D94E753BCABB8E964734B60D2EFFE11A806DDDFB189A5CF503C"
+    },
+    {
+      "path": "Engine/Tests/Editor/RelicHandEffectBattleTests.cs",
+      "sha256": "440044FC6BE64A9F7F4120840B8A4306A3B25490BFD02202193F15A001A39FC2"
+    },
+    {
+      "path": "Engine/Tests/Editor/RelicHandEffectBattleTests.cs.meta",
+      "sha256": "B46B398A8AA0F8C8A79F1067674866A96BB9CEBF661348CB70AD24684FE54F0D"
+    },
+    {
+      "path": "Engine/Tests/Editor/RelicHandEffectTests.cs",
+      "sha256": "2D29A7522874B85338C3EF616DFE538B2E68F389A047537F8899CDEBA9C9E11A"
+    },
+    {
+      "path": "Engine/Tests/Editor/RelicHandEffectTests.cs.meta",
+      "sha256": "8C4E0511B11A70BDD792C53BBC6839047BF31CD50B65BEC3057CE9071BC1B3FB"
+    },
+    {
+      "path": "Engine/Tests/Editor/RelicNumericBattleTests.cs",
+      "sha256": "01A90839A135C7B8FF5C69BAABF3295812C22E805413AA234EA62E6ABD5CEA2F"
+    },
+    {
+      "path": "Engine/Tests/Editor/RelicNumericBattleTests.cs.meta",
+      "sha256": "83C4256BA8FEC386664697232F8C9B282495A673EFD547C3CC4FE2B1DAD3D3C0"
+    },
+    {
+      "path": "Engine/Tests/Editor/RelicNumericTests.cs",
+      "sha256": "2165D581349E01FFB83D7A88AFB7110B0ED35270DD1573AE080CE149A44D1678"
+    },
+    {
+      "path": "Engine/Tests/Editor/RelicNumericTests.cs.meta",
+      "sha256": "6E7A61758E36E74567ADE92E57A9DC582D6F5DBA420A6DA105429D23BE97A1E6"
+    },
+    {
+      "path": "Engine/Tests/Editor/RelicRuleBattleTests.cs",
+      "sha256": "A6DFDD15CDA31B56FE694B955879FA78996136B39C7D88B97C2AE6830E115D0C"
+    },
+    {
+      "path": "Engine/Tests/Editor/RelicRuleBattleTests.cs.meta",
+      "sha256": "76620D09268E634A3090C544D9F4B39E64328B3131C21E856C1E4E81440F36F4"
+    },
+    {
+      "path": "Engine/Tests/Editor/RelicRuleTests.cs",
+      "sha256": "5B3E092995CCE1366689B25FE4A1AB2E9513C650FD1CC7CC42FA500A91EE615C"
+    },
+    {
+      "path": "Engine/Tests/Editor/RelicRuleTests.cs.meta",
+      "sha256": "8C78B3C1235887207A35EB5C7BF0EC8FDB373B286B7A0B52E122835AC5A9B28A"
+    },
+    {
+      "path": "Engine/Tests/Editor/RelicTriggerBattleTests.cs",
+      "sha256": "C99D39216F41AB9AB1C80917E50ECC4D6E596F16A86DD5AAA3D57BCF43246A3D"
+    },
+    {
+      "path": "Engine/Tests/Editor/RelicTriggerBattleTests.cs.meta",
+      "sha256": "9F5DEA40A7BA219A8350098E6ED9EADC5F6E1EB2A8B6A2FF8539BC3A92768B72"
+    },
+    {
+      "path": "Engine/Tests/Editor/RelicTriggerConfigurationTests.cs",
+      "sha256": "600AB37861C6F4C84DC62B60B012120A15C57CBA3FFA142790C1B7459A7622F7"
+    },
+    {
+      "path": "Engine/Tests/Editor/RelicTriggerConfigurationTests.cs.meta",
+      "sha256": "D4F686AE1A724BBEDB824A33169F1888E5922A37F849600D87782A64CA9978C7"
+    },
+    {
+      "path": "Engine/Tests/Editor/RelicTriggerTransactionTests.cs",
+      "sha256": "900800A7B4B1E6F882708009F9E2C25F2F1D5E7E5FEBEE709FC1E27BAE85F38D"
+    },
+    {
+      "path": "Engine/Tests/Editor/RelicTriggerTransactionTests.cs.meta",
+      "sha256": "AB38D3D9E7693AA32C170E39B1194F8E1939B0EBCF7D645FFB826ED7633A26A3"
+    },
+    {
+      "path": "Engine/Tests/Editor/RunFloorTests.cs",
+      "sha256": "E542BF771EE9DC14A97F358E95ED28F395DD5AF06B7E919A586A8C62344E84B4"
+    },
+    {
+      "path": "Engine/Tests/Editor/RunFloorTests.cs.meta",
+      "sha256": "89179FD8CB73E7B7B2C026A04209E15283F68669FC116D7A2758EA7ED2818449"
+    },
+    {
+      "path": "Engine/Tests/Editor/RunModuleTests.cs",
+      "sha256": "F3A8DE372B7BF91B4B9AB9CC94D2B46723DCD3C0A79479A73455C4C25BE30A8F"
+    },
+    {
+      "path": "Engine/Tests/Editor/RunModuleTests.cs.meta",
+      "sha256": "2E7A83D756AAD2AD7181E2E50B6C1C729A0C188C78D658E50518AEED73B34B35"
+    },
+    {
+      "path": "Engine/Tests/Editor/RunNodeTests.cs",
+      "sha256": "7969DAD4DB04FC7FFEAF35149EA07EE7D6D1CB73C099FBCF7DCF03CCF4206FE2"
+    },
+    {
+      "path": "Engine/Tests/Editor/RunNodeTests.cs.meta",
+      "sha256": "20990F495F6CCA8AB17C60C14C2610C23236A8581DA5A4E584CBD76865A19FD1"
+    },
+    {
+      "path": "Engine/Tests/Editor/ScoredDuelTests.cs",
+      "sha256": "65251E64833C6D1CC3AF744B6FE791753E64368E5BAEC91D5EC0C415655E68CE"
+    },
+    {
+      "path": "Engine/Tests/Editor/ScoredDuelTests.cs.meta",
+      "sha256": "63D0ADB8FF88BF5315EBD4B29280E78214530FED32E9A4ECDCE794FC147CFEFB"
+    },
+    {
+      "path": "Engine/Tests/Editor/ScoredHandDamageTests.cs",
+      "sha256": "EAAFA2DB0AB45FD5A63B83658261C64B9417626770F5DB92F1FD54C372FAEDDC"
+    },
+    {
+      "path": "Engine/Tests/Editor/ScoredHandDamageTests.cs.meta",
+      "sha256": "ECD22BD8BFD581E07CE1FA2937C65EFBBEB26CCC09F110892C66321BF541DF1F"
+    },
+    {
+      "path": "Engine/Tests/Editor/ScoreProfileTests.cs",
+      "sha256": "F2327371DDDE2DC8C11755583BE91D52DDF2182D976CDC8954E8625C21B1CB9D"
+    },
+    {
+      "path": "Engine/Tests/Editor/ScoreProfileTests.cs.meta",
+      "sha256": "10B9C7519D5EF20956A9EEF40134B404806994682BDA879049652C10574E788B"
+    },
+    {
+      "path": "Engine/Tests/Editor/SingleBattleSceneContentTests.cs",
+      "sha256": "574847384F70CED863F184FD9B0353C2BBF3E72ED5BDBE977866A044B4FC2CAE"
+    },
+    {
+      "path": "Engine/Tests/Editor/SingleBattleSceneContentTests.cs.meta",
+      "sha256": "426518F748BA7B5970B88E28D69BB293723ADCF53DED56D34AAD57E42528094F"
+    },
+    {
+      "path": "Engine/Tests/Editor/SingleChapterContentTests.cs",
+      "sha256": "ADA2A6F1D43016611E015E2F6E8B24643E87FA69BE6591719CBF036DD31C38AF"
+    },
+    {
+      "path": "Engine/Tests/Editor/SingleChapterContentTests.cs.meta",
+      "sha256": "B8C977DF463B35F93E6EE39C6E1E977ED04EDE3350189B29751571FDD6E4963C"
+    },
+    {
+      "path": "Engine/Tests/Editor/SingleChapterEnemyRulesTests.cs",
+      "sha256": "B7EFE2212AB7691DB027C80649D4E07C8B64A469F9AE0027F441F4858FD4680D"
+    },
+    {
+      "path": "Engine/Tests/Editor/SingleChapterEnemyRulesTests.cs.meta",
+      "sha256": "77E6AF13D4B0ADA3607ADAD53C3318AFA43E2647CD0B8592145E2C2C2630893A"
+    },
+    {
+      "path": "Engine/Tests/Editor/SingleChapterScoringTests.cs",
+      "sha256": "C99666290969B8CCC4D529BBA4D241170C35BCB2CBE3B260DA15F99CAAC047AF"
+    },
+    {
+      "path": "Engine/Tests/Editor/SingleChapterScoringTests.cs.meta",
+      "sha256": "3EB0BF0EF9FE2F110E2FB6CDEC4671FB4194F0D21BF48522F7581669DEF9DF94"
+    },
+    {
+      "path": "Engine/Tests/Editor/StatusBattleIntegrationTests.cs",
+      "sha256": "57DAD5D2D8CEFAFE4509D66327EF8A4EC8A107BA6C7996C13921A67E5D6056EC"
+    },
+    {
+      "path": "Engine/Tests/Editor/StatusBattleIntegrationTests.cs.meta",
+      "sha256": "CD44B2E4B200B1CDA498D0257A31731816A0A9855205315AA02BEDA2B437ED7B"
+    },
+    {
+      "path": "Engine/Tests/Editor/StatusBattleSessionTests.cs",
+      "sha256": "028BB46CDA23C7DD66A8C184F6C468BB25E337360478D81735F496B8D7F191CE"
+    },
+    {
+      "path": "Engine/Tests/Editor/StatusBattleSessionTests.cs.meta",
+      "sha256": "59FDA44D5D061E559B188B1D41C6A4C79D838854A972263A79E8F0776D302664"
+    },
+    {
+      "path": "Engine/Tests/Editor/StatusReactionBattleTests.cs",
+      "sha256": "852075ED2254CED74724D22FEA441350BDF93D22CEADF55E746ABCFCF6637D4B"
+    },
+    {
+      "path": "Engine/Tests/Editor/StatusReactionBattleTests.cs.meta",
+      "sha256": "D6DD640450DB18716B300CF867BDF67F15A5033007E5710F2C3294DBCEEBD45D"
+    },
+    {
+      "path": "Engine/Tests/Editor/TeamBattleTests.cs",
+      "sha256": "4E1956521359766271E2D40E35B5A3E9507AD40908F7E0D5E3FB51A615715BC3"
+    },
+    {
+      "path": "Engine/Tests/Editor/TeamBattleTests.cs.meta",
+      "sha256": "5C935F11C8A0F3C73266086AA85003670456356CF9FEB2F4BE2CCF8618E75542"
+    },
+    {
+      "path": "Engine/Tests/Editor/ToolkitTestFiles.cs",
+      "sha256": "174B23B3B97C547E7B26A4FBE41628ECCE4E11C5DAEC2C9EA7271ADFEC414A52"
+    },
+    {
+      "path": "Engine/Tests/Editor/ToolkitTestFiles.cs.meta",
+      "sha256": "8822F2BCBAF9FB1628E2DE5E44D62852C653FDED29E2A85B7CABB8A7159ACA34"
+    },
+    {
+      "path": "Engine/Tests/Editor/WrathAdventureHealthTests.cs",
+      "sha256": "519CE88007C6D51BBAC72F1C5F23CD2867B8511CCFEAA681A2A3FCA2CF1425F1"
+    },
+    {
+      "path": "Engine/Tests/Editor/WrathAdventureHealthTests.cs.meta",
+      "sha256": "7164039C2A5A7B6E22EF2115736DA2BC3711A06EC6D9E563E9E7A9A854B42E9E"
+    },
+    {
+      "path": "Engine/Tests/Editor/WrathAdventureReplayTests.cs",
+      "sha256": "A1F9805D3253E3175E2E68FB76CA2466832BADF98AD5F827A3FA76D2008399F4"
+    },
+    {
+      "path": "Engine/Tests/Editor/WrathAdventureReplayTests.cs.meta",
+      "sha256": "6B341D9D90E9C556BD41A43E6232C6D4101F0D7F3EBAD5AA5D359D02313E7A9C"
+    },
+    {
+      "path": "Engine/Tests/Editor/WrathBossRulesTests.cs",
+      "sha256": "D3362F09BAB0E13829983DC8279A0EEE9B4C583881FFCF0BE03F6A6B6CAE1A36"
+    },
+    {
+      "path": "Engine/Tests/Editor/WrathBossRulesTests.cs.meta",
+      "sha256": "73597AA550980A1195793A46B9BF923DD18AE52F53661E5BB2A5AFC85F50BBC9"
+    },
+    {
+      "path": "Engine/Tests/Editor/WrathHandEffectRestrictionsTests.cs",
+      "sha256": "655C5A9C6DCA0E6546D08ED5A7AC6FA2D9CF924B810EE74DFAF0FD1088D6B8BA"
+    },
+    {
+      "path": "Engine/Tests/Editor/WrathHandEffectRestrictionsTests.cs.meta",
+      "sha256": "9D0C5DE7A730446EB742B85CF21B0049D88295F9AE028BF14F85C455702DCCC6"
+    },
+    {
+      "path": "Engine/Tests/Editor/WrathThousandHandsTests.cs",
+      "sha256": "F14BAB2DDF81835800CC1BB171B80FEE428D4BCEF214287C4DFE97172BD5644B"
+    },
+    {
+      "path": "Engine/Tests/Editor/WrathThousandHandsTests.cs.meta",
+      "sha256": "4B900F8576881B32F731623FFFC72D597EE0EA5033834C403D7B5E207A779957"
+    },
+    {
+      "path": "global.json",
+      "sha256": "F83FE9284E13CA92886496D6D4955DC0CBF7AEDA6E1F50A12290E0CA26BF8D4C"
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "0ABF58F000DA853898A427DB10E1A606E42DFFD2D2488789BB8521C5411A768B"
+    },
+    {
+      "path": "package.json",
+      "sha256": "A53981627DB85B6726128ED8BD2C5DB43869BB57BA035AD229E677A22E1B22EE"
+    },
+    {
+      "path": "README.md",
+      "sha256": "6515B2F9F5E7D27883CD1F3E350BDA84DE82DAA4097DB77E8FD5EFE7F1D0A026"
+    },
+    {
+      "path": "scripts/bootstrap.ps1",
+      "sha256": "C523FEBBF965714F4F41B4A0B27E6CBABB88BE4D610D1E32E690C2D305CE3840"
+    },
+    {
+      "path": "scripts/bootstrap.sh",
+      "sha256": "56BB1DC69D07C36DE7796DF8F858CF847235125AB473C3FB2BE0275B95C801F6"
+    },
+    {
+      "path": "scripts/README.md",
+      "sha256": "09DE469CA7533C5CFB3F83CA4E9EEC3F58609389CA0B77613E4179251DC968D1"
+    },
+    {
+      "path": "start.cmd",
+      "sha256": "1CEB3550D5EE5FD86433779E563D4EA85848B7C4B606DB2C68BE0B6429BCB516"
+    },
+    {
+      "path": "start.command",
+      "sha256": "D5E431B739B49A0A1863584B5AC4F86E1B1600C9A76E2355C0E67C8A4D0F7D54"
+    },
+    {
+      "path": "Tests/BattleToolkit.Tests.csproj",
+      "sha256": "57C18B63639302DB392EDF114DC6A261802A61BAFF8D8E0E362E66A7323BEA28"
+    },
+    {
+      "path": "Tests/README.md",
+      "sha256": "86D6231168C9AD05E9D3F267A96634B50BE6A486F4D1FBDF644E84C34B0AD501"
+    },
+    {
+      "path": "Tests/test_bootstrap.py",
+      "sha256": "F854293E84B37C586329E33977BF70D1F0017345E642C5D50B9F6220D72E7C0F"
+    },
+    {
+      "path": "Tools/BattleContentEditor/.gitignore",
+      "sha256": "AD4A7451E5195F0BDEC8E91BECBE2C89E91E975E6DF3BC08AC01C9737CD193A0"
+    },
+    {
+      "path": "Tools/BattleContentEditor/AdminBridge.cs",
+      "sha256": "76A48393CAE31EA657BF719A2B9B698E7261C6696B304FF4774E81582C94CE57"
+    },
+    {
+      "path": "Tools/BattleContentEditor/AdventureBattleProjection.cs",
+      "sha256": "E692B3D5F899FBEE3D60DEEA38CAA7171C14FF82155A4EE1EA294647243F3C01"
+    },
+    {
+      "path": "Tools/BattleContentEditor/AdventureBridge.cs",
+      "sha256": "C61E03968E3AC1B04B8BD947811A98F669B3823E0AA798F2A522248CDB5BAFD8"
+    },
+    {
+      "path": "Tools/BattleContentEditor/AdventureProjection.cs",
+      "sha256": "FB4308FE4EAAFBE5F34FF48014EAB990469ED512B06DBBF1237D0B321E1B2801"
+    },
+    {
+      "path": "Tools/BattleContentEditor/BridgeJson.cs",
+      "sha256": "9E91B13C26DB858BF85A840DD455E411268D1D3D8019FFE212194F858714D310"
+    },
+    {
+      "path": "Tools/BattleContentEditor/CompilerBridge.cs",
+      "sha256": "DE377654EF455ACBAE34D4848B6071B2CA2E1857D9B529864A51EC203324A6A3"
+    },
+    {
+      "path": "Tools/BattleContentEditor/NativeServer.cs",
+      "sha256": "918148C311C8C20FDBA777C6542B6306D2E8FAAF9B5162558125793DE01DF12F"
+    },
+    {
+      "path": "Tools/BattleContentEditor/package.json",
+      "sha256": "CD1DCBA04E06D465F9E6A5141096A840D8C42C2B3ABCB3E52F9FCA8ECDFC8326"
+    },
+    {
+      "path": "Tools/BattleContentEditor/PlaytestBridge.cs",
+      "sha256": "7B7FF5BFE38D9E3F3E69CBDB1A4ACB18B369077E15A7CD958D8B7EFCCC0470D3"
+    },
+    {
+      "path": "Tools/BattleContentEditor/PlaytestProjection.cs",
+      "sha256": "C83BA2894CC1801364C8DB2D4CD1D31E03F885B3F6116BF7C3D1D8249F7111E4"
+    },
+    {
+      "path": "Tools/BattleContentEditor/PlaytestWrathPresentation.cs",
+      "sha256": "C2D368ACBFB6BFB589534C88DA5558ED84C3F72F92F98A89A41D142539E30D4D"
+    },
+    {
+      "path": "Tools/BattleContentEditor/README.md",
+      "sha256": "FBA59657C3973B30FADA1C8094250A51060E01DEDB245ACA56641187F805C05B"
+    },
+    {
+      "path": "Tools/BattleContentEditor/server.py",
+      "sha256": "CF928A7E4986EE35AFF4A89A689DED3DFFC9118123BA4195ADD8035169214247"
+    },
+    {
+      "path": "Tools/BattleContentEditor/start.command",
+      "sha256": "59CB99033E8964D9DADECA69CDD227D89FC8E07C21C9F65A0BEE1A9D85055805"
+    },
+    {
+      "path": "Tools/BattleContentEditor/tests/admin-browser.cjs",
+      "sha256": "D055A573A43CC6384F3FB36C596D9768BAE7282F304669B12530AC9571A2A2A7"
+    },
+    {
+      "path": "Tools/BattleContentEditor/tests/adventure-browser.cjs",
+      "sha256": "2E0F3D3CCE7A12E4DE9CD81509D5D0F4B7B7560B492A6B2A520BA625C6F0EECC"
+    },
+    {
+      "path": "Tools/BattleContentEditor/tests/browser.cjs",
+      "sha256": "8EDA587D4E9EC102ECD3822AA2945F2376E85FC1649C2AE41A7590C03266F1E3"
+    },
+    {
+      "path": "Tools/BattleContentEditor/tests/design2951-browser.cjs",
+      "sha256": "9A126AED32B6C23C3B912A4485867D88F490E1FA63D9370A9A48498444979F8F"
+    },
+    {
+      "path": "Tools/BattleContentEditor/tests/elite-ui-browser.cjs",
+      "sha256": "1AAE2966DA8F299AA7AE9B26B9FF83F6194CF73D4C8248402130F4300235BEC1"
+    },
+    {
+      "path": "Tools/BattleContentEditor/tests/h5-scene-browser.cjs",
+      "sha256": "FA7D19FB3E1C317EEFADE31D9940FC5391ECF1393131CE232CF20087A0FB3056"
+    },
+    {
+      "path": "Tools/BattleContentEditor/tests/native_fixture.py",
+      "sha256": "9BBA8901D086CE8618E97630C02F4A1A092FDE32955383965FEE4425D8FD5BA3"
+    },
+    {
+      "path": "Tools/BattleContentEditor/tests/playtest-browser.cjs",
+      "sha256": "44E3F88B819FC33663FBF2B55C4E3B1A55A2E2F602417486816CB47446EF46B6"
+    },
+    {
+      "path": "Tools/BattleContentEditor/tests/run_browser.py",
+      "sha256": "8F982225D3BE4C11AAC144E42912901593B33D95BA418779E07DDE266171E742"
+    },
+    {
+      "path": "Tools/BattleContentEditor/tests/test_admin.py",
+      "sha256": "947CC122B824BC6306C5D449DD141C76866AC2A0298FEA0B2C891020F990FB0A"
+    },
+    {
+      "path": "Tools/BattleContentEditor/tests/test_adventure.py",
+      "sha256": "2EAA519B889F63990ECA3DD12F44DD194F3DE7CE84BCAEB32EC47C19D3C5FCC5"
+    },
+    {
+      "path": "Tools/BattleContentEditor/tests/test_design2951.py",
+      "sha256": "A68EDC627BDDF76F25E55E9D77B07A95839A2D7270E0823B3A4B028198C83CF0"
+    },
+    {
+      "path": "Tools/BattleContentEditor/tests/test_elite_projection.py",
+      "sha256": "4A80AFB78F6CC0087086CCE4105B0E90BC042C0A047F7BA90C0492F8227AD73D"
+    },
+    {
+      "path": "Tools/BattleContentEditor/tests/test_native_host.py",
+      "sha256": "6612111163E9EC2CA05B049B4112CDFEBEE64E733E6F23F5056B212D9EDABD6D"
+    },
+    {
+      "path": "Tools/BattleContentEditor/tests/test_playtest.py",
+      "sha256": "B3A30ABF59D68563FBAA084C666F9E9084866B57BF2C65F0B41EF9A7EA20051B"
+    },
+    {
+      "path": "Tools/BattleContentEditor/tests/test_server.py",
+      "sha256": "ADC8CB564E79F82E2D0453D8C63127C235C44BCB44D0572F96ED9AD9B3D18AB2"
+    },
+    {
+      "path": "Tools/BattleContentEditor/tests/test_wrath_projection.py",
+      "sha256": "4BC1ECA397C0EF3D71C144CC9B1A163A0B7041088E8E43DF16EF7A2731B3CC00"
+    },
+    {
+      "path": "Tools/BattleContentEditor/tests/wrath-interaction-browser.cjs",
+      "sha256": "E7FC87A3C75484E995BD4BF6F000E831CA929F45289C568121AC057E35FB02FC"
+    },
+    {
+      "path": "Tools/BattleContentEditor/tests/wrath-ui-browser.cjs",
+      "sha256": "A31596EA054D39A39DCB8D5EBC80D85BCB2E3C63B712689ABA5E1B473442B59F"
+    },
+    {
+      "path": "Tools/BattleContentEditor/web/admin.js",
+      "sha256": "F163AFBA5045FC1882D57A56627AF5E6C982EE8DBBEA2AECF589879926DAA15E"
+    },
+    {
+      "path": "Tools/BattleContentEditor/web/adventure.css",
+      "sha256": "65CBD81B08E1D27AB8EB5B0ADB10D5D4A87366EB54A4B9BAB79DC09EA1F003D5"
+    },
+    {
+      "path": "Tools/BattleContentEditor/web/adventure.html",
+      "sha256": "6C00A08C3C1F9E591AC236E181D40877D4F41559AB775C6E33AD09B3D3F8D91E"
+    },
+    {
+      "path": "Tools/BattleContentEditor/web/adventure.js",
+      "sha256": "F235119F949250EB14FA4F38230712AD2708FA2E29E600594D7B7BEF3AE3214C"
+    },
+    {
+      "path": "Tools/BattleContentEditor/web/app.js",
+      "sha256": "7C8D42A143252699BC433C33A515AE9C0F7B51CEAAF1A2087780532E8ADF41E0"
+    },
+    {
+      "path": "Tools/BattleContentEditor/web/assets/gluttony.png",
+      "sha256": "3441E8D91D5E5085951330F70F26D1BC820CFA743FA3458FDA70A6D9A76E6280"
+    },
+    {
+      "path": "Tools/BattleContentEditor/web/assets/grunt.png",
+      "sha256": "963E8BC35DFF041A2FC1D9899B8F88B4D4B1E00A2A0BA09BFBD39DBABAD13DE0"
+    },
+    {
+      "path": "Tools/BattleContentEditor/web/assets/hero.png",
+      "sha256": "BD39F2D5A40912285F41A2A610312915CDDC024F4ADD92EC0014E64A038F2A9C"
+    },
+    {
+      "path": "Tools/BattleContentEditor/web/assets/icons.svg",
+      "sha256": "305AD6AF21A88A4B8621766C422A679B02D0DD5CDF56AE8F552A34714BD73F1B"
+    },
+    {
+      "path": "Tools/BattleContentEditor/web/assets/README.md",
+      "sha256": "80872FD1175762ABF74EBD98EFB80633DB69682D0B0763B94B6583051D23338B"
+    },
+    {
+      "path": "Tools/BattleContentEditor/web/assets/summoner.png",
+      "sha256": "7EC8859DEB396654964A9145A250164096C54586A80AF2700E3DCCEFBA4ECC99"
+    },
+    {
+      "path": "Tools/BattleContentEditor/web/index.html",
+      "sha256": "45E1A207FAEDB1F69ED209AE6D736234AC9D7829E4EDA7D37A54E188EBFF0001"
+    },
+    {
+      "path": "Tools/BattleContentEditor/web/model.js",
+      "sha256": "EA86B81C771519E43EFD572B917803CD48F96273223710AAB219BA0F03542086"
+    },
+    {
+      "path": "Tools/BattleContentEditor/web/playtest.css",
+      "sha256": "BEAF6369DB232B2593A0CD97FE32C6CA78801E1186587A0747F144960ED41E51"
+    },
+    {
+      "path": "Tools/BattleContentEditor/web/playtest.js",
+      "sha256": "E97560496F08675CF7390436AA5DEED09B48A81B6DE057708D6BE591D0AEC880"
+    },
+    {
+      "path": "Tools/BattleContentEditor/web/schema.js",
+      "sha256": "DB18C3254C09472DB281DD711715769451D75B6314CEE073BA5EB131A5E45B0B"
+    },
+    {
+      "path": "Tools/BattleContentEditor/web/style.css",
+      "sha256": "835A1FA216B29C43D880CEA9BE304903625D26F3639D67C07478F6CFD3EBE5DA"
+    },
+    {
+      "path": "Tools/BattleContentEditor/web/wrath-presentation.js",
+      "sha256": "2C4C605787DE57B171B56806BCBFAABACB9F2B54443EEB1AF062AE4106181F86"
+    },
+    {
+      "path": "Tools/test-poker-engine.ps1",
+      "sha256": "7E3D63C5EEF2113631D2AA403A7D2B561A45EC9580F2BCC6DB945E3986F565C2"
+    },
+    {
+      "path": "Tools/test-poker-engine.sh",
+      "sha256": "7E5B10D7DDFAEEAAB47E3001669A7E06D7AA48702194CFE9A0CA751A89241FA6"
+    }
+  ]
+}

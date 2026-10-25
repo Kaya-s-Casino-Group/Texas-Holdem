@@ -1,6 +1,0 @@
-{
-  "name": "Poker.RunFlow.Runtime",
-  "rootNamespace": "Poker.RunFlow",
-  "references": ["PokerEngine.Core", "PokerEngine.Abilities", "PokerEngine.Scoring", "PokerEngine.Runs"],
-  "autoReferenced": true
-}

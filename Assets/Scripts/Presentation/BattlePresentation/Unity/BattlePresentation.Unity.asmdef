@@ -1,5 +1,5 @@
 {
   "name": "BattlePresentation.Unity",
   "rootNamespace": "BattlePresentation.Unity",
-  "references": ["BattlePresentation.Runtime", "Unity.TextMeshPro", "Unity.ugui"]
+  "references": ["BattlePresentation.Runtime", "Unity.TextMeshPro", "UnityEngine.UI"]
 }

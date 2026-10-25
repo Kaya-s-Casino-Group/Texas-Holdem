@@ -1,0 +1,11 @@
+Source: Unity Technologies - Standard Assets Characters
+Repository: https://github.com/Unity-Technologies/Standard-Assets-Characters
+Revision: 8f185aa3c782d824976653dd6a6476312daad241
+Animation: Assets/_Standard Assets/Characters/Animation/Male/Animations/Exploration/m@WalkForwards.fbx
+Source rig: Assets/_Standard Assets/Characters/Animation/Male/Rig/defaultmale_rig.fbx
+License: Unity Companion License for Unity-dependent projects; see LICENSE.txt and
+https://unity.com/legal/licenses/unity-companion-license
+
+Imported only the animation and its source avatar rig. The official animation is
+retargeted via Humanoid to the existing Palamedes avatar. Local import settings
+bake root translation/rotation for a looping, in-place preview.
