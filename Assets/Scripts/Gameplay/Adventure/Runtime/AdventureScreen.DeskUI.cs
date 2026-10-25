@@ -119,10 +119,9 @@ namespace Poker.Adventure
 
         private void HowToPlay()
         {
+            CloseBattleTeaching();
             var modal = Modal("玩法说明");
-            Label(modal, "以牌型进攻，以弃牌防御", new Rect(.08f, .70f, .84f, .10f), 36, Gold, TextAlignmentOptions.Center);
-            Label(modal, "从手牌中选择最多五张，组成扑克牌型后出牌。\n弃牌可以积累防御；遗物会改变你的战斗方式。\n\n从地图前往下一处高亮地点。商店可购买遗物和改造牌库，\n休息处恢复生命。完成七站，挑战暴怒与它的五只手。", new Rect(.10f, .22f, .80f, .44f), 27, Paper);
-            Label(modal, "旅程自动保存，可以随时从主菜单继续。", new Rect(.10f, .10f, .80f, .07f), 22, Muted, TextAlignmentOptions.Center);
+            RenderBattleHelp(modal, "以牌型进攻，以弃牌防御", false);
         }
     }
 }

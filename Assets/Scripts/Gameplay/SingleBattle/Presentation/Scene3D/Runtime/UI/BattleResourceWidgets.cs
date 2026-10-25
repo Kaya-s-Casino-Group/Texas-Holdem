@@ -59,13 +59,15 @@ namespace Poker.SingleBattle
             {
                 row = ConceptBattleSkin.Node(discard, "Discard Shield Preview");
                 ConceptBattleSkin.Place(row, new Rect(.20f, 1.07f, .60f, .40f));
+                row.localScale = new Vector3(1.3f, 1.3f, 1);
                 ConceptBattleSkin.Art(row, "Shield Icon", "Icons/icon_shield", new Rect(0, 0, .38f, 1));
                 BattleBadgeText.Apply(ConceptBattleSkin.Text(row, "Shield Count", font,
-                    new Rect(.42f, 0, .58f, 1), "+" + gain, 20, TextAlignmentOptions.Left));
+                    new Rect(.42f, 0, .58f, 1), "格挡+" + gain, 20, TextAlignmentOptions.Left));
             }
             row.name = "Discard Shield Preview";
             var count = row.Find("Shield Count").GetComponent<TMP_Text>();
-            count.text = "+" + gain;
+            count.text = "格挡+" + gain;
+            count.enableAutoSizing = true; count.fontSizeMin = 10;
         }
     }
 }

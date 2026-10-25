@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Text.RegularExpressions;
 using TMPro;
 using UnityEngine;
@@ -26,6 +27,18 @@ namespace BattlePresentation.Unity
         [SerializeField] private Vector2 rise = new Vector2(0, 40);
         [Min(0), SerializeField] private float concurrentSpacing = 34;
         [Range(.1f, 1), SerializeField] private float initialScale = .92f;
+        private float minimumVisualSeconds;
+
+        private readonly struct LaneAnchor : IEquatable<LaneAnchor>
+        {
+            private readonly int root;
+            private readonly Vector2 anchorMin, anchorMax, position;
+            internal LaneAnchor(RectTransform templateRect, RectTransform output)
+            { root = output.GetInstanceID(); anchorMin = templateRect.anchorMin; anchorMax = templateRect.anchorMax; position = templateRect.anchoredPosition; }
+            public bool Equals(LaneAnchor other) => root == other.root && anchorMin.Equals(other.anchorMin) && anchorMax.Equals(other.anchorMax) && position.Equals(other.position);
+            public override bool Equals(object obj) => obj is LaneAnchor other && Equals(other);
+            public override int GetHashCode() => (((root * 397) ^ anchorMin.GetHashCode()) * 397 ^ anchorMax.GetHashCode()) * 397 ^ position.GetHashCode();
+        }
 
         private sealed class RunState
         {
@@ -33,25 +46,31 @@ namespace BattlePresentation.Unity
             internal CanvasGroup Group;
             internal Vector2 Origin;
             internal Vector3 Scale;
-            internal int Lane;
-            internal long LaneKey;
-            internal bool Revealed, Released;
+            internal LaneAnchor LaneKey;
+            internal float LaneOffset, LaneHeight;
+            internal float VisualSeconds;
+            internal string BatchId, StatusAction, StatusTarget, StatusDefinition;
+            internal long PlaybackEpoch;
+            internal bool Revealed, Released, VisualRetired;
             internal Action Stop;
             internal PresentationOperation Operation;
         }
         private readonly List<RunState> active = new List<RunState>();
-        private static readonly Dictionary<long, HashSet<int>> occupiedLanes = new Dictionary<long, HashSet<int>>();
+        private static readonly Dictionary<LaneAnchor, List<RunState>> occupiedLanes = new Dictionary<LaneAnchor, List<RunState>>();
         private static readonly Regex Token = new Regex(@"\{([^{}]+)\}", RegexOptions.CultureInvariant);
         public UiFeedbackKind Kind => kind;
-        public int ActiveViewCount => active.Count;
+        public int ActiveViewCount => active.Count(run => !run.VisualRetired);
         public override ActionDescriptor Descriptor => new ActionDescriptor(name, new[] { "Revealed" });
 
         public void Configure(TMP_Text source, UiFeedbackKind feedbackKind, string content = null,
             Color? color = null, float duration = .65f, Vector2? movement = null, RectTransform root = null)
         {
-            ReleaseAll(); template = source; kind = feedbackKind; textTemplate = content;
+            ReleaseAll(); minimumVisualSeconds = 0; template = source; kind = feedbackKind; textTemplate = content;
             tint = color ?? Color.white; seconds = duration; rise = movement ?? new Vector2(0, 40); outputRoot = root;
         }
+
+        /// <summary>Extends only the visual tail; the authored operation and checkpoint deadlines stay unchanged.</summary>
+        public void KeepVisualFor(float duration) => minimumVisualSeconds = Finite(duration) ? Mathf.Max(0, duration) : 0;
 
         public override IPresentationOperation Play(ActionContext context, IMarkerSink markers)
         {
@@ -72,6 +91,14 @@ namespace BattlePresentation.Unity
 
             var root = outputRoot != null ? outputRoot : template.rectTransform.parent as RectTransform;
             if (root == null) return PresentationOperation.Failed("MissingUiRoot", name);
+            var statusAction = kind == UiFeedbackKind.Feedback && context.Data.SemanticKey == "StatusChanged" ? Value(context.Data, "actionId") : null;
+            var statusTarget = Value(context.Data, "statusTarget");
+            var statusDefinition = Value(context.Data, "statusDefinition");
+            if (!string.IsNullOrEmpty(statusAction) && !string.IsNullOrEmpty(statusTarget) && !string.IsNullOrEmpty(statusDefinition))
+                foreach (var previous in active.Where(candidate => candidate.Revealed && !candidate.VisualRetired &&
+                    candidate.BatchId == context.BatchId && candidate.PlaybackEpoch == context.PlaybackEpoch && candidate.StatusAction == statusAction &&
+                    candidate.StatusTarget == statusTarget && candidate.StatusDefinition == statusDefinition).ToArray())
+                    RetireVisual(previous);
             var view = Instantiate(template, root, false);
             view.name = name + " [" + context.ActionInstanceId + "]";
             view.text = content;
@@ -80,14 +107,19 @@ namespace BattlePresentation.Unity
             var group = view.GetComponent<CanvasGroup>();
             if (group == null) group = view.gameObject.AddComponent<CanvasGroup>();
             group.alpha = 0; group.blocksRaycasts = false; group.interactable = false;
-            var laneKey = ((long)template.GetInstanceID() << 32) | (uint)root.GetInstanceID();
-            if (!occupiedLanes.TryGetValue(laneKey, out var lanes)) occupiedLanes.Add(laneKey, lanes = new HashSet<int>());
-            var lane = 0;
-            while (lanes.Contains(lane)) lane++;
-            lanes.Add(lane);
-            var run = new RunState { View = view, Group = group, Lane = lane, LaneKey = laneKey,
-                Origin = view.rectTransform.anchoredPosition + Vector2.up * (lane * concurrentSpacing),
-                Scale = view.rectTransform.localScale };
+            // Templates for damage, shields and statuses can occupy the same authored spot.
+            // Reserve by that spot, so independent actions share rows without moving any HUD anchor.
+            var laneKey = new LaneAnchor(template.rectTransform, root);
+            if (!occupiedLanes.TryGetValue(laneKey, out var lanes)) occupiedLanes.Add(laneKey, lanes = new List<RunState>());
+            var height = Mathf.Max(concurrentSpacing, view.fontSize * 1.3f);
+            var offset = ReserveLane(lanes, height, view.rectTransform, root);
+            var run = new RunState { View = view, Group = group, LaneKey = laneKey, LaneOffset = offset, LaneHeight = height,
+                Origin = view.rectTransform.anchoredPosition + Vector2.up * offset,
+                Scale = view.rectTransform.localScale,
+                BatchId = context.BatchId, PlaybackEpoch = context.PlaybackEpoch, StatusAction = statusAction,
+                StatusTarget = statusTarget, StatusDefinition = statusDefinition,
+                VisualSeconds = Mathf.Max(seconds, minimumVisualSeconds, kind == UiFeedbackKind.Feedback ? 1.4f : 0) };
+            lanes.Add(run);
             run.Operation = new PresentationOperation(() => Release(run));
             active.Add(run);
             view.rectTransform.anchoredPosition = run.Origin;
@@ -103,15 +135,65 @@ namespace BattlePresentation.Unity
             return run.Operation;
         }
 
+        private float ReserveLane(List<RunState> lanes, float height, RectTransform view, RectTransform root)
+        {
+            float Up(float start)
+            {
+                var offset = start;
+                foreach (var occupied in lanes.OrderBy(item => item.LaneOffset))
+                {
+                    var separation = (height + occupied.LaneHeight) * .5f;
+                    if (offset + separation <= occupied.LaneOffset) break;
+                    if (Mathf.Abs(offset - occupied.LaneOffset) < separation) offset = occupied.LaneOffset + separation;
+                }
+                return offset;
+            }
+            var bounds = RectTransformUtility.CalculateRelativeRectTransformBounds(root, view);
+            // Reserve the entire authored rectangle and its travel, without moving the template.
+            var minimum = root.rect.yMin - bounds.min.y - Mathf.Min(0, rise.y);
+            var maximum = root.rect.yMax - bounds.max.y - Mathf.Max(0, rise.y);
+            if (minimum > maximum) return Up(0); // A root smaller than its template has no bounded lane.
+            var upper = Up(Mathf.Max(0, minimum));
+            if (upper <= maximum) return upper;
+            var lower = Mathf.Min(0, maximum);
+            foreach (var occupied in lanes.OrderByDescending(item => item.LaneOffset))
+            {
+                var separation = (height + occupied.LaneHeight) * .5f;
+                if (lower - separation >= occupied.LaneOffset) break;
+                if (Mathf.Abs(lower - occupied.LaneOffset) < separation) lower = occupied.LaneOffset - separation;
+            }
+            // Even a fully occupied root must keep the newest text within its visible bounds.
+            return Mathf.Clamp(lower, minimum, maximum);
+        }
+
+        private void RetireVisual(RunState run)
+        {
+            if (run.Operation.Status != PresentationStatus.Pending) { Release(run); return; }
+            run.VisualRetired = true;
+            run.View.gameObject.SetActive(false);
+            ReturnLane(run);
+            // The preceding fact still owns its operation, marker and authored deadline.
+            // Only its redundant visual tail has been replaced by the new fact's clone.
+        }
+
         private IEnumerator Animate(RunState run, IMarkerSink markers)
         {
             var elapsed = 0f;
-            while (run.Operation.Status == PresentationStatus.Pending && elapsed < seconds)
+            while (!run.Released && elapsed < run.VisualSeconds)
             {
+                if (run.VisualRetired)
+                {
+                    elapsed += Mathf.Max(0, DeltaTime);
+                    if (elapsed >= seconds)
+                    {
+                        run.Stop = null; Release(run); run.Operation.TryComplete(); yield break;
+                    }
+                    yield return null; continue;
+                }
                 if (run.View == null || run.Group == null)
                 { Fail(run, "The owned UI view was destroyed before completion."); yield break; }
                 elapsed += Mathf.Max(0, DeltaTime);
-                var progress = Mathf.Clamp01(elapsed / seconds);
+                var progress = Mathf.Clamp01(elapsed / run.VisualSeconds);
                 var fadeIn = fadeInFraction <= 0 ? 1 : Mathf.Clamp01(progress / fadeInFraction);
                 var fadeOut = fadeOutFraction <= 0 ? 1 : Mathf.Clamp01((1 - progress) / fadeOutFraction);
                 run.Group.alpha = Mathf.Min(fadeIn, fadeOut);
@@ -126,9 +208,12 @@ namespace BattlePresentation.Unity
                     try { markers?.Emit("Revealed"); } catch (Exception error) { failure = error; }
                     if (failure != null) { Fail(run, failure.Message); yield break; }
                 }
+                // A readable tail is still owned by this scope after the authored work completes.
+                // It cannot hold combat input or a last-round result behind the longer text lifetime.
+                if (elapsed >= seconds) run.Operation.TryComplete();
                 yield return null;
             }
-            if (run.Operation.Status != PresentationStatus.Pending) yield break;
+            if (run.Released) yield break;
             run.Stop = null;
             Release(run);
             run.Operation.TryComplete();
@@ -142,11 +227,15 @@ namespace BattlePresentation.Unity
             run.Released = true;
             var stop = run.Stop; run.Stop = null; stop?.Invoke();
             active.Remove(run);
-            if (occupiedLanes.TryGetValue(run.LaneKey, out var lanes))
-            { lanes.Remove(run.Lane); if (lanes.Count == 0) occupiedLanes.Remove(run.LaneKey); }
+            ReturnLane(run);
             if (run.View == null) return;
             run.View.gameObject.SetActive(false);
             if (Application.isPlaying) Destroy(run.View.gameObject); else DestroyImmediate(run.View.gameObject);
+        }
+        private static void ReturnLane(RunState run)
+        {
+            if (occupiedLanes.TryGetValue(run.LaneKey, out var lanes))
+            { lanes.Remove(run); if (lanes.Count == 0) occupiedLanes.Remove(run.LaneKey); }
         }
         private void ReleaseAll()
         {
@@ -160,6 +249,7 @@ namespace BattlePresentation.Unity
         public static string Format(BattleDisplayChange data, UiFeedbackKind feedbackKind, string content = null)
         {
             if (data == null) return string.Empty;
+            if (feedbackKind == UiFeedbackKind.Damage && Value(data, "damagePrevented") == "immune") return "免疫";
             var format = string.IsNullOrEmpty(content) ? DefaultTemplate(feedbackKind) : content;
             return Token.Replace(format, match => Resolve(data, match.Groups[1].Value) ?? match.Value);
         }
@@ -200,7 +290,8 @@ namespace BattlePresentation.Unity
                 case "action":
                     var action = Value(data, "action");
                     return action == "Play" ? "出牌" : action == "Discard" ? "弃牌" : action == "EnemyAction" ? "敌方行动" : action;
-                case "pattern": case "score": case "points": case "multiplier": case "cost": case "feedback": return Value(data, token);
+                case "feedback": return data.Values.TryGetValue("floatingFeedback", out var compact) ? compact : Value(data, token);
+                case "pattern": case "score": case "points": case "multiplier": case "cost": return Value(data, token);
                 default: return null;
             }
         }

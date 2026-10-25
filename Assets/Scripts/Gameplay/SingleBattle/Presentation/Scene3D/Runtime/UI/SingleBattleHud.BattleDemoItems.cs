@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Linq;
 using Poker.BattlePresentation;
 using PokerEngine;
@@ -40,7 +41,51 @@ namespace Poker.SingleBattle
             hover.Configure(this, relic.InstanceId, active);
             count.text = relic.RemainingCharges?.ToString() ?? "";
             count.gameObject.SetActive(active && relic.RemainingCharges.HasValue);
+            BindRouletteCues(icon, relic, loadout, activation == BattleItemActivation.Roulette);
         }
+
+        private void BindRouletteCues(Image icon, BattleRelicState relic, BattleRelicLoadout loadout, bool roulette)
+        {
+            var activeCue = icon.transform.Find("Active Use")?.GetComponent<TMP_Text>();
+            var multiplier = icon.transform.Find("Roulette Multiplier")?.GetComponent<TMP_Text>();
+            if (!roulette)
+            {
+                if (activeCue != null) activeCue.gameObject.SetActive(false);
+                if (multiplier != null) multiplier.gameObject.SetActive(false);
+                return;
+            }
+            if (activeCue == null)
+            {
+                activeCue = RelicIconCue(icon, "Active Use");
+                activeCue.rectTransform.anchorMin = activeCue.rectTransform.anchorMax = activeCue.rectTransform.pivot = new Vector2(0, 1);
+                activeCue.rectTransform.anchoredPosition = Vector2.zero; activeCue.rectTransform.sizeDelta = new Vector2(28, 16);
+                activeCue.fontSize = 11; activeCue.enableAutoSizing = false; activeCue.alignment = TextAlignmentOptions.TopLeft;
+            }
+            activeCue.text = "主动"; activeCue.gameObject.SetActive(true);
+            if (multiplier == null)
+            {
+                multiplier = RelicIconCue(icon, "Roulette Multiplier");
+                multiplier.rectTransform.anchorMin = Vector2.zero; multiplier.rectTransform.anchorMax = new Vector2(1, 0);
+                multiplier.rectTransform.pivot = new Vector2(.5f, 0); multiplier.rectTransform.anchoredPosition = Vector2.zero;
+                multiplier.rectTransform.sizeDelta = new Vector2(0, 17); multiplier.alignment = TextAlignmentOptions.Bottom;
+                multiplier.fontSizeMin = 8; multiplier.fontSizeMax = 12; multiplier.enableAutoSizing = true;
+            }
+            bool enabled = relic.Memory.CounterValue(BattleItemRuntime.RouletteActiveKey) != 0;
+            multiplier.text = enabled ? RouletteMultiplierText(loadout) : "";
+            multiplier.gameObject.SetActive(enabled);
+        }
+
+        private TMP_Text RelicIconCue(Image icon, string name)
+        {
+            var label = Instantiate(message, icon.transform); label.name = name;
+            label.fontStyle = FontStyles.Bold; label.enableWordWrapping = false;
+            label.richText = false; label.raycastTarget = false; label.overflowMode = TextOverflowModes.Overflow;
+            BattleBadgeText.Apply(label); label.color = new Color32(245, 214, 139, 255);
+            return label;
+        }
+
+        private static string RouletteMultiplierText(BattleRelicLoadout loadout) =>
+            "×" + BattleItemRuntime.HandMultiplier(loadout).ToString("0.##", CultureInfo.InvariantCulture);
 
         internal void KeepRelicHover() => relicHoverCloseAt = float.PositiveInfinity;
         internal void LeaveRelicHover()
@@ -111,6 +156,12 @@ namespace Poker.SingleBattle
             float descriptionHeight = Mathf.Max(24, relicHoverDescription.GetPreferredValues(relicHoverDescription.text, 272, Mathf.Infinity).y);
             Place(relicHoverDescription.rectTransform, 14, -60, 272, descriptionHeight);
             relicHoverRuntime.text = BattlePresentationRuleText.RelicRuntime(relic);
+            if (spec?.Activation == BattleItemActivation.Roulette)
+            {
+                relicHoverRuntime.text = "主动道具 · 点击使用\n" + relicHoverRuntime.text;
+                var multiplier = BattlePresentationRuleText.HandMultiplier(loadout);
+                if (!string.IsNullOrEmpty(multiplier)) relicHoverRuntime.text += "\n" + multiplier;
+            }
             float runtimeHeight = Mathf.Max(20, relicHoverRuntime.GetPreferredValues(relicHoverRuntime.text, 272, Mathf.Infinity).y);
             float top = 70 + descriptionHeight; Place(relicHoverRuntime.rectTransform, 14, -top, 272, runtimeHeight); top += runtimeHeight + 12;
             foreach (var button in relicReplacementButtons) { button.gameObject.SetActive(false); Destroy(button.gameObject); }

@@ -66,10 +66,12 @@ namespace Poker.BattlePresentation
             if (preview.Error != CardDuelError.None) formula.Add("预览不可用：" + BattlePresentationRuleText.Error(preview.Error));
             else
             {
+                var steps = preview.BaseEffects?.Steps ?? Array.Empty<BattleEffectStep>();
+                formula.Add(EffectOverview(steps.Select(step => EffectDescription(step.Effect.Kind, step.Target,
+                    step.Effect.Status, step.Effect.OnHitStatus, catalog))));
                 formula.Add("本局计分（含等级、卡牌与遗物修正）：" + ScoreFormula(preview.Score));
                 foreach (var component in preview.Score.Components)
                     formula.Add(BattleDisplayProjector.HandName(component.Category) + "分项计分：" + ScoreFormula(component));
-                var steps = preview.BaseEffects?.Steps ?? Array.Empty<BattleEffectStep>();
                 if (steps.Count(s => s.Effect.Kind == CombatEffectKind.Damage) > 1) tags.Add("连击");
                 foreach (var step in steps)
                 {
@@ -161,6 +163,13 @@ namespace Poker.BattlePresentation
             bool flush = requireFlush || type == HandGuideType.RoyalFlush;
             bool components = type == HandGuideType.FullHouse && rule?.FullHouseComponentDamage == true;
             decimal flushFactor = flush && rule?.ModernScoring == true && type != HandGuideType.RoyalFlush ? rule.FlushDamageMultiplier : 1;
+            var entryEffects = type == HandGuideType.Any ? Enumerable.Empty<ConfiguredEffectStep>() :
+                rule?.Entries.FirstOrDefault(entry => entry.Category == category &&
+                    (entry.Variant == HandEffectVariant.Any || entry.Variant == HandEffectVariant.Royal))?.Effects ??
+                Array.Empty<ConfiguredEffectStep>();
+            var overviewEffects = flush && rule != null ? entryEffects.Concat(rule.FlushBonus) : entryEffects;
+            lines.Add(EffectOverview(overviewEffects.Select(step => EffectDescription(step.Kind, step.Target,
+                step.Status, step.OnHitStatus, catalog))));
             lines.Add("基础倍率为等级 1、未计遗物和卡牌强化；本局修正值见组合预览。");
             if (type == HandGuideType.Any) lines.Add("计分由最高可结算牌型决定；选择具体牌型可查看对应公式与效果。");
             else if (components)
@@ -237,6 +246,34 @@ namespace Poker.BattlePresentation
             }
             string StatusRule(StatusApplicationSpec status) => BattlePresentationRuleText.StatusName(status.DefinitionId, catalog) + " " + status.Stacks + " 层" +
                 (status.StacksPerSubmittedCard != 0 ? "，每张出牌额外 " + status.StacksPerSubmittedCard + " 层" : "");
+        }
+        private static string EffectOverview(IEnumerable<string> effects)
+        {
+            var descriptions = effects.Where(effect => !string.IsNullOrEmpty(effect)).Distinct().ToArray();
+            return descriptions.Length == 0 ? "牌型效果由当前规则决定，实际结果以本局组合预览为准。" :
+                "这组牌会" + string.Join("，并", descriptions) + "。";
+        }
+        private static string EffectDescription(CombatEffectKind kind, EffectTargetSpec target, StatusApplicationSpec status,
+            StatusApplicationSpec onHit, CombatStatusCatalog catalog)
+        {
+            string recipient = target.Group == EffectTargetGroup.Self ? "自身" :
+                target.Selection == EffectTargetSelection.AllLiving ? target.Group == EffectTargetGroup.Opponents ? "所有敌人" : "所有友方" :
+                target.Group == EffectTargetGroup.Opponents ? "单个敌人" : "单个友方";
+            string description;
+            switch (kind)
+            {
+                case CombatEffectKind.Damage: description = "对" + recipient + "造成伤害"; break;
+                case CombatEffectKind.Heal: description = "为" + recipient + "恢复生命"; break;
+                case CombatEffectKind.GainBlock: description = "使" + recipient + "获得护盾"; break;
+                case CombatEffectKind.DrawCards: description = "为" + recipient + "抽牌"; break;
+                case CombatEffectKind.Cleanse: description = "净化" + recipient; break;
+                case CombatEffectKind.Eliminate: description = "消灭" + recipient; break;
+                case CombatEffectKind.ApplyStatus:
+                    description = "使" + recipient + "获得" + BattlePresentationRuleText.StatusName(status.DefinitionId, catalog); break;
+                default: return null;
+            }
+            if (onHit != null) description += "，命中后附加" + BattlePresentationRuleText.StatusName(onHit.DefinitionId, catalog);
+            return description;
         }
         private static string N(decimal value) => value.ToString("0.####", CultureInfo.InvariantCulture);
         private static string TargetLabel(EffectTargetSpec target) => target.Group == EffectTargetGroup.Self ? "自身" :

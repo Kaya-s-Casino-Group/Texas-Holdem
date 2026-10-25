@@ -62,6 +62,7 @@ namespace CardArt
         [Header("红叉（仅正面）")]
         [SerializeField, InspectorName("显示红叉")] bool redCrossEnabled;
         MaterialPropertyBlock propertyBlock;
+        CardSuitCornerRenderer suitCorners;
 
         public bool RedCrossEnabled => redCrossEnabled;
         public bool SupportsRedCross => CardShaderProperties.SupportsRedCross(sharedMaterial);
@@ -137,7 +138,8 @@ namespace CardArt
         }
 
         void OnEnable() { SubscribeProfile(); RefreshArtwork(); ApplyIfConfigured(); }
-        void OnDisable() { if (subscribedProfile != null) subscribedProfile.Changed -= RefreshArtwork; subscribedProfile = null; }
+        void OnDisable() { if (subscribedProfile != null) subscribedProfile.Changed -= RefreshArtwork; subscribedProfile = null;
+            if (suitCorners != null) suitCorners.GetComponent<MeshRenderer>().enabled = false; }
         void OnDestroy() { if (subscribedProfile != null) subscribedProfile.Changed -= RefreshArtwork; }
 #if UNITY_EDITOR
         bool refreshPending;
@@ -169,6 +171,7 @@ namespace CardArt
             if (propertyBlock == null) propertyBlock = new MaterialPropertyBlock();
             propertyBlock.Clear();
             propertyBlock.SetVector(CardShaderProperties.FrontUVRect, region.uv);
+            RefreshSuitCorners();
             if (Appearance != null)
             {
                 Appearance.WriteTo(propertyBlock); renderer.SetPropertyBlock(propertyBlock); return;
@@ -191,6 +194,18 @@ namespace CardArt
                 propertyBlock.SetFloat(CardShaderProperties.RedCrossEnabled,
                     redCrossEnabled && sharedMaterial.GetTexture(CardShaderProperties.RedCrossMap) != null ? 1 : 0);
             renderer.SetPropertyBlock(propertyBlock);
+        }
+
+        void RefreshSuitCorners()
+        {
+            if (suitCorners == null) suitCorners = GetComponentInChildren<CardSuitCornerRenderer>(true);
+            if (suitCorners == null && CardSuitCorners.TryGetRegion(atlas, cardId, out _))
+            {
+                var root = new GameObject("Readable suit corners") { hideFlags = HideFlags.DontSave, layer = gameObject.layer };
+                root.transform.SetParent(transform, false);
+                suitCorners = root.AddComponent<CardSuitCornerRenderer>();
+            }
+            if (suitCorners != null) suitCorners.Present(sharedMesh, atlas, cardId, colorTint, isActiveAndEnabled);
         }
     }
 }

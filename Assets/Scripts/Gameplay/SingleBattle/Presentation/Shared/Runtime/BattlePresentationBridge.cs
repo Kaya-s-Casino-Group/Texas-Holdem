@@ -38,6 +38,18 @@ namespace Poker.BattlePresentation
             string id = Guid.NewGuid().ToString("N"); activeBatch = id; checkpoints.Clear(); checkpoints[cursor] = result.Before;
             var before = BattleDisplayProjector.Build(result.Before, engine(), observer(), cursor);
             var initial = before; var changes = new List<BattleDisplayChange>();
+            // Count only emitted primary damage facts. Plans and previews may contain later hits
+            // that never executed, and reactions/periodic damage belong to separate feedback.
+            var combos = result.Timeline.Where(entry => entry.RuleEvent is CombatEvent hit &&
+                hit.Effect.Kind == CombatEffectKind.Damage && hit.Effect.Amount > 0 &&
+                hit.Provenance?.Origin == CombatEffectOrigin.Primary)
+                .GroupBy(entry => entry.ActionId)
+                .Where(group => group.Count() > 1 && (IsSequentialHand(group) ||
+                    group.GroupBy(entry => ((CombatEvent)entry.RuleEvent).Effect.Target).Any(target => target.Count() > 1)))
+                .ToDictionary(group => group.Last().Sequence, group => group.Count().ToString(CultureInfo.InvariantCulture) +
+                    (IsSequentialHand(group) || group.Select(entry => ((CombatEvent)entry.RuleEvent).Effect.Target).Distinct().Count() == 1 ?
+                        "段连击·总伤害" : "次命中·总伤害") +
+                    group.Sum(entry => (decimal)((CombatEvent)entry.RuleEvent).HealthLost).ToString(CultureInfo.InvariantCulture));
             foreach (var fact in result.Timeline)
             {
                 var nextCursor = new DisplayCursor(id, fact.Sequence);
@@ -66,9 +78,16 @@ namespace Poker.BattlePresentation
                         (item.Kind == CombatEffectKind.Damage || item.Kind == CombatEffectKind.Eliminate || item.Kind == CombatEffectKind.LoseHealth)) ? "Attack" : "Support";
                 }
                 if (fact.ActionCost != null) values["cost"] = fact.ActionCost.Cost.ToString(CultureInfo.InvariantCulture);
-                if (fact.RuleEvent != null) values["feedback"] = string.Join("\n", BattlePresentationRuleText.Events(new[] { fact.RuleEvent }, fact.State.Duel, engine().Duel.Definition.StatusCatalog));
+                if (fact.RuleEvent != null)
+                {
+                    values["feedback"] = string.Join("\n", BattlePresentationRuleText.Events(new[] { fact.RuleEvent }, fact.State.Duel, engine().Duel.Definition.StatusCatalog));
+                    var floating = BattleFloatingFeedbackText.Event(fact.RuleEvent, fact.State.Duel, engine().Duel.Definition.StatusCatalog);
+                    if (floating != null) values["floatingFeedback"] = floating;
+                }
                 if (fact.RelicActivation != null) values["feedback"] = "遗物触发：" + fact.RelicActivation.Before.DefinitionId + " / " + fact.RelicActivation.TriggerId;
                 var effect = fact.RuleEvent as CombatEvent;
+                if (BattleFloatingFeedbackText.IsDamageImmune(effect)) values["damagePrevented"] = "immune";
+                if (combos.TryGetValue(fact.Sequence, out var combo)) values["comboSummary"] = combo;
                 if (effect != null) values["effectKey"] = "rule/" + fact.ActionId + "/" + effect.Revision + "/" + effect.SequenceIndex;
                 if (fact.RuleEvent?.Provenance != null) values["effectOrigin"] = fact.RuleEvent.Provenance.Origin.ToString();
                 var appliedStatus = (fact.RuleEvent as CombatStatusEvent)?.Status;
@@ -77,6 +96,7 @@ namespace Poker.BattlePresentation
                 if (status != null)
                 {
                     values["statusTarget"] = status.Target.Id;
+                    values["statusDefinition"] = status.DefinitionId.Value;
                     values["statusChange"] = appliedStatus != null ? "Applied" : changedStatus.Reason.ToString();
                     values["statusTags"] = (engine().Duel.Definition.StatusCatalog?.Find(status.DefinitionId)?.Tags ?? StatusTags.None).ToString();
                 }
@@ -92,6 +112,11 @@ namespace Poker.BattlePresentation
             var final = BattleDisplayProjector.Build(result.State, engine(), observer(), cursor);
             frontend.Present(new PresentationBatch(id, initial, changes, final), animate ? PlaybackMode.Animated : PlaybackMode.Instant);
         }
+        private static bool IsSequentialHand(IEnumerable<BattleTimelineEntry> entries) => entries.Any(entry => {
+            var hand = ((CombatEvent)entry.RuleEvent).Effect.Attack?.Hand;
+            return hand?.Pattern.Category == HandCategory.Straight || hand?.Pattern.Category == HandCategory.StraightFlush ||
+                hand?.RankPattern.Category == HandCategory.Straight;
+        });
         private static IEnumerable<string> VisibleCards(BattleTimelineEntry fact, BattleDisplaySnapshot before, BattleDisplaySnapshot after)
         {
             var requested = (fact.Cards.Count > 0 ? fact.Cards : fact.Selected).Select(id => id.Value).ToArray();

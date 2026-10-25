@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using global::BattlePresentation;
+using PokerEngine;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -19,6 +20,8 @@ namespace Poker.SingleBattle
         private string preferred;
         private bool pendingChoice;
         private MaterialPropertyBlock contourProperties;
+        private CandidatePresentationModel previewCandidate;
+        private readonly HashSet<string> previewTargets = new HashSet<string>();
         private sealed class Entry
         {
             internal EnemyBattleActor Actor;
@@ -93,6 +96,7 @@ namespace Poker.SingleBattle
                 foreach (var choice in choices) host.SelectPlayTarget(choice.Slot, preferred);
                 if (choices.Length > 0) pendingChoice = false;
             }
+            RefreshPreviewTargets();
             var uiCamera = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
             var composition = host.GetComponent<WrathBossArtworkLayout>();
             if (composition != null && composition.IsComposed && entries.Count > 0)
@@ -117,22 +121,42 @@ namespace Poker.SingleBattle
                 RectTransformUtility.ScreenPointToLocalPointInRectangle((RectTransform)canvas.transform, high, uiCamera, out var max);
                 entry.Rect.anchoredPosition = (min + max) * .5f; entry.Rect.sizeDelta = max - min;
                 var choice = host.PlayTargetChoices.FirstOrDefault(item => item.Candidates.Any(candidate => candidate.Id == unit.Id));
-                bool selected = choice?.SelectedId == unit.Id || host.Candidate?.State == CandidateState.Empty && preferred == unit.Id;
+                bool selected = host.CanChoosePlayTarget && (host.PlayTargetChoices.Any(item => item.SelectedId == unit.Id) ||
+                    host.Candidate?.State == CandidateState.Empty && preferred == unit.Id);
+                bool affected = host.CanChoosePlayTarget && previewTargets.Contains(unit.Id);
                 entry.Button.interactable = host.CanChoosePlayTarget && (choice != null || host.Candidate?.State == CandidateState.Empty);
                 if (entry.Outline != null)
                 {
                     // Encounter swaps and separate boss hands each need their own alpha silhouette.
                     var properties = contourProperties ?? (contourProperties = new MaterialPropertyBlock());
                     entry.Artwork.GetPropertyBlock(properties);
-                    var texture = properties.GetTexture("_BaseMap");
-                    if (texture == null) texture = entry.Artwork.sharedMaterial.GetTexture("_BaseMap");
+                    var texture = part?.Texture ?? properties.GetTexture("_BaseMap");
+                    if (texture == null) texture = entry.Artwork.sharedMaterial.HasProperty("_BaseMap")
+                        ? entry.Artwork.sharedMaterial.GetTexture("_BaseMap") : entry.Artwork.sharedMaterial.mainTexture;
                     properties.Clear(); properties.SetTexture("_MainTex", texture);
+                    // Selection belongs to the alpha contour; the separate full-body red artwork only warns of the ultimate.
+                    properties.SetColor("_OutlineColor", selected ? new Color32(255, 214, 89, 255) : new Color32(99, 225, 249, 255));
+                    properties.SetFloat("_OutlinePixels", selected ? 5 : 3.5f);
                     entry.Outline.SetPropertyBlock(properties);
                     entry.Outline.sortingOrder = entry.Artwork.sortingOrder + 1;
-                    entry.Outline.enabled = selected;
+                    entry.Outline.enabled = selected || affected;
                 }
 
             }
+        }
+        private void RefreshPreviewTargets()
+        {
+            var candidate = host.Candidate;
+            if (ReferenceEquals(previewCandidate, candidate)) return;
+            previewCandidate = candidate; previewTargets.Clear();
+            if (candidate?.State != CandidateState.Valid || !host.CanChoosePlayTarget) return;
+            var preview = host.PreviewSelectedPlay();
+            if (preview == null || !preview.Accepted) return;
+            var player = host.Player.ParticipantId;
+            foreach (var fact in preview.Events.Where(fact => fact.Effect.Source == player &&
+                fact.Provenance?.Origin == CombatEffectOrigin.Primary))
+                if (host.Enemies.Any(actor => actor.DisplayId == fact.Effect.Target.Value))
+                    previewTargets.Add(fact.Effect.Target.Value);
         }
         private void OnDisable()
         {

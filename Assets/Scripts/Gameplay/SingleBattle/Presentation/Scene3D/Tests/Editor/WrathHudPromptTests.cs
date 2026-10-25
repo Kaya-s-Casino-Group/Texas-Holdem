@@ -159,6 +159,27 @@ namespace Poker.SingleBattle.Tests
             }
         }
 
+        [Test]
+        public void AdventureUltimateClosesBeforeItsReleaseRoundEvenIfFourSecondsHaveNotElapsed()
+        {
+            using (var fixture = new AdventurePromptFixture())
+            {
+                fixture.Present(true, round: 1);
+                Assert.IsTrue(fixture.Text(true).gameObject.activeInHierarchy);
+                Assert.Greater(fixture.UltimateRemaining, 3.5f);
+                fixture.Present(true, round: 2);
+                Assert.IsFalse(fixture.Text(true).gameObject.activeInHierarchy,
+                    "An unresolved warning resource cannot carry its visual into the release round.");
+                fixture.Present(true, round: 1);
+                Assert.IsFalse(fixture.Text(true).gameObject.activeInHierarchy,
+                    "An earlier presentation snapshot must not replay the expired warning.");
+                fixture.Present(true, releaseRound: 8, round: 7);
+                Assert.IsTrue(fixture.Text(true).gameObject.activeInHierarchy);
+                fixture.Present(true, releaseRound: 8, round: 8);
+                Assert.IsFalse(fixture.Text(true).gameObject.activeInHierarchy);
+            }
+        }
+
         [TestCase(false)]
         [TestCase(true)]
         public void AdventureWarningAllowsRaycastsToReachTheBattleButtonBehindIt(bool ultimate)
@@ -223,13 +244,13 @@ namespace Poker.SingleBattle.Tests
             public TMP_Text Text(bool ultimate) => (TMP_Text)typeof(SingleBattleHud)
                 .GetField(ultimate ? "wrathUltimatePrompt" : "wrathOpeningText", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(Hud);
             public Image Background(bool ultimate) => Text(ultimate).GetComponentInParent<Image>(true);
-            public void Present(bool warning, bool finished = false, long releaseRound = 2, string battle = "prompt-battle")
+            public void Present(bool warning, bool finished = false, long releaseRound = 2, string battle = "prompt-battle", long round = 1)
             {
-                var snapshot = new BattleDisplaySnapshot(battle, "player", 1, "player", 0, finished ? "Won" : null,
+                var snapshot = new BattleDisplaySnapshot(battle, "player", 1, "player", round - 1, finished ? "Won" : null,
                     new[] { new UnitDisplayData("body", "暴怒", "enemy", 2000, 2000, 0, 0, 0) },
                     zones: null, resources: new[] { new ResourceDisplayData("body", "wrath.warning", warning ? 1 : 0),
                         new ResourceDisplayData("body", "wrath.releaseRound", warning ? releaseRound : -1) },
-                    hasStarted: true, labels: new Dictionary<string, string> { ["wrath.body"] = "body" });
+                    hasStarted: true, completedRounds: round - 1, labels: new Dictionary<string, string> { ["wrath.body"] = "body" });
                 Invoke(Hud, "RefreshWrathPrompts", snapshot); Canvas.ForceUpdateCanvases();
             }
             public float UltimateRemaining => (float)(typeof(SingleBattleHud)

@@ -49,6 +49,37 @@ namespace Poker.SingleBattle
                 });
                 changed = true;
             }
+            var warningBoundary = host.GetComponentInChildren<WrathWarningBoundaryAction>(true);
+            if (warningBoundary == null)
+            {
+                var root = new GameObject("Wrath Warning Boundary Timeline"); root.transform.SetParent(host.transform, false);
+                warningBoundary = root.AddComponent<WrathWarningBoundaryAction>();
+            }
+            warningBoundary.Configure(host);
+            warningBoundary.StartPresentationRoutine = host.StartPresentationRoutine;
+            var phaseEnded = groups.Where(group => group?.semanticKey == "PhaseEnded").ToArray();
+            if (phaseEnded.Length == 0)
+            {
+                var group = new SceneTimelineGroup { semanticKey = "PhaseEnded", ruleAction = "EnemyAction" };
+                groups.Add(group); phaseEnded = new[] { group };
+            }
+            foreach (var group in phaseEnded)
+            {
+                if (group.nodes.Any(node => node.action is WrathWarningBoundaryAction)) continue;
+                string id = "wrath-warning-boundary-" + groups.IndexOf(group);
+                var previous = group.explicitCheckpoint ? group.checkpoint : group.nodes.Where(node => node.blocking)
+                    .Select(node => new SceneActionDependency { actionId = node.id, kind = DependencyKind.Completed }).ToArray();
+                // PhaseEnding has already published the real pending warning. Preserve this
+                // boundary's authored dependencies before waiting on the HUD's remaining time.
+                group.nodes = group.nodes.Concat(new[] { new SceneActionNode {
+                    id = id, action = warningBoundary, blocking = true, after = previous
+                } }).ToArray();
+                group.explicitCheckpoint = true;
+                group.checkpoint = previous.Concat(new[] { new SceneActionDependency {
+                    actionId = id, kind = DependencyKind.Completed
+                } }).ToArray();
+                changed = true;
+            }
             if (changed) director.ConfigureTimeline(groups.ToArray(), director.Targets.ToArray());
             banner.StartPresentationRoutine = host.StartPresentationRoutine;
         }

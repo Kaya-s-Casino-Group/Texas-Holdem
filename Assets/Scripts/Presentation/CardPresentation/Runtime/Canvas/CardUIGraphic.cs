@@ -30,10 +30,11 @@ namespace CardPresentation
             if (data == null) return;
             if (artProfile != null) artProfile.ValidateAtlas(atlas);
             var resolved = CardAppearanceResolver.Resolve(data, artProfile);
-            ValidateCanvasParameters(resolved); appearance = resolved; SetVerticesDirty();
+            ValidateCanvasParameters(resolved); appearance = resolved; RefreshSuitCorners(); SetVerticesDirty();
         }
         private CardVisualData data;
         private CardShaderAppearance appearance;
+        private CardSuitCornerGraphic suitCorners;
         private float opacity = 1, desaturation;
         public CardAtlasData Atlas => atlas;
         public CardVisualData Data => data;
@@ -50,7 +51,7 @@ namespace CardPresentation
             if (!skin.TryGetCard("card_back", out var back) || back.clipped) throw new ArgumentException("The atlas needs an unclipped card_back region.");
             if (data != null) ValidateCard(skin, data);
             if (artProfile != null) artProfile.ValidateAtlas(skin);
-            atlas = skin; material = sharedMaterial; EnsureChannels(); SetAllDirty();
+            atlas = skin; material = sharedMaterial; EnsureChannels(); RefreshSuitCorners(); SetAllDirty();
         }
         public static void ValidateCard(CardAtlasData skin, CardVisualData card)
         {
@@ -65,6 +66,7 @@ namespace CardPresentation
             var resolved = CardAppearanceResolver.Resolve(card, artProfile);
             ValidateCanvasParameters(resolved);
             data = card; appearance = resolved; opacity = presentationOpacity; desaturation = presentationDesaturation;
+            RefreshSuitCorners();
             SetVerticesDirty();
         }
         private static void ValidateCanvasParameters(CardShaderAppearance resolved)
@@ -81,18 +83,33 @@ namespace CardPresentation
         {
             ValidateUnit(presentationOpacity); ValidateUnit(presentationDesaturation);
             if (opacity == presentationOpacity && desaturation == presentationDesaturation) return;
-            opacity = presentationOpacity; desaturation = presentationDesaturation; SetVerticesDirty();
+            opacity = presentationOpacity; desaturation = presentationDesaturation; RefreshSuitCorners(); SetVerticesDirty();
         }
         private static void ValidateUnit(float value)
         { if (!CardZoneRowLayout.Finite(value) || value < 0 || value > 1) throw new ArgumentOutOfRangeException(nameof(value)); }
         protected override void OnEnable() { base.OnEnable(); SubscribeProfile(); RefreshArtwork(); EnsureChannels(); }
         protected override void OnDisable()
-        { if (subscribedProfile != null) subscribedProfile.Changed -= RefreshArtwork; subscribedProfile = null; base.OnDisable(); }
+        { if (subscribedProfile != null) subscribedProfile.Changed -= RefreshArtwork; subscribedProfile = null;
+            if (suitCorners != null) suitCorners.enabled = false;
+            base.OnDisable(); }
 #if UNITY_EDITOR
         protected override void OnValidate() { base.OnValidate(); SubscribeProfile(); RefreshArtwork(); }
 #endif
         protected override void OnCanvasHierarchyChanged() { base.OnCanvasHierarchyChanged(); EnsureChannels(); }
         private void EnsureChannels() { if (canvas != null) canvas.additionalShaderChannels |= RequiredChannels; }
+        private void RefreshSuitCorners()
+        {
+            if (data == null || appearance == null) return;
+            if (suitCorners == null) suitCorners = GetComponentInChildren<CardSuitCornerGraphic>(true);
+            if (suitCorners == null && CardSuitCorners.TryGetRegion(atlas, data.FaceArtId, out _))
+            {
+                var root = new GameObject("Readable suit corners", typeof(RectTransform)) { hideFlags = HideFlags.DontSave, layer = gameObject.layer };
+                var rect = (RectTransform)root.transform; rect.SetParent(transform, false);
+                rect.anchorMin = Vector2.zero; rect.anchorMax = Vector2.one; rect.sizeDelta = Vector2.zero;
+                suitCorners = root.AddComponent<CardSuitCornerGraphic>();
+            }
+            if (suitCorners != null) suitCorners.Present(atlas, data.FaceArtId, appearance.Tint * color, opacity, desaturation, isActiveAndEnabled);
+        }
         protected override void OnPopulateMesh(VertexHelper helper)
         {
             helper.Clear(); if (data == null || appearance == null || atlas == null) return;

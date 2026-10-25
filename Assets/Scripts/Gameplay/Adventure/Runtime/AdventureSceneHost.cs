@@ -114,6 +114,7 @@ namespace Poker.Adventure
                     battleView.AttachCommands(this, animate: false);
                 }
                 else { ShowBattle(false); lastBattle = Adventure.Battle ?? lastBattle; }
+                ClearGoldIncomeFeedback();
                 Message = "";
                 Publish(); return true;
             }
@@ -122,6 +123,7 @@ namespace Poker.Adventure
         public void ReturnToMenu()
         {
             if (IsBusy) return;
+            ClearGoldIncomeFeedback();
             IsAtMenu = true; ShowBattle(false); Publish();
         }
         public bool Abandon()
@@ -139,7 +141,7 @@ namespace Poker.Adventure
                 if (!result.Accepted) return Report(result.Error);
                 // Save failure must leave the currently visible battle and its input state untouched.
                 // Keep the old view during OnDisable/OnEnable; attach the next battle only afterwards.
-                Commit(next, updateBattleView: false); IsAtMenu = false;
+                Commit(next, updateBattleView: false, command: command); IsAtMenu = false;
                 if (result.BattleResult != null && battleView != null)
                 {
                     resultDelay.Reset(); awaitingPresentation = true;
@@ -161,8 +163,8 @@ namespace Poker.Adventure
         public BattleSessionResult UseItem(long expectedRevision, ParticipantId actor, string instanceId, string targetInstanceId = null) =>
             SubmitBattle(expectedRevision, actor, next => next.UseBattleItem(expectedRevision, instanceId, targetInstanceId));
         public BattleSessionResult ApplyAdmin(long expectedRevision, BattleAdminPatch patch) =>
-            SubmitBattle(expectedRevision, Adventure?.PlayerId ?? default, next => next.ApplyAdmin(expectedRevision, patch));
-        private BattleSessionResult SubmitBattle(long expectedRevision, ParticipantId actor, Func<BattleAdventureSession, AdventureResult> submit)
+            SubmitBattle(expectedRevision, Adventure?.PlayerId ?? default, next => next.ApplyAdmin(expectedRevision, patch), reportGold: false);
+        private BattleSessionResult SubmitBattle(long expectedRevision, ParticipantId actor, Func<BattleAdventureSession, AdventureResult> submit, bool reportGold = true)
         {
             if (lastBattle == null) throw new InvalidOperationException("Enter a battle before submitting battle commands.");
             if (Adventure != null && expectedRevision != Adventure.Revision)
@@ -173,18 +175,20 @@ namespace Poker.Adventure
             {
                 var next = Adventure.Fork(); var result = submit(next);
                 if (!result.Accepted) { Report(result.Error); return BattleSessionResult.Rejected(lastBattle.State, CardDuelError.InvalidPhase); }
-                Commit(next); lastBattle = Adventure.Battle; resultDelay.Reset(); awaitingPresentation = battleView != null;
+                Commit(next, battleCommand: reportGold); lastBattle = Adventure.Battle; resultDelay.Reset(); awaitingPresentation = battleView != null;
                 if (!awaitingPresentation) Publish();
                 return result.BattleResult;
             }
             catch (Exception error)
             { Report("操作未保存：" + error.Message); return BattleSessionResult.Rejected(lastBattle.State, CardDuelError.InvalidPhase); }
         }
-        private void Commit(BattleAdventureSession next, bool updateBattleView = true)
+        private void Commit(BattleAdventureSession next, bool updateBattleView = true, AdventureCommand command = null, bool battleCommand = false)
         {
             // Export validates serializability before the authority or UI can observe this candidate.
             if (saveAutomatically) store.Write(next.Export());
+            var previous = Adventure;
             Adventure = next; savedSession = next;
+            CaptureGoldIncomeFeedback(previous, next, command, battleCommand);
             if (updateBattleView) lastBattle = next.Battle ?? lastBattle;
             Message = "";
         }

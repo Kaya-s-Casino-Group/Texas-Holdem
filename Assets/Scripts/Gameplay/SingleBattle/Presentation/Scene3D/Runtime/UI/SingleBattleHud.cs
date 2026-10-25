@@ -96,7 +96,7 @@ namespace Poker.SingleBattle
             var players = snapshot.Units.Where(unit => unit.Team == "player").ToList();
             EnsurePlayerSwitch();
             player.text = compactLayout ? "生命 " + hero.Health + " / " + hero.MaxHealth + "   护盾 " + hero.Block :
-                "玩家 " + (players.FindIndex(unit => unit.Id == hero.Id) + 1) + "   " + hero.Health + " / " + hero.MaxHealth + "\n格挡 " + hero.Block;
+                Poker.BattlePresentation.BattlePresentationRuleText.Participant(host.State.Duel, new ParticipantId(hero.Id)) + "   " + hero.Health + " / " + hero.MaxHealth + "\n格挡 " + hero.Block;
             enemy.text = string.Join("\n", enemies.Select((unit, i) => "怪物 " + (i + 1) + "  " + unit.Health + " / " + unit.MaxHealth));
             if (ritualLayout || bossBody != null)
             {

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using CardInteraction;
 using CardPresentation;
 using NUnit.Framework;
@@ -10,6 +11,8 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 namespace Poker.SingleBattle.Tests
 {
@@ -90,6 +93,41 @@ namespace Poker.SingleBattle.Tests
                 Assert.AreEqual("", f.Host.ItemName(null));
                 Assert.IsTrue(f.Host.CanUseItem(f.Id("10002")));
                 Assert.IsFalse(f.Host.CanUseItem(f.Id("12001")), "A passive relic must not acquire an active-use button.");
+            }
+        }
+
+        [Test]
+        public void RouletteClickExplainsActiveUseWithoutActivatingOrSpendingAnything()
+        {
+            using (var f = new Fixture())
+            {
+                var root = new GameObject("Roulette HUD", typeof(RectTransform));
+                root.transform.SetParent(f.Host.transform, false);
+                root.GetComponent<RectTransform>().sizeDelta = new Vector2(1856, 850);
+                var hud = root.AddComponent<SingleBattleHud>(); root.AddComponent<BattleDemoRelicArt>();
+                var source = new GameObject("Message", typeof(RectTransform), typeof(TextMeshProUGUI));
+                source.transform.SetParent(root.transform, false);
+                var button = new GameObject("Button template", typeof(RectTransform), typeof(Button));
+                button.transform.SetParent(root.transform, false);
+                UnityEngine.Object.Instantiate(source, button.transform);
+                var icon = new GameObject("Russian roulette", typeof(RectTransform), typeof(Image));
+                icon.transform.SetParent(root.transform, false);
+                var flags = BindingFlags.Instance | BindingFlags.NonPublic;
+                typeof(SingleBattleHud).GetField("message", flags).SetValue(hud, source.GetComponent<TMP_Text>());
+                typeof(SingleBattleHud).GetField("restart", flags).SetValue(hud, button.GetComponent<Button>());
+                typeof(SingleBattleHud).GetField("host", flags).SetValue(hud, f.Host);
+                var loadout = f.Host.State.Duel.Player(f.Host.Player.ParticipantId).Relics;
+                var relic = loadout.Relics.Single(item => item.InstanceId == f.Id("15001"));
+                typeof(SingleBattleHud).GetMethod("BindRelicHover", flags)
+                    .Invoke(hud, new object[] { icon.GetComponent<Image>(), relic, loadout });
+                var before = f.Host.AuthorityState;
+                icon.GetComponent<BattleDemoRelicHoverTarget>().OnPointerClick(new PointerEventData(null)
+                    { button = PointerEventData.InputButton.Left });
+                var availability = root.GetComponentsInChildren<TMP_Text>().Single(text => text.name == "Availability");
+                Assert.That(availability.text, Does.Contain("主动道具").And.Contain("点击使用"));
+                Assert.That(root.GetComponentsInChildren<Button>().Single(item => item.name == "Use Item").interactable, Is.True);
+                Assert.That(f.Host.AuthorityState, Is.SameAs(before), "Opening item details cannot use the item or consume AP.");
+                Assert.That(f.Item(f.Id("15001")).Memory.CounterValue(BattleItemRuntime.RouletteActiveKey), Is.Zero);
             }
         }
 

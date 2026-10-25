@@ -18,11 +18,19 @@ namespace Poker.SingleBattle
         private readonly Dictionary<EnemyBattleActor, WrathBossArtwork.Part> assigned = new Dictionary<EnemyBattleActor, WrathBossArtwork.Part>();
         private MeshRenderer warning;
         private BattleBillboardLayout warningLayout;
+        private bool warningPromptVisible;
         public bool IsComposed { get; private set; }
         public WrathBossArtwork Artwork => artwork;
         public Rect CanvasViewport { get; private set; }
         public bool WarningVisible => warning != null && warning.enabled;
         public WrathBossArtwork.Part PartFor(EnemyBattleActor actor) => assigned.TryGetValue(actor, out var part) ? part : null;
+
+        // Adventure warnings share the HUD's timed presentation; this does not consume the pending ultimate.
+        public void SetWarningPromptVisible(bool visible)
+        {
+            warningPromptVisible = visible;
+            if (!visible && warning != null) warning.enabled = false;
+        }
 
         public void Configure(SingleBattleSceneAdapter owner, Camera camera, WrathBossArtwork definition)
         { host = owner; viewCamera = camera; artwork = definition; viewportArea = new Rect(.22f, -.08f, .82f, 1.08f); }
@@ -48,7 +56,8 @@ namespace Poker.SingleBattle
             }
             IsComposed = assigned.Count > 0;
             SetWarning(!snapshot.IsFinished && snapshot.Unit(bodyId)?.IsAlive == true &&
-                snapshot.Resource(bodyId, "wrath.warning")?.Value == 1);
+                snapshot.Resource(bodyId, "wrath.warning")?.Value == 1 &&
+                (!host.UsesExternalCommands || warningPromptVisible));
             return IsComposed;
         }
 

@@ -15,6 +15,7 @@ namespace Poker.SingleBattle
     [DefaultExecutionOrder(150)]
     public sealed class BattleDemoEnemyWorldHud : MonoBehaviour
     {
+        private const float StatusBadgeScale = 1.3f;
         [SerializeField] private SingleBattleSceneAdapter host;
         [SerializeField] private Camera viewCamera;
         [SerializeField] private TMP_FontAsset font;
@@ -36,6 +37,8 @@ namespace Poker.SingleBattle
             internal CanvasGroup Visibility;
             internal IconView Block;
             internal BattleDemoEnemyBadgeTooltip OpenTooltip;
+            internal long ShellStacks;
+            internal float ShellExhaustedUntil;
             internal readonly List<IconView> Intents = new List<IconView>(), Statuses = new List<IconView>();
         }
         public void Configure(SingleBattleSceneAdapter owner, Camera camera, TMP_FontAsset typeface)
@@ -120,12 +123,12 @@ namespace Poker.SingleBattle
         }
         private IconView Icon(string name, RectTransform parent, bool status, View owner)
         {
-            var rect = Rect(name, parent, status ? new Vector2(30, 29) : new Vector2(70, 42), Vector2.zero);
+            var rect = Rect(name, parent, status ? new Vector2(30, 29) * StatusBadgeScale : new Vector2(70, 42), Vector2.zero);
             var hit = Image(rect, new Color(0, 0, 0, .001f)); hit.raycastTarget = true;
-            var icon = Rect("Icon", rect, status ? new Vector2(25, 25) : new Vector2(34, 34), status ? Vector2.zero : new Vector2(-16, 0))
+            var icon = Rect("Icon", rect, status ? new Vector2(25, 25) * StatusBadgeScale : new Vector2(34, 34), status ? Vector2.zero : new Vector2(-16, 0))
                 .gameObject.AddComponent<BattleDemoEnemyIcon>();
-            var value = Text("Value", rect, status ? new Vector2(23, 15) : new Vector2(48, 31), status ? 11 : 23);
-            value.rectTransform.anchoredPosition = status ? new Vector2(9, -8) : new Vector2(19, 0);
+            var value = Text("Value", rect, status ? new Vector2(23, 15) * StatusBadgeScale : new Vector2(48, 31), status ? 11 * StatusBadgeScale : 23);
+            value.rectTransform.anchoredPosition = status ? new Vector2(9, -8) * StatusBadgeScale : new Vector2(19, 0);
             var tooltip = rect.gameObject.AddComponent<BattleDemoEnemyBadgeTooltip>();
             tooltip.Show = description =>
             {
@@ -148,8 +151,8 @@ namespace Poker.SingleBattle
                 value.rectTransform.anchorMin = Vector2.zero; value.rectTransform.anchorMax = Vector2.one;
                 value.rectTransform.offsetMin = new Vector2(status ? 23 : 38, 3); value.rectTransform.offsetMax = new Vector2(-8, -3);
                 value.rectTransform.pivot = new Vector2(.5f,.5f);
-                value.fontSize = status ? 12 : 23; value.enableAutoSizing = true; value.fontSizeMin = status ? 8 : 15;
-                value.fontSizeMax = status ? 12 : 23; value.overflowMode = TextOverflowModes.Overflow;
+                value.fontSize = status ? 12 * StatusBadgeScale : 23; value.enableAutoSizing = true; value.fontSizeMin = status ? 8 * StatusBadgeScale : 15;
+                value.fontSizeMax = status ? 12 * StatusBadgeScale : 23; value.overflowMode = TextOverflowModes.Overflow;
                 if (!status) caption = ConceptBattleSkin.Text(rect, "Action Caption", font, new Rect(.64f,.12f,.32f,.76f), "下次行动", 9);
                 value.transform.SetAsLastSibling();
             }
@@ -232,6 +235,8 @@ namespace Poker.SingleBattle
         private void Refresh()
         {
             EnsureViews();
+            if (previous != null && host.Display != null && host.Display.CompletedRounds < previous.CompletedRounds)
+                foreach (var view in views) { view.ShellStacks = 0; view.ShellExhaustedUntil = 0; }
             previous = host.Display;
             if (previous == null) return;
             foreach (var view in views)
@@ -256,7 +261,7 @@ namespace Poker.SingleBattle
                     continue;
                 }
                 bool bossBody = host.UsesExternalCommands && previous.Labels.TryGetValue("wrath.body", out var bodyId) && bodyId == unit.Id;
-                view.HealthText.text = (bossBody ? "暴怒  " : "") + unit.Health + " / " + unit.MaxHealth;
+                PresentHealth(view, unit, bossBody);
                 float fraction = unit.MaxHealth > 0 ? Mathf.Clamp01((float)unit.Health / unit.MaxHealth) : 0;
                 view.Fill.anchorMin = new Vector2(1f / 184, 1f / 17);
                 view.Fill.anchorMax = new Vector2((1 + 182 * fraction) / 184, 16f / 17);
@@ -280,29 +285,58 @@ namespace Poker.SingleBattle
                     if (i >= intents.Count) continue;
                     Set(badge, intents[i]); badge.Root.anchoredPosition = new Vector2((i - (intents.Count - 1) * .5f) * 75, 0);
                 }
-                while (view.Statuses.Count < unit.Statuses.Count) view.Statuses.Add(Icon("Status " + view.Statuses.Count, view.StatusRow, true, view));
+                var statuses = unit.Statuses.ToList();
+                var shell = statuses.FirstOrDefault(status => status.Id == "wrath-shell");
+                bool wrathBody = previous.Labels.TryGetValue("wrath.body", out var wrathBodyId) && wrathBodyId == unit.Id;
+                if (wrathBody && shell == null && view.ShellStacks > 0)
+                    view.ShellExhaustedUntil = Time.unscaledTime + 1.25f;
+                view.ShellStacks = shell?.Stacks ?? 0;
+                if (shell != null || !wrathBody || previous.IsFinished) view.ShellExhaustedUntil = 0;
+                if (wrathBody && shell == null && view.ShellExhaustedUntil > Time.unscaledTime)
+                    statuses.Add(new StatusDisplayData("wrath-shell", 0));
+                while (view.Statuses.Count < statuses.Count) view.Statuses.Add(Icon("Status " + view.Statuses.Count, view.StatusRow, true, view));
+                int statusSlot = 0;
                 for (int i = 0; i < view.Statuses.Count; i++)
                 {
-                    var badge = view.Statuses[i]; SetVisible(badge, i < unit.Statuses.Count);
-                    if (i >= unit.Statuses.Count) continue;
-                    var status = unit.Statuses[i]; var model = BattleDemoEnemyHudModel.Status(status.Id, status.Stacks);
+                    var badge = view.Statuses[i]; SetVisible(badge, i < statuses.Count);
+                    if (i >= statuses.Count) continue;
+                    var status = statuses[i]; var model = BattleDemoEnemyHudModel.Status(status.Id, status.Stacks);
                     var instance = host.PresentedState.Duel.Combat.Statuses.FirstOrDefault(item => item.DefinitionId.Value == status.Id && item.Target.Id == unit.Id);
                     var catalog = host.Engine.Duel.Definition.StatusCatalog;
                     var armor = catalog.Find(new StatusDefinitionId(status.Id))?.Behaviors.OfType<HitArmorSpec>().FirstOrDefault();
-                    string description = model.Description + " ×" + status.Stacks;
-                    if (armor != null)
+                    bool shellBadge = status.Id == "wrath-shell";
+                    string description = shellBadge ? "免伤剩余" + status.Stacks + "次\n仅保护暴怒本体，不保护手。每段伤害消耗1次免伤；0伤害不消耗，不按回合消耗，也不免疫状态。"
+                        : model.Description + " ×" + status.Stacks;
+                    if (!shellBadge && armor != null)
                         description += "\n承受伤害 ×" + armor.Multiplier.ToString("0%") + (armor.Reduction > 0 ? "，再减少 " + armor.Reduction : "") +
                             "；每次命中消耗 " + armor.ConsumeStacks + " 层。";
-                    else if (instance != null) description += "\n" + BattlePresentationRuleText.Status(instance, catalog);
+                    else if (!shellBadge && instance != null) description += "\n" + BattlePresentationRuleText.Status(instance, catalog);
                     Set(badge, model, description);
-                    badge.Root.anchoredPosition = new Vector2(-77 + i % 6 * 31, -(i / 6) * 30);
+                    if (shellBadge) badge.Value.text = "免伤剩余" + status.Stacks + "次";
+                    if (!conceptLayout)
+                    {
+                        // Keep the existing icon anchor and row, allowing the count label to occupy adjacent badge space.
+                        float extra = shellBadge ? 74 : 0;
+                        badge.Root.sizeDelta = new Vector2(30 + extra, 29) * StatusBadgeScale;
+                        badge.Icon.rectTransform.anchoredPosition = new Vector2(-extra * .5f, 0) * StatusBadgeScale;
+                        badge.Value.rectTransform.sizeDelta = (shellBadge ? new Vector2(76, 25) : new Vector2(23, 15)) * StatusBadgeScale;
+                        badge.Value.rectTransform.anchoredPosition = (shellBadge ? new Vector2(14, 0) : new Vector2(9, -8)) * StatusBadgeScale;
+                        badge.Value.fontSize = (shellBadge ? 10 : 11) * StatusBadgeScale;
+                        badge.Root.anchoredPosition = new Vector2(-77 + (statusSlot % 6 * 31 + extra * .5f) * StatusBadgeScale, -(statusSlot / 6) * 30 * StatusBadgeScale);
+                        statusSlot += shellBadge ? 4 : 1;
+                    }
                 }
             }
         }
         private void LateUpdate()
         {
             if (host == null || viewCamera == null || uiRoot == null) return;
-            if (!ReferenceEquals(previous, host.Display)) Refresh();
+            if (!ReferenceEquals(previous, host.Display) || views.Any(view => view.ShellExhaustedUntil > 0 && view.ShellExhaustedUntil <= Time.unscaledTime))
+            {
+                foreach (var view in views.Where(view => view.ShellExhaustedUntil > 0 && view.ShellExhaustedUntil <= Time.unscaledTime))
+                    view.ShellExhaustedUntil = 0;
+                Refresh();
+            }
             var composition = host.GetComponent<WrathBossArtworkLayout>();
             foreach (var view in views)
             {
@@ -310,6 +344,8 @@ namespace Poker.SingleBattle
                 var mesh = view.Surface.GetComponent<MeshFilter>().sharedMesh.bounds;
                 bool body = host.UsesExternalCommands && previous != null &&
                     previous.Labels.TryGetValue("wrath.body", out var bodyId) && bodyId == view.Actor.DisplayId;
+                var unit = previous?.Unit(view.Actor.DisplayId);
+                if (unit != null && unit.IsAlive) PresentHealth(view, unit, body);
                 if (body)
                 {
                     PositionBossHeader(view);
@@ -343,6 +379,11 @@ namespace Poker.SingleBattle
                 if (conceptLayout && authoredLayout != null) authoredLayout.ApplyHud(view.Actor, view.Root, screenCanvas);
                 view.Regeneration.rectTransform.position = view.IntentRow.position;
             }
+        }
+
+        private void PresentHealth(View view, UnitDisplayData unit, bool bossBody)
+        {
+            view.HealthText.text = (bossBody ? "暴怒  " : "") + unit.Health + " / " + unit.MaxHealth;
         }
 
         private void PositionConcept(View view, float height, bool hand)
@@ -383,8 +424,8 @@ namespace Poker.SingleBattle
             if (view.Block.Root.gameObject.activeSelf) statuses.Insert(0, view.Block);
             for (int i = 0; i < statuses.Count; i++)
             {
-                var badge = statuses[i]; badge.Root.sizeDelta = new Vector2(74, 24);
-                var position = new Vector2((i % 3 - (Mathf.Min(3, statuses.Count) - 1) * .5f) * 78, -(i / 3) * 26);
+                var badge = statuses[i]; badge.Root.sizeDelta = new Vector2(74, 24) * StatusBadgeScale;
+                var position = new Vector2((i % 3 - (Mathf.Min(3, statuses.Count) - 1) * .5f) * 78, -(i / 3) * 26) * StatusBadgeScale;
                 badge.Root.anchoredPosition = badge == view.Block ? position + new Vector2(0, statusY) : position;
                 PositionConceptBadge(badge);
             }

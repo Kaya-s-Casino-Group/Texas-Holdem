@@ -114,8 +114,12 @@ namespace Poker.Adventure
                 AdventureAudioController.BindButton(detail);
                 RelicIcon(tile, item.RelicId, new Rect(.17f, .44f, .66f, .45f));
                 Label(tile, host.ItemName(item.RelicId), new Rect(.07f, .29f, .86f, .13f), 26, Paper, TextAlignmentOptions.Center);
-                Label(tile, "品质 " + quality + (quality == 5 ? " · 高风险" : ""), new Rect(.05f, .18f, .90f, .10f), 18, Muted, TextAlignmentOptions.Center);
-                DeskButton(tile, bought ? "已售出 · 查看详情" : "查看详情 · " + item.Price + " 金币", new Rect(.07f, .04f, .86f, .13f), () => ItemDetail(item), true, "Button", 21);
+                bool insufficientGold = !bought && run.Gold < item.Price;
+                Label(tile, "品质 " + quality + (quality == 5 ? " · 高风险" : ""),
+                    new Rect(.05f, .18f, .90f, .10f), 18, Muted, TextAlignmentOptions.Center);
+                var detailButton = DeskButton(tile, bought ? "已售出 · 查看详情" : (insufficientGold ? "金币不足 · " : "查看详情 · ") + item.Price + " 金币",
+                    new Rect(.07f, .04f, .86f, .13f), () => ItemDetail(item), true, "Button", 21);
+                if (insufficientGold) detailButton.GetComponentInChildren<TMP_Text>().color = Unaffordable;
             }
             var kinds = new[] { AdventureCommandKind.DuplicateCard, AdventureCommandKind.ChangeSuit, AdventureCommandKind.DeleteCard };
             var symbols = new[] { "ServiceDuplicate", "ServiceSuit", "ServiceDelete" };
@@ -123,11 +127,22 @@ namespace Poker.Adventure
             {
                 var kind = kinds[i]; long price = run.ServicePrice(kind);
                 var tile = DeskPanel(cabinet, "Service " + kind, DeskPixels(732 + i * 367, 592, 357, 335), "ShopServiceCard");
+                var detail = tile.gameObject.AddComponent<Button>();
+                detail.targetGraphic = tile.GetComponent<Image>();
+                var colors = detail.colors;
+                colors.highlightedColor = new Color(1.15f, 1.1f, .92f);
+                colors.pressedColor = new Color(.72f, .65f, .55f);
+                detail.colors = colors;
+                detail.onClick.AddListener(() => OpenService(kind));
+                AdventureAudioController.BindButton(detail);
                 if (DeskUISkin.Get(symbols[i]) != null) DeskArt(tile, "Card Service", new Rect(.33f, .54f, .34f, .38f), symbols[i], true);
                 else RitualSkin.Icon(tile, "Card Service", new Rect(.36f, .57f, .28f, .33f), RitualSkin.Symbol(i == 0 ? 0 : i == 1 ? 1 : 2));
                 Label(tile, ServiceName(kind), new Rect(.07f, .38f, .86f, .15f), 27, Paper, TextAlignmentOptions.Center);
                 Label(tile, "已使用 " + run.ServiceUses(kind) + " 次", new Rect(.07f, .26f, .86f, .10f), 17, Muted, TextAlignmentOptions.Center);
-                DeskButton(tile, price + " 金币", new Rect(.10f, .06f, .80f, .17f), () => OpenService(kind), run.Gold >= price, "Button", 22);
+                bool affordable = run.Gold >= price;
+                var serviceButton = DeskButton(tile, affordable ? price + " 金币" : "金币不足 · " + price,
+                    new Rect(.10f, .06f, .80f, .17f), () => OpenService(kind), affordable, "Button", 22);
+                if (!affordable) serviceButton.GetComponentInChildren<TMP_Text>().color = Unaffordable;
             }
             Inventory(footer, new Rect(0, .06f, .65f, .88f), true);
             var leave = DeskButton(footer, "离开商店 → 继续旅程", new Rect(.65f, .34f, .35f, .92f),
@@ -168,8 +183,8 @@ namespace Poker.Adventure
             if (DeskUISkin.Get("VictoryLogo") != null)
                 DeskArt(page, "Victory", new Rect(.30f, .47f, .40f, .39f), "VictoryLogo", true);
             else Label(page, "战斗胜利", new Rect(.25f, .60f, .50f, .20f), 82, Gold, TextAlignmentOptions.Center);
-            Label(page, host.Adventure.LastRewardGold > 0 ? "+ " + host.Adventure.LastRewardGold + " 金币" : "最后的阻碍已被击败", new Rect(.25f, .30f, .50f, .10f), 38, Gold, TextAlignmentOptions.Center);
-            Label(page, "当前生命 " + host.Adventure.Health + " / " + host.Adventure.MaxHealth, new Rect(.25f, .21f, .50f, .07f), 25, Paper, TextAlignmentOptions.Center);
+            Label(page, host.Adventure.LastRewardGold > 0 ? "战斗奖励 +" + host.Adventure.LastRewardGold + " 金币" : "本场战斗无金币奖励", new Rect(.25f, .30f, .50f, .10f), 38, Gold, TextAlignmentOptions.Center);
+            Label(page, "金币余额 " + host.Adventure.Gold + " · 当前生命 " + host.Adventure.Health + " / " + host.Adventure.MaxHealth, new Rect(.25f, .21f, .50f, .07f), 25, Paper, TextAlignmentOptions.Center);
             DeskButton(page, host.Adventure.CurrentNode.NextIds.Count == 0 ? "完成旅程" : "继续旅程", new Rect(.35f, .04f, .30f, .105f), () => host.ExecuteAdventure(new AdventureCommand(AdventureCommandKind.Continue)), host.Adventure.CanContinue, "Button", 30);
         }
         private void Result()

@@ -32,12 +32,13 @@ namespace Poker.Adventure
         private static readonly Color Muted = new Color32(193, 179, 160, 255);
         private static readonly Color Panel = new Color32(36, 30, 39, 255);
         private static readonly Color Accent = new Color32(113, 48, 62, 255);
+        private static readonly Color Unaffordable = new Color32(232, 108, 102, 255);
         public AdventureSceneHost Host => host;
         public TMP_FontAsset Font => font;
         public void Configure(AdventureSceneHost owner, TMP_FontAsset typeface) { host = owner; font = typeface; }
         private void OnEnable() { Subscribe(); }
         private void Start() { if (host == null || !host.IsLoading) { Build(); Refresh(); } }
-        private void OnDisable() { if (subscribed) host.Changed -= Refresh; subscribed = false; }
+        private void OnDisable() { CloseBattleTeaching(); if (subscribed) host.Changed -= Refresh; subscribed = false; }
         private void Subscribe()
         { if (host != null && !subscribed) { host.Changed += Refresh; subscribed = true; } }
 
@@ -77,6 +78,7 @@ namespace Poker.Adventure
             { Title(page, "旅程暂不可用", "检查场景的冒险内容配置后重试。"); ErrorFooter(); return; }
             bool battle = !host.IsAtMenu && host.Adventure != null && (host.Adventure.Phase == AdventurePhase.Battle || host.IsBusy);
             backdrop.gameObject.SetActive(!battle); page.gameObject.SetActive(!battle);
+            RefreshBattleTeaching();
             if (battle)
             {
                 // Leave the battle's hand and HUD unobstructed. The run menu never advances a battle.
@@ -140,8 +142,17 @@ namespace Poker.Adventure
             var command = new AdventureCommand(AdventureCommandKind.BuyRelic, item.Id);
             bool allowed = Preview(command);
             bool bought = host.Adventure.PurchasedItemIds.Contains(item.Id);
-            Button(modal, bought ? "已售出" : "确认购买 · " + item.Price + " 金币", new Rect(.07f, .08f, .58f, .12f), () => host.ExecuteAdventure(command), allowed, true);
-            if (!allowed && !bought) Label(modal, "金币不足、栏位已满或持有数量已达上限", new Rect(.07f, .21f, .86f, .06f), 18, Muted);
+            bool insufficientGold = !bought && host.Adventure.Gold < item.Price;
+            Button(modal, bought ? "已售出" : insufficientGold ? "金币不足 · 需 " + item.Price + " 金币" : "确认购买 · " + item.Price + " 金币",
+                new Rect(.07f, .08f, .58f, .12f), () => host.ExecuteAdventure(command), allowed, true);
+            if (!allowed && !bought)
+            {
+                string reason = insufficientGold ? "金币不足，还差 " + (item.Price - host.Adventure.Gold) + " 金币"
+                    : host.Adventure.Relics.Count >= host.Definition.RelicCapacity ? "道具栏已满，请先出售道具"
+                    : host.Adventure.Relics.Count(relic => relic.DefinitionId == item.RelicId) >= host.Content.Relics[item.RelicId].Definition.MaxCopies
+                        ? "该道具已达到持有数量上限" : "当前无法购买";
+                Label(modal, reason, new Rect(.07f, .21f, .86f, .06f), 18, insufficientGold ? Unaffordable : Muted);
+            }
         }
 
 
@@ -151,7 +162,8 @@ namespace Poker.Adventure
             if (result == null) return "";
             var lines = new System.Collections.Generic.List<string>();
             if (result.HealthDelta != 0) lines.Add("生命 " + Signed(result.HealthDelta));
-            if (result.GoldDelta != 0) lines.Add("金币 " + Signed(result.GoldDelta));
+            if (result.GoldDelta != 0) lines.Add((result.Kind == AdventureLocationRewardKind.Chest ? "宝箱奖励 " : "休息抽奖 ") +
+                Signed(result.GoldDelta) + " 金币 · 余额 " + host.Adventure.Gold);
             foreach (var id in result.GrantedRelicIds) lines.Add((host.Adventure.PendingRelicRewards.Contains(id) ? "待领取：" : "获得：") + host.ItemName(id));
             foreach (var id in result.LostRelicIds) lines.Add("失去：" + host.ItemName(id));
             return lines.Count > 0 ? string.Join("\n", lines) : "本次没有资源变化";
@@ -247,6 +259,15 @@ namespace Poker.Adventure
                 {
                     var picture = RitualSkin.Picture(button.transform, "FourBeasts Card", new Rect(.07f, .24f, .86f, .71f), cardAtlas.texture);
                     picture.Configure(cardAtlas.texture, false, new Rect(art.uv.x, art.uv.y, art.uv.z, art.uv.w));
+                    if (CardSuitCorners.TryGetRegion(cardAtlas, AtlasCardId(face), out _))
+                    {
+                        var corner = Rect(picture.transform, "Readable suit corners", new Rect(0, 0, 1, 1))
+                            .gameObject.AddComponent<CardPresentation.CardSuitCornerGraphic>();
+                        var fit = corner.gameObject.AddComponent<AspectRatioFitter>();
+                        fit.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
+                        fit.aspectRatio = cardAtlas.texture.width * art.uv.z / (cardAtlas.texture.height * art.uv.w);
+                        corner.Present(cardAtlas, AtlasCardId(face), Color.white, 1, 0, picture.isActiveAndEnabled);
+                    }
                     var caption = button.GetComponentInChildren<TMP_Text>(); caption.text = label.Replace('\n', ' ');
                     RitualSkin.Place(caption.transform, new Rect(.02f, .015f, .96f, .23f));
                     caption.fontSize = caption.fontSizeMax = 17; caption.fontSizeMin = 12;
@@ -296,6 +317,11 @@ namespace Poker.Adventure
         private void ErrorFooter()
         {
             if (!string.IsNullOrEmpty(host.Message)) Label(footer, host.Message, new Rect(0, 0, .98f, .3f), 20, new Color32(255, 160, 146, 255));
+            else if (!host.IsAtMenu && !host.IsBusy && host.Adventure?.Phase != AdventurePhase.Battle && !string.IsNullOrEmpty(host.GoldIncomeFeedback))
+            {
+                var feedback = Label(footer, host.GoldIncomeFeedback, new Rect(0, 0, .98f, .26f), 20, Gold);
+                feedback.name = "Gold Income Feedback";
+            }
         }
         private void Title(RectTransform parent, string title, string subtitle)
         {

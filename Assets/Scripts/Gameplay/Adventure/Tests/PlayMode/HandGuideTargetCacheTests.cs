@@ -31,10 +31,16 @@ namespace Poker.Adventure.Tests
         AdventureSceneHost host;
         SingleBattleHud hud;
         bool previousBackground;
+        const string TeachingPreference = "Poker.Adventure.BattleTeaching.v1";
+        bool hadTeachingPreference;
+        int previousTeachingPreference;
 
         [UnitySetUp]
         public IEnumerator SetUp()
         {
+            hadTeachingPreference = PlayerPrefs.HasKey(TeachingPreference);
+            previousTeachingPreference = PlayerPrefs.GetInt(TeachingPreference);
+            PlayerPrefs.SetInt(TeachingPreference, 1);
             previousBackground = Application.runInBackground;
             Application.runInBackground = true;
             // Keep the real rules and scene, adding only a second normal enemy in an isolated asset.
@@ -73,6 +79,8 @@ namespace Poker.Adventure.Tests
         [UnityTearDown]
         public IEnumerator TearDown()
         {
+            if (hadTeachingPreference) PlayerPrefs.SetInt(TeachingPreference, previousTeachingPreference);
+            else PlayerPrefs.DeleteKey(TeachingPreference);
             if (hud != null) hud.CloseHandGuide();
             if (scenePath != null)
             {

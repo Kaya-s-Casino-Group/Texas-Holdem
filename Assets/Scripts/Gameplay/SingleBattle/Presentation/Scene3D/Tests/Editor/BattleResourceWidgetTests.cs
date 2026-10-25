@@ -96,7 +96,7 @@ namespace Poker.SingleBattle.Tests
                 row.anchoredPosition = new Vector2(13, -28);
                 BattleResourceWidgets.PresentShield(root.transform, null, 0);
                 Assert.That(row.anchoredPosition, Is.EqualTo(new Vector2(13, -28)));
-                Assert.That(row.Find("Shield Count").GetComponent<TMP_Text>().text, Is.EqualTo("+0"));
+                Assert.That(row.Find("Shield Count").GetComponent<TMP_Text>().text, Is.EqualTo("格挡+0"));
                 Assert.That(row.Find("Shield Icon").GetComponent<Image>().sprite, Is.Not.Null);
                 Assert.That(root.GetComponentsInChildren<TMP_Text>(true).Length, Is.EqualTo(1));
             }

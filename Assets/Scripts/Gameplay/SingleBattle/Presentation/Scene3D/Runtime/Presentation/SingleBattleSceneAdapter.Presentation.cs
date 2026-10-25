@@ -96,7 +96,14 @@ namespace Poker.SingleBattle
             presentationDirector.Bind("cards", actions.Hand.Presentation);
             foreach (var actor in Actors) presentationDirector.Bind(actor.ParticipantId.Value, actor);
         }
-        void IBattleSessionPresentation.Initialize(CardDuelState state) { EnsureBridgeAndDirector(); bridge.Initialize(state); }
+        void IBattleSessionPresentation.Initialize(CardDuelState state)
+        {
+            EnsureBridgeAndDirector();
+            // Replacing recipes may synchronize the old display. Do that while the old bridge
+            // checkpoints and actor identities still agree, before initializing the next encounter.
+            BattleReadableFeedbackTimeline.Upgrade(this, presentationDirector, state);
+            bridge.Initialize(state);
+        }
         void IBattleSessionPresentation.Present(BattleSessionResult batch, bool animate)
         {
             EnsureBridgeAndDirector(); instant = !animate || !Application.isPlaying && StartPresentationRoutine == null || !isActiveAndEnabled || !presentationDirector.isActiveAndEnabled;

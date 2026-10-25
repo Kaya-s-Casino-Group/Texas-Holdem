@@ -26,6 +26,9 @@ namespace Poker.SingleBattle
         private float wrathUltimateUntil = float.NegativeInfinity;
         private bool wrathOpeningPinned, wrathPromptsVisible, wrathUltimateActive;
         private string wrathPromptBattle;
+        public float WrathUltimateWarningRemaining => isActiveAndEnabled && wrathPromptsVisible && wrathUltimateActive &&
+            host != null && host.UsesExternalCommands ? Mathf.Max(0, wrathUltimateUntil - Time.unscaledTime) : 0;
+
 
         private sealed class WrathIntentView
         {
@@ -122,7 +125,9 @@ namespace Poker.SingleBattle
         {
             var body = WrathBody(snapshot);
             wrathPromptsVisible = snapshot != null && snapshot.HasStarted && !snapshot.IsFinished && body?.IsAlive == true;
-            wrathUltimateActive = wrathPromptsVisible && snapshot.Resource(body.Id, "wrath.warning")?.Value == 1;
+            long releaseRound = body != null ? snapshot.Resource(body.Id, "wrath.releaseRound")?.Value ?? -1 : -1;
+            wrathUltimateActive = wrathPromptsVisible && snapshot.Resource(body.Id, "wrath.warning")?.Value == 1 &&
+                (!host.UsesExternalCommands || snapshot.CompletedRounds + 1 < releaseRound);
             if (!wrathPromptsVisible) { HideWrathPrompts(); return; }
             EnsureWrathPromptViews();
             if (UsesWrathDemoPresentation) RefreshWrathIntentIcons(snapshot);
@@ -152,8 +157,7 @@ namespace Poker.SingleBattle
             if (!wrathUltimateActive) wrathUltimateUntil = float.NegativeInfinity;
             else if (host.UsesExternalCommands)
             {
-                long releaseRound = snapshot.Resource(body.Id, "wrath.releaseRound")?.Value ?? -1;
-                // The text has a one-shot clock; the artwork glow continues to follow authority.
+                // Text and artwork share this one-shot clock; authority still owns the pending ultimate.
                 if (releaseRound > 0 && (!wrathUltimatePromptRounds.TryGetValue(snapshot.BattleId, out long shownRound) || releaseRound > shownRound))
                 {
                     wrathUltimatePromptRounds[snapshot.BattleId] = releaseRound;
@@ -197,6 +201,7 @@ namespace Poker.SingleBattle
             bool openingVisible = visible && !ultimateVisible && Time.unscaledTime < wrathOpeningUntil;
             if (wrathOpening != null) wrathOpening.gameObject.SetActive(openingVisible);
             if (wrathUltimate != null) wrathUltimate.gameObject.SetActive(ultimateVisible);
+            if (adventure) host.GetComponent<WrathBossArtworkLayout>()?.SetWarningPromptVisible(ultimateVisible);
             if (wrathRulesButtonText != null) wrathRulesButtonText.text = wrathOpeningPinned ? "收起说明" : "规则说明";
             var camera = ResolveIntentCamera();
             foreach (var marker in wrathHandMarkers.Values)

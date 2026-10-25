@@ -64,7 +64,7 @@ namespace Poker.SingleBattle
             RefreshHandGuideEntryLayout();
             bool available = host.State != null && host.State.HasStarted && !host.State.Duel.IsFinished &&
                 ReferenceEquals(host.State, host.AuthorityState) && !host.IsPresenting && host.Player != null;
-            guideEntry.interactable = available && !IsHandGuideOpen && adminPanel?.IsOpen != true;
+            guideEntry.interactable = available && !host.IsHandGuideOpen && !IsHandGuideOpen && adminPanel?.IsOpen != true;
             if (!IsHandGuideOpen) return;
             if (!available) { CloseHandGuide(); return; }
             if (Keyboard.current?.escapeKey.wasPressedThisFrame == true) { CloseHandGuide(); return; }
@@ -111,7 +111,7 @@ namespace Poker.SingleBattle
 
         public void OpenHandGuide()
         {
-            if (host?.State == null || host.IsPresenting || host.State.Duel.IsFinished || adminPanel?.IsOpen == true || IsHandGuideOpen) return;
+            if (host?.State == null || host.IsHandGuideOpen || host.IsPresenting || host.State.Duel.IsFinished || adminPanel?.IsOpen == true || IsHandGuideOpen) return;
             EnsureHandGuidePanel();
             host.DeckOverview?.Close(false); HideRelicHover();
             battleToolsExpanded = false;
@@ -131,11 +131,12 @@ namespace Poker.SingleBattle
         }
         public void CloseHandGuide()
         {
+            bool ownedGate = IsHandGuideOpen;
             CancelHandGuidePreloads(); ClearGuideHighlights(true); ClearGuideCards();
             if (guideOverlay != null) guideOverlay.gameObject.SetActive(false);
             foreach (var pair in guideInputs) if (pair.Key != null) pair.Key.enabled = pair.Value;
             guideInputs.Clear(); guideState = null; guideResult = null;
-            if (host != null && host.IsHandGuideOpen) host.SetHandGuideOpen(false);
+            if (ownedGate && host != null && host.IsHandGuideOpen) host.SetHandGuideOpen(false);
             if (EventSystem.current != null && guidePreviousFocus != null && guidePreviousFocus.activeInHierarchy)
                 EventSystem.current.SetSelectedGameObject(guidePreviousFocus);
             guidePreviousFocus = null;

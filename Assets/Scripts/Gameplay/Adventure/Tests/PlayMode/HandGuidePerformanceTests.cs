@@ -26,12 +26,18 @@ namespace Poker.Adventure.Tests
         AdventureSceneHost host;
         SingleBattleHud hud;
         bool previousBackground;
+        const string TeachingPreference = "Poker.Adventure.BattleTeaching.v1";
+        bool hadTeachingPreference;
+        int previousTeachingPreference;
         static object Field(object owner, string name) => owner.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic).GetValue(owner);
         static IDictionary Cache(SingleBattleHud owner, string name) => (IDictionary)Field(owner, name);
 
         [UnitySetUp]
         public IEnumerator SetUp()
         {
+            hadTeachingPreference = PlayerPrefs.HasKey(TeachingPreference);
+            previousTeachingPreference = PlayerPrefs.GetInt(TeachingPreference);
+            PlayerPrefs.SetInt(TeachingPreference, 1);
             previousBackground = Application.runInBackground; Application.runInBackground = true;
             scenePath = AssetDatabase.GenerateUniqueAssetPath("Assets/Scenes/__HandGuidePerformance.unity");
             Assert.IsTrue(AssetDatabase.CopyAsset("Assets/Scenes/SingleChapterAdventure.unity", scenePath));
@@ -65,6 +71,8 @@ namespace Poker.Adventure.Tests
         [UnityTearDown]
         public IEnumerator TearDown()
         {
+            if (hadTeachingPreference) PlayerPrefs.SetInt(TeachingPreference, previousTeachingPreference);
+            else PlayerPrefs.DeleteKey(TeachingPreference);
             if (hud != null) hud.CloseHandGuide();
             if (scenePath != null)
             {

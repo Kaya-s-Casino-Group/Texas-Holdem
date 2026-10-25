@@ -100,7 +100,7 @@ namespace Poker.SingleBattle.Tests
                     authored.RefreshLayout();
                     long gain = BattleResourceWidgets.DiscardShieldGain(host.PreviewSelectedDiscard(), host.Player.ParticipantId);
                     Assert.That(host.Actions.Panel.DiscardButton.transform.Find("Discard Shield Preview/Shield Count")
-                        .GetComponent<TMP_Text>().text, Is.EqualTo("+" + gain));
+                        .GetComponent<TMP_Text>().text, Is.EqualTo("格挡+" + gain));
                     Assert.IsFalse(desk.RefreshLayout(), "The same actionable candidate must stay cached");
                 }
                 var liquid = All<BattleActionPointLiquid>(scene).Single(); liquid.SetActions(1);

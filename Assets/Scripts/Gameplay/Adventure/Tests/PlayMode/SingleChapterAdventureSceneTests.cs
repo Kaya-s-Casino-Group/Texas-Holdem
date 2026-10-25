@@ -31,9 +31,16 @@ namespace Poker.Adventure.Tests
         private bool previousLogPolicy, previousRunInBackground;
         private AdventureSceneHost host;
         private AdventureScreen screen;
+        private const string TeachingPreference = "Poker.Adventure.BattleTeaching.v1";
+        private bool hadTeachingPreference;
+        private int previousTeachingPreference;
 
         [UnitySetUp] public IEnumerator LoadIsolatedScene()
         {
+            hadTeachingPreference = PlayerPrefs.HasKey(TeachingPreference);
+            previousTeachingPreference = PlayerPrefs.GetInt(TeachingPreference);
+            // Legacy flow cases start after onboarding. Dedicated cases explicitly reopen it.
+            PlayerPrefs.SetInt(TeachingPreference, 1);
             errors.Clear(); previousLogPolicy = LogAssert.ignoreFailingMessages;
             previousRunInBackground = Application.runInBackground; Application.runInBackground = true;
             LogAssert.ignoreFailingMessages = true; Application.logMessageReceived += CaptureError;
@@ -79,6 +86,9 @@ namespace Poker.Adventure.Tests
                 AssetDatabase.DeleteAsset(temporaryScene); temporaryScene = null;
             }
             Application.logMessageReceived -= CaptureError;
+            if (hadTeachingPreference) PlayerPrefs.SetInt(TeachingPreference, previousTeachingPreference);
+            else PlayerPrefs.DeleteKey(TeachingPreference);
+            PlayerPrefs.Save();
             LogAssert.ignoreFailingMessages = previousLogPolicy;
             Application.runInBackground = previousRunInBackground;
             Assert.IsEmpty(errors, string.Join("\n", errors));
@@ -112,7 +122,7 @@ namespace Poker.Adventure.Tests
             var hand = view.Actions.Hand;
             foreach (var card in hand.Cards.ToArray()) hand.SetInteraction(card.Id, new CardInteractionState(isSelected: true));
             hand.Publish(); hand.GetComponent<HandZoneView>().CompleteTransitions(); view.RefreshCandidate(); yield return null;
-            Assert.AreEqual(5, hand.CaptureSelection().Cards.Count); StringAssert.Contains("伤害", outcome.OutcomeText); StringAssert.DoesNotContain("×", outcome.OutcomeText);
+            Assert.AreEqual(5, hand.CaptureSelection().Cards.Count); StringAssert.Contains("伤害", outcome.OutcomeText); StringAssert.Contains("×", outcome.OutcomeText);
             Assert.IsTrue(view.GetComponent<BattleDemoTargetSelection>().ChooseTarget(enemy));
             Assert.AreEqual(5, view.Player.Play(hand.CaptureSelection(), true));
             bool sawSplit = false, sawFlightCorridor = false; float deadline = Time.realtimeSinceStartup + 15;
@@ -124,16 +134,18 @@ namespace Poker.Adventure.Tests
                 if (drops.Length == 3 && shots.Length == 2)
                 {
                     sawSplit = true; Assert.IsTrue(drops.All(mesh => mesh.GetComponentInChildren<TrailRenderer>() == null));
-                    foreach (var shot in shots)
+                }
+                // Discards finish before scored cards reach the far end of their flight.
+                // Observe the scored flight independently of the earlier split window.
+                foreach (var shot in shots)
+                {
+                    var tail = shot.GetComponentInChildren<TrailRenderer>(); Assert.NotNull(tail);
+                    Assert.AreEqual(shot.GetComponent<MeshFilter>().sharedMesh.bounds.size.x * Mathf.Abs(shot.transform.lossyScale.x) * .55f, tail.widthMultiplier, .00001f);
+                    var handView = hand.GetComponent<HandZoneView>();
+                    if (!sawFlightCorridor && Vector3.Dot(shot.transform.position - hand.transform.position, handView.FacingCamera.transform.forward) > 1.5f)
                     {
-                        var tail = shot.GetComponentInChildren<TrailRenderer>(); Assert.NotNull(tail);
-                        Assert.AreEqual(shot.GetComponent<MeshFilter>().sharedMesh.bounds.size.x * Mathf.Abs(shot.transform.lossyScale.x) * .55f, tail.widthMultiplier, .00001f);
-                        var handView = hand.GetComponent<HandZoneView>();
-                        if (!sawFlightCorridor && Vector3.Dot(shot.transform.position - hand.transform.position, handView.FacingCamera.transform.forward) > 1.5f)
-                        {
-                            ScreenCapture.CaptureScreenshot(Path.Combine(Output, "battle-flight.png"));
-                            sawFlightCorridor = true;
-                        }
+                        ScreenCapture.CaptureScreenshot(Path.Combine(Output, "battle-flight.png"));
+                        sawFlightCorridor = true;
                     }
                 }
                 yield return null;
@@ -298,13 +310,20 @@ namespace Poker.Adventure.Tests
                 long previousHealth = view.Player.DisplayUnit.Health;
                 bool expectsWarning = previousRound == 0 || previousRound == 6;
                 global::BattlePresentation.BattleDisplaySnapshot firstWarning = null;
-                float bannerStarted = -1, bannerHidden = -1;
+                float bannerStarted = -1, bannerHidden = -1, nextRoundStarted = -1;
                 Rect? warningArea = null;
                 string warningScreenshot = Path.GetFullPath(Path.Combine(Output,
                     "boss-round-" + (previousRound + 1) + "-warning.png"));
                 if (expectsWarning && File.Exists(warningScreenshot)) File.Delete(warningScreenshot);
                 Action sampleBanner = () => {
                     bool visible = WrathPrompt("Wrath Ultimate Warning").gameObject.activeInHierarchy;
+                    Assert.AreEqual(visible, view.GetComponent<WrathBossArtworkLayout>().WarningVisible,
+                        "The artwork glow and four-second ultimate text must appear and disappear in the same rendered frame.");
+                    if (view.Display.CompletedRounds > previousRound && view.Display.Phase == "player")
+                    {
+                        if (nextRoundStarted < 0) nextRoundStarted = Time.unscaledTime;
+                        Assert.IsFalse(visible, "Both warning visuals must close before the next player round begins.");
+                    }
                     if (visible && bannerStarted < 0)
                     {
                         bannerStarted = Time.unscaledTime;
@@ -321,7 +340,6 @@ namespace Poker.Adventure.Tests
                     var snapshot = update.Current;
                     if (firstWarning == null && snapshot.Labels.TryGetValue("wrath.body", out var body) &&
                         snapshot.Resource(body, "wrath.warning")?.Value == 1) firstWarning = snapshot;
-                    sampleBanner();
                 };
                 view.PresentationDirector.Display.Changed += observeWarning;
                 try
@@ -341,9 +359,11 @@ namespace Poker.Adventure.Tests
                         }
                         float expiryDeadline = bannerStarted + 6;
                         while (bannerHidden < 0 && Time.unscaledTime < expiryDeadline)
-                        { sampleBanner(); yield return null; }
-                        Assert.That(bannerHidden - bannerStarted, Is.InRange(3.7f, 4.5f),
-                            "The ultimate text must disappear after four unscaled seconds without a player attack.");
+                        { yield return new WaitForEndOfFrame(); sampleBanner(); yield return null; }
+                        // A faster enemy phase may end this four-second presentation early at the next-round boundary.
+                        bool fullWarningWindow = nextRoundStarted < 0 || nextRoundStarted - bannerStarted >= 3.7f;
+                        Assert.That(bannerHidden - bannerStarted, Is.InRange(fullWarningWindow ? 3.7f : 0f, 4.5f),
+                            "The text and glow expire after four unscaled seconds, or earlier when the next round begins, without a player attack.");
                         Assert.IsTrue(warningArea.HasValue);
                         Assert.Less(Vector2.Distance(openingArea.center, warningArea.Value.center), 1.5f,
                             "The timed warning must reuse the opening banner's visible position.");
@@ -491,27 +511,27 @@ namespace Poker.Adventure.Tests
 
         private IEnumerator EndWrathAdventureRound(Action sampleBanner)
         {
-            // Sample during playback: the first warning may expire before the enemy animations finish.
+            // Sample after LateUpdate so text and artwork are compared as they render, never midway through Display.Changed.
             for (int pass = 0; pass < 2; pass++)
             {
                 Assert.IsTrue(host.BattleView.EndTurn(true));
                 float deadline = Time.realtimeSinceStartup + 25;
-                do { sampleBanner(); yield return null; }
+                do { yield return new WaitForEndOfFrame(); sampleBanner(); yield return null; }
                 while (host.IsBusy && Time.realtimeSinceStartup < deadline);
                 Assert.IsFalse(host.IsBusy, "Wrath enemy playback did not return control before the deadline.");
-                sampleBanner();
+                yield return new WaitForEndOfFrame(); sampleBanner();
                 if (host.Session.State.FlowFor(host.Adventure.PlayerId).Window != BattlePlayerWindow.Ending) break;
             }
             yield return Idle();
-            sampleBanner();
+            yield return new WaitForEndOfFrame(); sampleBanner();
         }
 
         private void AssertWrathWarning(bool active, bool bannerVisible)
         {
             Assert.AreEqual(active, WrathBossQuery.Read(host.BattleView.State.Duel).WarningActive);
             Assert.AreEqual(bannerVisible, WrathPrompt("Wrath Ultimate Warning").gameObject.activeInHierarchy);
-            Assert.AreEqual(active, host.BattleView.GetComponent<WrathBossArtworkLayout>().WarningVisible,
-                "The PSD glow follows the pending ultimate even after its four-second text has disappeared.");
+            Assert.AreEqual(bannerVisible, host.BattleView.GetComponent<WrathBossArtworkLayout>().WarningVisible,
+                "The PSD glow shares the timed banner's visibility even while authority keeps the ultimate pending.");
         }
 
         private Rect AssertReadableWrathPrompt(string name, string message)

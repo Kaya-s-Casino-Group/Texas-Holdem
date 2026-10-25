@@ -12,7 +12,14 @@ namespace Poker.BattlePresentation
         public static string Participant(TeamBattleState state, ParticipantId id)
         {
             int index = state.Players.ToList().FindIndex(player => player.Id == id);
-            if (index >= 0) return "玩家 " + (index + 1);
+            if (index >= 0)
+            {
+                // The seven-station single-player profile speaks to the local player directly.
+                // Keep numbered names for generic demos, legacy rules and multiplayer sessions.
+                var rules = state.Players[index].Rules.EffectRule as ConfiguredHandEffectRule;
+                return state.Players.Count == 1 && rules != null && rules.WheelAceScoresOne && rules.PureFlushScoresAllCards
+                    ? "你" : "玩家 " + (index + 1);
+            }
             index = state.Enemies.ToList().FindIndex(enemy => enemy.Id == id);
             return index >= 0 ? "怪物 " + (index + 1) : id.Value;
         }
