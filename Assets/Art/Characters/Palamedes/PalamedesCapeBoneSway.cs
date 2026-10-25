@@ -74,7 +74,7 @@ public sealed class PalamedesCapeBoneSway : MonoBehaviour
         }
         samples=surface.ToArray();capsules=new Capsule[bodyColliders==null?0:bodyColliders.Length];oldCapsules=new Capsule[capsules.Length];activeCapsules=new Capsule[capsules.Length];
         ReadCapsules();Array.Copy(capsules,oldCapsules,capsules.Length);
-        lastAttachmentPosition=motionSource.position;lastAttachmentRotation=motionSource.rotation;ready=true;Pose();
+        lastAttachmentPosition=motionSource.position;lastAttachmentRotation=motionSource.rotation;ready=true;PreserveFoldSections();Pose();
     }
     void LateUpdate()=>Simulate(Time.deltaTime,Time.time);
     public void Simulate(float dt,float time)
@@ -116,6 +116,7 @@ public sealed class PalamedesCapeBoneSway : MonoBehaviour
                         var correction=delta*((length-edge.length)/length*edge.stiffness/(wa+wb));positions[edge.a]+=correction*wa;positions[edge.b]-=correction*wb;
                     }
                     if(iteration==solverIterations/2||iteration==solverIterations-1){Pose();Contact(t);}
+                    PreserveFoldSections();
                 }
                 MaximumParticleSpeed=0;
                 for(int i=columns;i<positions.Length;i++)
@@ -144,6 +145,30 @@ public sealed class PalamedesCapeBoneSway : MonoBehaviour
             // a second time, invalidating the local contact projection.
             var rotation=i<columns?motionSource.rotation*restRotationsInAttachment[i]:characterRoot.rotation;
             bones[i].SetPositionAndRotation(positions[i],rotation);
+        }
+    }
+    void PreserveFoldSections()
+    {
+        if(restInRoot==null||restInRoot.Length!=positions.Length)return;
+        // A folded cross-section moves together. Independent contact offsets on
+        // its columns can invert the narrow folds even when wall weights match.
+        for(int row=1;row<rows;row++)
+        {
+            int first=row*columns;var displacement=Vector3.zero;
+            for(int c=0;c<columns;c++)displacement+=positions[first+c]-characterRoot.TransformPoint(restInRoot[first+c]);
+            displacement/=columns;
+            for(int c=0;c<columns;c++)positions[first+c]=characterRoot.TransformPoint(restInRoot[first+c])+displacement;
+        }
+        // Keep consecutive strips in order while permitting the hem to lift.
+        var down=-characterRoot.up;
+        for(int row=1;row<rows;row++)
+        {
+            int first=row*columns,previous=first-columns;var center=Vector3.zero;var above=Vector3.zero;
+            for(int c=0;c<columns;c++){center+=positions[first+c];above+=positions[previous+c];}
+            center/=columns;above/=columns;
+            float minimum=(restInRoot[previous].y-restInRoot[first].y)*.35f*characterRoot.lossyScale.y;
+            float deficit=minimum-Vector3.Dot(center-above,down);
+            if(deficit>0)for(int c=0;c<columns;c++)positions[first+c]+=down*deficit;
         }
     }
     void ReadCapsules()
@@ -192,7 +217,17 @@ public sealed class PalamedesCapeBoneSway : MonoBehaviour
             void Push(int b,float weight){int p=particleForSkinBone[b];if(p<columns||weight<=0)return;var push=correction*weight/Mathf.Max(.01f,denominator);if(push.sqrMagnitude>contactOffsets[p].sqrMagnitude){contactOffsets[p]=push;contactCounts[p]=1;}contactNormals[p]+=correction.normalized*weight;}
             Push(w.boneIndex0,w.weight0);Push(w.boneIndex1,w.weight1);Push(w.boneIndex2,w.weight2);Push(w.boneIndex3,w.weight3);
         }
-        for(int i=columns;i<positions.Length;i++)if(contactCounts[i]>0)positions[i]+=Vector3.ClampMagnitude(contactOffsets[i]/contactCounts[i],.012f);
+        for(int row=1;row<rows;row++)
+        {
+            int first=row*columns;var push=Vector3.zero;var normal=Vector3.zero;
+            for(int c=0;c<columns;c++)
+            {
+                int i=first+c;if(contactCounts[i]>0&&contactOffsets[i].sqrMagnitude>push.sqrMagnitude)push=contactOffsets[i];
+                normal+=contactNormals[i];
+            }
+            push=Vector3.ClampMagnitude(push,.012f);
+            for(int c=0;c<columns;c++){positions[first+c]+=push;contactNormals[first+c]=normal;}
+        }
     }
     void OnDisable()
     {

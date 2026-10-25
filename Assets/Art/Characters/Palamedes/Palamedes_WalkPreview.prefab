@@ -1864,16 +1864,28 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 3210045998601021078}
     - target: {fileID: 1937682491099699228, guid: 52f36cc1bcd557a46ad0d8d70bb7ffea, type: 3}
+      propertyPath: m_AABB.m_Center.x
+      value: 0.00036245614
+      objectReference: {fileID: 0}
+    - target: {fileID: 1937682491099699228, guid: 52f36cc1bcd557a46ad0d8d70bb7ffea, type: 3}
+      propertyPath: m_AABB.m_Center.y
+      value: -0.000017686281
+      objectReference: {fileID: 0}
+    - target: {fileID: 1937682491099699228, guid: 52f36cc1bcd557a46ad0d8d70bb7ffea, type: 3}
+      propertyPath: m_AABB.m_Center.z
+      value: 0.00022754946
+      objectReference: {fileID: 0}
+    - target: {fileID: 1937682491099699228, guid: 52f36cc1bcd557a46ad0d8d70bb7ffea, type: 3}
       propertyPath: m_AABB.m_Extent.x
-      value: 0.19395894
+      value: 0.0015512253
       objectReference: {fileID: 0}
     - target: {fileID: 1937682491099699228, guid: 52f36cc1bcd557a46ad0d8d70bb7ffea, type: 3}
       propertyPath: m_AABB.m_Extent.y
-      value: 0.23916903
+      value: 0.002077654
       objectReference: {fileID: 0}
     - target: {fileID: 1937682491099699228, guid: 52f36cc1bcd557a46ad0d8d70bb7ffea, type: 3}
       propertyPath: m_AABB.m_Extent.z
-      value: 0.18711635
+      value: 0.0016126755
       objectReference: {fileID: 0}
     - target: {fileID: 1937682491099699228, guid: 52f36cc1bcd557a46ad0d8d70bb7ffea, type: 3}
       propertyPath: m_Bones.Array.size

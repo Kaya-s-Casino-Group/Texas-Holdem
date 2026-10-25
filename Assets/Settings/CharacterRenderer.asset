@@ -149,7 +149,7 @@ MonoBehaviour:
     terrainDetailGrassBillboardPS: {fileID: 4800000, guid: 29868e73b638e48ca99a19ea58c48d90, type: 3}
   m_LowResolution:
     enabled: 1
-    maximumHeight: 480
+    maximumHeight: 540
     applyToRenderTextures: 1
     applyToSceneView: 0
   m_AssetVersion: 2
