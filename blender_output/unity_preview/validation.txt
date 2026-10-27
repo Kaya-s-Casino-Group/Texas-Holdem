@@ -1,0 +1,6 @@
+PASS
+Attack trigger and return to Idle: PASS
+Hit trigger and return to Idle: PASS
+PowerUp trigger and return to Idle: PASS
+Attack wrist height: 1.047 -> 0.389m
+Five Unity URP rendered poses: PASS; shader compilation: PASS
