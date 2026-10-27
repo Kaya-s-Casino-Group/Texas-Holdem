@@ -53,10 +53,10 @@ Material:
     - _Cull: 0
     - _Metallic: 0
     - _OcclusionStrength: 1
-    - _OutlineWidth: 0.0008
+    - _OutlineWidth: 0.01064
     - _Roughness: 0.85
     - _UsePackedMR: 0
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
-    - _OutlineColor: {r: 0.025, g: 0.018, b: 0.015, a: 0.7}
+    - _OutlineColor: {r: 0.7735849, g: 0.7735849, b: 0.7735849, a: 0.7}
   m_BuildTextureStacks: []

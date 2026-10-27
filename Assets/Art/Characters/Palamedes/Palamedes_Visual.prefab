@@ -945,21 +945,21 @@ MonoBehaviour:
   - {x: 0.05347961, y: 0.087976456, z: -0.0983218}
   columns: 3
   rows: 7
-  shapeFrequency: 1
-  drag: 12
-  gravity: 0.35
-  bendStiffness: 0.08
+  shapeFrequency: 0.45
+  drag: 4
+  gravity: 2
+  bendStiffness: 0.025
   foldStiffness: 0.85
   solverIterations: 12
   bodyClearance: 0.003
   contactSlop: 0.001
   contactFriction: 0.45
   maximumSpeed: 0.85
-  restingBackLift: 4
-  chainElasticity: 0.08
+  restingBackLift: 0
+  chainElasticity: 0.015
   motionInertia: 0.1
-  sectionRotation: 0.35
-  maximumSectionAngle: 30
+  sectionRotation: 0.85
+  maximumSectionAngle: 65
 --- !u!1 &1903807688821759406
 GameObject:
   m_ObjectHideFlags: 0

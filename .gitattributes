@@ -3,3 +3,5 @@
 /sync-battle-toolkit.command text eol=lf
 /Tools/BattleToolkitSync/*.sh text eol=lf
 /Tools/BattleToolkitSync/*.ps1 text eol=crlf whitespace=cr-at-eol
+blender_output/**/*.blend filter=lfs diff=lfs merge=lfs -text
+blender_output/*.blend filter=lfs diff=lfs merge=lfs -text

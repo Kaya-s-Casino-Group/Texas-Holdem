@@ -1,0 +1,25 @@
+Harbor backdrop / image_gen built-in / 2026-10-28
+
+Generated from the supplied harbor reference for style, palette and composition.
+Layer order, back to front: 01_Sky, 02_DistantIslands, 03_RuinedCastle, 04_SideCliffs.
+Sky is opaque; other PNGs have actual alpha. Keep original canvas proportions.
+Each layer is independent: adjust plane scale and height to align the shoreline;
+these are not pixel-registered slices of one composite. Water remains real geometry.
+Use unlit/emission with alpha for background planes to preserve painted colors.
+
+Final prompt set (production specifications):
+01: 16:9 sky only, angular painterly flat brushwork, sage olive upper sky,
+    ochre/golden broken horizontal clouds, bright low opening right of center.
+    Opaque full canvas. No terrain, architecture, water, characters or text.
+02: 16:9 transparent distant rocky islands, muted atmospheric sage teal,
+    sparse wind-shaped trees, left/right silhouettes with central harbor passage.
+    No sky, water, castle, dock, characters or text.
+03: 16:9 transparent ruined fortress and its rocky island, tall broken tower
+    right of center, subsidiary towers, broken bridge arches toward left,
+    dark teal stone, olive moss, sparse golden sun-facing edges, angular paint.
+    No sky, water, dock, characters or text; alpha through arches/windows.
+04: 16:9 transparent side rocky shore clusters with sparse coastal trees,
+    center open, dark blue-green shadows and muted ochre edges, angular paint.
+    No architecture, sky, water, dock, characters or text.
+
+Requested 2048x1152 where possible; actual dimensions are those of delivered PNGs.

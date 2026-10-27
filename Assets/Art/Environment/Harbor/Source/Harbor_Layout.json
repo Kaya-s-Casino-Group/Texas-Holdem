@@ -1,0 +1,2331 @@
+{
+  "version": 1,
+  "coordinateConversion": "(-x,z,-y), reversed triangle winding; all mesh transforms identity",
+  "objects": [
+    {
+      "name": "SM_Harbor_01_Sky_001",
+      "sourceName": "01_Sky_painted_v2",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_01_Sky_001.bytes",
+      "kind": "Backdrop",
+      "materials": [
+        0
+      ]
+    },
+    {
+      "name": "SM_Harbor_02_DistantIslands_001",
+      "sourceName": "02_DistantIslands_painted_v2",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_02_DistantIslands_001.bytes",
+      "kind": "Backdrop",
+      "materials": [
+        1
+      ]
+    },
+    {
+      "name": "SM_Harbor_03_RuinedCastle_001",
+      "sourceName": "03_RuinedCastle_painted_v2",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_03_RuinedCastle_001.bytes",
+      "kind": "Backdrop",
+      "materials": [
+        2
+      ]
+    },
+    {
+      "name": "SM_Harbor_04_SideCliffs_001",
+      "sourceName": "04_SideCliffs_painted_v2",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_04_SideCliffs_001.bytes",
+      "kind": "Backdrop",
+      "materials": [
+        3
+      ]
+    },
+    {
+      "name": "SM_Harbor_Banner_Cloth_001",
+      "sourceName": "Tattered_Flag_Banner_Mesh.001",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Banner_Cloth_001.bytes",
+      "kind": "Flag",
+      "materials": [
+        4
+      ]
+    },
+    {
+      "name": "SM_Harbor_Banner_Cloth_002",
+      "sourceName": "tripo_node_64da2545.007",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Banner_Cloth_002.bytes",
+      "kind": "Flag",
+      "materials": [
+        5
+      ]
+    },
+    {
+      "name": "SM_Harbor_Dock_Lantern_Point_GlowCore_001",
+      "sourceName": "Dock_Lantern_Point_GlowCore",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Dock_Lantern_Point_GlowCore_001.bytes",
+      "kind": "Emission",
+      "materials": [
+        6
+      ]
+    },
+    {
+      "name": "SM_Harbor_HarborWater_Seabed_001",
+      "sourceName": "HarborWater_Seabed",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_HarborWater_Seabed_001.bytes",
+      "kind": "Static",
+      "materials": [
+        7
+      ]
+    },
+    {
+      "name": "SM_Harbor_Lantern_Street_Lamp_001",
+      "sourceName": "Lantern_Street_Lamp_Mesh.006",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Lantern_Street_Lamp_001.bytes",
+      "kind": "Static",
+      "materials": [
+        8
+      ]
+    },
+    {
+      "name": "SM_Harbor_Tattered_Flag_Banner_001",
+      "sourceName": "Tattered_Flag_Banner_Mesh.002",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Tattered_Flag_Banner_001.bytes",
+      "kind": "Static",
+      "materials": [
+        9
+      ]
+    },
+    {
+      "name": "SM_Harbor_Tavern_001",
+      "sourceName": "tripo_node_2bc936f0.275",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Tavern_001.bytes",
+      "kind": "Static",
+      "materials": [
+        10
+      ]
+    },
+    {
+      "name": "SM_Harbor_Tavern_Lantern_Point_GlowCore_001",
+      "sourceName": "Tavern_Lantern_Point_GlowCore",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Tavern_Lantern_Point_GlowCore_001.bytes",
+      "kind": "Emission",
+      "materials": [
+        11
+      ]
+    },
+    {
+      "name": "SM_Harbor_Water_Surface_001",
+      "sourceName": "HarborWater_Surface",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Water_Surface_001.bytes",
+      "kind": "Water",
+      "materials": [
+        12
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Barrels_001",
+      "sourceName": "tripo_node_0d801cec.001",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Barrels_001.bytes",
+      "kind": "Static",
+      "materials": [
+        13
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Crate_001",
+      "sourceName": "tripo_node_598a34f5.001",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Crate_001.bytes",
+      "kind": "Static",
+      "materials": [
+        14
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_001",
+      "sourceName": "tripo_node_98e92e7c.001",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_001.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_002",
+      "sourceName": "tripo_node_98e92e7c.002",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_002.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_003",
+      "sourceName": "tripo_node_98e92e7c.003",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_003.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_004",
+      "sourceName": "tripo_node_98e92e7c.004",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_004.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_005",
+      "sourceName": "tripo_node_98e92e7c.005",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_005.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_006",
+      "sourceName": "tripo_node_98e92e7c.006",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_006.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_007",
+      "sourceName": "tripo_node_98e92e7c.007",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_007.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_008",
+      "sourceName": "tripo_node_98e92e7c.008",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_008.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_009",
+      "sourceName": "tripo_node_98e92e7c.009",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_009.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_010",
+      "sourceName": "tripo_node_98e92e7c.010",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_010.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_011",
+      "sourceName": "tripo_node_98e92e7c.011",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_011.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_012",
+      "sourceName": "tripo_node_98e92e7c.012",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_012.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_013",
+      "sourceName": "tripo_node_98e92e7c.013",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_013.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_014",
+      "sourceName": "tripo_node_98e92e7c.014",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_014.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_015",
+      "sourceName": "tripo_node_98e92e7c.015",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_015.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_016",
+      "sourceName": "tripo_node_98e92e7c.016",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_016.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_017",
+      "sourceName": "tripo_node_98e92e7c.017",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_017.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_018",
+      "sourceName": "tripo_node_98e92e7c.018",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_018.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_019",
+      "sourceName": "tripo_node_98e92e7c.019",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_019.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_020",
+      "sourceName": "tripo_node_98e92e7c.020",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_020.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_021",
+      "sourceName": "tripo_node_98e92e7c.021",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_021.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_022",
+      "sourceName": "tripo_node_98e92e7c.022",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_022.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_023",
+      "sourceName": "tripo_node_98e92e7c.023",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_023.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_024",
+      "sourceName": "tripo_node_98e92e7c.024",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_024.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_025",
+      "sourceName": "tripo_node_98e92e7c.025",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_025.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_026",
+      "sourceName": "tripo_node_98e92e7c.026",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_026.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_027",
+      "sourceName": "tripo_node_98e92e7c.027",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_027.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_028",
+      "sourceName": "tripo_node_98e92e7c.028",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_028.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_029",
+      "sourceName": "tripo_node_98e92e7c.029",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_029.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_030",
+      "sourceName": "tripo_node_98e92e7c.030",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_030.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_031",
+      "sourceName": "tripo_node_98e92e7c.032",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_031.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_032",
+      "sourceName": "tripo_node_98e92e7c.034",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_032.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_033",
+      "sourceName": "tripo_node_98e92e7c.035",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_033.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_034",
+      "sourceName": "tripo_node_98e92e7c.036",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_034.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_035",
+      "sourceName": "tripo_node_98e92e7c.037",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_035.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_036",
+      "sourceName": "tripo_node_98e92e7c.038",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_036.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_037",
+      "sourceName": "tripo_node_98e92e7c.039",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_037.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_038",
+      "sourceName": "tripo_node_98e92e7c.040",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_038.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_039",
+      "sourceName": "tripo_node_98e92e7c.042",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_039.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_040",
+      "sourceName": "tripo_node_98e92e7c.043",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_040.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_041",
+      "sourceName": "tripo_node_98e92e7c.045",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_041.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_042",
+      "sourceName": "tripo_node_98e92e7c.048",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_042.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_043",
+      "sourceName": "tripo_node_98e92e7c.050",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_043.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_044",
+      "sourceName": "tripo_node_98e92e7c.051",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_044.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_045",
+      "sourceName": "tripo_node_98e92e7c.052",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_045.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_046",
+      "sourceName": "tripo_node_98e92e7c.053",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_046.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_047",
+      "sourceName": "tripo_node_98e92e7c.055",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_047.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_048",
+      "sourceName": "tripo_node_98e92e7c.056",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_048.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_049",
+      "sourceName": "tripo_node_98e92e7c.058",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_049.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_050",
+      "sourceName": "tripo_node_98e92e7c.061",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_050.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_051",
+      "sourceName": "tripo_node_98e92e7c.062",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_051.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_052",
+      "sourceName": "tripo_node_98e92e7c.066",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_052.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_053",
+      "sourceName": "tripo_node_98e92e7c.067",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_053.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_054",
+      "sourceName": "tripo_node_98e92e7c.068",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_054.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_055",
+      "sourceName": "tripo_node_98e92e7c.069",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_055.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_056",
+      "sourceName": "tripo_node_98e92e7c.070",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_056.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_057",
+      "sourceName": "tripo_node_98e92e7c.071",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_057.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_058",
+      "sourceName": "tripo_node_98e92e7c.072",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_058.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_059",
+      "sourceName": "tripo_node_98e92e7c.073",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_059.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_060",
+      "sourceName": "tripo_node_98e92e7c.074",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_060.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_061",
+      "sourceName": "tripo_node_98e92e7c.075",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_061.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_062",
+      "sourceName": "tripo_node_98e92e7c.076",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_062.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_063",
+      "sourceName": "tripo_node_98e92e7c.077",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_063.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_064",
+      "sourceName": "tripo_node_98e92e7c.083",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_064.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_065",
+      "sourceName": "tripo_node_98e92e7c.087",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_065.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_066",
+      "sourceName": "tripo_node_98e92e7c.090",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_066.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_067",
+      "sourceName": "tripo_node_98e92e7c.102",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_067.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_068",
+      "sourceName": "tripo_node_98e92e7c.103",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_068.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_069",
+      "sourceName": "tripo_node_98e92e7c.106",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_069.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_070",
+      "sourceName": "tripo_node_98e92e7c.109",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_070.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_071",
+      "sourceName": "tripo_node_98e92e7c.110",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_071.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_072",
+      "sourceName": "tripo_node_98e92e7c.111",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_072.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_073",
+      "sourceName": "tripo_node_98e92e7c.115",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_073.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_074",
+      "sourceName": "tripo_node_98e92e7c.116",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_074.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_075",
+      "sourceName": "tripo_node_98e92e7c.117",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_075.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_076",
+      "sourceName": "tripo_node_98e92e7c.118",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_076.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_077",
+      "sourceName": "tripo_node_98e92e7c.119",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_077.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_078",
+      "sourceName": "tripo_node_98e92e7c.120",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_078.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_079",
+      "sourceName": "tripo_node_98e92e7c.121",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_079.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_080",
+      "sourceName": "tripo_node_98e92e7c.123",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_080.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_081",
+      "sourceName": "tripo_node_98e92e7c.124",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_081.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_082",
+      "sourceName": "tripo_node_98e92e7c.125",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_082.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_083",
+      "sourceName": "tripo_node_98e92e7c.126",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_083.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_084",
+      "sourceName": "tripo_node_98e92e7c.127",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_084.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_085",
+      "sourceName": "tripo_node_98e92e7c.128",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_085.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_086",
+      "sourceName": "tripo_node_98e92e7c.129",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_086.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_087",
+      "sourceName": "tripo_node_98e92e7c.130",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_087.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_088",
+      "sourceName": "tripo_node_98e92e7c.131",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_088.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_089",
+      "sourceName": "tripo_node_98e92e7c.132",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_089.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_090",
+      "sourceName": "tripo_node_98e92e7c.133",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_090.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_091",
+      "sourceName": "tripo_node_98e92e7c.134",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_091.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_092",
+      "sourceName": "tripo_node_98e92e7c.135",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_092.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_093",
+      "sourceName": "tripo_node_98e92e7c.136",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_093.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_094",
+      "sourceName": "tripo_node_98e92e7c.137",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_094.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_095",
+      "sourceName": "tripo_node_98e92e7c.138",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_095.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_096",
+      "sourceName": "tripo_node_98e92e7c.139",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_096.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_097",
+      "sourceName": "tripo_node_98e92e7c.140",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_097.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_098",
+      "sourceName": "tripo_node_98e92e7c.141",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_098.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_099",
+      "sourceName": "tripo_node_98e92e7c.142",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_099.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_100",
+      "sourceName": "tripo_node_98e92e7c.143",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_100.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_101",
+      "sourceName": "tripo_node_98e92e7c.144",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_101.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_102",
+      "sourceName": "tripo_node_98e92e7c.145",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_102.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_103",
+      "sourceName": "tripo_node_98e92e7c.146",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_103.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_104",
+      "sourceName": "tripo_node_98e92e7c.147",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_104.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_105",
+      "sourceName": "tripo_node_98e92e7c.148",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_105.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_106",
+      "sourceName": "tripo_node_98e92e7c.149",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_106.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_107",
+      "sourceName": "tripo_node_98e92e7c.150",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_107.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_108",
+      "sourceName": "tripo_node_98e92e7c.168",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_108.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_109",
+      "sourceName": "tripo_node_98e92e7c.169",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_109.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_110",
+      "sourceName": "tripo_node_98e92e7c.173",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_110.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_111",
+      "sourceName": "tripo_node_98e92e7c.176",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_111.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_112",
+      "sourceName": "tripo_node_98e92e7c.178",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_112.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_113",
+      "sourceName": "tripo_node_98e92e7c.179",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_113.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_114",
+      "sourceName": "tripo_node_98e92e7c.180",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_114.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_115",
+      "sourceName": "tripo_node_98e92e7c.181",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_115.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_116",
+      "sourceName": "tripo_node_98e92e7c.182",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_116.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_117",
+      "sourceName": "tripo_node_98e92e7c.211",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_117.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_118",
+      "sourceName": "tripo_node_98e92e7c.212",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_118.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Dock_Wreck_119",
+      "sourceName": "tripo_node_98e92e7c.213",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Dock_Wreck_119.bytes",
+      "kind": "Static",
+      "materials": [
+        15
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Pallet_001",
+      "sourceName": "tripo_node_547e366e.001",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Pallet_001.bytes",
+      "kind": "Static",
+      "materials": [
+        16
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Pallet_002",
+      "sourceName": "tripo_node_547e366e.002",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Pallet_002.bytes",
+      "kind": "Static",
+      "materials": [
+        16
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Pallet_003",
+      "sourceName": "tripo_node_547e366e.003",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Pallet_003.bytes",
+      "kind": "Static",
+      "materials": [
+        16
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Pallet_004",
+      "sourceName": "tripo_node_547e366e.004",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Pallet_004.bytes",
+      "kind": "Static",
+      "materials": [
+        16
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Pallet_005",
+      "sourceName": "tripo_node_547e366e.005",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Pallet_005.bytes",
+      "kind": "Static",
+      "materials": [
+        16
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Pallet_006",
+      "sourceName": "tripo_node_547e366e.006",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Pallet_006.bytes",
+      "kind": "Static",
+      "materials": [
+        16
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Pallet_007",
+      "sourceName": "tripo_node_547e366e.007",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Pallet_007.bytes",
+      "kind": "Static",
+      "materials": [
+        16
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Pallet_008",
+      "sourceName": "tripo_node_547e366e.008",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Pallet_008.bytes",
+      "kind": "Static",
+      "materials": [
+        16
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Pallet_009",
+      "sourceName": "tripo_node_547e366e.009",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Pallet_009.bytes",
+      "kind": "Static",
+      "materials": [
+        16
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Pallet_010",
+      "sourceName": "tripo_node_547e366e.010",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Pallet_010.bytes",
+      "kind": "Static",
+      "materials": [
+        16
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Pallet_011",
+      "sourceName": "tripo_node_547e366e.011",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Pallet_011.bytes",
+      "kind": "Static",
+      "materials": [
+        16
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Pallet_012",
+      "sourceName": "tripo_node_547e366e.012",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Pallet_012.bytes",
+      "kind": "Static",
+      "materials": [
+        16
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Pallet_1_001",
+      "sourceName": "tripo_node_fada4e80.001",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Pallet_1_001.bytes",
+      "kind": "Static",
+      "materials": [
+        17
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Pallet_2_001",
+      "sourceName": "tripo_node_3a290136.002",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Pallet_2_001.bytes",
+      "kind": "Static",
+      "materials": [
+        18
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Pallet_2_002",
+      "sourceName": "tripo_node_3a290136.003",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Pallet_2_002.bytes",
+      "kind": "Static",
+      "materials": [
+        18
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Pallet_2_003",
+      "sourceName": "tripo_node_3a290136.004",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Pallet_2_003.bytes",
+      "kind": "Static",
+      "materials": [
+        18
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Pallet_2_004",
+      "sourceName": "tripo_node_3a290136.005",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Pallet_2_004.bytes",
+      "kind": "Static",
+      "materials": [
+        18
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Pallet_2_005",
+      "sourceName": "tripo_node_3a290136.006",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Pallet_2_005.bytes",
+      "kind": "Static",
+      "materials": [
+        18
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Pallet_2_006",
+      "sourceName": "tripo_node_3a290136.007",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Pallet_2_006.bytes",
+      "kind": "Static",
+      "materials": [
+        18
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Pallet_2_007",
+      "sourceName": "tripo_node_3a290136.008",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Pallet_2_007.bytes",
+      "kind": "Static",
+      "materials": [
+        18
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Planks_Platform_001",
+      "sourceName": "tripo_node_5a247a50.001",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Planks_Platform_001.bytes",
+      "kind": "Static",
+      "materials": [
+        19
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Planks_Platform_002",
+      "sourceName": "tripo_node_5a247a50.002",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Planks_Platform_002.bytes",
+      "kind": "Static",
+      "materials": [
+        19
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Planks_Platform_003",
+      "sourceName": "tripo_node_5a247a50.003",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Planks_Platform_003.bytes",
+      "kind": "Static",
+      "materials": [
+        19
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Planks_Platform_004",
+      "sourceName": "tripo_node_5a247a50.004",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Planks_Platform_004.bytes",
+      "kind": "Static",
+      "materials": [
+        19
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Planks_Platform_005",
+      "sourceName": "tripo_node_5a247a50.005",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Planks_Platform_005.bytes",
+      "kind": "Static",
+      "materials": [
+        19
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Planks_Platform_006",
+      "sourceName": "tripo_node_5a247a50.006",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Planks_Platform_006.bytes",
+      "kind": "Static",
+      "materials": [
+        19
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Planks_Platform_007",
+      "sourceName": "tripo_node_5a247a50.007",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Planks_Platform_007.bytes",
+      "kind": "Static",
+      "materials": [
+        19
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Planks_Platform_008",
+      "sourceName": "tripo_node_5a247a50.008",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Planks_Platform_008.bytes",
+      "kind": "Static",
+      "materials": [
+        19
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Rope_Fence_001",
+      "sourceName": "tripo_node_c3498fdd.001",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Rope_Fence_001.bytes",
+      "kind": "Static",
+      "materials": [
+        20
+      ]
+    },
+    {
+      "name": "SM_Harbor_Wooden_Structure_001",
+      "sourceName": "tripo_node_64da2545.013",
+      "path": "Assets/Art/Environment/Harbor/Source/SM_Harbor_Wooden_Structure_001.bytes",
+      "kind": "Static",
+      "materials": [
+        21
+      ]
+    }
+  ],
+  "materials": [
+    {
+      "name": "M_Harbor_01_Sky_painted_v2_UnlitAlpha",
+      "kind": "Backdrop",
+      "baseMap": "Assets/Art/Environment/Harbor/Textures/T_01_Sky_painted_v2_png.png",
+      "normalMap": "",
+      "color": [
+        0.699999988079071,
+        0.699999988079071,
+        0.699999988079071,
+        1
+      ],
+      "roughness": 0.85,
+      "metallic": 0,
+      "emission": 0,
+      "cutoff": 0,
+      "normalStrength": 1,
+      "flagAmplitude": 0,
+      "flagSpeed": 1,
+      "flagDirection": [
+        0,
+        0,
+        1
+      ],
+      "flagSide": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "M_Harbor_02_DistantIslands_painted_v2_UnlitAlpha",
+      "kind": "Backdrop",
+      "baseMap": "Assets/Art/Environment/Harbor/Textures/T_02_DistantIslands_painted_v2_png.png",
+      "normalMap": "",
+      "color": [
+        0.320000022649765,
+        0.320000022649765,
+        0.320000022649765,
+        1
+      ],
+      "roughness": 0.85,
+      "metallic": 0,
+      "emission": 0,
+      "cutoff": 0.35,
+      "normalStrength": 1,
+      "flagAmplitude": 0,
+      "flagSpeed": 1,
+      "flagDirection": [
+        0,
+        0,
+        1
+      ],
+      "flagSide": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "M_Harbor_03_RuinedCastle_painted_v2_UnlitAlpha",
+      "kind": "Backdrop",
+      "baseMap": "Assets/Art/Environment/Harbor/Textures/T_03_RuinedCastle_painted_v2_png.png",
+      "normalMap": "",
+      "color": [
+        0.7599999904632568,
+        0.7599999904632568,
+        0.7599999904632568,
+        1
+      ],
+      "roughness": 0.85,
+      "metallic": 0,
+      "emission": 0,
+      "cutoff": 0.35,
+      "normalStrength": 1,
+      "flagAmplitude": 0,
+      "flagSpeed": 1,
+      "flagDirection": [
+        0,
+        0,
+        1
+      ],
+      "flagSide": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "M_Harbor_04_SideCliffs_painted_v2_UnlitAlpha",
+      "kind": "Backdrop",
+      "baseMap": "Assets/Art/Environment/Harbor/Textures/T_04_SideCliffs_painted_v2_png.png",
+      "normalMap": "",
+      "color": [
+        0.6700000166893005,
+        0.6700000166893005,
+        0.6700000166893005,
+        1
+      ],
+      "roughness": 0.85,
+      "metallic": 0,
+      "emission": 0,
+      "cutoff": 0.35,
+      "normalStrength": 1,
+      "flagAmplitude": 0,
+      "flagSpeed": 1,
+      "flagDirection": [
+        0,
+        0,
+        1
+      ],
+      "flagSide": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "M_Harbor_Tattered_Flag_Banner_Material_001_Flag_4",
+      "kind": "Flag",
+      "baseMap": "Assets/Art/Environment/Harbor/Textures/T_Harbor_Tattered_Flag_Banner_001_BaseColor.png",
+      "normalMap": "",
+      "color": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "roughness": 0.8500000238418579,
+      "metallic": 0.0,
+      "emission": 0.0,
+      "cutoff": 0,
+      "normalStrength": 1,
+      "flagAmplitude": 0.055682893932900344,
+      "flagSpeed": 1.0,
+      "flagDirection": [
+        1.5099580252808664e-07,
+        -4.371138828673793e-08,
+        1.0
+      ],
+      "flagSide": [
+        1.0,
+        0.0,
+        -1.5099580252808664e-07
+      ]
+    },
+    {
+      "name": "M_Harbor_Wooden_Structure_Material_001_Flag_5",
+      "kind": "Flag",
+      "baseMap": "Assets/Art/Environment/Harbor/Textures/T_Harbor_Wooden_Structure_001_SurfaceMap.png",
+      "normalMap": "Assets/Art/Environment/Harbor/Textures/T_Harbor_Wooden_Structure_001_Normal.png",
+      "color": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "roughness": 1.0,
+      "metallic": 1.0,
+      "emission": 0.0,
+      "cutoff": 0,
+      "normalStrength": 1,
+      "flagAmplitude": 0.03601758718048516,
+      "flagSpeed": 1.0,
+      "flagDirection": [
+        0.9999999403953552,
+        -2.6645687169017922e-15,
+        3.2584134146418364e-07
+      ],
+      "flagSide": [
+        -3.2584134146418364e-07,
+        -4.371138118131057e-08,
+        0.9999999403953552
+      ]
+    },
+    {
+      "name": "M_Harbor_Dock_Lantern_Point_Emission",
+      "kind": "Emission",
+      "baseMap": "",
+      "normalMap": "",
+      "color": [
+        3.0,
+        2.3399999141693115,
+        0.9000000357627869,
+        1
+      ],
+      "roughness": 0.85,
+      "metallic": 0,
+      "emission": 0,
+      "cutoff": 0,
+      "normalStrength": 1,
+      "flagAmplitude": 0,
+      "flagSpeed": 1,
+      "flagDirection": [
+        0,
+        0,
+        1
+      ],
+      "flagSide": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "M_Harbor_HarborWater_Seabed_Teal",
+      "kind": "Static",
+      "baseMap": "",
+      "normalMap": "",
+      "color": [
+        0.02500000037252903,
+        0.06499999761581421,
+        0.04500000178813934,
+        1.0
+      ],
+      "roughness": 1.0,
+      "metallic": 0.0,
+      "emission": 0.0,
+      "cutoff": 0,
+      "normalStrength": 1,
+      "flagAmplitude": 0,
+      "flagSpeed": 1,
+      "flagDirection": [
+        0,
+        0,
+        1
+      ],
+      "flagSide": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "M_Harbor_Lantern_Street_Lamp_Material_001",
+      "kind": "Static",
+      "baseMap": "Assets/Art/Environment/Harbor/Textures/T_Harbor_Lantern_Street_Lamp_001_BaseColor.png",
+      "normalMap": "",
+      "color": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "roughness": 0.8999999761581421,
+      "metallic": 0.0,
+      "emission": 0.0,
+      "cutoff": 0,
+      "normalStrength": 1,
+      "flagAmplitude": 0,
+      "flagSpeed": 1,
+      "flagDirection": [
+        0,
+        0,
+        1
+      ],
+      "flagSide": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "M_Harbor_Tattered_Flag_Banner_Material_001",
+      "kind": "Static",
+      "baseMap": "Assets/Art/Environment/Harbor/Textures/T_Harbor_Tattered_Flag_Banner_001_BaseColor.png",
+      "normalMap": "",
+      "color": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "roughness": 0.8500000238418579,
+      "metallic": 0.0,
+      "emission": 0.0,
+      "cutoff": 0,
+      "normalStrength": 1,
+      "flagAmplitude": 0,
+      "flagSpeed": 1,
+      "flagDirection": [
+        0,
+        0,
+        1
+      ],
+      "flagSide": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "M_Harbor_Medieval_Timber_Tavern_Material_001",
+      "kind": "Static",
+      "baseMap": "Assets/Art/Environment/Harbor/Textures/T_Harbor_Medieval_Timber_Tavern_001_SurfaceMap.png",
+      "normalMap": "Assets/Art/Environment/Harbor/Textures/T_Harbor_Medieval_Timber_Tavern_001_Normal.png",
+      "color": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "roughness": 1.0,
+      "metallic": 1.0,
+      "emission": 0.0,
+      "cutoff": 0,
+      "normalStrength": 1,
+      "flagAmplitude": 0,
+      "flagSpeed": 1,
+      "flagDirection": [
+        0,
+        0,
+        1
+      ],
+      "flagSide": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "M_Harbor_Tavern_Lantern_Point_Emission",
+      "kind": "Emission",
+      "baseMap": "",
+      "normalMap": "",
+      "color": [
+        3.0,
+        2.3399999141693115,
+        0.9000000357627869,
+        1
+      ],
+      "roughness": 0.85,
+      "metallic": 0,
+      "emission": 0,
+      "cutoff": 0,
+      "normalStrength": 1,
+      "flagAmplitude": 0,
+      "flagSpeed": 1,
+      "flagDirection": [
+        0,
+        0,
+        1
+      ],
+      "flagSide": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "M_Harbor_HarborWater_RealWaves_FinalStep",
+      "kind": "Water",
+      "baseMap": "",
+      "normalMap": "",
+      "color": [
+        0.5699999928474426,
+        0.7599999904632568,
+        0.6700000166893005,
+        1.0
+      ],
+      "roughness": 0.10999999940395355,
+      "metallic": 0.0,
+      "emission": 0.0,
+      "cutoff": 0,
+      "normalStrength": 1,
+      "flagAmplitude": 0,
+      "flagSpeed": 1,
+      "flagDirection": [
+        0,
+        0,
+        1
+      ],
+      "flagSide": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "M_Harbor_Wooden_Barrels_Material_001",
+      "kind": "Static",
+      "baseMap": "Assets/Art/Environment/Harbor/Textures/T_Harbor_Wooden_Barrels_001_SurfaceMap.png",
+      "normalMap": "Assets/Art/Environment/Harbor/Textures/T_Harbor_Wooden_Barrels_001_Normal.png",
+      "color": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "roughness": 0.5,
+      "metallic": 0.0,
+      "emission": 0.0,
+      "cutoff": 0,
+      "normalStrength": 1,
+      "flagAmplitude": 0,
+      "flagSpeed": 1,
+      "flagDirection": [
+        0,
+        0,
+        1
+      ],
+      "flagSide": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "M_Harbor_Wooden_Crate_Material_001",
+      "kind": "Static",
+      "baseMap": "Assets/Art/Environment/Harbor/Textures/T_Harbor_Wooden_Crate_001_SurfaceMap.png",
+      "normalMap": "Assets/Art/Environment/Harbor/Textures/T_Harbor_Wooden_Crate_001_Normal.png",
+      "color": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "roughness": 0.5,
+      "metallic": 0.0,
+      "emission": 0.0,
+      "cutoff": 0,
+      "normalStrength": 1,
+      "flagAmplitude": 0,
+      "flagSpeed": 1,
+      "flagDirection": [
+        0,
+        0,
+        1
+      ],
+      "flagSide": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "M_Harbor_Wooden_Dock_Wreck_Material_001",
+      "kind": "Static",
+      "baseMap": "Assets/Art/Environment/Harbor/Textures/T_Harbor_Wooden_Dock_Wreck_001_SurfaceMap.png",
+      "normalMap": "Assets/Art/Environment/Harbor/Textures/T_Harbor_Wooden_Dock_Wreck_001_Normal.png",
+      "color": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "roughness": 1.0,
+      "metallic": 1.0,
+      "emission": 0.0,
+      "cutoff": 0,
+      "normalStrength": 1,
+      "flagAmplitude": 0,
+      "flagSpeed": 1,
+      "flagDirection": [
+        0,
+        0,
+        1
+      ],
+      "flagSide": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "M_Harbor_Wooden_Pallet_Material_001",
+      "kind": "Static",
+      "baseMap": "Assets/Art/Environment/Harbor/Textures/T_Harbor_Wooden_Pallet_001_SurfaceMap.png",
+      "normalMap": "Assets/Art/Environment/Harbor/Textures/T_Harbor_Wooden_Pallet_001_Normal.png",
+      "color": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "roughness": 0.5,
+      "metallic": 0.0,
+      "emission": 0.0,
+      "cutoff": 0,
+      "normalStrength": 1,
+      "flagAmplitude": 0,
+      "flagSpeed": 1,
+      "flagDirection": [
+        0,
+        0,
+        1
+      ],
+      "flagSide": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "M_Harbor_Wooden_Pallet_1_Material_001",
+      "kind": "Static",
+      "baseMap": "Assets/Art/Environment/Harbor/Textures/T_Harbor_Wooden_Pallet_1_001_SurfaceMap.png",
+      "normalMap": "Assets/Art/Environment/Harbor/Textures/T_Harbor_Wooden_Pallet_1_001_Normal.png",
+      "color": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "roughness": 0.5,
+      "metallic": 0.0,
+      "emission": 0.0,
+      "cutoff": 0,
+      "normalStrength": 1,
+      "flagAmplitude": 0,
+      "flagSpeed": 1,
+      "flagDirection": [
+        0,
+        0,
+        1
+      ],
+      "flagSide": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "M_Harbor_Wooden_Pallet_2_Material_001",
+      "kind": "Static",
+      "baseMap": "Assets/Art/Environment/Harbor/Textures/T_Harbor_Wooden_Pallet_2_001_SurfaceMap.png",
+      "normalMap": "Assets/Art/Environment/Harbor/Textures/T_Harbor_Wooden_Pallet_2_001_Normal.png",
+      "color": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "roughness": 0.5,
+      "metallic": 0.0,
+      "emission": 0.0,
+      "cutoff": 0,
+      "normalStrength": 1,
+      "flagAmplitude": 0,
+      "flagSpeed": 1,
+      "flagDirection": [
+        0,
+        0,
+        1
+      ],
+      "flagSide": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "M_Harbor_Wooden_Planks_Platform_Material_001",
+      "kind": "Static",
+      "baseMap": "Assets/Art/Environment/Harbor/Textures/T_Harbor_Wooden_Planks_Platform_001_SurfaceMap.png",
+      "normalMap": "Assets/Art/Environment/Harbor/Textures/T_Harbor_Wooden_Planks_Platform_001_Normal.png",
+      "color": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "roughness": 0.5,
+      "metallic": 0.0,
+      "emission": 0.0,
+      "cutoff": 0,
+      "normalStrength": 1,
+      "flagAmplitude": 0,
+      "flagSpeed": 1,
+      "flagDirection": [
+        0,
+        0,
+        1
+      ],
+      "flagSide": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "M_Harbor_Wooden_Rope_Fence_Material_001",
+      "kind": "Static",
+      "baseMap": "Assets/Art/Environment/Harbor/Textures/T_Harbor_Wooden_Rope_Fence_001_SurfaceMap.png",
+      "normalMap": "Assets/Art/Environment/Harbor/Textures/T_Harbor_Wooden_Rope_Fence_001_Normal.png",
+      "color": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "roughness": 1.0,
+      "metallic": 1.0,
+      "emission": 0.0,
+      "cutoff": 0,
+      "normalStrength": 1,
+      "flagAmplitude": 0,
+      "flagSpeed": 1,
+      "flagDirection": [
+        0,
+        0,
+        1
+      ],
+      "flagSide": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "M_Harbor_Wooden_Structure_Material_001",
+      "kind": "Static",
+      "baseMap": "Assets/Art/Environment/Harbor/Textures/T_Harbor_Wooden_Structure_001_SurfaceMap.png",
+      "normalMap": "Assets/Art/Environment/Harbor/Textures/T_Harbor_Wooden_Structure_001_Normal.png",
+      "color": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "roughness": 1.0,
+      "metallic": 1.0,
+      "emission": 0.0,
+      "cutoff": 0,
+      "normalStrength": 1,
+      "flagAmplitude": 0,
+      "flagSpeed": 1,
+      "flagDirection": [
+        0,
+        0,
+        1
+      ],
+      "flagSide": [
+        1,
+        0,
+        0
+      ]
+    }
+  ],
+  "lights": [
+    {
+      "name": "L_Harbor_Unity_KeyLight_01",
+      "type": "SUN",
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "forward": [
+        0.3344728946685791,
+        -0.8122915029525757,
+        -0.47781839966773987
+      ],
+      "up": [
+        0.46581852436065674,
+        0.5832517147064209,
+        -0.6654551029205322
+      ],
+      "color": [
+        0.7799999713897705,
+        0.800000011920929,
+        0.5400000214576721
+      ],
+      "intensity": 0.47999998927116394,
+      "range": 3.0,
+      "radius": 0.0
+    },
+    {
+      "name": "L_Harbor_Tavern_Lantern_Point_02",
+      "type": "POINT",
+      "position": [
+        -2.0543153285980225,
+        1.3762110471725464,
+        1.663185954093933
+      ],
+      "forward": [
+        0.0,
+        -1.0,
+        0.0
+      ],
+      "up": [
+        0.0,
+        0.0,
+        -1.0
+      ],
+      "color": [
+        1.0,
+        0.699999988079071,
+        0.23999999463558197
+      ],
+      "intensity": 2.6,
+      "range": 6.118823416311341,
+      "radius": 0.08500000089406967
+    },
+    {
+      "name": "L_Harbor_Dock_Lantern_Point_03",
+      "type": "POINT",
+      "position": [
+        -1.9804068803787231,
+        1.295466661453247,
+        4.170608997344971
+      ],
+      "forward": [
+        0.0,
+        -1.0,
+        0.0
+      ],
+      "up": [
+        0.0,
+        0.0,
+        -1.0
+      ],
+      "color": [
+        1.0,
+        0.699999988079071,
+        0.23999999463558197
+      ],
+      "intensity": 2.3,
+      "range": 5.754997827975263,
+      "radius": 0.08500000089406967
+    },
+    {
+      "name": "L_Harbor_Tavern_Lantern_Point_001_04",
+      "type": "POINT",
+      "position": [
+        3.91457200050354,
+        1.7064623832702637,
+        5.149988651275635
+      ],
+      "forward": [
+        0.0,
+        -1.0,
+        0.0
+      ],
+      "up": [
+        0.0,
+        0.0,
+        -1.0
+      ],
+      "color": [
+        1.0,
+        0.699999988079071,
+        0.23999999463558197
+      ],
+      "intensity": 2.6,
+      "range": 6.118823416311341,
+      "radius": 0.08500000089406967
+    },
+    {
+      "name": "L_Harbor_Dock_Lantern_Point_001_05",
+      "type": "POINT",
+      "position": [
+        -2.7639431953430176,
+        1.1227729320526123,
+        7.07648229598999
+      ],
+      "forward": [
+        0.0,
+        -1.0,
+        0.0
+      ],
+      "up": [
+        0.0,
+        0.0,
+        -1.0
+      ],
+      "color": [
+        1.0,
+        0.699999988079071,
+        0.23999999463558197
+      ],
+      "intensity": 2.3,
+      "range": 5.754997827975263,
+      "radius": 0.08500000089406967
+    }
+  ],
+  "excludedCharacters": [
+    "SM_Palamedes_MetalAccessories",
+    "SM_Palamedes_Body",
+    "SM_Palamedes_Skirt_Main",
+    "SM_Palamedes_Skirt_SidePanel",
+    "Palamedes_Rig",
+    "SM_Palamedes_Hair",
+    "SM_Palamedes_Cape",
+    "SM_Palamedes_ShoulderShawl",
+    "SM_Palamedes_ShoulderStrap",
+    "SM_Palamedes_Skirt_FrontPanel",
+    "SkeletonWraith_Rig",
+    "SkeletonWraith_Body",
+    "SkeletonWraith_Cloak"
+  ],
+  "camera": {
+    "position": [
+      2.307762384414673,
+      0.9800891280174255,
+      -5.217634201049805
+    ],
+    "forward": [
+      -0.23095199465751648,
+      0.012129606679081917,
+      0.9728896021842957
+    ],
+    "up": [
+      -0.026933223009109497,
+      0.999459445476532,
+      -0.018854469060897827
+    ],
+    "fov": 27.290232564650218,
+    "near": 0.30000001192092896,
+    "far": 1000.0
+  },
+  "waves": [
+    {
+      "wave": "Main",
+      "wavelength_m": 8,
+      "amplitude_m": 0.045,
+      "steepness": 0.65,
+      "period_frames_at_speed1": 60,
+      "direction": [
+        0.28,
+        0.96
+      ]
+    },
+    {
+      "wave": "Cross",
+      "wavelength_m": 4.2,
+      "amplitude_m": 0.023,
+      "steepness": 0.5,
+      "period_frames_at_speed1": 40,
+      "direction": [
+        -0.76,
+        0.65
+      ]
+    },
+    {
+      "wave": "Long",
+      "wavelength_m": 12,
+      "amplitude_m": 0.025,
+      "steepness": 0.55,
+      "period_frames_at_speed1": 72,
+      "direction": [
+        0.9,
+        0.44
+      ]
+    }
+  ],
+  "waveStrength": 1.0,
+  "waveSpeed": 0.8
+}

@@ -16,7 +16,7 @@ public sealed class PalamedesClothDynamics : MonoBehaviour
     public Transform characterRoot, motionSource;
     public SkinnedMeshRenderer capeRenderer;
     [Tooltip("跟随躯干相对初始姿态的朝向，披风在重力作用下保持自然下垂。")]
-    public bool followAttachmentHeading;
+    public bool followAttachmentHeading = true;
     [Tooltip("启用披风与身体碰撞；关闭后可观察纯骨骼动力学效果。")]
     public bool enableBodyCollision = true;
     public CapsuleCollider[] bodyColliders;
@@ -26,9 +26,9 @@ public sealed class PalamedesClothDynamics : MonoBehaviour
     [Min(2)]
     public int columns = 3, rows = 7;
     [Min(0)]
-    public float shapeFrequency = 1f, drag = 7, gravity = .35f;
+    public float shapeFrequency = .45f, drag = 4, gravity = 2f;
     [Range(0, 1)]
-    public float bendStiffness = .08f, foldStiffness = .85f;
+    public float bendStiffness = .025f, foldStiffness = .85f;
     [Range(2, 16)]
     public int solverIterations = 12;
     [Range(0, .02f)]
@@ -41,18 +41,18 @@ public sealed class PalamedesClothDynamics : MonoBehaviour
     public float maximumSpeed = 1.5f;
     [Tooltip("让下垂的静态形状略向后抬起，挂点保持固定。")]
     [Range(0, 12)]
-    public float restingBackLift = 4;
+    public float restingBackLift = 0;
     [Tooltip("每个 60 Hz 模拟步对初始形状的拉回比例；越小，裙摆拖尾越明显。")]
     [Range(0, 1)]
-    public float chainElasticity = .08f;
+    public float chainElasticity = .015f;
     [Tooltip("立即传递给自由骨骼的挂点位移比例；越小，移动滞后越明显。")]
     [Range(0, 1)]
     public float motionInertia = .1f;
     [Tooltip("褶皱横截面跟随模拟中心线弯曲的旋转比例。")]
     [Range(0, 1)]
-    public float sectionRotation = .5f;
+    public float sectionRotation = .85f;
     [Range(0, 80)]
-    public float maximumSectionAngle = 40;
+    public float maximumSectionAngle = 65;
     public float LastBodyPenetration { get; private set; }
     public float MaximumParticleSpeed { get; private set; }
 

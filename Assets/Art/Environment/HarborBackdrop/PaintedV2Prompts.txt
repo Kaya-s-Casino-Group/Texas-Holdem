@@ -1,0 +1,16 @@
+ImageGen built-in, painted v2, 2026-10-28
+Reference: original harbor image supplied by user.
+Layer order: sky > distant islands > castle > side cliffs.
+New siblings preserve first version. Opaque sky, true-alpha PNG terrain.
+
+01_Sky_painted_v2
+Match ORIGINAL REFERENCE brush language faithfully: extremely economical rough painted block-in, broad opaque smeared paint strokes, chunky angular silhouettes, only 3-5 large flat value shapes per object, unfinished concept painting impression. No small textures, no tiny masonry, no crisp decorative details, no leaf detail, no smooth 3D rendering, no photorealism. Muted dark teal, olive green, dull golden yellow only. One landscape 16:9 parallax background layer, no characters/dock/foreground props/water/text. SKY ONLY. Olive sage sky with a few broad streaks of dull ochre golden clouds; brightest low right of center. Opaque full canvas. No terrain, water or buildings.
+
+02_DistantIslands_painted_v2
+Match ORIGINAL REFERENCE brush language faithfully: extremely economical rough painted block-in, broad opaque smeared paint strokes, chunky angular silhouettes, only 3-5 large flat value shapes per object, unfinished concept painting impression. No small textures, no tiny masonry, no crisp decorative details, no leaf detail, no smooth 3D rendering, no photorealism. Muted dark teal, olive green, dull golden yellow only. One landscape 16:9 parallax background layer with actual transparent background, no characters/dock/foreground props/water/sky/text. DISTANT ROCK ISLANDS ONLY. Soft muted sage-teal silhouettes clustered on left and right, a low wide empty central passage. Low contrast atmospheric shapes, no architecture. Island bases near 80% canvas height.
+
+03_RuinedCastle_painted_v2
+undefined
+
+04_SideCliffs_painted_v2
+undefined

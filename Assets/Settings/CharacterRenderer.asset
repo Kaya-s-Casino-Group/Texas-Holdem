@@ -86,7 +86,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ff4094c01d0af4a32882582bb369c920, type: 3}
   m_Name: "\u590D\u53E4\u540E\u5904\u7406"
   m_EditorClassIdentifier: 
-  m_Active: 0
+  m_Active: 1
   settings:
     applyToRenderTextures: 1
     applyToSceneView: 0

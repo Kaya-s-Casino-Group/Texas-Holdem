@@ -1,0 +1,146 @@
+[
+  {
+    "name": "Medieval_Timber_Tavern",
+    "archive": "medieval+timber+tavern+3d+model.zip",
+    "objects": 1,
+    "original_dimensions": [
+      0.97314453125,
+      0.99951171875,
+      0.86279296875
+    ],
+    "display_scale": 4.2020517830972155,
+    "collection": "01_Medieval_Timber_Tavern"
+  },
+  {
+    "name": "Wooden_Barrels",
+    "archive": "wooden+barrels+3d+model.zip",
+    "objects": 1,
+    "original_dimensions": [
+      0.978546142578125,
+      0.978515625,
+      0.637664794921875
+    ],
+    "display_scale": 3.065772649306097,
+    "collection": "02_Wooden_Barrels"
+  },
+  {
+    "name": "Wooden_Crate",
+    "archive": "wooden+crate+3d+model.zip",
+    "objects": 1,
+    "original_dimensions": [
+      0.976287841796875,
+      0.955230712890625,
+      0.518463134765625
+    ],
+    "display_scale": 3.072864243068363,
+    "collection": "03_Wooden_Crate"
+  },
+  {
+    "name": "Wooden_Dock_Wreck",
+    "archive": "wooden+dock+wreck+3d+model.zip",
+    "objects": 1,
+    "original_dimensions": [
+      0.99951171875,
+      0.92431640625,
+      0.4291992783546448
+    ],
+    "display_scale": 3.001465559355154,
+    "collection": "04_Wooden_Dock_Wreck"
+  },
+  {
+    "name": "Wooden_Pallet_1",
+    "archive": "wooden+pallet+3d+model (1).zip",
+    "objects": 1,
+    "original_dimensions": [
+      0.9756298661231995,
+      0.9756298661231995,
+      0.08973508328199387
+    ],
+    "display_scale": 3.07493661701944,
+    "collection": "05_Wooden_Pallet_1"
+  },
+  {
+    "name": "Wooden_Pallet_2",
+    "archive": "wooden+pallet+3d+model (2).zip",
+    "objects": 1,
+    "original_dimensions": [
+      0.924560546875,
+      0.97821044921875,
+      0.0937996357679367
+    ],
+    "display_scale": 3.0668247332626195,
+    "collection": "06_Wooden_Pallet_2"
+  },
+  {
+    "name": "Wooden_Pallet",
+    "archive": "wooden+pallet+3d+model.zip",
+    "objects": 1,
+    "original_dimensions": [
+      0.966156005859375,
+      0.977630615234375,
+      0.08992008864879608
+    ],
+    "display_scale": 3.0686436709848603,
+    "collection": "07_Wooden_Pallet"
+  },
+  {
+    "name": "Wooden_Planks_Platform",
+    "archive": "wooden+planks+platform+3d+model.zip",
+    "objects": 1,
+    "original_dimensions": [
+      0.982269287109375,
+      0.96685791015625,
+      0.09803394973278046
+    ],
+    "display_scale": 3.0541522975114175,
+    "collection": "08_Wooden_Planks_Platform"
+  },
+  {
+    "name": "Wooden_Rope_Fence",
+    "archive": "wooden+rope+fence+3d+model.zip",
+    "objects": 1,
+    "original_dimensions": [
+      0.78173828125,
+      0.99951171875,
+      0.63720703125
+    ],
+    "display_scale": 3.001465559355154,
+    "collection": "09_Wooden_Rope_Fence"
+  },
+  {
+    "name": "Wooden_Structure",
+    "archive": "wooden+structure+3d+model.zip",
+    "objects": 1,
+    "original_dimensions": [
+      0.65966796875,
+      0.99951171875,
+      0.63525390625
+    ],
+    "display_scale": 3.001465559355154,
+    "collection": "10_Wooden_Structure"
+  },
+  {
+    "name": "Tattered_Flag_Banner",
+    "archive": "tattered+flag+banner+3d+model.zip",
+    "objects": 1,
+    "original_dimensions": [
+      0.99951171875,
+      0.1352539360523224,
+      0.96142578125
+    ],
+    "display_scale": 3.001465559355154,
+    "collection": "11_Tattered_Flag_Banner"
+  },
+  {
+    "name": "Lantern_Street_Lamp",
+    "archive": "lantern+street+lamp+3d+model.zip",
+    "objects": 1,
+    "original_dimensions": [
+      0.59716796875,
+      0.21240240335464478,
+      0.99951171875
+    ],
+    "display_scale": 3.001465559355154,
+    "collection": "12_Lantern_Street_Lamp"
+  }
+]

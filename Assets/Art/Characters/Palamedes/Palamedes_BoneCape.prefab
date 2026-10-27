@@ -367,7 +367,7 @@ MonoBehaviour:
   characterRoot: {fileID: 8815883457543297059}
   motionSource: {fileID: 0}
   capeRenderer: {fileID: 0}
-  followAttachmentHeading: 0
+  followAttachmentHeading: 1
   enableBodyCollision: 1
   bodyColliders: []
   bones:
@@ -390,21 +390,21 @@ MonoBehaviour:
   restInRoot: []
   columns: 3
   rows: 7
-  shapeFrequency: 1
-  drag: 7
-  gravity: 0.35
-  bendStiffness: 0.08
+  shapeFrequency: 0.45
+  drag: 4
+  gravity: 2
+  bendStiffness: 0.025
   foldStiffness: 0.85
   solverIterations: 12
   bodyClearance: 0.003
   contactSlop: 0.001
   contactFriction: 0.3
   maximumSpeed: 1.5
-  restingBackLift: 4
-  chainElasticity: 0.08
+  restingBackLift: 0
+  chainElasticity: 0.015
   motionInertia: 0.1
-  sectionRotation: 0.5
-  maximumSectionAngle: 40
+  sectionRotation: 0.85
+  maximumSectionAngle: 65
 --- !u!4 &8815883457543297059 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8917254203289409141, guid: 66e4241bdc32fab409d6bf9a8ef48128, type: 3}

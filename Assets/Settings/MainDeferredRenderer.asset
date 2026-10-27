@@ -224,8 +224,8 @@ MonoBehaviour:
   settings:
     applyToRenderTextures: 1
     applyToSceneView: 0
-    baseHeight: 0.39
-    maximumHeight: 1.77
+    baseHeight: 0.21
+    maximumHeight: 2.31
     heightFalloff: 2
     heightCurve:
       serializedVersion: 2
@@ -253,10 +253,10 @@ MonoBehaviour:
       m_RotationOrder: 4
     enableGround: 0
     groundHeight: 0
-    density: 0.1
+    density: 0.03
     attenuationDistance: 1
     distance: 10
-    color: {r: 0.13105197, g: 0.17080711, b: 0.2924528, a: 1}
+    color: {r: 0.13369367, g: 0.17610055, b: 0.12570699, a: 1}
     useNoiseTexture: 1
     noiseTexture: {fileID: 11700000, guid: ead288b6eef7e4adb89b14a437dedabc, type: 2}
     noiseStrength: 0.741

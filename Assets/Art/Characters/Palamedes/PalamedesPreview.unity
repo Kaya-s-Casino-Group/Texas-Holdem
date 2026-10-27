@@ -1495,19 +1495,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8340875437790603714, guid: 3384ebef2984813478ae6522b395bb82, type: 3}
       propertyPath: shapeFrequency
-      value: 1
+      value: 0.45
       objectReference: {fileID: 0}
     - target: {fileID: 8340875437790603714, guid: 3384ebef2984813478ae6522b395bb82, type: 3}
       propertyPath: drag
-      value: 7
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 8340875437790603714, guid: 3384ebef2984813478ae6522b395bb82, type: 3}
       propertyPath: gravity
-      value: 0.35
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 8340875437790603714, guid: 3384ebef2984813478ae6522b395bb82, type: 3}
       propertyPath: bendStiffness
-      value: 0.08
+      value: 0.025
       objectReference: {fileID: 0}
     - target: {fileID: 8340875437790603714, guid: 3384ebef2984813478ae6522b395bb82, type: 3}
       propertyPath: foldStiffness
@@ -1519,7 +1519,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8340875437790603714, guid: 3384ebef2984813478ae6522b395bb82, type: 3}
       propertyPath: chainElasticity
-      value: 0.08
+      value: 0.015
       objectReference: {fileID: 0}
     - target: {fileID: 8340875437790603714, guid: 3384ebef2984813478ae6522b395bb82, type: 3}
       propertyPath: motionInertia
@@ -1527,11 +1527,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8340875437790603714, guid: 3384ebef2984813478ae6522b395bb82, type: 3}
       propertyPath: sectionRotation
-      value: 0.5
+      value: 0.85
       objectReference: {fileID: 0}
     - target: {fileID: 8340875437790603714, guid: 3384ebef2984813478ae6522b395bb82, type: 3}
       propertyPath: maximumSectionAngle
-      value: 40
+      value: 65
       objectReference: {fileID: 0}
     - target: {fileID: 8340875437790603714, guid: 3384ebef2984813478ae6522b395bb82, type: 3}
       propertyPath: enableBodyCollision
