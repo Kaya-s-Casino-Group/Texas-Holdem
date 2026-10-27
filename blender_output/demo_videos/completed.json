@@ -1,0 +1,26 @@
+[
+  {
+    "clip": "01_idle",
+    "frames": 72,
+    "fps": 24,
+    "file": "F:\\Texas-Holdem\\blender_output\\demo_videos\\01_idle.mp4"
+  },
+  {
+    "clip": "02_attack",
+    "frames": 41,
+    "fps": 24,
+    "file": "F:\\Texas-Holdem\\blender_output\\demo_videos\\02_attack.mp4"
+  },
+  {
+    "clip": "03_hit",
+    "frames": 33,
+    "fps": 24,
+    "file": "F:\\Texas-Holdem\\blender_output\\demo_videos\\03_hit.mp4"
+  },
+  {
+    "clip": "04_powerup",
+    "frames": 73,
+    "fps": 24,
+    "file": "F:\\Texas-Holdem\\blender_output\\demo_videos\\04_powerup.mp4"
+  }
+]

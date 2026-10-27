@@ -362,7 +362,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 601d0f27a8eeb6144b002501561a8fd3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  capeEnabled: 1
+  panels: []
   characterRoot: {fileID: 8815883457543297059}
+  motionSource: {fileID: 0}
+  capeRenderer: {fileID: 0}
+  followAttachmentHeading: 0
+  enableBodyCollision: 1
+  bodyColliders: []
   bones:
   - {fileID: 8404001478203167167}
   - {fileID: 5970867595258875452}
@@ -377,18 +384,27 @@ MonoBehaviour:
   - {x: -0, y: -0, z: -0, w: 1}
   - {x: -0, y: -0, z: -0, w: 1}
   - {x: -0, y: -0, z: -0, w: 1}
-  localSwingAxis: {x: 0.74779826, y: 0, z: 0.663926}
-  maximumBend: 32
-  localWindDirection: {x: 0.663926, y: 0, z: -0.74779826}
-  windSpeed: 3.5
-  gustStrength: 0.45
-  gustPeriod: 3.8
-  turbulence: 0.12
-  windResponse: 1.4
-  shoulderInfluence: 0.28
-  maximumShoulderBend: 9
-  propagationDelay: 0.12
-  dampingTime: 0.35
+  restRotationsInAttachment: []
+  restLocalPositions: []
+  restInAttachment: []
+  restInRoot: []
+  columns: 3
+  rows: 7
+  shapeFrequency: 1
+  drag: 7
+  gravity: 0.35
+  bendStiffness: 0.08
+  foldStiffness: 0.85
+  solverIterations: 12
+  bodyClearance: 0.003
+  contactSlop: 0.001
+  contactFriction: 0.3
+  maximumSpeed: 1.5
+  restingBackLift: 4
+  chainElasticity: 0.08
+  motionInertia: 0.1
+  sectionRotation: 0.5
+  maximumSectionAngle: 40
 --- !u!4 &8815883457543297059 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8917254203289409141, guid: 66e4241bdc32fab409d6bf9a8ef48128, type: 3}

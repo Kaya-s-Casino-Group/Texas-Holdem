@@ -1,6 +1,6 @@
 # Battle Presentation
 
-Palamedes retains this generic framework. The old Scene3D actors, HandZoneView, card interaction library, HUD and authored scenes have been removed; references to them below describe the archived integration. New frontends provide their own implementations of the retained contracts.
+Palamedes retains this generic framework. The world-card motion runtime and its ICardZonePresentation adapter have been migrated back; see ../CardPresentation/README.md for current setup. Old Scene3D actors, the input library, HUD and authored scenes remain archived; references to those below describe the archived integration. New frontends provide their own implementations of the retained contracts.
 
 `BattlePresentation.Runtime` is a pure C# assembly with `noEngineReferences: true`. It references neither Unity nor the battle rules. A rule bridge supplies immutable projected facts; frontends supply object bindings and actions.
 
@@ -45,6 +45,10 @@ Scopes own cleanup. `PresentationChannels.Acquire` explicitly transfers an exclu
 
 `IInteractionFeedback.Reconcile` targets the newest state rather than queuing every historical enter/exit. On release, scope callbacks are invalidated before the feedback adapter is notified. Candidate animation never changes `DisplayStore` or globally blocks play.
 
+### Player card gesture contract
+
+Player pointer operations on cards (short press, long press and drag) are valid only during that player's turn while the gameplay bridge accepts input. The single-battle frontend uses `BattleTimelineSceneAdapter.CanAct`, which includes authority turn ownership and pending playback; visual card presence alone never grants input permission. Check the gate at press, hold/update and release. When it closes, immediately cancel the held gesture and restore any uncommitted drag order. A late release must not select a card or commit a reorder, including after the gate reopens; require a new press. Candidate selection still obeys the narrower action/forced-discard window and card eligibility. Programmatic local arrangement remains a separate view capability.
+
 ## Unity adapters
 
 `BattlePresentation.Unity` is an optional frontend with no game-rule references:
@@ -62,6 +66,6 @@ For the existing Scene3D objects, add `BattleActorTimelineAction` or `CardZoneTi
 
 - `BattlePresentation.Tests.PresentationCoreTests`: cursor transactions, signal order, intermediate checkpoints, parallel/AllOf scheduling, nonblocking tails, fault recovery, epochs, candidate replacement and lease ownership.
 - `BattlePresentation.Unity.Tests.SceneFeedbackTests`: actual Transform contribution release, cross-pattern handoff and action/feedback conflicts.
-- `CardPresentation.Tests.CardZoneTransitionTests`: actual card preparation marker, preserved card list, current-layout cancellation and legal transfer after the intermediate marker.
+- `CardPresentation.Tests.WorldCardZoneContractTests`: real motion markers, preserved preparation membership, projection ordering/state, cancellation, instant playback and director checkpoint binding.
 
 No rules, random-number operations or command entrypoints live in this module.

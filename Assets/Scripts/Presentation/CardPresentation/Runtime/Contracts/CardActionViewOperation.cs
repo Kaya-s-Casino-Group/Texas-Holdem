@@ -1,0 +1,33 @@
+using System;
+using UnityEngine;
+
+namespace CardPresentation
+{
+    public enum CardActionViewStatus { Pending, Completed, Cancelled, Failed }
+
+    /// <summary>Completion for one committed card action. The producing View owns the terminal state.</summary>
+    public sealed class CardActionViewOperation : CustomYieldInstruction
+    {
+        private readonly Action onCancel;
+        public CardActionViewStatus Status { get; private set; }
+        public Exception Error { get; private set; }
+        public event Action<CardActionViewStatus> Finished;
+        public CardActionViewOperation(Action onCancel = null) { this.onCancel = onCancel; }
+        public override bool keepWaiting => Status == CardActionViewStatus.Pending;
+        public bool Complete() => Finish(CardActionViewStatus.Completed, null);
+        public bool Cancel()
+        {
+            if (!keepWaiting) return false;
+            Status = CardActionViewStatus.Cancelled;
+            try { onCancel?.Invoke(); }
+            finally { Finished?.Invoke(Status); }
+            return true;
+        }
+        public bool Fail(Exception error) => Finish(CardActionViewStatus.Failed, error ?? new InvalidOperationException("Card action presentation failed."));
+        private bool Finish(CardActionViewStatus status, Exception error)
+        {
+            if (!keepWaiting) return false;
+            Error = error; Status = status; Finished?.Invoke(status); return true;
+        }
+    }
+}

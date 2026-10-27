@@ -4,6 +4,14 @@
 
 最小预制体与一键工具见 [入口配置教程](../../../../../Tools/BattleSceneHostSetup.md)。
 
+## 多文件 XML 单局入口
+
+`XmlBattleSessionSource` 同时接受原单文件和包含 `<Import path="..." />` 的入口。开发特定战斗表现时，在 `Content Xml` 绑定包内 `Content/SingleChapter/Battle1.xml`、`Battle2.xml`、`Gatekeeper.xml` 或 `Wrath.xml`，设置对应 Encounter ID，再点击“收集并校验 XML 依赖”。例如暴怒使用 `Wrath.xml` + `single-chapter-wrath`，可直接开局，省去前置冒险关卡。
+
+编辑器会递归收集入口目录内的依赖并保存为 `Modules` 的相对路径与 TextAsset 引用；失败时保留已有绑定，支持 Undo。修改 Import 关系后需再次收集；修改已绑定文件内容无需重新收集。运行时按这些序列化引用装配，不使用 AssetDatabase 或磁盘读取。程序化装配可调用 `Configure(entry, encounterId, BattleXmlModule[])`；原两参数接口仍可绑定单文件，并清空旧依赖。
+
+入口、模块缺失或引用错误会阻止创建新会话，诊断保留原 XML 文件和行号。`Build` 返回未 Start 会话，随后由 Host 控制开局。单局使用基础构筑；如需验证敌人中途阶段，应通过会话的测试/管理接口设置状态，或附加已准备好的会话。此装配层不自动推进敌人阶段。
+
 ## 责任分配
 
 - `BattleHost`（`PokerEngine.Composition`）：持有 `Session / Playback / AuthorityState`；接收创建未开局会话的委托；统一 `StartBattle / RestartBattle / AttachSession / Synchronize`。

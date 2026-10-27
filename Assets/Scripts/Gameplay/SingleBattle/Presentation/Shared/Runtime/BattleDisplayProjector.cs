@@ -46,7 +46,9 @@ namespace Poker.BattlePresentation
                     return new CardDisplayData(hidden ? "hidden/" + zone.Id.Value + "/" + zone.Cards.ToList().IndexOf(id) : id.Value,
                         id.Value, card.DefinitionId.Value, hidden ? null : StandardArt(face), hidden,
                         disabledReason: !hidden && card.IsDisabled ? "disabled" : null,
-                        properties: hidden ? null : new Dictionary<string, string> { ["effects"] = ((int)card.Effects).ToString(CultureInfo.InvariantCulture) });
+                        properties: hidden ? null : new Dictionary<string, string> {
+                            ["effects"] = ((int)card.Effects).ToString(CultureInfo.InvariantCulture),
+                            ["rank"] = ((int)face.Rank).ToString(CultureInfo.InvariantCulture), ["suit"] = face.Suit.ToString() });
                 })));
             string phase = duel.Phase == ScoredDuelPhase.Won ? "won" : duel.Phase == ScoredDuelPhase.Lost ? "lost" :
                 duel.Phase == ScoredDuelPhase.AwaitingEnemyAction ? "enemy" : "player";

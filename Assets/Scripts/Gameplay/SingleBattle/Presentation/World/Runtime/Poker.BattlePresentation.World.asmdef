@@ -1,0 +1,15 @@
+{
+  "name": "Poker.BattlePresentation.World",
+  "references": [
+    "CardInteraction.Runtime",
+    "CardPresentation.Runtime",
+    "CardArt.Runtime",
+    "Poker.BattleHosting.Runtime",
+    "Poker.BattlePresentation.Shared.Unity",
+    "BattlePresentation.Runtime",
+    "BattlePresentation.Unity",
+    "PokerEngine.Core",
+    "PokerEngine.Composition",
+    "UnityEngine.UI"
+  ]
+}

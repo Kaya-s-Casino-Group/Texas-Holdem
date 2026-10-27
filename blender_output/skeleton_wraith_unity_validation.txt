@@ -1,0 +1,12 @@
+PASS
+Generic avatar: valid
+Shader: Characters/SkeletonWraith/Deferred Outline
+Texture: 512x512
+Animator triggers: Attack, Hit, PowerUp
+Prefab forward: +Z; Animator on Visual; root motion disabled
+Idle: 3.000s, 320 curves; all paths resolved; loop=True
+Attack: 2.167s, 320 curves; all paths resolved; loop=False
+Hit: 1.333s, 320 curves; all paths resolved; loop=False
+PowerUp: 3.000s, 320 curves; all paths resolved; loop=False
+SkeletonWraith_Body: 21466 vertices, 31 bones
+SkeletonWraith_Cloak: 3188 vertices, 31 bones

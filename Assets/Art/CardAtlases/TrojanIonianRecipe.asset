@@ -1,0 +1,307 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe71bb75139c94d85957613e9e061033, type: 3}
+  m_Name: TrojanIonianRecipe
+  m_EditorClassIdentifier: 
+  sourceFolder: ArtSource/Cards/TrojanIonian-v1/originals
+  recursive: 0
+  outputFolder: Assets/Art/CardAtlases
+  outputName: TrojanIonianAtlas
+  settings:
+    cardWidth: 128
+    cardHeight: 192
+    columns: 10
+    padding: 4
+    powerOfTwo: 1
+    maxSize: 2048
+    fit: 0
+    resizeFilter: 0
+    filter: 0
+    wrap: 1
+    mipmaps: 0
+    sRGB: 1
+    compression: 1
+    anisoLevel: 1
+  order: 0
+  imageValidation:
+    checkSize: 1
+    sourceWidth: 1024
+    sourceHeight: 1536
+    ratioWidth: 2
+    ratioHeight: 3
+    ratioTolerancePercent: 0.5
+  cards:
+  - id: card_back
+    sourcePath: ArtSource/Cards/TrojanIonian-v1/originals/card_back.png
+    included: 1
+    replacement: {fileID: 0}
+    replacementPath: 
+  - id: clubs_02
+    sourcePath: ArtSource/Cards/TrojanIonian-v1/originals/clubs_02.png
+    included: 1
+    replacement: {fileID: 0}
+    replacementPath: 
+  - id: clubs_03
+    sourcePath: ArtSource/Cards/TrojanIonian-v1/originals/clubs_03.png
+    included: 1
+    replacement: {fileID: 0}
+    replacementPath: 
+  - id: clubs_04
+    sourcePath: ArtSource/Cards/TrojanIonian-v1/originals/clubs_04.png
+    included: 1
+    replacement: {fileID: 0}
+    replacementPath: 
+  - id: clubs_05
+    sourcePath: ArtSource/Cards/TrojanIonian-v1/originals/clubs_05.png
+    included: 1
+    replacement: {fileID: 0}
+    replacementPath: 
+  - id: clubs_06
+    sourcePath: ArtSource/Cards/TrojanIonian-v1/originals/clubs_06.png
+    included: 1
+    replacement: {fileID: 0}
+    replacementPath: 
+  - id: clubs_07
+    sourcePath: ArtSource/Cards/TrojanIonian-v1/originals/clubs_07.png
+    included: 1
+    replacement: {fileID: 0}
+    replacementPath: 
+  - id: clubs_08
+    sourcePath: ArtSource/Cards/TrojanIonian-v1/originals/clubs_08.png
+    included: 1
+    replacement: {fileID: 0}
+    replacementPath: 
+  - id: clubs_09
+    sourcePath: ArtSource/Cards/TrojanIonian-v1/originals/clubs_09.png
+    included: 1
+    replacement: {fileID: 0}
+    replacementPath: 
+  - id: clubs_10
+    sourcePath: ArtSource/Cards/TrojanIonian-v1/originals/clubs_10.png
+    included: 1
+    replacement: {fileID: 0}
+    replacementPath: 
+  - id: clubs_a
+    sourcePath: ArtSource/Cards/TrojanIonian-v1/originals/clubs_a.png
+    included: 1
+    replacement: {fileID: 0}
+    replacementPath: 
+  - id: clubs_j
+    sourcePath: ArtSource/Cards/TrojanIonian-v1/originals/clubs_j.png
+    included: 1
+    replacement: {fileID: 0}
+    replacementPath: 
+  - id: clubs_k
+    sourcePath: ArtSource/Cards/TrojanIonian-v1/originals/clubs_k.png
+    included: 1
+    replacement: {fileID: 0}
+    replacementPath: 
+  - id: clubs_q
+    sourcePath: ArtSource/Cards/TrojanIonian-v1/originals/clubs_q.png
+    included: 1
+    replacement: {fileID: 0}
+    replacementPath: 
+  - id: diamonds_02
+    sourcePath: ArtSource/Cards/TrojanIonian-v1/originals/diamonds_02.png
+    included: 1
+    replacement: {fileID: 0}
+    replacementPath: 
+  - id: diamonds_03
+    sourcePath: ArtSource/Cards/TrojanIonian-v1/originals/diamonds_03.png
+    included: 1
+    replacement: {fileID: 0}
+    replacementPath: 
+  - id: diamonds_04
+    sourcePath: ArtSource/Cards/TrojanIonian-v1/originals/diamonds_04.png
+    included: 1
+    replacement: {fileID: 0}
+    replacementPath: 
+  - id: diamonds_05
+    sourcePath: ArtSource/Cards/TrojanIonian-v1/originals/diamonds_05.png
+    included: 1
+    replacement: {fileID: 0}
+    replacementPath: 
+  - id: diamonds_06
+    sourcePath: ArtSource/Cards/TrojanIonian-v1/originals/diamonds_06.png
+    included: 1
+    replacement: {fileID: 0}
+    replacementPath: 
+  - id: diamonds_07
+    sourcePath: ArtSource/Cards/TrojanIonian-v1/originals/diamonds_07.png
+    included: 1
+    replacement: {fileID: 0}
+    replacementPath: 
+  - id: diamonds_08
+    sourcePath: ArtSource/Cards/TrojanIonian-v1/originals/diamonds_08.png
+    included: 1
+    replacement: {fileID: 0}
+    replacementPath: 
+  - id: diamonds_09
+    sourcePath: ArtSource/Cards/TrojanIonian-v1/originals/diamonds_09.png
+    included: 1
+    replacement: {fileID: 0}
+    replacementPath: 
+  - id: diamonds_10
+    sourcePath: ArtSource/Cards/TrojanIonian-v1/originals/diamonds_10.png
+    included: 1
+    replacement: {fileID: 0}
+    replacementPath: 
+  - id: diamonds_a
+    sourcePath: ArtSource/Cards/TrojanIonian-v1/originals/diamonds_a.png
+    included: 1
+    replacement: {fileID: 0}
+    replacementPath: 
+  - id: diamonds_j
+    sourcePath: ArtSource/Cards/TrojanIonian-v1/originals/diamonds_j.png
+    included: 1
+    replacement: {fileID: 0}
+    replacementPath: 
+  - id: diamonds_k
+    sourcePath: ArtSource/Cards/TrojanIonian-v1/originals/diamonds_k.png
+    included: 1
+    replacement: {fileID: 0}
+    replacementPath: 
+  - id: diamonds_q
+    sourcePath: ArtSource/Cards/TrojanIonian-v1/originals/diamonds_q.png
+    included: 1
+    replacement: {fileID: 0}
+    replacementPath: 
+  - id: hearts_02
+    sourcePath: ArtSource/Cards/TrojanIonian-v1/originals/hearts_02.png
+    included: 1
+    replacement: {fileID: 0}
+    replacementPath: 
+  - id: hearts_03
+    sourcePath: ArtSource/Cards/TrojanIonian-v1/originals/hearts_03.png
+    included: 1
+    replacement: {fileID: 0}
+    replacementPath: 
+  - id: hearts_04
+    sourcePath: ArtSource/Cards/TrojanIonian-v1/originals/hearts_04.png
+    included: 1
+    replacement: {fileID: 0}
+    replacementPath: 
+  - id: hearts_05
+    sourcePath: ArtSource/Cards/TrojanIonian-v1/originals/hearts_05.png
+    included: 1
+    replacement: {fileID: 0}
+    replacementPath: 
+  - id: hearts_06
+    sourcePath: ArtSource/Cards/TrojanIonian-v1/originals/hearts_06.png
+    included: 1
+    replacement: {fileID: 0}
+    replacementPath: 
+  - id: hearts_07
+    sourcePath: ArtSource/Cards/TrojanIonian-v1/originals/hearts_07.png
+    included: 1
+    replacement: {fileID: 0}
+    replacementPath: 
+  - id: hearts_08
+    sourcePath: ArtSource/Cards/TrojanIonian-v1/originals/hearts_08.png
+    included: 1
+    replacement: {fileID: 0}
+    replacementPath: 
+  - id: hearts_09
+    sourcePath: ArtSource/Cards/TrojanIonian-v1/originals/hearts_09.png
+    included: 1
+    replacement: {fileID: 0}
+    replacementPath: 
+  - id: hearts_10
+    sourcePath: ArtSource/Cards/TrojanIonian-v1/originals/hearts_10.png
+    included: 1
+    replacement: {fileID: 0}
+    replacementPath: 
+  - id: hearts_a
+    sourcePath: ArtSource/Cards/TrojanIonian-v1/originals/hearts_a.png
+    included: 1
+    replacement: {fileID: 0}
+    replacementPath: 
+  - id: hearts_j
+    sourcePath: ArtSource/Cards/TrojanIonian-v1/originals/hearts_j.png
+    included: 1
+    replacement: {fileID: 0}
+    replacementPath: 
+  - id: hearts_k
+    sourcePath: ArtSource/Cards/TrojanIonian-v1/originals/hearts_k.png
+    included: 1
+    replacement: {fileID: 0}
+    replacementPath: 
+  - id: hearts_q
+    sourcePath: ArtSource/Cards/TrojanIonian-v1/originals/hearts_q.png
+    included: 1
+    replacement: {fileID: 0}
+    replacementPath: 
+  - id: spades_02
+    sourcePath: ArtSource/Cards/TrojanIonian-v1/originals/spades_02.png
+    included: 1
+    replacement: {fileID: 0}
+    replacementPath: 
+  - id: spades_03
+    sourcePath: ArtSource/Cards/TrojanIonian-v1/originals/spades_03.png
+    included: 1
+    replacement: {fileID: 0}
+    replacementPath: 
+  - id: spades_04
+    sourcePath: ArtSource/Cards/TrojanIonian-v1/originals/spades_04.png
+    included: 1
+    replacement: {fileID: 0}
+    replacementPath: 
+  - id: spades_05
+    sourcePath: ArtSource/Cards/TrojanIonian-v1/originals/spades_05.png
+    included: 1
+    replacement: {fileID: 0}
+    replacementPath: 
+  - id: spades_06
+    sourcePath: ArtSource/Cards/TrojanIonian-v1/originals/spades_06.png
+    included: 1
+    replacement: {fileID: 0}
+    replacementPath: 
+  - id: spades_07
+    sourcePath: ArtSource/Cards/TrojanIonian-v1/originals/spades_07.png
+    included: 1
+    replacement: {fileID: 0}
+    replacementPath: 
+  - id: spades_08
+    sourcePath: ArtSource/Cards/TrojanIonian-v1/originals/spades_08.png
+    included: 1
+    replacement: {fileID: 0}
+    replacementPath: 
+  - id: spades_09
+    sourcePath: ArtSource/Cards/TrojanIonian-v1/originals/spades_09.png
+    included: 1
+    replacement: {fileID: 0}
+    replacementPath: 
+  - id: spades_10
+    sourcePath: ArtSource/Cards/TrojanIonian-v1/originals/spades_10.png
+    included: 1
+    replacement: {fileID: 0}
+    replacementPath: 
+  - id: spades_a
+    sourcePath: ArtSource/Cards/TrojanIonian-v1/originals/spades_a.png
+    included: 1
+    replacement: {fileID: 0}
+    replacementPath: 
+  - id: spades_j
+    sourcePath: ArtSource/Cards/TrojanIonian-v1/originals/spades_j.png
+    included: 1
+    replacement: {fileID: 0}
+    replacementPath: 
+  - id: spades_k
+    sourcePath: ArtSource/Cards/TrojanIonian-v1/originals/spades_k.png
+    included: 1
+    replacement: {fileID: 0}
+    replacementPath: 
+  - id: spades_q
+    sourcePath: ArtSource/Cards/TrojanIonian-v1/originals/spades_q.png
+    included: 1
+    replacement: {fileID: 0}
+    replacementPath: 

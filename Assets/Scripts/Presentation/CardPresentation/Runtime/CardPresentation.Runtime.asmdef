@@ -1,0 +1,15 @@
+{
+  "name": "CardPresentation.Runtime",
+  "rootNamespace": "CardPresentation",
+  "references": [
+    "PokerEngine.Core",
+    "CardArt.Runtime",
+    "Unity.InputSystem",
+    "BattlePresentation.Runtime",
+    "BattlePresentation.Unity"
+  ],
+  "overrideReferences": true,
+  "precompiledReferences": [
+    "DOTween.dll"
+  ]
+}

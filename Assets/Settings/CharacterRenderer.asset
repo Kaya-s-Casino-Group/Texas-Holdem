@@ -86,21 +86,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ff4094c01d0af4a32882582bb369c920, type: 3}
   m_Name: "\u590D\u53E4\u540E\u5904\u7406"
   m_EditorClassIdentifier: 
-  m_Active: 1
+  m_Active: 0
   settings:
     applyToRenderTextures: 1
     applyToSceneView: 0
-    exposure: -0.03
-    contrast: 1.46
-    saturation: 0.9
-    tint: {r: 1, g: 0.97, b: 0.9, a: 1}
+    exposure: -0.34
+    contrast: 1
+    saturation: 1.014
+    tint: {r: 1, g: 1, b: 1, a: 1}
     tintStrength: 0.576
-    vignette: 0.091
+    vignette: 0
     vignetteSoftness: 0.05
     colorLevels: 10
-    posterization: 0.499
+    posterization: 0.745
     dither: 0.379
-    chromaticOffset: 3
+    chromaticOffset: 4
   injectionPoint: 1001
   postShader: {fileID: 4800000, guid: a6c4b4b14be464680b808eb2a672d809, type: 3}
 --- !u!114 &11400000
@@ -149,7 +149,7 @@ MonoBehaviour:
     terrainDetailGrassBillboardPS: {fileID: 4800000, guid: 29868e73b638e48ca99a19ea58c48d90, type: 3}
   m_LowResolution:
     enabled: 1
-    maximumHeight: 540
+    maximumHeight: 480
     applyToRenderTextures: 1
     applyToSceneView: 0
   m_AssetVersion: 2

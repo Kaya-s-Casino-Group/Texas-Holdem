@@ -195,6 +195,19 @@ MonoBehaviour:
     samples: 8
     bilateralSharpness: 5.79
   aoShader: {fileID: 4800000, guid: f88e2fdc35ca644ce913cd0c2a5e9048, type: 3}
+--- !u!114 &7032191250042867021
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ea5e3ac68934d47aa43874e09ed37cb, type: 3}
+  m_Name: CharacterOutlineFeature
+  m_EditorClassIdentifier: 
+  m_Active: 1
 --- !u!114 &7827378729397276015
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -252,17 +265,3 @@ MonoBehaviour:
     noiseVelocity: {x: 0.2, y: 0, z: 0.015}
     noiseSteps: 32
   fogShader: {fileID: 4800000, guid: 21a057b5c004c41b0a74ef8ec8a875d4, type: 3}
-
---- !u!114 &7032191250042867021
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0ea5e3ac68934d47aa43874e09ed37cb, type: 3}
-  m_Name: CharacterOutlineFeature
-  m_EditorClassIdentifier:
-  m_Active: 1
