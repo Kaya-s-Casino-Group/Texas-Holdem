@@ -1,0 +1,79 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &383310792330007874
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 8bf1d1d38b051cc46a5839baa1475fa9, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 8bf1d1d38b051cc46a5839baa1475fa9, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 8bf1d1d38b051cc46a5839baa1475fa9, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 8bf1d1d38b051cc46a5839baa1475fa9, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 8bf1d1d38b051cc46a5839baa1475fa9, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 8bf1d1d38b051cc46a5839baa1475fa9, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 8bf1d1d38b051cc46a5839baa1475fa9, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 8bf1d1d38b051cc46a5839baa1475fa9, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 8bf1d1d38b051cc46a5839baa1475fa9, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 8bf1d1d38b051cc46a5839baa1475fa9, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -4960037275272823038, guid: 8bf1d1d38b051cc46a5839baa1475fa9, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 4300000, guid: dcd86e61f5f4ec54fa1e542ddc51ef36, type: 2}
+    - target: {fileID: -143147554331883908, guid: 8bf1d1d38b051cc46a5839baa1475fa9, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 4300000, guid: f94599eaacbb23144ad70ff78db06d00, type: 2}
+    - target: {fileID: 919132149155446097, guid: 8bf1d1d38b051cc46a5839baa1475fa9, type: 3}
+      propertyPath: m_Name
+      value: SteampunkGirl
+      objectReference: {fileID: 0}
+    - target: {fileID: 5138643982338426644, guid: 8bf1d1d38b051cc46a5839baa1475fa9, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 4300000, guid: 9b5a85d1e5c1bab4ebb427204306aa9d, type: 2}
+    - target: {fileID: 6910506281866224933, guid: 8bf1d1d38b051cc46a5839baa1475fa9, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 4300000, guid: 3bf7358eee3153d4ead2fb694823d2f7, type: 2}
+    - target: {fileID: 7500975941952650682, guid: 8bf1d1d38b051cc46a5839baa1475fa9, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 4300000, guid: 30d55b156df761344b38b0d506151bb9, type: 2}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 8bf1d1d38b051cc46a5839baa1475fa9, type: 3}

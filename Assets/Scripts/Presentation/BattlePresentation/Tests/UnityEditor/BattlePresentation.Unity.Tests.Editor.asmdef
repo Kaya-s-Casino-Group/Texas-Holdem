@@ -4,7 +4,7 @@
   "references": ["BattlePresentation.Runtime", "BattlePresentation.Unity", "Unity.TextMeshPro", "UnityEngine.UI"],
   "includePlatforms": ["Editor"],
   "overrideReferences": true,
-  "precompiledReferences": ["nunit.framework.dll"],
+  "precompiledReferences": ["nunit.framework.dll", "DOTween.dll"],
   "optionalUnityReferences": ["TestAssemblies"],
   "autoReferenced": false
 }

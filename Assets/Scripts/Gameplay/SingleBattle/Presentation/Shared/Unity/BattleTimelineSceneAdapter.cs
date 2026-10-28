@@ -16,6 +16,39 @@ namespace Poker.BattlePresentation
         [SerializeField] private ScenePresentationDirector director;
         [SerializeField, Tooltip("Empty selects the first player in each new session.")]
         private string observerId;
+        [SerializeField, Tooltip("Scene-authored placement data. Optional for card-only frontends.")]
+        private BattleSceneLayout sceneLayout;
+        [SerializeField] private BattleUnitLayoutOverride[] layoutOverrides = Array.Empty<BattleUnitLayoutOverride>();
+        private BattleLayoutFrontend layoutFrontend;
+        [SerializeField] private CameraSceneConfiguration cameraScene;
+        [SerializeField] private CameraPresentation cameraPresent;
+        public CameraSceneConfiguration CameraScene => cameraScene;
+        public CameraPresentation CameraPresent => cameraPresent;
+        public void ConfigureCamera(CameraSceneConfiguration configuration, CameraPresentation executor)
+        {
+            if (host != null && host.Session != null) throw new InvalidOperationException("Configure scene camera before attaching a session.");
+            if (configuration == null || executor == null || configuration.gameObject.scene != gameObject.scene ||
+                executor.gameObject.scene != gameObject.scene || executor.transform != transform && !executor.transform.IsChildOf(transform))
+                throw new ArgumentException("Bind a scene camera configuration and an executor belonging to this Battle.");
+            configuration.Validate(); cameraScene = configuration; cameraPresent = executor;
+        }
+        public void ValidateCameraConfiguration()
+        {
+            if (cameraScene == null && cameraPresent == null) return;
+            if (cameraScene == null || cameraPresent == null || cameraScene.gameObject.scene != gameObject.scene ||
+                cameraPresent.transform != transform && !cameraPresent.transform.IsChildOf(transform) ||
+                cameraPresent.GetComponentInParent<BattleTimelineSceneAdapter>(true) != this)
+                throw new InvalidOperationException("Camera scene configuration and executor must be explicitly bound to this Battle bridge.");
+            cameraPresent.ValidateSceneBindings(cameraScene);
+        }
+        public void BindCameraPresentation()
+        {
+            ValidateCameraConfiguration();
+            if (cameraPresent != null) cameraPresent.BindScene(cameraScene, director);
+        }
+        public BattleSceneLayout SceneLayout => sceneLayout;
+        public BattleLayoutBindings LayoutBindings => layoutFrontend?.Bindings;
+        public IReadOnlyList<BattleUnitLayoutOverride> LayoutOverrides => Array.AsReadOnly(layoutOverrides);
         private BattleSceneHost host;
         private BattlePresentationBridge bridge;
         private readonly List<CardInstanceId> selected = new List<CardInstanceId>();
@@ -30,6 +63,18 @@ namespace Poker.BattlePresentation
             director.isActiveAndEnabled && host.Playback != null && host.Playback.CanAct(ObserverId);
         public event Action<CandidatePresentationModel> CandidateChanged;
 
+        public void ConfigureLayout(BattleSceneLayout layout, BattleUnitLayoutOverride[] placements = null)
+        {
+            if (host != null && host.Session != null) throw new InvalidOperationException("Configure layout before attaching a session.");
+            if (layout != null)
+            {
+                if (layout.gameObject.scene != gameObject.scene) throw new ArgumentException("Layout must belong to the same scene.");
+                layout.Validate();
+            }
+            layoutFrontend?.Dispose(); layoutFrontend = null; bridge = null;
+            sceneLayout = layout; layoutOverrides = placements?.ToArray() ?? Array.Empty<BattleUnitLayoutOverride>();
+        }
+
         public void Configure(ScenePresentationDirector frontend, string observer = null)
         {
             if (host != null && host.Session != null) throw new InvalidOperationException("Configure the frontend before attaching a session.");
@@ -37,6 +82,7 @@ namespace Poker.BattlePresentation
                 frontend.transform != transform && !frontend.transform.IsChildOf(transform))
                 throw new ArgumentException("Bind a director within this adapter hierarchy.");
             if (director != null) director.PlaybackFinished -= RefreshCandidate;
+            layoutFrontend?.Dispose(); layoutFrontend = null;
             director = frontend; observerId = observer; bridge = null;
             director.PlaybackFinished += RefreshCandidate;
         }
@@ -53,6 +99,13 @@ namespace Poker.BattlePresentation
                 throw new InvalidOperationException("The director must belong to this battle.");
             if (!string.IsNullOrEmpty(observerId) && !session.State.Duel.Players.Any(player => player.Id.Value == observerId))
                 throw new InvalidOperationException("The observer must identify a player in this session.");
+            ValidateCameraConfiguration();
+            if (sceneLayout != null)
+            {
+                if (sceneLayout.gameObject.scene != gameObject.scene) throw new InvalidOperationException("Layout must belong to the same scene.");
+                BattleLayoutBindings.Resolve(sceneLayout, BattleDisplayProjector.Build(session.State, session.Engine,
+                    string.IsNullOrEmpty(observerId) ? session.State.Duel.PlayerId : new ParticipantId(observerId)), layoutOverrides);
+            }
         }
         private BattlePresentationBridge Bridge
         {
@@ -62,8 +115,10 @@ namespace Poker.BattlePresentation
                 ValidateSession(host?.Session);
                 director.PlaybackFinished -= RefreshCandidate;
                 director.PlaybackFinished += RefreshCandidate;
-                bridge = new BattlePresentationBridge(() => host.Engine, () => ObserverId, director);
-                bridge.BeforeInitialize = _ => CloseInteraction();
+                IBattlePresentationFrontend frontend = director;
+                if (sceneLayout != null) frontend = layoutFrontend = new BattleLayoutFrontend(director, sceneLayout, layoutOverrides);
+                bridge = new BattlePresentationBridge(() => host.Engine, () => ObserverId, frontend);
+                bridge.BeforeInitialize = _ => { CloseInteraction(); BindCameraPresentation(); };
                 bridge.BeforePresent = _ => CloseInteraction();
                 bridge.BeforeSynchronize = _ => CloseInteraction();
                 return bridge;
@@ -111,6 +166,7 @@ namespace Poker.BattlePresentation
         private void OnEnable() { if (host != null && host.Playback != null) RefreshCandidate(); }
         private void OnDestroy()
         {
+            layoutFrontend?.Dispose();
             if (director != null) director.PlaybackFinished -= RefreshCandidate;
             interaction.Dispose();
         }

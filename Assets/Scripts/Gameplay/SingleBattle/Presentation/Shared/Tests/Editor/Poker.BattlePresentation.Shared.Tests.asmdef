@@ -1,6 +1,9 @@
 {
   "name": "Poker.BattlePresentation.Shared.Tests",
   "references": [
+    "Poker.BattlePresentation.Shared.Unity",
+    "Poker.BattleHosting.Runtime",
+    "BattlePresentation.Unity",
     "Poker.BattlePresentation.Shared",
     "BattlePresentation.Runtime",
     "PokerEngine.Core",
@@ -15,7 +18,8 @@
   ],
   "overrideReferences": true,
   "precompiledReferences": [
-    "nunit.framework.dll"
+    "nunit.framework.dll",
+    "DOTween.dll"
   ],
   "optionalUnityReferences": [
     "TestAssemblies"

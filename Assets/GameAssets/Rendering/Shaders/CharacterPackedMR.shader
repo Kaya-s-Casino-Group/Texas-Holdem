@@ -12,6 +12,11 @@ Shader "Rendering/Character Deferred Packed MR"
         [Enum(UnityEngine.Rendering.CullMode)] _Cull ("Cull", Float) = 2
         [NoScaleOffset] _OcclusionMap ("Occlusion (R)", 2D) = "white" {}
         _OcclusionStrength ("Occlusion Strength", Range(0,1)) = 1
+        [Header(Character Fill Lighting)]
+        _CharacterFillColor ("Fill Color", Color) = (1, 0.95, 0.88, 1)
+        _CharacterFillStrength ("Soft Camera Fill", Range(0,0.5)) = 0
+        _CharacterAmbientFloor ("Shadow Readability Floor", Range(0,0.25)) = 0
+        _CharacterFillWrap ("Fill Wrap", Range(0,1)) = 0.5
     }
     SubShader
     {

@@ -2,13 +2,19 @@
 
 ## 现行入口与文档状态
 
-本页是当前表现层接入的统一入口（整理日期：2026-10-28）。当前场景为 `Assets/Scene/InTest/SingleBattle.unity`；已接入世界空间手牌动效、输入和操作按钮，尚未接入完整角色、正式 HUD、镜头及终局演出。接口支持某项能力不代表当前场景已配置该动作。
+本页是当前表现层接入的统一入口（更新日期：2026-10-29）。当前场景为 `Assets/Scene/InTest/SingleBattle.unity`；已接入世界空间手牌动效、输入和操作按钮，以及 Camera Present 基础构图、镜头点、聚焦／回位／震动动作与编辑器预览。开局已配置 DOTween 镜头过渡：从 Opening 到 Overview，在接近终点时放行发牌。尚未接入完整角色、正式 HUD、攻击镜头配方及终局演出。接口支持某项能力不代表当前场景已配置该动作。
 
 当前链路为：规则事实 → `BattlePresentationBridge` → `ScenePresentationDirector / DisplayStore` → `WorldCardZoneDisplayBinding` → `WorldCardZonePresentation` → `HandZoneView` → `CardArt.CardView`。战斗牌区能力边界是 `ICardZonePresentation`，CardView 负责末端卡面渲染；当前链路不使用旧 `CardMatchHost / CardZonePlayHost`。
 
 当前场景将 `CardsDealt / CardsMoved / DeckRecycled / CardsCreated / AdminEdited / ActionResolved` 配置为观察投影的 `cards.settle`，以空的显式 checkpoint 发布快照，并等待手牌运动。`prepare → attack → Impact` 等角色联动尚未在当前场景配置。
 
+`BattleStarted` 另有 `opening-camera` 节点：checkpoint 等待 `NearlyArrived`，因此后续 `CardsDealt` 在镜头达到配置进度之前不会发布。机位、时长、曲线和发牌放行比例统一由 `BattleCamera` 场景配置提供，Battle 桥接绑定给 `Battle/CameraPresent` 执行；当前为 2.5 秒、OutSine、90%。开局和重开都会执行；Instant／同步直接对齐最终构图和手牌。
+
 现行职责约定：DisplayStore 发布持久事实；悬停、选择和本地排序不改写事实；同一牌区避免重复投影；Marker、checkpoint 与 Completed 分别表示中途信号、显示提交点和动作终态；取消与 Synchronize 清理所属资源并对齐快照。具体协议见 [通用表现框架](../BattlePresentation/README.md)，会话生命周期见 [Hosting README](../../Gameplay/SingleBattle/Hosting/README.md)。
+
+Camera Present 的场景路径、参数、预览和时间线接法见[镜头基建](../BattlePresentation/README.md#camera-present)。
+
+当前场景另有独立的 `BattleLayout` 静态配置（2 个玩家槽、5 个独立敌人槽），由 Battle 桥接读取并产出 UnitId 站位绑定，包含部位归属接口。它不控制或生成角色；当前角色模型仍未接入 Actor Present。编辑方法、映射与容量边界见 [场景站位 Layout](../../Gameplay/SingleBattle/Hosting/README.md#场景站位-layout)。
 
 ### 历史资料索引
 

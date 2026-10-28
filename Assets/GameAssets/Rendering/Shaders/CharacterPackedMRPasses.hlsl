@@ -67,6 +67,18 @@ FragmentOutput CharacterGBuffer(CharacterVaryings input, FRONT_FACE_TYPE face : 
     data.shadowMask = unity_ProbesOcclusion;
     half3 gi = GlobalIllumination(brdf, data.bakedGI, occlusion,
         data.positionWS, data.normalWS, data.viewDirectionWS);
+    // Art-directed diffuse readability floor, not a specular light or rim outline.
+    // Camera-side, slightly elevated fill gives broad form shading as the camera moves.
+    // Use the geometric normal so painted normal detail cannot turn into glitter.
+    half3 fillNormal = NormalizeNormalPerPixel(input.normalWS) * IS_FRONT_VFACE(face, 1, -1);
+    half3 fillDirection = SafeNormalize(data.viewDirectionWS + half3(0, 0.45h, 0));
+    half wrap = saturate(_CharacterFillWrap);
+    half fillShape = saturate((dot(fillNormal, fillDirection) + wrap) / (1 + wrap));
+    half fillAmount = max(0, _CharacterAmbientFloor) + max(0, _CharacterFillStrength) * fillShape;
+    half3 readability = albedo * max(0, _CharacterFillColor.rgb) * fillAmount * occlusion;
+    // Only supply missing indirect brightness; existing GI and direct scene lights stay intact.
+    // Both strengths default to zero, preserving every existing material's appearance.
+    gi = max(gi, readability);
     // Direct lighting, shadows and screen-space AO remain the deferred renderer's responsibility.
     return BRDFDataToGbuffer(brdf, data, smoothness, gi, occlusion);
 }

@@ -13,6 +13,10 @@ CBUFFER_START(UnityPerMaterial)
     half _Roughness;
     half _Cull;
     half _OcclusionStrength;
+    half4 _CharacterFillColor;
+    half _CharacterFillStrength;
+    half _CharacterAmbientFloor;
+    half _CharacterFillWrap;
 CBUFFER_END
 TEXTURE2D(_BaseMap); SAMPLER(sampler_BaseMap);
 TEXTURE2D(_BumpMap); SAMPLER(sampler_BumpMap);
