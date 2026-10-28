@@ -1,5 +1,7 @@
 # 当前场景的表现时间线配置
 
+> **历史资料（2026-10-28 整理）**：本文保留旧版本的设计、配置或实施记录；下文“当前”“已完成”与测试结果均指记录当时。现行表现层接入统一以 [CardPresentation README](../Assets/Scripts/Presentation/CardPresentation/README.md) 为入口。旧 Scene3D / Minimal2D、CardMatchHost / CardZonePlayHost 及完整角色、HUD 配方不代表当前工程已恢复，不应直接按本文重建旧调用链。
+
 更新：2026-10-19。适用场景：`Assets/Scenes/SingleBattleDemoNew.unity`。架构和恢复约定见 [实施记录](BattlePresentationImplementation.md)，规则与表现的完整设计见 [设计文档](BattlePresentationDesign.md)。
 
 当前场景的出牌顺序完整保存在 `ScenePresentationDirector.timeline`。`SingleBattleSceneAdapter` 通过通用 Host 的命令端口提交规则命令，桥接不可变数据并同步牌区和基础 HUD；它不再生成 `BuildPlan`，也不调用固定的“牌区→攻击→受击”协程。

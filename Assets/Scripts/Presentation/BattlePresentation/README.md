@@ -1,6 +1,6 @@
 # Battle Presentation
 
-Palamedes retains this generic framework. The world-card motion runtime and its ICardZonePresentation adapter have been migrated back; see ../CardPresentation/README.md for current setup. Old Scene3D actors, the input library, HUD and authored scenes remain archived; references to those below describe the archived integration. New frontends provide their own implementations of the retained contracts.
+Palamedes retains this generic framework. Use the [CardPresentation README](../CardPresentation/README.md) as the current presentation integration entrypoint and historical-document index. World-card motion and pointer interaction have been restored. Old Scene3D actors, HUD and complete battle timelines remain archived; references to those below describe the archived integration. New frontends provide their own implementations of the retained contracts.
 
 `BattlePresentation.Runtime` is a pure C# assembly with `noEngineReferences: true`. It references neither Unity nor the battle rules. A rule bridge supplies immutable projected facts; frontends supply object bindings and actions.
 

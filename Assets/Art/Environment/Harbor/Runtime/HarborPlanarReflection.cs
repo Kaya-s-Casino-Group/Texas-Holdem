@@ -9,6 +9,8 @@ namespace HarborEnvironment
     {
         [Range(128, 2048)] public int resolution = 512;
         public float waterHeight = -.12f;
+        [Tooltip("Only these layers are rendered into the water reflection.")]
+        public LayerMask reflectionLayers = ~(1 << 4);
         Camera reflectionCamera;
         RenderTexture texture;
         static bool rendering;
@@ -38,6 +40,7 @@ namespace HarborEnvironment
                 var data = go.AddComponent<UniversalAdditionalCameraData>();
                 data.renderPostProcessing = false; data.requiresColorOption = CameraOverrideOption.Off;
                 data.requiresDepthOption = CameraOverrideOption.Off;
+                data.renderShadows = false;
             }
             if (!texture || texture.width != resolution)
             {
@@ -48,7 +51,7 @@ namespace HarborEnvironment
             }
             reflectionCamera.CopyFrom(source); reflectionCamera.enabled = false;
             reflectionCamera.cameraType = CameraType.Reflection;
-            reflectionCamera.cullingMask = source.cullingMask & ~(1 << 4); // Built-in Water layer.
+            reflectionCamera.cullingMask = source.cullingMask & reflectionLayers.value & ~(1 << 4);
             reflectionCamera.targetTexture = texture; reflectionCamera.allowMSAA = false;
             var reflection = Matrix4x4.identity; reflection.m11 = -1; reflection.m13 = 2 * waterHeight;
             var position = source.transform.position; position.y = 2 * waterHeight - position.y;

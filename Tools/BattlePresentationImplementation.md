@@ -1,5 +1,7 @@
 # 单局战斗表现系统实施记录
 
+> **历史资料（2026-10-28 整理）**：本文保留旧版本的设计、配置或实施记录；下文“当前”“已完成”与测试结果均指记录当时。现行表现层接入统一以 [CardPresentation README](../Assets/Scripts/Presentation/CardPresentation/README.md) 为入口。旧 Scene3D / Minimal2D、CardMatchHost / CardZonePlayHost 及完整角色、HUD 配方不代表当前工程已恢复，不应直接按本文重建旧调用链。
+
 日期：2026-10-18。对应 [设计文档](BattlePresentationDesign.md)。接入场景：`Assets/Scenes/SingleBattleDemoNew.unity`，保留 XML 编成 `single-battle-new`、现有角色、美术、牌区、HUD 与相机。
 
 ## 已落地的边界

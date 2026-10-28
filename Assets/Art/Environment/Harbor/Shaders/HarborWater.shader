@@ -3,8 +3,16 @@ Shader "Harbor/Gerstner Reflective Step Water"
  Properties
  {
   _BaseColor("Deep Teal",Color)=(.025,.08,.065,1)
-  _WaveStrength("Gerstner Strength",Range(0,2))=1
-  _WaveSpeed("Gerstner Speed",Range(0,2))=.8
+  [Header(Layer 1 Swell)]
+  _WaveStrength("Swell Strength",Range(0,2))=1
+  _WaveSpeed("Swell Speed",Range(0,2))=.8
+  _SwellLength("Swell Wavelength",Range(8,24))=12
+  _SwellDirection("Swell Direction XZ",Vector)=(-.28,-.96,0,0)
+  [Header(Layer 2 Ripples)]
+  _RippleStrength("Ripple Strength",Range(0,2))=1
+  _RippleSpeed("Ripple Speed",Range(0,2))=1.15
+  _RippleLength("Ripple Wavelength",Range(.5,6))=2.4
+  _RippleDirection("Ripple Direction XZ",Vector)=(.76,-.65,0,0)
   _ReflectionStrength("Reflection",Range(0,1))=.75
   _Smoothness("Smoothness",Range(0,1))=.85
  }
@@ -19,23 +27,29 @@ Shader "Harbor/Gerstner Reflective Step Water"
   CBUFFER_START(UnityPerMaterial)
   half4 _BaseColor;
   float _WaveStrength,_WaveSpeed,_ReflectionStrength,_Smoothness;
+  float _SwellLength,_RippleStrength,_RippleSpeed,_RippleLength;
+  float4 _SwellDirection,_RippleDirection;
   CBUFFER_END
   TEXTURE2D(_HarborPlanarReflection);SAMPLER(sampler_HarborPlanarReflection);
   float4x4 _HarborReflectionVP;
   float _HarborHasReflection;
   #include "HarborGerstner.hlsl"
   struct A {float4 positionOS:POSITION;UNITY_VERTEX_INPUT_INSTANCE_ID};
-  struct V {float4 positionCS:SV_POSITION;float3 positionWS:TEXCOORD0;float3 normalWS:TEXCOORD1;UNITY_VERTEX_OUTPUT_STEREO};
+  struct V {float4 positionCS:SV_POSITION;float3 positionWS:TEXCOORD0;float3 restWS:TEXCOORD1;UNITY_VERTEX_OUTPUT_STEREO};
   V WaterVert(A a)
   {
    V o=(V)0;UNITY_SETUP_INSTANCE_ID(a);UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
    o.positionWS=TransformObjectToWorld(a.positionOS.xyz);
-   HarborWaterVertex(o.positionWS,o.normalWS);
+   o.restWS=o.positionWS;
+   HarborWaterVertex(o.positionWS);
    o.positionCS=TransformWorldToHClip(o.positionWS);return o;
   }
   half4 WaterFrag(V i):SV_Target
   {
-   float3 normal=normalize(i.normalWS),view=GetWorldSpaceNormalizeViewDir(i.positionWS);
+   // Fade unresolved ripples before they alias at the horizon.
+   float footprint=max(length(ddx(i.restWS.xz)),length(ddy(i.restWS.xz)));
+   float detailFilter=1-smoothstep(.15,.5,footprint/max(_RippleLength,.1));
+   float3 normal=HarborWaterNormal(i.restWS,detailFilter),view=GetWorldSpaceNormalizeViewDir(i.positionWS);
    InputData d=(InputData)0;d.positionWS=i.positionWS;d.normalWS=normal;d.viewDirectionWS=view;
    d.shadowCoord=TransformWorldToShadowCoord(i.positionWS);d.bakedGI=SampleSH(normal);d.shadowMask=1;
    d.normalizedScreenSpaceUV=GetNormalizedScreenSpaceUV(i.positionCS);

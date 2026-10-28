@@ -1,5 +1,7 @@
 # SceneDemo 1V2 配置
 
+> **历史资料（2026-10-28 整理）**：本文保留旧版本的设计、配置或实施记录；下文“当前”“已完成”与测试结果均指记录当时。现行表现层接入统一以 [CardPresentation README](../Assets/Scripts/Presentation/CardPresentation/README.md) 为入口。旧 Scene3D / Minimal2D、CardMatchHost / CardZonePlayHost 及完整角色、HUD 配方不代表当前工程已恢复，不应直接按本文重建旧调用链。
+
 当前已在 `SceneDemo 1V2.unity` 的 `BattleHost` 接入 XML 桥接和 Actor 占位。已复用 SingleBattleDemoNew 的 3D 牌区和手牌操作面板，使用 FourBeasts 卡面。**战斗 HUD、模型和完整时间线尚未接入，自动开战关闭。** Host 与 Presenter 的运行时代码没有修改。
 
 ## 当前场景入口

@@ -1,5 +1,7 @@
 # Palamedes 脚本模块
 
+现行表现层接入、当前完成范围及历史资料索引统一见 [CardPresentation README](Presentation/CardPresentation/README.md)。
+
 当前 Unity 工程只保留表现重构需要的基础模块：
 
 | 目录 | 职责 |

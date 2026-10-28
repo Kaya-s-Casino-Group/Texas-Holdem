@@ -8,6 +8,7 @@
 CBUFFER_START(UnityPerMaterial)
     float4 _BaseMap_ST;
     half4 _BaseColor;
+    half4 _EmissionColor;
     half _BumpScale;
     half _Metallic;
     half _Roughness;

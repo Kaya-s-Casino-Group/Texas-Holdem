@@ -1,6 +1,6 @@
 # Battle2DValidation：XML 与公共表现时间线迁移
 
-> 历史验证记录：本文记录当时实现；牌区动作已在后续统一接口迁移中替换，当前入口见 [牌区表现接口](../CardZonePresentationContract.md)。
+> **历史验证记录**：本文记录当时的 2D 实现及验证，不表示当前工程已恢复该前端。现行表现接入统一见 [CardPresentation README](../../Assets/Scripts/Presentation/CardPresentation/README.md)。
 
 后续状态：本记录中的 5 项既有失败已完成排查修复，见[完整回归修复记录](2026-10-19-full-regression-fixes.md)。下方保留该阶段的原始结果。
 

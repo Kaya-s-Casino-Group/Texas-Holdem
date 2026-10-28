@@ -1,5 +1,7 @@
 # Unity 表现层保留清单
 
+> **历史清理快照**：本文记录 2026-10-24 清理时的范围；后续已恢复世界空间手牌及交互，并建立 SingleBattle 场景。当前接入状态统一见 [CardPresentation README](../../Assets/Scripts/Presentation/CardPresentation/README.md)。下文“当前”均指清理时。
+
 收集日期：2026-10-24。来源：`legacy-3d-scenes`，主仓库提交 `72a1553da8a16815a4eaf63cc4208987853af5bc`。
 
 最初收集自研渲染管线、Card Instancing、Shader 和基础桥接层，原始文件路径、程序集引用和资源 GUID 依赖保存在 [inventory.json](inventory.json)。随后按用户要求建立 `Palamedes` 分支，并清理四类模块之外的 Unity 表现代码和资源；实际保留、补充依赖及删除路径见 [cleanup-plan.json](cleanup-plan.json)。原始 inventory 是收集时的快照，不应作为后续自动删除白名单。

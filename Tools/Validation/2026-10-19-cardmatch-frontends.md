@@ -1,5 +1,7 @@
 # CardMatchHost 通用前端拆分验证
 
+> **历史验证记录**：测试结果仅对应当时版本，不作为当前场景集成完成的依据。现行接入统一见 [CardPresentation README](../../Assets/Scripts/Presentation/CardPresentation/README.md)；本文旧组件和场景引用仅供追溯。
+
 本记录保留通用 Host 拆分阶段的验证结果；后续牌区接口与旧流程清理见 [迁移验证](2026-10-19-card-zone-flow-migration.md)。SceneDemo 1V2 的关卡接入不包含在本次基建提交。
 
 ## 改造范围

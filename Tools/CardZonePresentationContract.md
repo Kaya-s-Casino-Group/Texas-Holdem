@@ -1,5 +1,7 @@
 # 牌区表现能力接口
 
+> **历史资料（2026-10-28 整理）**：本文保留旧版本的设计、配置或实施记录；下文“当前”“已完成”与测试结果均指记录当时。现行表现层接入统一以 [CardPresentation README](../Assets/Scripts/Presentation/CardPresentation/README.md) 为入口。旧 Scene3D / Minimal2D、CardMatchHost / CardZonePlayHost 及完整角色、HUD 配方不代表当前工程已恢复，不应直接按本文重建旧调用链。
+
 `BattlePresentation.ICardZonePresentation` 定义渲染无关的牌区表现能力。它位于不引用 Unity、PokerEngine 或具体卡牌实现的 BattlePresentation.Runtime 程序集，接收展示数据，不推进规则。CardMatchHost 仍负责卡牌镜像和交互状态，不增加动画职责。
 
 ## 三个入口

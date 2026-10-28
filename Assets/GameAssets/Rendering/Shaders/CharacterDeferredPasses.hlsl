@@ -72,7 +72,7 @@ FragmentOutput CharacterGBuffer(CharacterVaryings input, FRONT_FACE_TYPE face : 
     half3 gi = GlobalIllumination(brdf, data.bakedGI, occlusion,
         data.positionWS, data.normalWS, data.viewDirectionWS);
     // Direct lighting, shadows and screen-space AO remain the deferred renderer's responsibility.
-    return BRDFDataToGbuffer(brdf, data, smoothness, gi, occlusion);
+    return BRDFDataToGbuffer(brdf, data, smoothness, gi + _EmissionColor.rgb, occlusion);
 }
 half4 CharacterDepthNormals(CharacterVaryings input, FRONT_FACE_TYPE face : FRONT_FACE_SEMANTIC) : SV_Target
 {

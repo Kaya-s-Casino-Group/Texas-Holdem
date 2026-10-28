@@ -1,5 +1,7 @@
 # 单个 Battle 的入口与最小预制体
 
+> **阅读范围（2026-10-28）**：通用 Host 与最小入口说明仍供参考；“现有 3D 关卡如何迁移”和“验证”记录旧版集成。现行表现接入统一见 [CardPresentation README](../Assets/Scripts/Presentation/CardPresentation/README.md)，会话职责以 [Hosting README](../Assets/Scripts/Gameplay/SingleBattle/Hosting/README.md) 为准。
+
 一个独立 Battle 对应一个 `BattleSceneHost` 实例。同一个 Unity Scene 可以容纳多个 Battle，各自持有会话、观察者、显示状态、预选和时间线。场景变化不要求新增 Host 子类。
 
 ## 当前结构

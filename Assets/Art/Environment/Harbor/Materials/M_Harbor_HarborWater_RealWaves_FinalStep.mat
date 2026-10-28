@@ -25,10 +25,16 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _ReflectionStrength: 0.804
+    - _ReflectionStrength: 0.76
+    - _RippleLength: 4.22
+    - _RippleSpeed: 0.65
+    - _RippleStrength: 1.08
     - _Smoothness: 0.576
-    - _WaveSpeed: 0.995
-    - _WaveStrength: 1.12
+    - _SwellLength: 12
+    - _WaveSpeed: 0.63
+    - _WaveStrength: 0.95
     m_Colors:
     - _BaseColor: {r: 0.025, g: 0.08, b: 0.065, a: 1}
+    - _RippleDirection: {r: -1.13, g: 5.22, b: 0, a: 0}
+    - _SwellDirection: {r: 0.62, g: -0.96, b: 0, a: 0}
   m_BuildTextureStacks: []

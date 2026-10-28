@@ -1,5 +1,7 @@
 # 单局战斗表现架构验证记录
 
+> **历史验证记录**：测试结果仅对应当时版本，不作为当前场景集成完成的依据。现行接入统一见 [CardPresentation README](../../Assets/Scripts/Presentation/CardPresentation/README.md)；本文旧组件和场景引用仅供追溯。
+
 日期：2026-10-18；Unity 2022.3.62f3。实施说明见 [BattlePresentationImplementation.md](../BattlePresentationImplementation.md)，设计约定见 [BattlePresentationDesign.md](../BattlePresentationDesign.md)。
 
 ## 结果

@@ -1,0 +1,80 @@
+{
+  "fps": 24,
+  "clips": [
+    {
+      "state": "Idle",
+      "take": "BarrelCrab_Idle_Loop",
+      "first": 1,
+      "last": 49,
+      "loop": true
+    },
+    {
+      "state": "Attack",
+      "take": "BarrelCrab_Attack_Claw",
+      "first": 1,
+      "last": 24,
+      "loop": false
+    },
+    {
+      "state": "Hit",
+      "take": "BarrelCrab_Hit_Normal",
+      "first": 1,
+      "last": 20,
+      "loop": false
+    },
+    {
+      "state": "Retract",
+      "take": "BarrelCrab_Retract_IntoShell",
+      "first": 1,
+      "last": 20,
+      "loop": false
+    },
+    {
+      "state": "ShelledIdle",
+      "take": "BarrelCrab_Shelled_Idle",
+      "first": 1,
+      "last": 25,
+      "loop": true
+    },
+    {
+      "state": "ShelledHit",
+      "take": "BarrelCrab_Hit_Shelled",
+      "first": 1,
+      "last": 18,
+      "loop": false
+    },
+    {
+      "state": "Emerge",
+      "take": "BarrelCrab_Emerge_FromShell",
+      "first": 1,
+      "last": 32,
+      "loop": false
+    }
+  ],
+  "eyes_source_parts": [
+    24,
+    27
+  ],
+  "mesh_vertices": {
+    "SM_BarrelCrab_Body": 6251,
+    "SM_BarrelCrab_Eyes": 49
+  },
+  "bones": [
+    "Root",
+    "Body",
+    "Shell",
+    "Claw.L",
+    "Pincer.L",
+    "Claw.R",
+    "Leg_Front.L",
+    "Leg_Middle.L",
+    "Leg_Rear.L",
+    "Leg_Front.R",
+    "Leg_Middle.R",
+    "Leg_Rear.R"
+  ],
+  "source": "ArtSource/Harbor/Enemies/BarrelCrab/BarrelCrab.blend",
+  "attack_candidate": "v7, fast recovery",
+  "forward_source": "-Y",
+  "units": "metres"
+}

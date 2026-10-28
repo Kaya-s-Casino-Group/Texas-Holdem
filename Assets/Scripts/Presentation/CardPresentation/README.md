@@ -1,5 +1,32 @@
 # World card presentation (Palamedes)
 
+## 现行入口与文档状态
+
+本页是当前表现层接入的统一入口（整理日期：2026-10-28）。当前场景为 `Assets/Scene/InTest/SingleBattle.unity`；已接入世界空间手牌动效、输入和操作按钮，尚未接入完整角色、正式 HUD、镜头及终局演出。接口支持某项能力不代表当前场景已配置该动作。
+
+当前链路为：规则事实 → `BattlePresentationBridge` → `ScenePresentationDirector / DisplayStore` → `WorldCardZoneDisplayBinding` → `WorldCardZonePresentation` → `HandZoneView` → `CardArt.CardView`。战斗牌区能力边界是 `ICardZonePresentation`，CardView 负责末端卡面渲染；当前链路不使用旧 `CardMatchHost / CardZonePlayHost`。
+
+当前场景将 `CardsDealt / CardsMoved / DeckRecycled / CardsCreated / AdminEdited / ActionResolved` 配置为观察投影的 `cards.settle`，以空的显式 checkpoint 发布快照，并等待手牌运动。`prepare → attack → Impact` 等角色联动尚未在当前场景配置。
+
+现行职责约定：DisplayStore 发布持久事实；悬停、选择和本地排序不改写事实；同一牌区避免重复投影；Marker、checkpoint 与 Completed 分别表示中途信号、显示提交点和动作终态；取消与 Synchronize 清理所属资源并对齐快照。具体协议见 [通用表现框架](../BattlePresentation/README.md)，会话生命周期见 [Hosting README](../../Gameplay/SingleBattle/Hosting/README.md)。
+
+### 历史资料索引
+
+以下资料保留原路径和历史正文，供追溯设计与迁移；其中“当前”“已完成”和测试结果均指记录当时，不作为当前场景的接入或验收依据。
+
+| 历史资料 | 使用范围 |
+| --- | --- |
+| [表现系统设计](../../../../Tools/BattlePresentationDesign.md) | 旧场景的整体目标与迁移设计 |
+| [实施记录](../../../../Tools/BattlePresentationImplementation.md) | 旧 Scene3D / Minimal2D 完整接入记录 |
+| [时间线配置教程](../../../../Tools/BattlePresentationTimelineConfiguration.md) | 旧 SingleBattleDemoNew 配方与 Inspector 示例 |
+| [牌区接口约定](../../../../Tools/CardZonePresentationContract.md) | 旧 World / Canvas / 2D 接口迁移记录；旧宿主流程不再适用 |
+| [表现层保留清单](../../../../Tools/UnityPresentationRetention/README.md) | 清理时的模块与依赖快照；后续恢复以本页为准 |
+| [SceneDemo 1V2 配置](../../../../Tools/SceneDemo1V2Configuration.md) | 旧关卡接入状态 |
+
+本页后续验证计数也是各次迁移的历史结果，不表示本次文档整理重新运行了测试。
+
+## 恢复来源
+
 从 `origin/legacy-3d-scenes` 恢复世界空间卡牌动效，保留原始默认曲线、分层 Transform 和独立手动 Tween 时钟：发牌飞行与翻面、弧形排布、重排、闲置摇摆、悬停放大、选中抬升与回弹、拒绝反馈、准备抬牌、离场及跨牌区移动。
 
 ## 组件与接入

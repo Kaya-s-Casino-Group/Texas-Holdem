@@ -1,5 +1,7 @@
 # 单局卡牌战斗表现系统设计
 
+> **历史资料（2026-10-28 整理）**：本文保留旧版本的设计、配置或实施记录；下文“当前”“已完成”与测试结果均指记录当时。现行表现层接入统一以 [CardPresentation README](../Assets/Scripts/Presentation/CardPresentation/README.md) 为入口。旧 Scene3D / Minimal2D、CardMatchHost / CardZonePlayHost 及完整角色、HUD 配方不代表当前工程已恢复，不应直接按本文重建旧调用链。
+
 设计日期：2026-10-18。状态：首版已落地，实际 API 与验证见 [实施记录](BattlePresentationImplementation.md)。基准场景：`Assets/Scenes/SingleBattleDemoNew.unity`。
 
 本设计覆盖单局战斗的数据投影、表现接口、动作时间轴、预选切换、取消恢复，以及当前场景的迁移步骤。目标是同一份规则结果能够接入 2D、3D、即时显示或无画面实现；每个表现节点可以编排玩家、卡牌、敌人、UI、镜头和场景物体的任意受协议管理的动作。

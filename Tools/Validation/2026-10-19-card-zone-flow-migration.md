@@ -1,5 +1,7 @@
 # 牌区旧流程清理与新接口迁移验证
 
+> **历史验证记录**：测试结果仅对应当时版本，不作为当前场景集成完成的依据。现行接入统一见 [CardPresentation README](../../Assets/Scripts/Presentation/CardPresentation/README.md)；本文旧组件和场景引用仅供追溯。
+
 日期：2026-10-19。
 
 ## 变更边界

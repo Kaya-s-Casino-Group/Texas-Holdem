@@ -4,6 +4,7 @@ Shader "Rendering/Character Deferred Outline"
     {
         [MainTexture] _BaseMap ("Base Color", 2D) = "white" {}
         [MainColor] _BaseColor ("Tint", Color) = (1,1,1,1)
+        [HDR] _EmissionColor ("Emission Color", Color) = (0,0,0,0)
         [Normal][NoScaleOffset] _BumpMap ("Normal Map", 2D) = "bump" {}
         _BumpScale ("Normal Strength", Range(0,2)) = 1
         [NoScaleOffset] _MetallicMap ("Metallic (R)", 2D) = "white" {}
