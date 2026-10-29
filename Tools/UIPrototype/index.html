@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Battle · 牌型反馈布局</title>
+<style>
+:root{color-scheme:dark;font-family:"Microsoft YaHei",system-ui,sans-serif;color:#eee8da;background:#111415}*{box-sizing:border-box}body{margin:0}header{height:72px;padding:0 28px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #ffffff14}h1{font-size:16px;letter-spacing:2px;margin:0}header p{font-size:11px;color:#929b9c;margin:6px 0 0}.controls{display:flex;gap:7px}button{font:inherit;cursor:pointer}.tab{background:transparent;border:1px solid #414647;color:#a9b0ae;padding:9px 17px;border-radius:4px;font-size:12px}.tab[aria-pressed=true]{background:#c7ad73;color:#171b1b;border-color:#c7ad73}.shell{padding:24px;max-width:1800px;margin:auto}.stage{position:relative;aspect-ratio:2340/1080;background:url(battle.png) center/100% 100%;overflow:hidden;border:1px solid #44453d;container-type:inline-size}.phase{position:absolute;top:3%;left:50%;transform:translateX(-50%);font-size:1cqw;letter-spacing:.3em;color:#d2cbb9;text-shadow:0 2px 5px #000}.player{position:absolute;left:3%;bottom:5%;width:20%;padding:1.3cqw;background:linear-gradient(100deg,#121b1df5,#121b1db0);border-left:2px solid #b6a477}.player .name{display:flex;align-items:center;justify-content:space-between;font-size:1cqw}.health{height:5px;background:#34282b;margin:12px 0 8px}.health i{display:block;width:83%;height:100%;background:#bc715f}.small{font-size:.85cqw;color:#bdbbb2}.energy{margin-top:1.4cqw;display:flex;align-items:center;gap:.7cqw;color:#8fd3d3;font-size:1cqw}.energy b{font-size:2cqw}.orb{width:.65cqw;height:.65cqw;border-radius:50%;background:#83cecf;box-shadow:0 0 10px #70d9d844}.panel{position:absolute;right:2.4%;bottom:5%;width:24%;background:linear-gradient(140deg,#182125f5,#101719f7);border:1px solid #b5a26a66;box-shadow:0 12px 36px #0008;border-radius:5px;padding:1.25cqw}.eyebrow{color:#a6aaa3;letter-spacing:.18em;font-size:.7cqw}.title{display:flex;align-items:baseline;justify-content:space-between;margin:.5cqw 0 1.15cqw}.title h2{font-size:2.25cqw;margin:0;font-weight:500;letter-spacing:.12em}.title span{font-size:.8cqw;color:#a4aaa6}.effect{display:grid;grid-template-columns:2cqw 1fr;gap:.7cqw;padding:.85cqw 0;border-top:1px solid #ffffff12}.icon{width:1.9cqw;height:1.9cqw;border:1px solid #bea46b55;color:#dfc48e;display:grid;place-items:center;font-size:.85cqw;background:#bea46b0c}.line{display:flex;align-items:center;justify-content:space-between;gap:.4cqw;font-size:1cqw;color:#e8e0d1}.scope{font-size:.66cqw;border:1px solid #89968c55;padding:.15cqw .35cqw;color:#b5c5bd;white-space:nowrap}.detail{font-size:.77cqw;color:#969f9f;margin-top:.35cqw;line-height:1.6}.chips{display:flex;gap:.4cqw;flex-wrap:wrap;margin:.85cqw 0}.chip{font-size:.73cqw;color:#b9cabb;background:#8aa78d15;border:1px solid #8aa78d33;padding:.3cqw .45cqw}.actions{display:grid;grid-template-columns:1fr 1.65fr;gap:.5cqw;margin-top:1.2cqw}.actions button{font-size:1cqw;border:1px solid #75878455;background:#263033;color:#d7dfd9;padding:.7cqw 0;border-radius:3px}.actions .primary{background:#c5ae79;border-color:#c5ae79;color:#1e2423}.actions small{font-size:.72cqw;margin-left:.4cqw;opacity:.7}.end{position:absolute;right:2.4%;bottom:1%;border:0;background:transparent;color:#b5b7ae;font-size:.8cqw}.deck{position:absolute;bottom:2%;left:25%;font-size:.8cqw;color:#c4c1b6}.discard{position:absolute;bottom:2%;right:28%;font-size:.8cqw;color:#c4c1b6}footer{display:flex;justify-content:space-between;gap:24px;padding:18px 0;font-size:12px;line-height:1.8;color:#929c9c}footer strong{color:#d2c4a0;font-weight:400}.note{max-width:700px}.toast{position:absolute;top:9%;left:50%;transform:translateX(-50%);padding:10px 20px;background:#142024e8;color:#ddc68f;font-size:12px;opacity:0;transition:opacity .2s}.toast.show{opacity:1}@media(max-width:760px){header{height:auto;padding:16px;gap:14px;align-items:flex-start;flex-direction:column}.shell{padding:10px}.stage{min-width:730px}.viewport{overflow-x:auto}footer{flex-direction:column}.tab{padding:8px 12px}}
+
+/* Compact effect summary, with the shared energy budget inside the action bar. */
+.panel{width:22%;padding:.85cqw;bottom:5%}
+.eyebrow{display:none}
+.title{margin:0 0 .55cqw}
+.title h2{font-size:1.35cqw;letter-spacing:.06em}
+.effect{grid-template-columns:1.3cqw 1fr;gap:.45cqw;padding:.5cqw 0}
+.icon{width:1.3cqw;height:1.3cqw;font-size:.7cqw}
+.line{font-size:.85cqw}
+.detail{font-size:.7cqw;line-height:1.35;margin-top:.2cqw}
+.chips{margin:.45cqw 0;gap:.25cqw}
+.chip{font-size:.65cqw;padding:.18cqw .3cqw}
+.actions{grid-template-columns:.75fr 1fr 1.25fr;align-items:stretch;gap:.4cqw;margin-top:.65cqw;padding-top:.65cqw;border-top:1px solid #ffffff20}
+.actions .energy{margin:0;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:.1cqw;border-right:1px solid #ffffff16;font-size:.65cqw}
+.energy strong{font-size:1.4cqw;font-weight:500;line-height:1.1}
+.energy strong small{font-size:.75cqw;margin:0;color:#8b9e9e}
+.actions button{font-size:.9cqw;padding:.65cqw 0}
+.player{width:18%;padding:1cqw}
+
+.panel{width:23%;padding:.85cqw}
+.title{height:2.1cqw;margin:0 0 .45cqw;align-items:center}
+.title h2{font-size:1.25cqw}.title h2 em{font-size:1cqw;color:#d2b97e;font-style:normal;margin-left:.5cqw}
+.category{display:grid;grid-template-columns:2cqw 1fr;gap:.6cqw;align-items:center;min-height:4.6cqw;border-top:1px solid #ffffff12}
+.category-label{font-size:.7cqw;color:#869492;letter-spacing:.1em}
+.tokens{display:flex;align-items:center;gap:.65cqw;flex-wrap:wrap;padding:.5cqw 0}
+.token{position:relative;width:3.3cqw;height:3.3cqw;flex-shrink:0;border:1px solid #bf9b5c66;background:#bc985410;color:#ddc185;border-radius:4px;display:grid;place-items:center;padding:0;transition:background .15s}
+.token:hover,.token:focus-visible{background:#bc985432;outline:1px solid #ddc185;outline-offset:2px}
+.token.status{color:#a5c5bd;border-color:#91b6ae55;background:#78ad9d10}
+.token svg{width:1.75cqw;height:1.75cqw;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;transform:translateY(-.2cqw)}
+.badge{position:absolute;bottom:-.25cqw;right:-.25cqw;background:#25302e;border:1px solid #738278;border-radius:3px;font-size:.8cqw;line-height:1.25;padding:.05cqw .3cqw;color:#f3e6c8;white-space:nowrap}
+.scope-mark{position:absolute;top:.15cqw;left:.22cqw;font-size:.52cqw;color:#a5b5ad}
+.empty{font-size:.8cqw;color:#596664}
+.tooltip{position:fixed;z-index:50;width:260px;padding:13px 15px;background:#111c20f7;border:1px solid #8e8259;box-shadow:0 8px 32px #0008;border-radius:5px;pointer-events:none;font-size:12px;line-height:1.7;color:#b8c3c0}
+.tooltip strong{display:block;color:#ead7ac;font-size:14px;margin-bottom:4px}.tooltip[hidden]{display:none}
+
+.effect-strip{display:flex;align-items:center;gap:.7cqw;min-height:4.3cqw;border-top:1px solid #ffffff12;padding:.3cqw 0}
+.effect-strip .tokens{flex-wrap:nowrap;gap:.6cqw;padding:.45cqw 0}
+.effect-strip .tokens:empty{display:none}
+.effect-strip .token{width:3.3cqw;height:3.3cqw}
+.token.status .badge{color:#c0e5d9;border-color:#6e998c;background:#20372f}
+.token:not(.status) .badge{color:#f2d69b;border-color:#a98c54;background:#393021}
+
+/* Match the visible hand band: roughly the bottom 19% of the battle viewport. */
+.panel{right:2.4%;bottom:1%;width:21%;padding:.6cqw .7cqw;border-radius:3px}
+.title{height:1.5cqw;margin:0 0 .25cqw}
+.title h2{font-size:1.05cqw}.title h2 em{font-size:.85cqw}.title span{font-size:.65cqw}
+.effect-strip{min-height:3.1cqw;padding:.15cqw 0;gap:.5cqw}
+.effect-strip .tokens{gap:.45cqw;padding:.3cqw 0}
+.effect-strip .token{width:2.8cqw;height:2.8cqw}
+.token svg{width:1.45cqw;height:1.45cqw}
+.badge{font-size:.68cqw;bottom:-.15cqw;right:-.15cqw;padding:0 .22cqw}
+.scope-mark{font-size:.46cqw}
+.actions{margin-top:.35cqw;padding-top:.4cqw;gap:.35cqw}
+.actions button{font-size:.85cqw;padding:.4cqw 0}
+.actions .energy{font-size:.56cqw}.energy strong{font-size:1.15cqw}
+.end{right:2.4%;bottom:21%;font-size:.7cqw;padding:.3cqw .5cqw;background:#111a1b99;border:1px solid #ffffff18;border-radius:3px}
+
+.relics{position:absolute;left:3%;top:29%;display:flex;flex-direction:column;gap:.55cqw;padding:.55cqw;background:#111b1dbb;border:1px solid #ffffff16;border-radius:4px}
+.relics-label{font-size:.6cqw;color:#969e98;text-align:center;letter-spacing:.12em}
+.relic{width:2.5cqw;height:2.5cqw;position:relative;display:grid;place-items:center;background:#282633bb;border:1px solid #af94bf66;color:#ceb7d9;border-radius:3px;padding:0}
+.relic svg{width:1.5cqw;height:1.5cqw;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linejoin:round}
+.relic:hover,.relic:focus-visible{outline:1px solid #ceb7d9;outline-offset:2px;background:#433448}
+.relic-empty{width:2.5cqw;height:2.5cqw;border:1px dashed #ffffff20;border-radius:3px}
+
+.actions{grid-template-columns:.75fr 1.25fr 1fr}
+.system-tools{position:absolute;right:2.4%;top:3%;display:flex;gap:.5cqw}
+.system-tools button{display:grid;place-items:center;width:2.5cqw;height:2.5cqw;padding:0;border:1px solid #b5b6a842;border-radius:4px;background:#131d20c9;color:#d8d8c9}
+.system-tools button:hover,.system-tools button:focus-visible{background:#34413f;outline:1px solid #c7ad73}
+.system-tools svg{width:1.35cqw;height:1.35cqw;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+
+/* Player study: readable values over restrained, worn metal framing. */
+.player{left:2.4%;bottom:1%;width:20%;padding:.75cqw 1cqw .65cqw;background:linear-gradient(135deg,#242726f5,#111919f2 65%);border:1px solid #9f89534d;border-left:3px solid #9f8953;box-shadow:inset 0 0 0 3px #0c111380,0 6px 20px #0007;clip-path:polygon(0 0,94% 0,100% 9%,100% 100%,4% 100%,0 91%)}
+.player-heading{display:flex;align-items:center;gap:.5cqw;margin-bottom:.55cqw}.player-sigil{color:#b49b62;border:1px solid #a58c4f66;font-family:Georgia,serif;font-size:.75cqw;width:1.3cqw;height:1.3cqw;display:grid;place-items:center}.player-name{font-size:1cqw;letter-spacing:.18em;color:#ddd0ad}.player-caption{margin-left:auto;font-size:.6cqw;color:#8c9187;letter-spacing:.15em}
+.vitals{display:flex;align-items:center;gap:.8cqw}.life{flex:1;min-width:0}.life-label{display:flex;align-items:center;gap:.45cqw;margin-bottom:.45cqw}.life-label svg{width:1cqw;height:1cqw;fill:#ac675b;stroke:#dd8b78;stroke-width:.6}.life-value{font-size:1.4cqw;font-variant-numeric:tabular-nums;color:#f0dfcb;line-height:1}.life-value small{font-size:.8cqw;color:#9e9c8c}
+.life-track{height:.65cqw;min-height:5px;background:#180f11;border:1px solid #89755466;box-shadow:0 1px 0 #000}.life-track i{display:block;height:100%;width:83.333%;background:linear-gradient(0deg,#713b37,#ad6555);border-right:1px solid #e5ab82;box-shadow:inset 0 1px #e0a08155}
+.shield-token{position:relative;flex-shrink:0;width:3cqw;height:3.5cqw;border:0;background:transparent;color:#e4e8de;padding:0;filter:drop-shadow(0 2px 2px #0008)}.shield-token svg{width:100%;height:100%;fill:#343f40;stroke:#a4aaa0;stroke-width:1.7}.shield-token .shield-inner{fill:none;stroke:#798780;stroke-width:.8}.shield-token span{position:absolute;inset:0;display:grid;place-items:center;padding-bottom:.3cqw;font-size:1.1cqw;font-weight:bold;font-variant-numeric:tabular-nums;text-shadow:0 2px #111}
+.shield-token:hover{filter:brightness(1.2)}.shield-token:focus-visible,.player-status:focus-visible{outline:1px solid #ddc185;outline-offset:3px}
+.player-statuses{display:flex;gap:.55cqw;margin-top:.65cqw;min-height:1.6cqw}.player-status{position:relative;width:1.65cqw;height:1.65cqw;padding:.2cqw;border:1px solid #77958b66;background:#22302c;color:#b0cdbd;border-radius:2px}.player-status.negative{color:#d98c7c;background:#33201e;border-color:#a5655666}.player-status svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}.player-status b{position:absolute;right:-.25cqw;bottom:-.2cqw;font-size:.65cqw;line-height:1;background:#141c1c;padding:.1cqw .2cqw;color:#ebe2cf;font-weight:500}.player-status:hover{background:#414a40}
+</style></head><body>
+<header><div><h1>战斗界面 / 牌型反馈</h1><p>布局草案 08 · EnergyOnly · 基于当前 Game 截图</p></div><nav class="controls" aria-label="切换牌型示例"><button class="tab" data-hand="single">一对</button><button class="tab" data-hand="triple">三条</button><button class="tab" data-hand="straight">顺子</button><button class="tab" data-hand="house">葫芦</button></nav></header>
+<main class="shell"><div class="viewport"><section class="stage" aria-label="战斗界面布局预览"><div class="phase">玩家阶段</div><nav class="system-tools" aria-label="常规功能"><button data-action="设置" aria-label="设置" title="设置"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 3 1-2h4l1 2 3 2 3 1v4l-2 2 2 2v4l-3 1-3 2-1 2h-4l-1-2-3-2-3-1v-4l2-2-2-2V6l3-1Z" transform="translate(1 1) scale(.9)"/><circle cx="12" cy="12" r="3"/></svg></button></nav>
+<aside class="relics" aria-label="遗物栏布局示意"><span class="relics-label">遗物</span><button class="relic" aria-label="遗物占位一" title="遗物占位一 · 仅用于布局，当前 XML 构筑无遗物"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 8 7-8 13L4 9Zm-8 7h16M12 2 8 9l4 13 4-13Z"/></svg></button><button class="relic" aria-label="遗物占位二" title="遗物占位二 · 仅用于布局，未绑定规则"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 1v4m0 14v4M1 12h4m14 0h4"/></svg></button><button class="relic" aria-label="遗物占位三" title="遗物占位三 · 仅用于布局，未绑定规则"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10l-2 8 5 4-8 7-8-7 5-4Z"/><path d="M9 11h6M4 15h16"/></svg></button><div class="relic-empty" aria-hidden="true"></div></aside><aside class="player" aria-label="玩家状态区域"><div class="player-heading"><span class="player-sigil" aria-hidden="true">Ⅰ</span></div><div class="vitals"><div class="life"><div class="life-label"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21 3 12C-2 4 7-1 12 6c5-7 14-2 9 6Z"/></svg><span class="life-value">100 <small>/ 120</small></span></div><div class="life-track" role="meter" aria-label="生命" aria-valuemin="0" aria-valuemax="120" aria-valuenow="100"><i></i></div></div><button class="shield-token" type="button" aria-label="护盾 12" data-player-tip="shield"><svg viewBox="0 0 48 56" aria-hidden="true"><path d="M24 3 43 10v17c0 12-19 25-19 25S5 39 5 27V10Z"/><path class="shield-inner" d="m24 8 14 6v13c0 8-14 19-14 19S10 35 10 27V14Z"/></svg><span>12</span></button></div><div class="player-statuses" aria-label="玩家状态示意"><button class="player-status positive" data-player-tip="immunity" aria-label="控制免疫 1 层"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6Z"/><path d="m8 12 3 3 5-6"/></svg><b>1</b></button><button class="player-status negative" data-player-tip="bleed" aria-label="流血 2 层"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3C10 7 5 12 5 16a7 7 0 0 0 14 0c0-4-5-9-7-13Z"/></svg><b>2</b></button></div></aside>
+<aside class="panel" aria-live="polite"><div class="eyebrow">本次出牌</div><div class="title"><h2 id="hand-name"></h2><span id="count"></span></div><div class="effect-strip" aria-label="出牌伤害与效果"><div class="tokens" id="damage-icons"></div><div class="tokens" id="status-icons"></div></div><div class="actions"><div class="energy"><span>能量</span><strong>3 <small>/ 3</small></strong></div><button class="primary" data-action="出牌">出牌<small>◆ 1</small></button><button data-action="弃牌">弃牌<small>◆ 1</small></button></div></aside>
+<span class="deck">牌库 44</span><span class="discard">弃牌 0</span><button class="end" data-action="结束回合">结束回合 →</button><div class="toast" role="status"></div>
+</section></div><footer><div class="note"><strong>手牌上沿保持留白。</strong>伤害与效果合并一行：金色为伤害，青绿色为效果，图标角标表达数值与层数；悬停或键盘聚焦查看详情。能量与出牌、弃牌集中操作，不显示总伤害或目标状态。顶部按钮仅用于切换设计样例，非游戏 UI。</div><div>静态场景参考 · 非规则实时预览<br>遗物图标仅为占位，当前 XML 无遗物。所有数值为示意，背景手牌不随样例切换。</div></footer></main>
+<div id="tooltip" class="tooltip" role="tooltip" hidden></div>
+<script>
+const glyphs={single:'<circle cx="12" cy="12" r="7"/><path d="M12 2v5m0 10v5M2 12h5m10 0h5"/>',aoe:'<path d="M3 18h18M5 15l-2-5 6 2 3-8 3 8 6-2-2 5"/><path d="M7 21v-1m5 1v-1m5 1v-1"/>',chain:'<path d="M4 7h13l-3-3m3 3-3 3M7 12h13M4 17h13l-3-3m3 3-3 3"/>',stun:'<path d="m12 3 2 5 6-1-3 5 3 4-6-1-2 6-2-6-6 1 3-4-3-5 6 1Z"/>',cleanse:'<path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5Z"/>',immune:'<path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6Z"/><path d="m8 12 3 3 5-6"/>',bleed:'<path d="M12 3C10 7 5 12 5 16a7 7 0 0 0 14 0c0-4-5-9-7-13Z"/>'};
+const hands={
+single:{name:'一对',mult:2,count:2,damage:[['single','28','单体伤害','对单个敌人造成伤害。28 为基础伤害示意，不代表减伤后的实际扣血。','']],status:[]},
+triple:{name:'三条',mult:3,count:3,damage:[['aoe','36/敌','群体伤害','对每个敌人分别造成 36 点基础伤害（示意）。不将所有敌人的伤害相加；每个敌人独立结算。','']],status:[]},
+straight:{name:'顺子',mult:3,count:5,damage:[['chain','5段','逐张连续攻击','5 张牌分别产生攻击，伤害逐段计算，不用一个总伤害代替。具体分段数值由规则预览提供。','']],status:[['bleed','1','流血','每次命中附加 1 层流血；角标表示单次施加层数，不表示累计总层数。','命中']]},
+house:{name:'葫芦',mult:4,count:5,damage:[['aoe','72/敌','三条部分 · 群体伤害','三条部分得分 × 2，对每个敌人分别结算。72 为布局示意数值。',''],['single','32','对子部分 · 单体伤害','对子部分得分 × 2，对单个敌人结算。32 为布局示意数值。','']],status:[['stun','1','全体眩晕','对全体敌人施加眩晕。当前状态配置为跳过一次行动窗口；角标为施加层数。','全体'],['cleanse','','自身净化／解控','移除自身符合净化规则的状态。即时效果没有层数，所以不显示数字角标。','自身'],['immune','1','自身控制免疫','自身获得控制免疫，持续至下个敌方阶段结束。角标为层数，不代表剩余回合。','自身']]}
+};
+const tip=document.getElementById('tooltip');
+function hideTip(){tip.hidden=true}
+function showTip(button,item){tip.replaceChildren();const title=document.createElement('strong');title.textContent=item[2];tip.append(title,document.createTextNode(item[3]));tip.hidden=false;const r=button.getBoundingClientRect();tip.style.left=Math.max(8,Math.min(innerWidth-tip.offsetWidth-8,r.right-tip.offsetWidth))+'px';tip.style.top=Math.max(8,r.top-tip.offsetHeight-12)+'px'}
+function renderIcons(id,items,status){const root=document.getElementById(id);root.replaceChildren();if(!items.length){return}items.forEach(item=>{const b=document.createElement('button');b.className='token'+(status?' status':'');b.setAttribute('aria-label',item[2]+(item[1]?' '+item[1]:''));b.setAttribute('aria-describedby','tooltip');b.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true">'+glyphs[item[0]]+'</svg>'+(item[1]?'<span class="badge">'+item[1]+'</span>':'')+(item[4]?'<span class="scope-mark">'+item[4]+'</span>':'');b.addEventListener('mouseenter',()=>showTip(b,item));b.addEventListener('focus',()=>showTip(b,item));b.addEventListener('mouseleave',hideTip);b.addEventListener('blur',hideTip);root.append(b)})}
+function select(key){hideTip();const h=hands[key];document.getElementById('hand-name').innerHTML=h.name+'<em>× '+h.mult+'</em>';document.getElementById('count').textContent='已选 '+h.count+' 张';renderIcons('damage-icons',h.damage,false);renderIcons('status-icons',h.status,true);document.querySelectorAll('[data-hand]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.hand===key)))}
+document.querySelectorAll('[data-hand]').forEach(b=>b.addEventListener('click',()=>select(b.dataset.hand)));let timer;document.querySelectorAll('[data-action]').forEach(b=>b.addEventListener('click',()=>{const t=document.querySelector('.toast');t.textContent=b.dataset.action+' · 原型操作，未执行战斗';t.classList.add('show');clearTimeout(timer);timer=setTimeout(()=>t.classList.remove('show'),1800)}));addEventListener('resize',hideTip);addEventListener('scroll',hideTip,true);document.addEventListener('keydown',e=>{if(e.key==='Escape')hideTip()});const playerTips={shield:['','','护盾 · 12','护盾与生命分开显示。此处数值为布局示意；清除时机由当前规则决定。'],immunity:['','','控制免疫 · 1 层','状态图标示意。当前 XML 中控制免疫持续至下个敌方阶段结束，角标不代表回合数。'],bleed:['','','流血 · 2 层','状态图标与层数的布局示意，未连接当前角色的真实状态。']};document.querySelectorAll('[data-player-tip]').forEach(b=>{const show=()=>showTip(b,playerTips[b.dataset.playerTip]);b.addEventListener('mouseenter',show);b.addEventListener('focus',show);b.addEventListener('mouseleave',hideTip);b.addEventListener('blur',hideTip)});select('house');
+</script></body></html>

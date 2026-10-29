@@ -1,0 +1,1 @@
+{"name":"Poker.BattlePresentation.UI","references":["Poker.BattlePresentation.Shared.Unity","BattlePresentation.Runtime","UnityEngine.UI"]}

@@ -13,7 +13,9 @@ Shader "Harbor/Gerstner Reflective Step Water"
   _RippleSpeed("Ripple Speed",Range(0,2))=1.15
   _RippleLength("Ripple Wavelength",Range(.5,6))=2.4
   _RippleDirection("Ripple Direction XZ",Vector)=(.76,-.65,0,0)
-  _ReflectionStrength("Reflection",Range(0,1))=.75
+  _ReflectionStrength("Environment Sheen",Range(0,1))=.75
+  _ShimmerColor("Warm Sky Shimmer",Color)=(.42,.38,.17,1)
+  _ShimmerStrength("Shimmer Strength",Range(0,1))=.35
   _Smoothness("Smoothness",Range(0,1))=.85
  }
  SubShader
@@ -23,16 +25,13 @@ Shader "Harbor/Gerstner Reflective Step Water"
   HLSLINCLUDE
   #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
   #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
-  #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareOpaqueTexture.hlsl"
   CBUFFER_START(UnityPerMaterial)
-  half4 _BaseColor;
+  half4 _BaseColor,_ShimmerColor;
+  float _ShimmerStrength;
   float _WaveStrength,_WaveSpeed,_ReflectionStrength,_Smoothness;
   float _SwellLength,_RippleStrength,_RippleSpeed,_RippleLength;
   float4 _SwellDirection,_RippleDirection;
   CBUFFER_END
-  TEXTURE2D(_HarborPlanarReflection);SAMPLER(sampler_HarborPlanarReflection);
-  float4x4 _HarborReflectionVP;
-  float _HarborHasReflection;
   #include "HarborGerstner.hlsl"
   struct A {float4 positionOS:POSITION;UNITY_VERTEX_INPUT_INSTANCE_ID};
   struct V {float4 positionCS:SV_POSITION;float3 positionWS:TEXCOORD0;float3 restWS:TEXCOORD1;UNITY_VERTEX_OUTPUT_STEREO};
@@ -56,15 +55,19 @@ Shader "Harbor/Gerstner Reflective Step Water"
    SurfaceData surf=(SurfaceData)0;surf.albedo=_BaseColor.rgb;surf.specular=.02;surf.smoothness=_Smoothness;
    surf.occlusion=1;surf.alpha=1;surf.normalTS=float3(0,0,1);
    half3 lit=UniversalFragmentPBR(d,surf).rgb;
-   float4 rp=mul(_HarborReflectionVP,float4(i.positionWS,1));float2 uv=rp.xy/max(rp.w,.0001)*.5+.5;
-   half3 reflection=SAMPLE_TEXTURE2D(_HarborPlanarReflection,sampler_HarborPlanarReflection,saturate(uv+normal.xz*.025)).rgb;
-   half3 fallback=GlossyEnvironmentReflection(reflect(-view,normal),i.positionWS,1-_Smoothness,1,d.normalizedScreenSpaceUV);
-   reflection=lerp(fallback,reflection,_HarborHasReflection);
+   // Existing environment cubemap only: no extra camera, render texture or screen-color copy.
+   // Animated Gerstner normals move the light highlights and environment sheen across the surface.
+   half3 reflection=GlossyEnvironmentReflection(reflect(-view,normal),i.positionWS,1-_Smoothness,1,d.normalizedScreenSpaceUV);
+   reflection*=lerp(_BaseColor.rgb,_ShimmerColor.rgb,.5);
    float fresnel=.02037+.97963*pow(1-saturate(dot(normal,view)),5);
-   float2 refractUV=saturate(d.normalizedScreenSpaceUV+normal.xz*.008);
-   half3 body=lerp(lit,SampleSceneColor(refractUV)*_BaseColor.rgb,.07);
    // The only step is AFTER lighting/reflection composition, never in texture sampling.
-   half3 finalColor=lerp(body,reflection,fresnel*_ReflectionStrength);
+   half3 finalColor=lerp(lit,reflection,fresnel*_ReflectionStrength);
+   // Broken wave-length bands give a restrained moving glint even without a bright scene light.
+   float2 direction=dot(_RippleDirection.xy,_RippleDirection.xy)>.0001?normalize(_RippleDirection.xy):float2(0,1);
+   float phase=6.2831853*dot(direction,i.restWS.xz)/max(_RippleLength,.1)-_Time.y*_RippleSpeed*3.77;
+   float crossPhase=dot(float2(-direction.y,direction.x),i.restWS.xz)*2.1+_Time.y*.23;
+   float glint=smoothstep(.72,.98,sin(phase))*smoothstep(.1,.85,sin(crossPhase));
+   finalColor+=_ShimmerColor.rgb*glint*_ShimmerStrength*detailFilter*HarborShoreFade(i.restWS)*(.25+.75*fresnel);
    return half4(HarborHardStep(finalColor),1);
   }
   half4 WaterDepth(V i):SV_Target{return 0;}

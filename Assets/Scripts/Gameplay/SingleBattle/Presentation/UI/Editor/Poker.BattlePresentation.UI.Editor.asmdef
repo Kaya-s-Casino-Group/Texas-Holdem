@@ -1,0 +1,1 @@
+{"name":"Poker.BattlePresentation.UI.Editor","references":["Poker.BattlePresentation.UI","Poker.BattlePresentation.Shared.Unity","BattlePresentation.Runtime","UnityEngine.UI"],"includePlatforms":["Editor"]}

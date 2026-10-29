@@ -17,6 +17,16 @@ Palamedes 保留本模块、内嵌定制 URP、Renderer 配置和全部渲染 Sh
 
 ## 独立 UI Camera
 
+### 当前 SingleBattle 接入（2026-10-29）
+
+`Assets/Scene/InTest/SingleBattle.unity` 已接入 `BattleCamera/Main Camera/UI Camera`，通过 `UICameraStack` 显式绑定主相机。主相机排除 UI Layer；UI Camera 使用现有 UIRenderer（MainURP index 1），以原生分辨率 Overlay 追加到 Stack 尾部。UIRenderer 当前包含最终 CRT Feature，因此实际顺序为场景低分辨率渲染与放大 → 原生 UI → 最终 CRT。
+
+现有 `Battle/BattleActions` Canvas 改为 Screen Space Camera，World Camera 与 GraphicRaycaster 的事件相机均使用 UI Camera，子控件统一 UI Layer，保留原按钮绑定和层级。Canvas 预热及所有权调整不在本次范围内。
+
+当前接入工具为 `Editor/UICameraStackSetup.cs`，菜单 `工具/渲染/UI Camera/接入当前场景`。它要求活动场景只有一个 MainCamera Base，复用已绑定的 UI Camera 和已注册的 UIRenderer，保留其他 Overlay；将当前场景根 Canvas 绑定到 UI Camera（Overlay Canvas 转 Screen Space Camera，World Space Canvas 保留模式），递归设置 UI Layer。支持 Undo，只标记场景待保存。下文旧 `CardUICameraSetup` 与旧验证菜单为历史说明，相关工具已移除。
+
+已验证脚本编译、重复接入不重复创建、Play 开局与真实 Game 帧显示，运行时 Console 无错误。菜单 `工具/渲染/UI Camera/捕获运行画面` 在 Play 中保存 `Library/UICameraStackValidation/game.png`。旧 CRT 离屏捕获未包含本场景 Canvas，UI 显示应以真实 Game 帧验证；本次未做逐按钮点击回归。
+
 `Runtime/Cameras/UICameraStack.cs` 挂在 UI Camera 上，`Configure(sceneCamera)` 指定同一观察者的 Base 摄像机。组件复用原有 Camera Stack，将自身追加到最后；不会清空其他 Overlay。主相机排除内置 UI Layer，UI Camera 只绘制 UI Layer。
 
 UI Camera 为 Overlay，开启项目自定义 URP 的 `renderOverlayAtNativeResolution`，清除输出目标的深度并保留已绘制的场景颜色；关闭阴影、后处理、HDR、MSAA、抗锯齿、NaN 处理、抖动、XR、遮挡剔除、动态分辨率以及深度/颜色纹理请求。Volume Layer Mask 为 0，Volume 更新采用 Via Scripting。UI 不再借用场景的低分辨率颜色/深度附件。

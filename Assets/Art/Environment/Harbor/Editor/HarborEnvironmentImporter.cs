@@ -73,9 +73,6 @@ namespace HarborEnvironment.Editor
                 if (item.kind == "Water")
                 {
                     go.layer = 4;
-                    var reflection = go.AddComponent<HarborPlanarReflection>();
-                    reflection.waterHeight = mesh.bounds.center.y;
-                    reflection.resolution = 512;
                 }
             }
             foreach (var item in layout.lights)

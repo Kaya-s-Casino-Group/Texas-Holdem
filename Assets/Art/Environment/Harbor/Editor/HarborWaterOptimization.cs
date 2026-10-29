@@ -15,27 +15,7 @@ namespace HarborEnvironment
         public static void Optimize()
         {
             var water = GameObject.Find("Harbor_Environment/Mesh/Water/SM_Harbor_Water_Surface_001");
-            var backdrop = GameObject.Find("Harbor_Environment/Mesh/Backdrop");
-            if (!water || !backdrop) throw new InvalidOperationException("Harbor water/backdrop missing.");
-            var tags = new SerializedObject(AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/TagManager.asset")[0]);
-            var layers = tags.FindProperty("layers");
-            int layer = LayerMask.NameToLayer("HarborReflection");
-            if (layer < 0)
-            {
-                for (int i = 8; i < layers.arraySize; i++)
-                    if (string.IsNullOrEmpty(layers.GetArrayElementAtIndex(i).stringValue)) { layer = i; break; }
-                if (layer < 0) throw new InvalidOperationException("No free reflection layer.");
-                layers.GetArrayElementAtIndex(layer).stringValue = "HarborReflection";
-                tags.ApplyModifiedProperties();
-            }
-            int reflectedTriangles = 0, reflectedObjects = 0;
-            foreach (var renderer in backdrop.GetComponentsInChildren<MeshRenderer>(true))
-            {
-                Undo.RecordObject(renderer.gameObject, "Set backdrop reflection layer");
-                renderer.gameObject.layer = layer;
-                reflectedObjects++;
-                reflectedTriangles += renderer.GetComponent<MeshFilter>().sharedMesh.triangles.Length / 3;
-            }
+            if (!water) throw new InvalidOperationException("Harbor water missing.");
             var filter = water.GetComponent<MeshFilter>();
             var original = filter.sharedMesh;
             // Use actual vertices rather than the bounds expanded for shader displacement.
@@ -77,19 +57,40 @@ namespace HarborEnvironment
             else AssetDatabase.CreateAsset(mesh, MeshPath);
             Undo.RecordObject(filter, "Optimize water mesh"); filter.sharedMesh = mesh;
             var reflection = water.GetComponent<HarborPlanarReflection>();
-            Undo.RecordObject(reflection, "Restrict water reflection");
-            reflection.reflectionLayers = 1 << layer;
-            reflection.waterHeight = water.transform.TransformPoint(bounds.center).y;
-            reflection.enabled = true;
+            if (reflection) Undo.DestroyObjectImmediate(reflection);
             PrefabUtility.RecordPrefabInstancePropertyModifications(filter);
-            PrefabUtility.RecordPrefabInstancePropertyModifications(reflection);
-            foreach (var renderer in backdrop.GetComponentsInChildren<MeshRenderer>(true))
-                PrefabUtility.RecordPrefabInstancePropertyModifications(renderer.gameObject);
             AssetDatabase.SaveAssets();
             EditorSceneManager.MarkSceneDirty(water.scene); EditorSceneManager.SaveScene(water.scene);
             Directory.CreateDirectory("output/harbor-water");
-            File.WriteAllText("output/harbor-water/optimization.txt", $"Water triangles: {original.triangles.Length / 3} -> {indices.Count / 3}\nVertices: {original.vertexCount} -> {vertices.Count}\nReflection objects: {reflectedObjects}, triangles: {reflectedTriangles}\nReflection layer: {layer}\nWater height: {reflection.waterHeight}\n");
+            File.WriteAllText("output/harbor-water/optimization.txt", $"Water triangles: {original.triangles.Length / 3} -> {indices.Count / 3}\nVertices: {original.vertexCount} -> {vertices.Count}\nPlanar reflection: removed; animated normals and environment sheen only.\n");
             Debug.Log("HARBOR_WATER_OPTIMIZED " + File.ReadAllText("output/harbor-water/optimization.txt"));
+        }
+        [MenuItem("Tools/Harbor/Use Simple Shimmer Water")]
+        public static void UseSimpleShimmerWater()
+        {
+            if(Application.isPlaying)throw new InvalidOperationException("Exit Play Mode first.");
+            var scene=EditorSceneManager.GetActiveScene();
+            foreach(var root in scene.GetRootGameObjects())
+                foreach(var reflection in root.GetComponentsInChildren<HarborPlanarReflection>(true))
+                    Undo.DestroyObjectImmediate(reflection);
+            // Remove the component from authored harbor prefabs too, so a fresh instance stays simple.
+            foreach(var guid in AssetDatabase.FindAssets("t:Prefab",new[]{"Assets/Art/Environment/Harbor"}))
+            {
+                var path=AssetDatabase.GUIDToAssetPath(guid);
+                var prefab=PrefabUtility.LoadPrefabContents(path);
+                try
+                {
+                    var components=prefab.GetComponentsInChildren<HarborPlanarReflection>(true);
+                    if(components.Length==0)continue;
+                    foreach(var reflection in components)UnityEngine.Object.DestroyImmediate(reflection);
+                    PrefabUtility.SaveAsPrefabAsset(prefab,path);
+                }
+                finally{PrefabUtility.UnloadPrefabContents(prefab);}
+            }
+            var shader=Shader.Find("Harbor/Gerstner Reflective Step Water");
+            if(shader==null || ShaderUtil.ShaderHasError(shader))throw new InvalidOperationException("Water shader compilation failed.");
+            EditorSceneManager.MarkSceneDirty(scene);EditorSceneManager.SaveScene(scene);
+            Debug.Log("Simple shimmer water installed: no planar reflection components; existing wave and lighting settings preserved.");
         }
     }
 }
