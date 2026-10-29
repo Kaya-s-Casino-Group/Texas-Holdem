@@ -91,16 +91,16 @@ MonoBehaviour:
     applyToRenderTextures: 1
     applyToSceneView: 0
     exposure: -0.03
-    contrast: 1.422
-    saturation: 0.775
-    tint: {r: 1, g: 0.97, b: 0.9, a: 1}
+    contrast: 1.355
+    saturation: 0.9
+    tint: {r: 0.9379472, g: 1, b: 0.9276729, a: 1}
     tintStrength: 0.641
-    vignette: 0.255
-    vignetteSoftness: 0.05
-    colorLevels: 13
+    vignette: 0.228
+    vignetteSoftness: 0.21
+    colorLevels: 10
     posterization: 0.829
     dither: 0.379
-    chromaticOffset: 3
+    chromaticOffset: 2
   injectionPoint: 1001
   postShader: {fileID: 4800000, guid: a6c4b4b14be464680b808eb2a672d809, type: 3}
 --- !u!114 &11400000
@@ -253,7 +253,7 @@ MonoBehaviour:
       m_RotationOrder: 4
     enableGround: 0
     groundHeight: 0
-    density: 0.03
+    density: 0.025
     attenuationDistance: 1
     distance: 10
     color: {r: 0.13369367, g: 0.17610055, b: 0.12570699, a: 1}
